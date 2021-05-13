@@ -4,7 +4,12 @@ set -euo pipefail
 # Browserless...
 # docker run -it --rm -e "CONNECTION_TIMEOUT=90000" -p 3000:3000 --name browserless browserless/chrome:latest /bin/bash
 # docker run --rm -e "CONNECTION_TIMEOUT=90000" -p 3000:3000 --name browserless browserless/chrome:latest
-docker run --rm -e "DEBUG=pw:*" -e "CONNECTION_TIMEOUT=90000" -p 3000:3000 --name browserless browserless/chrome:latest
+docker run --rm \
+  -e "DEBUG=pw:*" \
+  -e "CONNECTION_TIMEOUT=90000" \
+  -p 3000:3000 \
+  --name browserless \
+  browserless/chrome:latest
 
 # Playwright...
 # TODO:
