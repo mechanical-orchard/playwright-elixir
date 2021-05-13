@@ -5,6 +5,20 @@ defmodule PlaywrightTest do
   test "greets the world" do
     assert Playwright.hello() == :world
   end
+
+  describe "Usage" do
+    test "looks something like..." do
+      endpoint = "ws://localhost:3000/playwright"
+
+      playwright = Playwright.start()
+      chromium = Playwright.chromium(playwright)
+      browser = Playwright.Browser.connect(chromium, endpoint)
+      page = Playwright.Page.create(browser)
+
+      Playwright.Page.goto(page, "https://playwright.dev")
+      Playwright.Browser.close(browser)
+    end
+  end
 end
 
 # An example in Java to reproduce in Elixir:
@@ -21,10 +35,3 @@ end
 #     }
 #   }
 # }
-
-# pw = Playwright.create()
-# br = Playwright.chromium(pw) |> Plawright.Browser.connect(endpoint)
-# pg = Playwright.Page.create(br)
-# ...
-# Playwright.Page.goto(pg, "https://playwright.dev")
-# Playwright.Browser.close(br)
