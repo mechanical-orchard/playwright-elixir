@@ -26,9 +26,10 @@ defmodule Playwright.Transport do
     :ok = WebSockex.cast(self, {:poll, self()})
 
     receive do
-      {:text, msg} -> msg
-    after
-      200 -> raise "Failed to poll"
+      {:text, msg} ->
+        msg
+        # after
+        #   200 -> raise "Failed to poll"
     end
   end
 

@@ -17,12 +17,6 @@ defmodule Playwright.Connection do
     GenServer.call(self, :state)
   end
 
-  # iex> Playwright.Connection.wait_for_object(c, "Browser")
-  #   [info]  Attempting to retrieve "Browser" from %Playwright.Connection{objects: %{}, transport: #PID<0.341.0>}
-  #   [info]  Updated objects................. %{"Browser" => "Browser"}
-  #   [info]  Attempting to retrieve "Browser" from %Playwright.Connection{objects: %{"Browser" => "Browser"}, transport: #PID<0.341.0>}
-  #   [info]  Retrieved object "Browser" and have state %Playwright.Connection{objects: %{"Browser" => "Browser"}, transport: #PID<0.341.0>}
-  #   "Browser"
   def wait_for_object(self, guid) do
     GenServer.call(self, {:wait_for_object, guid})
   end
@@ -33,11 +27,16 @@ defmodule Playwright.Connection do
   def init([ws_endpoint]) do
     state = connect(ws_endpoint)
 
-    # thing = retrieve("Browser", result.state)
     Logger.info("Init - connection: #{inspect(state)}")
+    #    [info]  Init - connection: %Playwright.Connection{objects: %{}, transport: #PID<0.214.0>}
+
     {browser, state} = retrieve("Browser", state)
     Logger.info("Init - retrieved browser: #{inspect(browser)} and state: #{inspect(state)}")
-    # {:ok, state}
+
+    #    [info]  Init - retrieved
+    #                   browser: "Browser@1da5ca595d9cfeacddaad53c2cfc64fa"
+    #               and state:   %Playwright.ChannelOwner.Browser{guid: "Browser@1da5ca595d9cfeacddaad53c2cfc64fa", initializer: %{"name" => "chromium", "version" => "91.0.4469.0"}, parent: nil, type: "Browser"}
+
     {:ok, state}
   end
 
@@ -81,45 +80,29 @@ defmodule Playwright.Connection do
   defp retrieve(guid, state = %__MODULE__{}) do
     Logger.info("Attempting to retrieve #{inspect(guid)} from #{inspect(state)}")
 
+    # TODO: stop using nested `case`
     case Map.get(state.objects, guid) do
       nil ->
-        Transport.poll(state.transport)
-        |> Jason.decode!()
-        |> dispatch(state)
+        result = Transport.poll(state.transport)
+        Logger.info("Poll result: #{inspect(result)}")
 
-        retrieve(guid, state)
+        case result do
+          nil ->
+            :timer.sleep(1000)
+            retrieve(guid, state)
 
-      # {guid, object} =
-      #   Transport.poll(state.transport)
-      #   |> Jason.decode!()
-      #   |> dispatch(state)
+          msg ->
+            msg
+            |> Jason.decode!()
+            |> dispatch(state)
 
-      # # Logger.info("Result: #{inspect(result)}")
-      # # state = Map.put(state, :objects, [state.])
-
-      # objects = Map.merge(state.objects, %{type => type})
-      # Logger.info("Updated objects................. #{inspect(objects)}")
-      # state = Map.put(state, :objects, objects)
-
-      # :timer.sleep(1000)
-      # retrieve(guid, state)
-      # retrieve(type, state)
+            retrieve(guid, state)
+        end
 
       object ->
         {object, state}
     end
   end
-
-  # defp dispatch(message) do
-  #   case message["method"] do
-  #     "__create__" ->
-  #       guid = message["params"]["guid"]
-  #       type = message["params"]["type"]
-  #       create_remote_object()
-  #     _ ->
-  #       raise "Not implemented: #{inspect(message["method"])}"
-  #   end
-  # end
 
   defp dispatch(message = %{"method" => "__create__"}, state) do
     Logger.info("Dispatch:create........... #{inspect(message)}")
