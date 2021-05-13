@@ -13,46 +13,31 @@ defmodule Playwright.Connection do
     GenServer.start_link(__MODULE__, args)
   end
 
-  def _state_(self) do
-    GenServer.call(self, :state)
-  end
-
-  def wait_for_object(self, guid) do
-    GenServer.call(self, {:wait_for_object, guid})
-  end
-
   # @impl
   # ---------------------------------------------------------------------------
 
   def init([ws_endpoint]) do
     state = connect(ws_endpoint)
 
-    Logger.info("Init - connection: #{inspect(state)}")
+    # Logger.info("Init - connection, #{inspect(self())}, with state #{inspect(state)}")
     #    [info]  Init - connection: %Playwright.Connection{objects: %{}, transport: #PID<0.214.0>}
 
+    # TODO: remove this from here, and call as Connection.wait_for_object
     {browser, state} = retrieve("Browser", state)
     Logger.info("Init - retrieved browser: #{inspect(browser)} and state: #{inspect(state)}")
-
-    #    [info]  Init - retrieved
-    #                   browser: "Browser@1da5ca595d9cfeacddaad53c2cfc64fa"
-    #               and state:   %Playwright.ChannelOwner.Browser{guid: "Browser@1da5ca595d9cfeacddaad53c2cfc64fa", initializer: %{"name" => "chromium", "version" => "91.0.4469.0"}, parent: nil, type: "Browser"}
 
     {:ok, state}
   end
 
-  def handle_call(:state, _, state) do
-    {:reply, state, state}
-  end
+  # def handle_call({:wait_for_object, guid}, _, state) do
+  #   # state = Map.merge(state, %{waiting_for: guid})
+  #   # collect()
 
-  def handle_call({:wait_for_object, guid}, _, state) do
-    # state = Map.merge(state, %{waiting_for: guid})
-    # collect()
+  #   {object, state} = retrieve(guid, state)
+  #   Logger.info("Retrieved object #{inspect(object)} and have state #{inspect(state)}")
 
-    {object, state} = retrieve(guid, state)
-    Logger.info("Retrieved object #{inspect(object)} and have state #{inspect(state)}")
-
-    {:reply, object, state}
-  end
+  #   {:reply, object, state}
+  # end
 
   # private
   # ---------------------------------------------------------------------------
@@ -64,27 +49,18 @@ defmodule Playwright.Connection do
     %__MODULE__{
       transport: pid
     }
-
-    # case Transport.start_link(ws_endpoint) do
-    #   {:ok, pid} ->
-    #     %__MODULE__{
-    #       transport: pid
-    #     }
-
-    #   {:error, %WebSockex.ConnError{}} ->
-    #     Logger.error("Failed to connect; retrying")
-    #     connect(ws_endpoint)
-    # end
   end
 
   defp retrieve(guid, state = %__MODULE__{}) do
     Logger.info("Attempting to retrieve #{inspect(guid)} from #{inspect(state)}")
 
-    # TODO: stop using nested `case`
+    # TODO:
+    # - Stop using nested `case`
+    # - Get rid of this polling, and be more Elixir-like (e.g., `receive`)
     case Map.get(state.objects, guid) do
       nil ->
         result = Transport.poll(state.transport)
-        Logger.info("Poll result: #{inspect(result)}")
+        # Logger.info("Poll result: #{inspect(result)}")
 
         case result do
           nil ->
@@ -92,20 +68,23 @@ defmodule Playwright.Connection do
             retrieve(guid, state)
 
           msg ->
-            msg
-            |> Jason.decode!()
-            |> dispatch(state)
+            {guid, object} =
+              msg
+              |> Jason.decode!()
+              |> dispatch(state)
 
-            retrieve(guid, state)
+            state = Map.put(state, :objects, Map.put(state.objects, guid, object))
+            # retrieve(guid, state)
+            {object, state}
         end
 
       object ->
+        Logger.info("Retrieved object: #{inspect(object)}")
         {object, state}
     end
   end
 
   defp dispatch(message = %{"method" => "__create__"}, state) do
-    Logger.info("Dispatch:create........... #{inspect(message)}")
     create_remote_object(message["guid"], message["params"], state)
   end
 
@@ -115,7 +94,7 @@ defmodule Playwright.Connection do
 
   defp create_remote_object(parent_guid, params, state) do
     parent = Map.get(state.objects, parent_guid)
-    Logger.info("Parent: #{inspect(parent)}")
+    # Logger.info("Parent: #{inspect(parent)}")
 
     # TODO: create ChannelOwner `@behaviour`, which all of these `use`.
     guid = params["guid"]
@@ -123,11 +102,12 @@ defmodule Playwright.Connection do
     initializer = params["initializer"]
 
     # TODO: finish matching implementation
-    object =
-      case type do
-        "Browser" ->
-          Logger.info("Creating Browser with guid: #{inspect(guid)}")
+    case type do
+      "Browser" ->
+        # Logger.info("Creating Browser with guid: #{inspect(guid)}")
 
+        {
+          "Browser",
           Playwright.ChannelOwner.Browser.init(
             self(),
             parent,
@@ -135,13 +115,12 @@ defmodule Playwright.Connection do
             guid,
             initializer
           )
+        }
 
-        _ ->
-          Logger.info("Don't know how to create #{inspect(type)}")
-          nil
-      end
-
-    {guid, object}
+      _ ->
+        Logger.error("Don't know how to create #{inspect(type)}")
+        nil
+    end
   end
 
   # TODO: finish matching implementation

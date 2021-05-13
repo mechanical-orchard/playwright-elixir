@@ -12,16 +12,6 @@ defmodule Playwright.Transport do
     WebSockex.start_link(ws_endpoint, __MODULE__, %__MODULE__{})
   end
 
-  def get_state(self) do
-    :ok = WebSockex.cast(self, {:get_state, self()})
-
-    receive do
-      msg -> msg
-    after
-      200 -> raise "Failed to retrieve state within 200ms"
-    end
-  end
-
   def poll(self) do
     :ok = WebSockex.cast(self, {:poll, self()})
 
@@ -41,17 +31,11 @@ defmodule Playwright.Transport do
   # ---------------------------------------------------------------------------
 
   @impl WebSockex
-  def handle_connect(conn, state) do
-    Logger.info(
-      "Connected <self: #{inspect(self())}, conn: #{inspect(conn)}, state: #{inspect(state)}>"
-    )
+  def handle_connect(_conn, state) do
+    # Logger.info(
+    #   "Connected <self: #{inspect(self())}, conn: #{inspect(conn)}, state: #{inspect(state)}>"
+    # )
 
-    {:ok, state}
-  end
-
-  @impl WebSockex
-  def handle_cast({:get_state, pid}, state) do
-    send(pid, state)
     {:ok, state}
   end
 
@@ -70,9 +54,9 @@ defmodule Playwright.Transport do
 
   @impl WebSockex
   def handle_frame(frame, state) do
-    Logger.info(
-      "RECV <self: #{inspect(self())}, frame: #{inspect(frame)}, state: #{inspect(state)}>"
-    )
+    # Logger.info(
+    #   "RECV <self: #{inspect(self())}, frame: #{inspect(frame)}, state: #{inspect(state)}>"
+    # )
 
     incoming = state.incoming ++ [frame]
     state = Map.put(state, :incoming, incoming)
@@ -88,15 +72,4 @@ defmodule Playwright.Transport do
 
     {:ok, state}
   end
-
-  # private
-  # ---------------------------------------------------------------------------
-
-  # defp latest(state, []) do
-  #   nil
-  # end
-
-  # defp latest(state, [head | tail]) do
-
-  # end
 end

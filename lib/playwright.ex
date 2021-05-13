@@ -1,60 +1,64 @@
 defmodule Playwright do
-  # alias Playwright.BrowserType
+  alias Playwright.BrowserType
 
-  # defdelegate send(browser, message), to: BrowserType
-  # defdelegate show(browser), to: BrowserType
+  def start() do
+    {:ok, child} =
+      DynamicSupervisor.start_child(
+        Playwright.Supervisor,
+        {BrowserType,
+         [
+           "ws://localhost:3000/playwright"
+         ]}
+      )
 
-  # def connect() do
-  #   {:ok, child} =
-  #     DynamicSupervisor.start_child(
-  #       Playwright.Supervisor,
-  #       {BrowserType,
-  #        [
-  #          "ws://localhost:3000/playwright"
-  #        ]}
-  #     )
+    child
+  end
 
-  #   child
+  # require Logger
+
+  # alias Playwright.Client
+
+  # def start() do
+  #   {:ok, playwright} =
+  #     DynamicSupervisor.start_child(Playwright.Supervisor, {
+  #       Client,
+  #       []
+  #     })
+
+  #   playwright
   # end
 
-  require Logger
+  # def browser(impl) do
+  #   Client.browser(impl)
+  # end
 
-  alias Playwright.Client
+  # defmodule Client do
+  #   use GenServer
 
-  def create() do
-    {:ok, playwright} =
-      DynamicSupervisor.start_child(Playwright.Supervisor, {
-        Client,
-        []
-      })
+  #   # API
+  #   # --------------------------------------------------------------------------
 
-    playwright
-  end
+  #   def start_link(args \\ []) do
+  #     GenServer.start_link(__MODULE__, args)
+  #   end
 
-  def chromium(impl) do
-    Client.chromium(impl)
-  end
+  #   def browser(self) do
+  #     Logger.info("Starting browser for #{inspect(self)}")
+  #     GenServer.call(self, {:browser, "ws://localhost:3000/playwright"})
+  #   end
 
-  defmodule Client do
-    use GenServer
+  #   # impl
+  #   # --------------------------------------------------------------------------
 
-    # API
-    # --------------------------------------------------------------------------
+  #   @impl GenServer
+  #   def init(args) do
+  #     {:ok, args}
+  #   end
 
-    def start_link(args \\ []) do
-      GenServer.start_link(__MODULE__, args)
-    end
-
-    def chromium(self) do
-      Logger.info("Starting chromium for #{inspect(self)}")
-    end
-
-    # impl
-    # --------------------------------------------------------------------------
-
-    @impl GenServer
-    def init(args) do
-      {:ok, args}
-    end
-  end
+  #   #
+  #   def handle_call({:browser, ws_endpoint}, state) do
+  #     browser_type = Playwright.BrowserType.connect(ws_endpoint)
+  #     {:reply, browser_type, state}
+  #   end
+  # end
 end
