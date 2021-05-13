@@ -1,18 +1,60 @@
 defmodule Playwright do
-  @moduledoc """
-  Documentation for `Playwright`.
-  """
+  # alias Playwright.BrowserType
 
-  @doc """
-  Hello world.
+  # defdelegate send(browser, message), to: BrowserType
+  # defdelegate show(browser), to: BrowserType
 
-  ## Examples
+  # def connect() do
+  #   {:ok, child} =
+  #     DynamicSupervisor.start_child(
+  #       Playwright.Supervisor,
+  #       {BrowserType,
+  #        [
+  #          "ws://localhost:3000/playwright"
+  #        ]}
+  #     )
 
-      iex> Playwright.hello()
-      :world
+  #   child
+  # end
 
-  """
-  def hello do
-    :world
+  require Logger
+
+  alias Playwright.Client
+
+  def create() do
+    {:ok, playwright} =
+      DynamicSupervisor.start_child(Playwright.Supervisor, {
+        Client,
+        []
+      })
+
+    playwright
+  end
+
+  def chromium(impl) do
+    Client.chromium(impl)
+  end
+
+  defmodule Client do
+    use GenServer
+
+    # API
+    # --------------------------------------------------------------------------
+
+    def start_link(args \\ []) do
+      GenServer.start_link(__MODULE__, args)
+    end
+
+    def chromium(self) do
+      Logger.info("Starting chromium for #{inspect(self)}")
+    end
+
+    # impl
+    # --------------------------------------------------------------------------
+
+    @impl GenServer
+    def init(args) do
+      {:ok, args}
+    end
   end
 end

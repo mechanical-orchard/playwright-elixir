@@ -1,4 +1,4 @@
-defmodule Playwright.WebSocketClient do
+defmodule Playwright.Ref.WebSocketClient do
   use WebSockex
 
   def start_link(url) do

@@ -1,4 +1,4 @@
-defmodule Playwright.Browser do
+defmodule Playwright.Ref.Browser do
   use GenServer
   alias Playwright.WebSocketClient
 

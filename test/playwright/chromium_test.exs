@@ -3,6 +3,7 @@ defmodule Playwright.ChromiumTest do
   # doctest Playwright.Chromium
 
   alias Playwright.Chromium
+  alias Playwright.Page
 
   # TODO:
   # - [ ] get a successful connection with a provided `ws_endpoint`
@@ -22,21 +23,16 @@ defmodule Playwright.ChromiumTest do
     end
 
     test "does something", context do
-      # there's more stuff in "context":
-      # IO.inspect(context)
-      {:ok, pid} = Chromium.connect(ws_endpoint: context[:ws_endpoint])
-      assert Process.alive?(pid)
-      # it's a bit brutish, but this does seem to close the WS connection...
-      Agent.stop(pid)
-      assert !Process.alive?(pid)
+      {:ok, supervised_pid} = start_supervised(Chromium)
 
-      # no server listening:
-      #   {:error, %WebSockex.ConnError{original: :econnrefused}}
+      :ok = Chromium.connect(supervised_pid, ws_endpoint: context[:ws_endpoint])
+      assert Process.alive?(supervised_pid)
 
-      # with TLS...
-      #   {:ok, pid} = Chromium.connect(ws_endpoint: "wss://localhost:3000/playwright")
-      # ...and TLS is not supported:
-      #   {:error, %WebSockex.ConnError{original: {:tls_alert, {:unexpected_message, 'TLS client: In state hello at tls_record.erl:539 generated CLIENT ALERT: Fatal - Unexpected Message\n {unsupported_record_type,72}'}}}}
+      {:ok, page} = Chromium.new_page(supervised_pid)
+      page |> Page.goto("https://playwright.dev")
+
+      :ok = supervised_pid |> Chromium.stop()
+      assert !Process.alive?(supervised_pid)
     end
   end
 
