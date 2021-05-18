@@ -9,28 +9,7 @@ defmodule Playwright do
   end
 
   def conn() do
-    {:ok, conn} = BrowserType.connect("ws://localhost:3000/playwright")
-    conn
-  end
-
-  def play(conn) do
-    playwright = GenServer.call(conn, {:wait_for, "Playwright"})
-
-    # prelaunched =
-    #   playwright
-    #   |> Playwright.ChannelOwner.Playwright.list()
-    #   |> Playwright.ChannelOwner.Playwright.get("preLaunchedBrowser")
-
-    # browser = GenServer.call(conn, {:wait_for, prelaunched["guid"]})
-
-    # chromium = playwright |> Playwright.ChannelOwner.Playwright.chromimum()
-    # chromium = GenServer.call(conn, {:wait_for, chromium["guid"]})
-    # {browser, chromium}
-
-    # ---
-
-    browser = Playwright.ChannelOwner.Playwright.chromimum(playwright)
-    browser
+    BrowserType.connect("ws://localhost:3000/playwright")
   end
 
   def show(conn) do

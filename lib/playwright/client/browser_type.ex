@@ -25,17 +25,17 @@ defmodule Playwright.Client.BrowserType do
         {Connection, [Transport.WebSocket, [ws_endpoint, opts]]}
       )
 
-    Logger.info("--> Connection...")
-    Logger.info("... Started: #{inspect(connection)}")
+    # FIXME
+    :timer.sleep(500)
 
-    # NOTE: this does not (yet) work.
-    # {:ok, playwright} = GenServer.call(connection, {:wait_for, "Playwright"})
-    # Logger.info("... Playwright: #{inspect(playwright)}")
+    playwright = Connection.get_from_guid_map(connection, "Playwright")
 
-    # NOTE: for consideration (instead of doing so in the `start_link`)...
-    # result = GenServer.call(child, {:connect, [ws_endpoint, opts]})
+    %{"guid" => guid} = playwright.initializer["preLaunchedBrowser"]
 
-    {:ok, connection}
+    browser = Connection.get_from_guid_map(connection, guid)
+    # OR?... browser = Playwright.ChannelOwner.Playwright.chromium()
+
+    browser
   end
 
   # private

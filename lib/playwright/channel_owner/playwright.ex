@@ -1,37 +1,28 @@
 defmodule Playwright.ChannelOwner.Playwright do
   use Playwright.ChannelOwner
 
-  @spec new(atom | %{:connection => atom | pid | port | {atom, atom}, optional(any) => any}, map) ::
-          %Playwright.ChannelOwner{
-            connection: any,
-            guid: any,
-            initializer: any,
-            parent:
-              atom | %{:connection => atom | pid | port | {atom, atom}, optional(any) => any},
-            type: any
-          }
   def new(parent, args) do
     channel_owner(parent, args)
   end
 
-  def get(state, key) do
-    Logger.info("Getting #{inspect(key)} from state: #{inspect(state.initializer)}")
-    state.initializer[key]
-  end
+  # TODO: consider moving to ChannelOwner, if needed at all.
+  # def get(channel_owner, key) do
+  #   Logger.info("Getting #{inspect(key)} from channel_owner: #{inspect(channel_owner.initializer)}")
+  #   channel_owner.initializer[key]
+  # end
 
-  def list(state) do
-    Logger.info("Playwright initializer keys: #{inspect(Map.keys(state.initializer))}")
-    state
-  end
+  # TODO: consider moving to ChannelOwner, if needed at all.
+  # def list(channel_owner) do
+  #   Logger.info("Playwright initializer keys: #{inspect(Map.keys(channel_owner.initializer))}")
+  #   channel_owner
+  # end
 
-  def chromimum(state) do
-    %{"guid" => guid} = state.initializer["chromium"]
-    GenServer.call(state.connection, {:wait_for, guid})
-  end
+  # def chromimum(playwright_channel_owner) do
+  #   %{"guid" => guid} = playwright_channel_owner.initializer["chromium"]
+  #   GenServer.call(playwright_channel_owner.connection, {:wait_for, guid})
+  # end
 
-  @spec selectors(atom | %{:initializer => nil | maybe_improper_list | map, optional(any) => any}) ::
-          any
-  def selectors(state) do
-    state.initializer["selectors"]
-  end
+  # def selectors(playwright_channel_owner) do
+  #   playwright_channel_owner.initializer["selectors"]
+  # end
 end

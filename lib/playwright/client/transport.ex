@@ -33,19 +33,6 @@ defmodule Playwright.Client.Transport do
     end
 
     @impl WebSockex
-    def handle_cast({:poll, pid}, state) do
-      case state.incoming do
-        [head | tail] ->
-          state = Map.put(state, :incoming, tail)
-          send(pid, head)
-          {:ok, state}
-
-        [] ->
-          {:ok, state}
-      end
-    end
-
-    @impl WebSockex
     def handle_frame(frame, state) do
       # Logger.info(
       #   "RECV <self: #{inspect(self())}, frame: #{inspect(frame)}, state: #{inspect(state)}>"
