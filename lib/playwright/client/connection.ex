@@ -20,8 +20,9 @@ defmodule Playwright.Client.Connection do
   def get_from_guid_map(connection, guid, tries) do
     case GenServer.call(connection, {:get_guid_from_map, guid}) do
       nil ->
-        Logger.info("trying again for #{inspect(guid)} (tries: #{inspect(tries)})")
-        :timer.sleep(5)
+        # TODO: Consider making this configurable. It's no longer really
+        # needed for success, but it's nice to be gentle.
+        :timer.sleep(50)
         get_from_guid_map(connection, guid, tries - 1)
 
       item ->
