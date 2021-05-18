@@ -1,16 +1,10 @@
 defmodule Playwright.ChannelOwner.Browser do
-  require Logger
+  use Playwright.ChannelOwner
 
-  defstruct(parent: nil, type: nil, guid: nil, initializer: nil)
+  # API
+  # ---------------------------------------------------------------------------
 
-  def init(connection, parent, type, guid, initializer) do
-    Logger.info("Init browser for connection: #{inspect(connection)}")
-
-    %__MODULE__{
-      parent: parent,
-      type: type,
-      guid: guid,
-      initializer: initializer
-    }
+  def new(parent, args) do
+    channel_owner(parent, args)
   end
 end

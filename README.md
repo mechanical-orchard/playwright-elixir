@@ -70,6 +70,11 @@ browser  = Playwright.Chromium.connect([wsEndpoint: endpoint])
 context  = Playwright.Browser.new_context(browser)
 page     = Playwright.BrowserContext.new_page(context)
 
+Playwright.Chromium.connect()
+|> Playwright.Context.new()
+|> Playwright.Page.goto(...)
+|> Playwright.Page.click(...)
+
 page
 |> goto("https://playwright.dev")
 |> screenshot(...)

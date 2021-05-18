@@ -1,6 +1,8 @@
 # The directory Mix will write compiled artifacts to.
 /_build/
 
+/assets/node_modules/
+
 # If you run "mix test --cover", coverage assets end up here.
 /cover/
 

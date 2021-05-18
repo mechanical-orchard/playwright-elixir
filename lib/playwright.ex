@@ -1,18 +1,59 @@
 defmodule Playwright do
-  alias Playwright.BrowserType
+  alias Playwright.Client.BrowserType
+
+  # __DEBUG__
+  # ---------------------------------------------------------------------------
 
   def start() do
-    {:ok, child} =
-      DynamicSupervisor.start_child(
-        Playwright.Supervisor,
-        {BrowserType,
-         [
-           "ws://localhost:3000/playwright"
-         ]}
-      )
-
-    child
+    {:ok, _bt} = BrowserType.start_link([])
   end
+
+  def conn() do
+    {:ok, conn} = BrowserType.connect("ws://localhost:3000/playwright")
+    conn
+  end
+
+  def play(conn) do
+    GenServer.call(conn, {:wait_for, "Playwright"})
+  end
+
+  def show(conn) do
+    GenServer.call(conn, :show)
+  end
+
+  # defstruct(
+  #   chromium: nil,
+  #   firefox: nil,
+  #   webkit: nil
+  # )
+
+  # def create() do
+  # end
+
+  # def start() do
+  #   {:ok, pid} =
+  #     DynamicSupervisor.start_child(
+  #       Playwright.Supervisor,
+  #       {Playwright.InProcess, []}
+  #     )
+
+  #   pid
+  # end
+
+  # alias Playwright.BrowserType
+
+  # def start() do
+  #   {:ok, child} =
+  #     DynamicSupervisor.start_child(
+  #       Playwright.Supervisor,
+  #       {BrowserType,
+  #        [
+  #          "ws://localhost:3000/playwright"
+  #        ]}
+  #     )
+
+  #   child
+  # end
 
   # require Logger
 
