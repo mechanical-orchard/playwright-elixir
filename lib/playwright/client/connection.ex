@@ -3,7 +3,7 @@ defmodule Playwright.Client.Connection do
 
   use GenServer
   alias Playwright.ChannelOwner.Root
-  alias Playwright.Client.Connection
+  # alias Playwright.Client.Connection
 
   # API
   # ---------------------------------------------------------------------------
@@ -22,10 +22,8 @@ defmodule Playwright.Client.Connection do
     Logger.info("Connection.init w/ self: #{inspect(pid)}")
 
     # WARN: this is potentially racy: the websocket must be opened *after* `root` is created.
-    {:ok, registry} = Connection.Registry.start_link()
-
     connection = %__MODULE__{
-      registry: registry,
+      registry: %{},
       root: Root.new(pid),
       transport: transport.start_link!([ws_endpoint, pid])
     }
@@ -38,41 +36,16 @@ defmodule Playwright.Client.Connection do
   # end
 
   def handle_call(:show, _, state) do
-    send(state.registry, {:keys, self()})
-
-    receive do
-      {:registry_all, value} ->
-        {:reply, value, state}
-    end
+    {:reply, Map.keys(state.registry), state}
   end
 
   def handle_call({:wait_for, guid}, _, state) do
     Logger.info("Waiting for #{inspect(guid)} to be found in state: #{inspect(state)}")
-
-    result = fetch(guid, state)
-    Logger.info("...after waiting for #{inspect(guid)}, we ended up with #{inspect(result)}")
-    {:reply, result, state}
-  end
-
-  defp fetch(guid, state) do
-    send(state.registry, {:get, guid, self()})
-
-    receive do
-      {:registry_get, nil} ->
-        Logger.info("FETCH: trying again for #{inspect(guid)}")
-        :timer.sleep(500)
-        fetch(guid, state)
-
-      {:registry_get, result} ->
-        Logger.info("FETCH: guid = #{inspect(result)}")
-        result
-    end
+    {:reply, fetch(guid, state), state}
   end
 
   def handle_info({:register, {guid, item}}, state) do
-    send(state.registry, {:put, guid, item})
-
-    {:noreply, state}
+    {:noreply, %__MODULE__{state | registry: Map.put(state.registry, guid, item)}}
   end
 
   def handle_info({:process_frame, {:text, json}}, state) do
@@ -89,6 +62,16 @@ defmodule Playwright.Client.Connection do
     String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
   end
 
+  defp fetch(guid, state) do
+    case state.registry[guid] do
+      nil ->
+        fetch(guid, state)
+
+      object ->
+        object
+    end
+  end
+
   # TODO: get the "deep atomize" from Apex, so we're not using string kyeys.
   # defp process_json(%{"id" => id} = data) do
   #   Logger.info("processing JSON with a known object, #{inspect(id)}, and data: #{inspect(data)}")
@@ -102,13 +85,7 @@ defmodule Playwright.Client.Connection do
          },
          state
        ) do
-    send(state.registry, {:get, parent_guid, self()})
-
-    receive do
-      {:registry_get, parent} ->
-        Logger.info("PROCESS_JSON - #{inspect(parent)}")
-        apply(channel_owner(params), :new, [parent, params])
-    end
+    apply(channel_owner(params), :new, [state.registry[parent_guid], params])
   end
 
   defp process_json(%{"method" => "__dispose__"} = data, _state) do
@@ -117,28 +94,5 @@ defmodule Playwright.Client.Connection do
 
   defp process_json(data, _state) do
     Logger.info("processing JSON of some other kind: #{inspect(data)}")
-  end
-
-  defmodule Registry do
-    require Logger
-
-    def start_link do
-      Task.start_link(fn -> loop(%{}) end)
-    end
-
-    defp loop(map) do
-      receive do
-        {:keys, caller} ->
-          send(caller, {:registry_all, Map.keys(map)})
-          loop(map)
-
-        {:get, key, caller} ->
-          send(caller, {:registry_get, Map.get(map, key)})
-          loop(map)
-
-        {:put, key, item} ->
-          loop(Map.put(map, key, item))
-      end
-    end
   end
 end
