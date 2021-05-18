@@ -25,9 +25,6 @@ defmodule Playwright.Client.BrowserType do
         {Connection, [Transport.WebSocket, [ws_endpoint, opts]]}
       )
 
-    # FIXME
-    :timer.sleep(500)
-
     playwright = Connection.get_from_guid_map(connection, "Playwright")
 
     %{"guid" => guid} = playwright.initializer["preLaunchedBrowser"]

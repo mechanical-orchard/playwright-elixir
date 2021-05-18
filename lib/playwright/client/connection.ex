@@ -13,8 +13,20 @@ defmodule Playwright.Client.Connection do
     GenServer.start_link(__MODULE__, args)
   end
 
-  def get_from_guid_map(connection, guid) do
-    GenServer.call(connection, {:get_guid_from_map, guid})
+  def get_from_guid_map(connection, guid, tries \\ 10)
+
+  def get_from_guid_map(_connection, _guid, 0), do: raise("No more tries!")
+
+  def get_from_guid_map(connection, guid, tries) do
+    case GenServer.call(connection, {:get_guid_from_map, guid}) do
+      nil ->
+        Logger.info("trying again for #{inspect(guid)} (tries: #{inspect(tries)})")
+        :timer.sleep(5)
+        get_from_guid_map(connection, guid, tries - 1)
+
+      item ->
+        item
+    end
   end
 
   # @impl
