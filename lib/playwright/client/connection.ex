@@ -40,7 +40,6 @@ defmodule Playwright.Client.Connection do
   end
 
   def handle_call({:wait_for, guid}, _, state) do
-    Logger.info("Waiting for #{inspect(guid)} to be found in state: #{inspect(state)}")
     {:reply, fetch(guid, state), state}
   end
 
@@ -65,6 +64,12 @@ defmodule Playwright.Client.Connection do
   defp fetch(guid, state) do
     case state.registry[guid] do
       nil ->
+        :timer.sleep(200)
+
+        Logger.info(
+          "Attempting to fetch #{inspect(guid)} from #{inspect(Map.keys(state.registry))}"
+        )
+
         fetch(guid, state)
 
       object ->

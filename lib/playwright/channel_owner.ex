@@ -3,6 +3,7 @@ defmodule Playwright.ChannelOwner do
 
   defmacro __using__(_) do
     quote do
+      require Logger
       import Playwright.ChannelOwner
     end
   end
