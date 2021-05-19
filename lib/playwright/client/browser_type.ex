@@ -12,7 +12,7 @@ defmodule Playwright.Client.BrowserType do
   end
 
   # # @impl
-  # # ---------------------------------------------------------------------------
+  # # -------------------------------------------------------------------------
 
   def init(_) do
     DynamicSupervisor.init(strategy: :one_for_one)

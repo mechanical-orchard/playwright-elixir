@@ -30,6 +30,10 @@ defmodule Playwright do
     Playwright.ChannelOwner.Page.goto(page, url)
   end
 
+  def text_content(_page, _selector) do
+    ""
+  end
+
   def show(conn) do
     GenServer.call(conn, :show)
   end

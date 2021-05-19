@@ -1,37 +1,21 @@
 defmodule PlaywrightTest do
   use ExUnit.Case
+  use PlaywrightTest.Case
   doctest Playwright
 
-  test "greets the world" do
-    assert Playwright.hello() == :world
-  end
-
   describe "Usage" do
+    @tag :skip
     test "looks something like..." do
-      endpoint = "ws://localhost:3000/playwright"
+      Playwright.start()
 
-      playwright = Playwright.start()
-      chromium = Playwright.chromium(playwright)
-      browser = Playwright.Browser.connect(chromium, endpoint)
-      page = Playwright.Page.create(browser)
+      content =
+        browser()
+        |> context()
+        |> page()
+        |> goto("https://playwright.dev")
+        |> text_content(".navbar__title")
 
-      Playwright.Page.goto(page, "https://playwright.dev")
-      Playwright.Browser.close(browser)
+      assert content == "Playwright"
     end
   end
 end
-
-# An example in Java to reproduce in Elixir:
-#
-# public class Example {
-#   public static void main(String[] args) {
-#     try (Playwright playwright = Playwright.create()) {
-#       BrowserType chromium = playwright.chromium();
-#       Browser browser = chromium.launch();
-#       Page page = browser.newPage();
-#       page.navigate("https://example.com");
-#       // other actions...
-#       browser.close();
-#     }
-#   }
-# }
