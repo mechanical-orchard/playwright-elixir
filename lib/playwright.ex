@@ -13,12 +13,16 @@ defmodule Playwright do
     {connection, browser}
   end
 
-  def newContex(browser) do
+  def new_context(browser) do
     Playwright.ChannelOwner.BrowserType.new_context(browser)
   end
 
-  def newPage(context) do
+  def new_page(context) do
     Playwright.ChannelOwner.BrowserContext.new_page(context)
+  end
+
+  def goto(page, url) do
+    Playwright.ChannelOwner.Page.goto(page, url)
   end
 
   def show(conn) do

@@ -14,7 +14,7 @@ defmodule Playwright.ChannelOwner.BrowserContext do
     }
 
     conn = channel_owner.connection
-    result = Connection.await_message(conn, message)
-    Logger.info("result... #{inspect(result)}")
+    %{"result" => %{"page" => page}} = Connection.await_message(conn, message)
+    Connection.get_from_guid_map(conn, page["guid"])
   end
 end

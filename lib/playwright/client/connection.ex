@@ -27,7 +27,7 @@ defmodule Playwright.Client.Connection do
   def await_message(connection, message, tries, message_index) do
     case GenServer.call(connection, {:get_message, message_index}) do
       nil ->
-        :timer.sleep(50)
+        :timer.sleep(200)
         Logger.info("Awaiting message no. #{inspect(message_index)}")
         await_message(connection, message, tries - 1, message_index)
 
