@@ -14,7 +14,6 @@ defmodule Playwright.ChannelOwner.BrowserContext do
     }
 
     conn = channel_owner.connection
-    %{"result" => %{"page" => page}} = Connection.post(conn, message)
-    Connection.get_from_guid_map(conn, page["guid"])
+    Connection.post(conn, message)
   end
 end

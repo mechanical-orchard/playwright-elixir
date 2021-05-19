@@ -22,30 +22,18 @@ defmodule Playwright.Client.Connection do
     GenServer.start_link(__MODULE__, args)
   end
 
-  def get_from_guid_map(connection, guid, tries \\ 10)
-
-  def get_from_guid_map(_connection, _guid, 0), do: raise("No more tries!")
-
-  def get_from_guid_map(connection, guid, tries) do
-    case GenServer.call(connection, {:get_guid_from_map, guid}) do
-      nil ->
-        # TODO: Consider making this configurable. It's no longer really
-        # needed for success, but it's nice to be gentle.
-        :timer.sleep(50)
-        get_from_guid_map(connection, guid, tries - 1)
-
-      item ->
-        item
-    end
-  end
-
   def get(connection, guid) do
     GenServer.call(connection, {:get, guid})
   end
 
   def post(connection, message) do
     i = GenServer.call(connection, :increment)
-    GenServer.call(connection, {:post, message, i})
+
+    result =
+      GenServer.call(connection, {:post, message, i})
+      |> parse_guid
+
+    get(connection, result)
   end
 
   # @impl
@@ -128,6 +116,11 @@ defmodule Playwright.Client.Connection do
 
   defp channel_owner(%{"type" => type}) do
     String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
+  end
+
+  defp parse_guid(%{"result" => result}) do
+    {thing, _} = List.pop_at(Map.values(result), 0)
+    thing["guid"]
   end
 
   # TODO: get the "deep atomize" from Apex, so we're not using string kyeys.
