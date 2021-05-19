@@ -24,18 +24,12 @@ defmodule Playwright.Client.Transport do
     end
 
     def send_message(pid, message) do
-      Logger.info("Transport send_message: #{inspect(message)} for transport #{inspect(pid)}")
+      # Logger.info("Transport send_message: #{inspect(message)} for transport #{inspect(pid)}")
       WebSockex.send_frame(pid, {:text, message})
     end
 
     # @impl
     # ---------------------------------------------------------------------------
-
-    @impl WebSockex
-    def handle_cast({:send, {type, msg} = frame}, state) do
-      IO.puts("Sending #{type} frame with payload: #{msg}")
-      {:reply, frame, state}
-    end
 
     @impl WebSockex
     def handle_connect(_conn, state) do

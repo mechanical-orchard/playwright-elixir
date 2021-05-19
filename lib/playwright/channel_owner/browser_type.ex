@@ -5,6 +5,14 @@ defmodule Playwright.ChannelOwner.BrowserType do
     channel_owner(parent, args)
   end
 
+  @spec new_context(
+          atom
+          | %{
+              :connection => atom | pid | {atom, any} | {:via, atom, any},
+              :guid => any,
+              optional(any) => any
+            }
+        ) :: any
   def new_context(channel_owner) do
     message = %{
       guid: channel_owner.guid,
@@ -14,7 +22,7 @@ defmodule Playwright.ChannelOwner.BrowserType do
     }
 
     conn = channel_owner.connection
-    %{"result" => %{"context" => context}} = Connection.await_message(conn, message)
+    %{"result" => %{"context" => context}} = Connection.post(conn, message)
     Connection.get_from_guid_map(conn, context["guid"])
   end
 end

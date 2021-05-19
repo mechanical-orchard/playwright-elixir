@@ -14,7 +14,6 @@ defmodule Playwright.ChannelOwner.Page do
     }
 
     conn = channel_owner.connection
-    result = Connection.await_message(conn, message)
-    result
+    Connection.post(conn, message)
   end
 end

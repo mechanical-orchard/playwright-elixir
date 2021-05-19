@@ -3,37 +3,23 @@ defmodule Playwright.Client.Connection do
 
   use GenServer
   alias Playwright.ChannelOwner.Root
+  # alias Playwright.Client.Connection
   alias Playwright.Client.Transport
 
   # API
   # ---------------------------------------------------------------------------
 
-  defstruct(root: nil, guid_map: %{}, transport: nil, message_index: 0, messages: %{})
+  defstruct(
+    root: nil,
+    guid_map: %{},
+    transport: nil,
+    message_index: 0,
+    messages: %{},
+    queries: %{}
+  )
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
-  end
-
-  def await_message(connection, message, tries \\ 10)
-
-  def await_message(connection, message, tries) do
-    message_index = GenServer.call(connection, :increment)
-    GenServer.cast(connection, {:send_message, message, message_index})
-    await_message(connection, message, tries, message_index)
-  end
-
-  def await_message(_connection, _message, 0, _), do: raise("No more tries!")
-
-  def await_message(connection, message, tries, message_index) do
-    case GenServer.call(connection, {:get_message, message_index}) do
-      nil ->
-        :timer.sleep(200)
-        Logger.info("Awaiting message no. #{inspect(message_index)}")
-        await_message(connection, message, tries - 1, message_index)
-
-      msg ->
-        msg
-    end
   end
 
   def get_from_guid_map(connection, guid, tries \\ 10)
@@ -53,6 +39,11 @@ defmodule Playwright.Client.Connection do
     end
   end
 
+  def post(connection, message) do
+    i = GenServer.call(connection, :increment)
+    GenServer.call(connection, {:post, message, i})
+  end
+
   # @impl
   # ---------------------------------------------------------------------------
 
@@ -69,14 +60,27 @@ defmodule Playwright.Client.Connection do
     {:ok, connection}
   end
 
-  def handle_call({:get_guid_from_map, guid}, _, state) do
-    {:reply, state.guid_map[guid], state}
+  def handle_call(
+        {:post, message, index},
+        from,
+        %{transport: transport, queries: queries} = state
+      ) do
+    payload = Jason.encode!(Map.put(message, :id, index))
+    queries = Map.put(queries, index, from)
+
+    case Transport.WebSocket.send_message(transport, payload) do
+      :ok ->
+        :ok
+
+      {:error, reason} ->
+        Logger.error(inspect(reason))
+    end
+
+    {:noreply, Map.put(state, :queries, queries)}
   end
 
-  def handle_call({:get_message, id}, _, state) do
-    # TODO: delete the one we found from `state.messages`.
-    # Logger.info("get_message... Looking for #{inspect(id)} in #{inspect(state.messages)}")
-    {:reply, state.messages[id], state}
+  def handle_call({:get_guid_from_map, guid}, _, state) do
+    {:reply, state.guid_map[guid], state}
   end
 
   def handle_call(:increment, _, state) do
@@ -88,28 +92,13 @@ defmodule Playwright.Client.Connection do
     {:reply, Map.keys(state.guid_map), state}
   end
 
-  def handle_cast({:send_message, message, message_index}, state) do
-    payload = Jason.encode!(Map.put(message, :id, message_index))
-
-    case Transport.WebSocket.send_message(state.transport, payload) do
-      :ok ->
-        # Logger.info("send_message success for message #{inspect(message_index)}")
-        :ok
-
-      {:error, reason} ->
-        Logger.error(inspect(reason))
-    end
-
-    {:noreply, Map.put(state, message_index, message_index)}
+  def handle_info({:process_frame, {:text, json}}, state) do
+    {:ok, data} = Jason.decode(json)
+    {:noreply, process_json(data, state)}
   end
 
   def handle_info({:register, {guid, item}}, state) do
     {:noreply, %__MODULE__{state | guid_map: Map.put(state.guid_map, guid, item)}}
-  end
-
-  def handle_info({:process_frame, {:text, json}}, state) do
-    {:ok, data} = Jason.decode(json)
-    {:noreply, process_json(data, state)}
   end
 
   # private
@@ -120,9 +109,13 @@ defmodule Playwright.Client.Connection do
   end
 
   # TODO: get the "deep atomize" from Apex, so we're not using string kyeys.
-  defp process_json(%{"id" => id} = data, state) do
-    Logger.info("processing JSON of requested object, #{inspect(id)}, and data: #{inspect(data)}")
-    Map.put(state, :messages, Map.put(state.messages, id, data))
+  defp process_json(%{"id" => id} = data, %{queries: queries} = state) do
+    # Logger.info("processing JSON of requested object, #{inspect(id)}, and data: #{inspect(data)}")
+
+    {from, queries} = Map.pop(queries, id)
+    GenServer.reply(from, data)
+
+    Map.put(state, :queries, queries)
   end
 
   defp process_json(
