@@ -8,10 +8,32 @@ defmodule Playwright.Client.Connection do
   # API
   # ---------------------------------------------------------------------------
 
-  defstruct(root: nil, guid_map: nil, transport: nil)
+  defstruct(root: nil, guid_map: %{}, transport: nil, message_index: 0, messages: %{})
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
+  end
+
+  def await_message(connection, message, tries \\ 10)
+
+  def await_message(connection, message, tries) do
+    message_index = GenServer.call(connection, :increment)
+    GenServer.cast(connection, {:send_message, message, message_index})
+    await_message(connection, message, tries, message_index)
+  end
+
+  def await_message(_connection, _message, 0, _), do: raise("No more tries!")
+
+  def await_message(connection, message, tries, message_index) do
+    case GenServer.call(connection, {:get_message, message_index}) do
+      nil ->
+        :timer.sleep(50)
+        Logger.info("Awaiting message no. #{inspect(message_index)}")
+        await_message(connection, message, tries - 1, message_index)
+
+      msg ->
+        msg
+    end
   end
 
   def get_from_guid_map(connection, guid, tries \\ 10)
@@ -31,10 +53,6 @@ defmodule Playwright.Client.Connection do
     end
   end
 
-  def send_message(connection, message) do
-    GenServer.cast(connection, {:send_message, Jason.encode!(message)})
-  end
-
   # @impl
   # ---------------------------------------------------------------------------
 
@@ -44,7 +62,6 @@ defmodule Playwright.Client.Connection do
 
     # WARN: this is potentially racy: the websocket must be opened *after* `root` is created.
     connection = %__MODULE__{
-      guid_map: %{},
       root: Root.new(pid),
       transport: transport.start_link!([ws_endpoint, pid])
     }
@@ -56,20 +73,34 @@ defmodule Playwright.Client.Connection do
     {:reply, state.guid_map[guid], state}
   end
 
+  def handle_call({:get_message, id}, _, state) do
+    # TODO: delete the one we found from `state.messages`.
+    # Logger.info("get_message... Looking for #{inspect(id)} in #{inspect(state.messages)}")
+    {:reply, state.messages[id], state}
+  end
+
+  def handle_call(:increment, _, state) do
+    state = Map.put(state, :message_index, state.message_index + 1)
+    {:reply, state.message_index, state}
+  end
+
   def handle_call(:show, _, state) do
     {:reply, Map.keys(state.guid_map), state}
   end
 
-  def handle_cast({:send_message, message}, state) do
-    case Transport.WebSocket.send_message(state.transport, message) do
+  def handle_cast({:send_message, message, message_index}, state) do
+    payload = Jason.encode!(Map.put(message, :id, message_index))
+
+    case Transport.WebSocket.send_message(state.transport, payload) do
       :ok ->
-        Logger.info("send_message success")
+        # Logger.info("send_message success for message #{inspect(message_index)}")
+        :ok
 
       {:error, reason} ->
         Logger.error(inspect(reason))
     end
 
-    {:noreply, state}
+    {:noreply, Map.put(state, message_index, message_index)}
   end
 
   def handle_info({:register, {guid, item}}, state) do
@@ -78,9 +109,7 @@ defmodule Playwright.Client.Connection do
 
   def handle_info({:process_frame, {:text, json}}, state) do
     {:ok, data} = Jason.decode(json)
-
-    process_json(data, state)
-    {:noreply, state}
+    {:noreply, process_json(data, state)}
   end
 
   # private
@@ -91,9 +120,10 @@ defmodule Playwright.Client.Connection do
   end
 
   # TODO: get the "deep atomize" from Apex, so we're not using string kyeys.
-  # defp process_json(%{"id" => id} = data) do
-  #   Logger.info("processing JSON with a known object, #{inspect(id)}, and data: #{inspect(data)}")
-  # end
+  defp process_json(%{"id" => id} = data, state) do
+    Logger.info("processing JSON of requested object, #{inspect(id)}, and data: #{inspect(data)}")
+    Map.put(state, :messages, Map.put(state.messages, id, data))
+  end
 
   defp process_json(
          %{
@@ -104,13 +134,22 @@ defmodule Playwright.Client.Connection do
          state
        ) do
     apply(channel_owner(params), :new, [state.guid_map[parent_guid], params])
+    state
   end
 
-  defp process_json(%{"method" => "__dispose__"} = data, _state) do
+  defp process_json(%{"method" => "__dispose__"} = data, state) do
     Logger.info("processing JSON to dispose: #{inspect(data)}")
+    state
   end
 
-  defp process_json(data, _state) do
+  defp process_json(data, state) do
     Logger.info("processing JSON of some other kind: #{inspect(data)}")
+    state
+    # TODO:
+    # %{
+    #   "guid" => "browser-context@751332afa7a75f63835b7ae13a4952cc",
+    #   "method" => "page",
+    #   "params" => %{"page" => %{"guid" => "page@4f82dd5ce2a2ccbe68aa73b0d1f0a85d"}}
+    # }
   end
 end

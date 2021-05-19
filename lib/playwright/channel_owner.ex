@@ -14,18 +14,6 @@ defmodule Playwright.ChannelOwner do
 
   defstruct(connection: nil, parent: nil, type: nil, guid: nil, initializer: nil)
 
-  @spec channel_owner(
-          atom | %{:connection => atom | pid | port | {atom, atom}, optional(any) => any},
-          map
-        ) ::
-          %Playwright.ChannelOwner{
-            connection: any,
-            guid: any,
-            initializer: any,
-            parent:
-              atom | %{:connection => atom | pid | port | {atom, atom}, optional(any) => any},
-            type: any
-          }
   def channel_owner(
         parent,
         %{"guid" => guid, "type" => type, "initializer" => initializer} = _args

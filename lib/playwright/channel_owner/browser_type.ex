@@ -6,8 +6,6 @@ defmodule Playwright.ChannelOwner.BrowserType do
   end
 
   def new_context(channel_owner) do
-    Logger.info("creating new BrwoserContext for Browser: #{inspect(channel_owner)}")
-
     message = %{
       guid: channel_owner.guid,
       method: "newContext",
@@ -15,9 +13,8 @@ defmodule Playwright.ChannelOwner.BrowserType do
       metadata: %{stack: [], apiName: "browser.newContext"}
     }
 
-    # TODO: Retrieve the "instance" once it's ready, and send to caller.
-    # Note that, at the moment, we can get things from our GUID map for which
-    # we know the GUID (top-level resources). That's not the case here.
-    Connection.send_message(channel_owner.connection, message)
+    conn = channel_owner.connection
+    %{"result" => %{"context" => context}} = Connection.await_message(conn, message)
+    Connection.get_from_guid_map(conn, context["guid"])
   end
 end
