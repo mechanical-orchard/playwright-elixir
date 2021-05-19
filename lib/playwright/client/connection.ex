@@ -39,6 +39,10 @@ defmodule Playwright.Client.Connection do
     end
   end
 
+  def get(connection, guid) do
+    GenServer.call(connection, {:get, guid})
+  end
+
   def post(connection, message) do
     i = GenServer.call(connection, :increment)
     GenServer.call(connection, {:post, message, i})
@@ -58,6 +62,24 @@ defmodule Playwright.Client.Connection do
     }
 
     {:ok, connection}
+  end
+
+  def handle_call(
+        {:get, guid},
+        from,
+        %{
+          guid_map: guid_map,
+          queries: queries
+        } = state
+      ) do
+    case guid_map[guid] do
+      nil ->
+        queries = Map.put(queries, guid, from)
+        {:noreply, Map.put(state, :queries, queries)}
+
+      result ->
+        {:reply, result, state}
+    end
   end
 
   def handle_call(
@@ -124,10 +146,18 @@ defmodule Playwright.Client.Connection do
            "method" => "__create__",
            "params" => params
          },
-         state
+         %{queries: queries} = state
        ) do
-    apply(channel_owner(params), :new, [state.guid_map[parent_guid], params])
-    state
+    instance = apply(channel_owner(params), :new, [state.guid_map[parent_guid], params])
+
+    case Map.pop(queries, _guid = params["guid"], nil) do
+      {nil, _queries} ->
+        state
+
+      {from, queries} ->
+        GenServer.reply(from, instance)
+        Map.put(state, :queries, queries)
+    end
   end
 
   defp process_json(%{"method" => "__dispose__"} = data, state) do

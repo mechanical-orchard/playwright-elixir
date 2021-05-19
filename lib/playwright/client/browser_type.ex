@@ -25,11 +25,11 @@ defmodule Playwright.Client.BrowserType do
         {Connection, [Transport.WebSocket, [ws_endpoint, opts]]}
       )
 
-    playwright = Connection.get_from_guid_map(connection, "Playwright")
+    playwright = Connection.get(connection, "Playwright")
 
     %{"guid" => guid} = playwright.initializer["preLaunchedBrowser"]
 
-    browser = Connection.get_from_guid_map(connection, guid)
+    browser = Connection.get(connection, guid)
     # OR?... browser = Playwright.ChannelOwner.Playwright.chromium()
 
     {connection, browser}

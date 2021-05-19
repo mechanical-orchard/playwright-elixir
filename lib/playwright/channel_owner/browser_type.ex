@@ -5,14 +5,6 @@ defmodule Playwright.ChannelOwner.BrowserType do
     channel_owner(parent, args)
   end
 
-  @spec new_context(
-          atom
-          | %{
-              :connection => atom | pid | {atom, any} | {:via, atom, any},
-              :guid => any,
-              optional(any) => any
-            }
-        ) :: any
   def new_context(channel_owner) do
     message = %{
       guid: channel_owner.guid,
