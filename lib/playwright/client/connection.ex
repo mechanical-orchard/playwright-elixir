@@ -3,6 +3,7 @@ defmodule Playwright.Client.Connection do
 
   use GenServer
   alias Playwright.ChannelOwner.Root
+  alias Playwright.Client.Transport
 
   # API
   # ---------------------------------------------------------------------------
@@ -30,6 +31,10 @@ defmodule Playwright.Client.Connection do
     end
   end
 
+  def send_message(connection, message) do
+    GenServer.cast(connection, {:send_message, Jason.encode!(message)})
+  end
+
   # @impl
   # ---------------------------------------------------------------------------
 
@@ -53,6 +58,18 @@ defmodule Playwright.Client.Connection do
 
   def handle_call(:show, _, state) do
     {:reply, Map.keys(state.guid_map), state}
+  end
+
+  def handle_cast({:send_message, message}, state) do
+    case Transport.WebSocket.send_message(state.transport, message) do
+      :ok ->
+        Logger.info("send_message success")
+
+      {:error, reason} ->
+        Logger.error(inspect(reason))
+    end
+
+    {:noreply, state}
   end
 
   def handle_info({:register, {guid, item}}, state) do

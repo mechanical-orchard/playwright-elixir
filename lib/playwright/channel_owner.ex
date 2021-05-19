@@ -5,6 +5,7 @@ defmodule Playwright.ChannelOwner do
     quote do
       require Logger
       import Playwright.ChannelOwner
+      alias Playwright.Client.Connection
     end
   end
 
@@ -29,7 +30,7 @@ defmodule Playwright.ChannelOwner do
         parent,
         %{"guid" => guid, "type" => type, "initializer" => initializer} = _args
       ) do
-    Logger.info("here is a new #{inspect(type)}; it's parent is: #{inspect(parent)}")
+    # Logger.info("here is a new #{inspect(type)}; it's parent is: #{inspect(parent)}")
 
     state = %__MODULE__{
       connection: parent.connection,

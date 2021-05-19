@@ -1,18 +1,18 @@
-defmodule Playwright.ChannelOwner.BrowserType do
+defmodule Playwright.ChannelOwner.BrowserContext do
   use Playwright.ChannelOwner
 
   def new(parent, args) do
     channel_owner(parent, args)
   end
 
-  def new_context(channel_owner) do
-    Logger.info("creating new BrwoserContext for Browser: #{inspect(channel_owner)}")
+  def new_page(channel_owner) do
+    Logger.info("creating new Page for BrowserContext: #{inspect(channel_owner)}")
 
     message = %{
       guid: channel_owner.guid,
-      method: "newContext",
+      method: "newPage",
       params: %{sdkLanguage: "javascript", noDefaultViewport: false},
-      metadata: %{stack: [], apiName: "browser.newContext"}
+      metadata: %{stack: [], apiName: "browserContext.newPage"}
     }
 
     # TODO: Retrieve the "instance" once it's ready, and send to caller.

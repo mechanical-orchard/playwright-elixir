@@ -32,7 +32,7 @@ defmodule Playwright.Client.BrowserType do
     browser = Connection.get_from_guid_map(connection, guid)
     # OR?... browser = Playwright.ChannelOwner.Playwright.chromium()
 
-    browser
+    {connection, browser}
   end
 
   # private
