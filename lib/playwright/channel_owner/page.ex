@@ -61,6 +61,12 @@ defmodule Playwright.ChannelOwner.Page do
     channel_owner
   end
 
+  def query_selector(channel_owner, selector) do
+    channel_send(channel_owner, "querySelector", %{
+      selector: selector
+    })
+  end
+
   def text_content(channel_owner, selector) do
     message = %{
       guid: channel_owner.initializer["mainFrame"]["guid"],
@@ -84,5 +90,18 @@ defmodule Playwright.ChannelOwner.Page do
 
     conn = channel_owner.connection
     Connection.post(conn, message)
+  end
+
+  # private
+  # ---------------------------------------------------------------------------
+
+  defp channel_send(channel_owner, method, params) do
+    message = %{
+      guid: channel_owner.initializer["mainFrame"]["guid"],
+      method: method,
+      params: params
+    }
+
+    Connection.post(channel_owner.connection, message)
   end
 end

@@ -39,6 +39,9 @@ defmodule Playwright.Client.Connection do
       {:value, value} ->
         value
 
+      nil ->
+        nil
+
       :ok ->
         :ok
     end
@@ -131,6 +134,7 @@ defmodule Playwright.Client.Connection do
 
   # TODO:
   # - Probably add "type" to the result tuple as well.
+  # - Check other implementations to double-check that the `[] -> nil` is appropriate.
   defp parse_response(%{"result" => result}) do
     case Map.to_list(result) do
       [{"value", value}] ->
@@ -138,6 +142,9 @@ defmodule Playwright.Client.Connection do
 
       [{_key, %{"guid" => guid}}] ->
         {:guid, guid}
+
+      [] ->
+        nil
     end
   end
 
