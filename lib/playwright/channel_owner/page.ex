@@ -33,6 +33,7 @@ defmodule Playwright.ChannelOwner.Page do
 
   def fill(channel_owner, selector, value) do
     message = %{
+      guid: channel_owner.initializer["mainFrame"]["guid"],
       method: "fill",
       params: %{
         selector: selector,
