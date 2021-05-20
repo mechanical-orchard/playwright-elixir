@@ -32,18 +32,24 @@ defmodule Playwright.Client.Connection do
   def post(connection, message) do
     i = GenServer.call(connection, :increment)
 
-    case GenServer.call(connection, {:post, message, i}) |> parse_response do
-      {:guid, guid} ->
-        get(connection, guid)
+    try do
+      case GenServer.call(connection, {:post, message, i}) |> parse_response do
+        {:guid, guid} ->
+          get(connection, guid)
 
-      {:value, value} ->
-        value
+        {:value, value} ->
+          value
 
-      nil ->
-        nil
+        nil ->
+          nil
 
-      :ok ->
-        :ok
+        :ok ->
+          :ok
+      end
+    catch
+      :exit, value ->
+        Logger.error("Connection.post timed out with #{inspect(value)}")
+        :error
     end
   end
 

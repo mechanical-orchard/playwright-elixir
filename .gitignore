@@ -33,3 +33,5 @@ playwright_elixir-*.tar
 
 # Temporary files for e.g. tests
 /tmp
+
+wip_test.exs

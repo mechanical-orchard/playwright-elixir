@@ -43,7 +43,6 @@ defmodule Playwright.Test.Functional.PageTest do
       Playwright.Client.Connection.has(connection, page.guid)
       |> assert()
 
-      pause_for_effect()
       page |> Page.close()
 
       Playwright.Client.Connection.has(connection, page.guid)
@@ -60,7 +59,7 @@ defmodule Playwright.Test.Functional.PageTest do
       page |> Page.click("text=Get started")
 
       # FIXME!
-      pause_for_effect(1)
+      wait(1)
 
       text = page |> Page.title()
       assert text == "Getting Started | Playwright"
@@ -80,11 +79,27 @@ defmodule Playwright.Test.Functional.PageTest do
       page |> Page.fill(".navbar__search-input", "text content")
 
       # FIXME!
-      pause_for_effect(1)
+      wait(1)
 
       page
       |> Page.query_selector("css=span[role='listbox']")
       |> assert()
+    end
+
+    test ".press/2", %{browser: browser} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+        |> Page.goto("https://playwright.dev")
+
+      # FIXME! (see note at `Page.press/3`)
+      page
+      |> Page.fill(".navbar__search-input", "text content")
+      |> Page.press(".navbar__search-input", "Enter")
+      |> Page.press(".navbar__search-input", "Enter")
+
+      assert Page.text_content(page, "css=header > h1") == "Assertions"
     end
 
     test ".title/1", %{browser: browser} do
@@ -94,14 +109,12 @@ defmodule Playwright.Test.Functional.PageTest do
         |> new_page()
         |> Page.goto("https://playwright.dev")
 
-      pause_for_effect()
-
       text = page |> Page.title()
       assert String.match?(text, ~r/Playwright$/)
     end
   end
 
-  defp pause_for_effect(seconds \\ 0) do
+  defp wait(seconds) do
     :timer.sleep(seconds * 1000)
   end
 end

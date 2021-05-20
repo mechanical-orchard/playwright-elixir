@@ -62,6 +62,18 @@ defmodule Playwright.ChannelOwner.Page do
     channel_owner
   end
 
+  # NOTE:
+  # This one is currently timing out on occasion. Since we return the
+  # ChannelOwner, the current workaround is to `press` again.
+  def press(channel_owner, selector, key) do
+    channel_send(channel_owner, "press", %{
+      selector: selector,
+      key: key
+    })
+
+    channel_owner
+  end
+
   def query_selector(channel_owner, selector) do
     channel_send(channel_owner, "querySelector", %{
       selector: selector
