@@ -5,6 +5,23 @@ defmodule Playwright.ChannelOwner.Page do
     channel_owner(parent, args)
   end
 
+  def click(channel_owner, selector) do
+    message = %{
+      guid: channel_owner.initializer["mainFrame"]["guid"],
+      method: "click",
+      params: %{
+        selector: selector
+      },
+      metadata: %{
+        apiName: "page.click"
+      }
+    }
+
+    conn = channel_owner.connection
+    Connection.post(conn, message)
+    channel_owner
+  end
+
   def close(channel_owner) do
     message = %{
       guid: channel_owner.guid,

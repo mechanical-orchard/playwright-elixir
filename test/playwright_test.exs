@@ -3,8 +3,12 @@ defmodule PlaywrightTest do
   use PlaywrightTest.Case
   doctest Playwright
 
+  setup_all do
+    {:ok, _} = Playwright.start()
+    :ok
+  end
+
   setup do
-    Playwright.start()
     {connection, browser} = connect()
     [browser: browser, connection: connection]
   end
@@ -45,23 +49,37 @@ defmodule PlaywrightTest do
       |> refute()
     end
 
+    test ".click", %{browser: browser} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+        |> Page.goto("https://playwright.dev")
+
+      page |> Page.click("text=Get started")
+
+      pause_for_effect()
+
+      text = page |> Page.title()
+      assert text == "Getting Started | Playwright"
+    end
+
+    @tag :skip
     test ".title", %{browser: browser} do
       page =
         browser
         |> new_context()
         |> new_page()
-
-      text =
-        page
         |> Page.goto("https://playwright.dev")
-        |> Page.title()
 
       pause_for_effect()
+
+      text = page |> Page.title()
       assert String.match?(text, ~r/Playwright$/)
     end
   end
 
   defp pause_for_effect() do
-    # :timer.sleep(2000)
+    :timer.sleep(2000)
   end
 end
