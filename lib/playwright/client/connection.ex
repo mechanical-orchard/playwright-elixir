@@ -210,6 +210,10 @@ defmodule Playwright.Client.Connection do
   #   "method" => "close",
   #   "params" => %{}
   # }
+
+  # %{"guid" => "frame@df2dab614bea90efdcbb9e91f022d631", "method" => "navigated", "params" => %{"name" => "", "newDocument" => %{"request" => %{"guid" => "request@3d881c11e21b87c30855c4742951e4bd"}}, "url" => "https://www.google.com/"}}
+  # %{"guid" => "page@513a93931043b049a507f0885b56d0dd", "method" => "requestFinished", "params" => %{"request" => %{"guid" => "request@3d881c11e21b87c30855c4742951e4bd"}, "responseEndTiming" => 184.697}}
+
   defp process_json(_data, state) do
     # Logger.debug("processing JSON of some other kind: #{inspect(data)}")
     state

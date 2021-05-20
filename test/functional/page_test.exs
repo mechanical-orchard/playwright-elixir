@@ -14,8 +14,7 @@ defmodule Playwright.Test.Functional.PageTest do
   end
 
   describe "Page" do
-    # @tag :skip
-    test ".close", %{browser: browser, connection: connection} do
+    test ".close/1", %{browser: browser, connection: connection} do
       page =
         browser
         |> new_context()
@@ -31,8 +30,7 @@ defmodule Playwright.Test.Functional.PageTest do
       |> refute()
     end
 
-    # @tag :skip
-    test ".click", %{browser: browser} do
+    test ".click/2", %{browser: browser} do
       page =
         browser
         |> new_context()
@@ -47,8 +45,26 @@ defmodule Playwright.Test.Functional.PageTest do
       assert text == "Getting Started | Playwright"
     end
 
-    # @tag :skip
-    test ".title", %{browser: browser} do
+    # NOTE: This one is not yet working. The equivalent test works in
+    # TypeScript, and `.click` works to focus the field. So, it must be
+    # time to handle some more websocket messages/events.
+    @tag :skip
+    test ".fill/3", %{browser: browser} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+        |> Page.goto("https://playwright.dev")
+
+      page |> Page.click(".navbar__search-input")
+      pause_for_effect()
+      page |> Page.fill(".navbar__search-input", "some text")
+      pause_for_effect()
+
+      # TODO: "press <enter>"
+    end
+
+    test ".title/1", %{browser: browser} do
       page =
         browser
         |> new_context()
@@ -62,7 +78,7 @@ defmodule Playwright.Test.Functional.PageTest do
     end
   end
 
-  defp pause_for_effect() do
-    :timer.sleep(2000)
+  defp pause_for_effect(seconds \\ 2) do
+    :timer.sleep(seconds * 1000)
   end
 end

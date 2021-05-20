@@ -35,6 +35,25 @@ defmodule Playwright.ChannelOwner.Page do
     channel_owner
   end
 
+  # NOTE: This one is not yet working.
+  def fill(channel_owner, selector, value) do
+    message = %{
+      guid: channel_owner.guid,
+      method: "fill",
+      params: %{
+        selector: selector,
+        value: value
+      },
+      metadata: %{
+        apiName: "page.fill"
+      }
+    }
+
+    conn = channel_owner.connection
+    Connection.post(conn, message)
+    channel_owner
+  end
+
   def goto(channel_owner, url) do
     message = %{
       guid: channel_owner.initializer["mainFrame"]["guid"],

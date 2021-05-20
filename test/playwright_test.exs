@@ -13,7 +13,6 @@ defmodule Playwright.Test do
     [browser: browser, connection: connection]
   end
 
-  # @tag :skip
   describe "Usage" do
     test "looks something like...", %{browser: browser} do
       page =
