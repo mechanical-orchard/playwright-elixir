@@ -143,6 +143,9 @@ defmodule Playwright.Client.Connection do
   # - Check other implementations to double-check that the `[] -> nil` is appropriate.
   defp parse_response(%{"result" => result}) do
     case Map.to_list(result) do
+      [{"elements", value}] ->
+        {:value, value}
+
       [{"value", value}] ->
         {:value, value}
 

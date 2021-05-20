@@ -34,6 +34,20 @@ defmodule Playwright.Test.Functional.PageTest do
       |> refute()
     end
 
+    test ".query_selector_all/2", %{browser: browser} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+        |> Page.goto("https://playwright.dev")
+
+      elements = Page.query_selector_all(page, "css=div")
+      assert length(elements) > 10
+
+      elements = Page.query_selector_all(page, "css=non-existent")
+      assert length(elements) == 0
+    end
+
     test ".close/1", %{browser: browser, connection: connection} do
       page =
         browser

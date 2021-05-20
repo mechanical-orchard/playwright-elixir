@@ -80,6 +80,12 @@ defmodule Playwright.ChannelOwner.Page do
     })
   end
 
+  def query_selector_all(channel_owner, selector) do
+    channel_send(channel_owner, "querySelectorAll", %{
+      selector: selector
+    })
+  end
+
   def text_content(channel_owner, selector) do
     message = %{
       guid: channel_owner.initializer["mainFrame"]["guid"],
