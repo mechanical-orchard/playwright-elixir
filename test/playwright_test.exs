@@ -14,6 +14,7 @@ defmodule Playwright.Test do
   end
 
   describe "Usage" do
+    @tag :skip
     test "looks something like...", %{browser: browser} do
       page =
         browser

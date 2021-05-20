@@ -1,24 +1,20 @@
 defmodule Playwright.ChannelOwner.Page do
   use Playwright.ChannelOwner
 
+  # TODO:
+  # - Implement `Channel.send_message`
+  #   This is "sort of" underway now, as `send_message` in here
+  # - Move all of the "mainFrame" implementations to `Frame`
+
   def new(parent, args) do
     channel_owner(parent, args)
   end
 
   def click(channel_owner, selector) do
-    message = %{
-      guid: channel_owner.initializer["mainFrame"]["guid"],
-      method: "click",
-      params: %{
-        selector: selector
-      },
-      metadata: %{
-        apiName: "page.click"
-      }
-    }
+    channel_send(channel_owner, "click", %{
+      selector: selector
+    })
 
-    conn = channel_owner.connection
-    Connection.post(conn, message)
     channel_owner
   end
 
@@ -35,10 +31,8 @@ defmodule Playwright.ChannelOwner.Page do
     channel_owner
   end
 
-  # NOTE: This one is not yet working.
   def fill(channel_owner, selector, value) do
     message = %{
-      guid: channel_owner.guid,
       method: "fill",
       params: %{
         selector: selector,

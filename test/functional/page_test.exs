@@ -10,10 +10,41 @@ defmodule Playwright.Test.Functional.PageTest do
 
   setup do
     {connection, browser} = connect()
-    [browser: browser, connection: connection]
+
+    [
+      connection: connection,
+      browser: browser
+      # page: browser |> new_context() |> new_page()
+    ]
   end
 
   describe "Page" do
+    # @tag :skip
+    # test ".query_selector/2", %{page: page} do
+    #   page
+    #   |> Page.query_selector("css=main")
+    #   |> assert()
+
+    #   page
+    #   |> Page.query_selector("css=non-existent")
+    #   |> refute()
+    # end
+
+    # test ".q/2", %{page: page} do
+
+    # end
+
+    # test ".$/2", %{page: page} do
+    #   page
+    #   |> Page."$"("css=main")
+    #   |> assert()
+
+    #   page
+    #   |> Page."$"("css=non-existent")
+    #   |> refute()
+    # end
+
+    @tag :skip
     test ".close/1", %{browser: browser, connection: connection} do
       page =
         browser
@@ -30,6 +61,7 @@ defmodule Playwright.Test.Functional.PageTest do
       |> refute()
     end
 
+    # @tag :skip
     test ".click/2", %{browser: browser} do
       page =
         browser
@@ -58,12 +90,24 @@ defmodule Playwright.Test.Functional.PageTest do
 
       page |> Page.click(".navbar__search-input")
       pause_for_effect()
-      page |> Page.fill(".navbar__search-input", "some text")
+      page |> Page.fill(".navbar__search-input", "text content")
       pause_for_effect()
 
       # TODO: "press <enter>"
     end
 
+    # @tag :skip
+    # test ".press/2", %{page: page} do
+    #   page
+    #   |> Page.query_selector("css=main")
+    #   |> assert()
+
+    #   page
+    #   |> Page.query_selector("css=non-existent")
+    #   |> refute()
+    # end
+
+    @tag :skip
     test ".title/1", %{browser: browser} do
       page =
         browser
