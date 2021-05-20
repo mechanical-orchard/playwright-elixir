@@ -2,6 +2,7 @@ defmodule PlaywrightTest.Case do
   defmacro __using__(_) do
     quote do
       import Playwright
+      alias Playwright.ChannelOwner.Page
     end
   end
 

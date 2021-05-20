@@ -25,6 +25,10 @@ defmodule Playwright.Client.Connection do
     GenServer.call(connection, {:get, guid})
   end
 
+  def has(connection, guid) do
+    GenServer.call(connection, {:has, guid})
+  end
+
   def post(connection, message) do
     i = GenServer.call(connection, :increment)
 
@@ -34,6 +38,9 @@ defmodule Playwright.Client.Connection do
 
       {:value, value} ->
         value
+
+      :ok ->
+        :ok
     end
   end
 
@@ -68,6 +75,10 @@ defmodule Playwright.Client.Connection do
       result ->
         {:reply, result, state}
     end
+  end
+
+  def handle_call({:has, guid}, _, %{guid_map: guid_map} = state) do
+    {:reply, guid_map[guid] != nil, state}
   end
 
   def handle_call(
@@ -130,6 +141,10 @@ defmodule Playwright.Client.Connection do
     end
   end
 
+  defp parse_response(%{"id" => _id}) do
+    :ok
+  end
+
   # TODO:
   # - Get the "deep atomize" from Apex, so we're not using string kyeys.
   defp process_json(%{"id" => id} = data, %{queries: queries} = state) do
@@ -150,6 +165,7 @@ defmodule Playwright.Client.Connection do
          %{queries: queries} = state
        ) do
     instance = apply(channel_owner(params), :new, [state.guid_map[parent_guid], params])
+    # Logger.debug("processing JSON to create: #{inspect(parent_guid)}; #{inspect(params)}")
 
     case Map.pop(queries, _guid = params["guid"], nil) do
       {nil, _queries} ->
@@ -161,18 +177,39 @@ defmodule Playwright.Client.Connection do
     end
   end
 
-  defp process_json(%{"method" => "__dispose__"} = _data, state) do
+  # TODO:
+  #
+  # %{
+  #   "guid" => "page@fb4b365e072903e38c52b75d3f553519",
+  #   "method" => "__dispose__",
+  #   "params" => %{}
+  # }
+  defp process_json(%{"method" => "__dispose__"} = data, %{guid_map: guid_map} = state) do
     # Logger.debug("processing JSON to dispose: #{inspect(data)}")
-    state
+
+    {_disposed, guid_map} = Map.pop(guid_map, data["guid"])
+    Map.put(state, :guid_map, guid_map)
   end
 
   # TODO:
-  # - These tend to look like...
-  #   %{
-  #     "guid" => "browser-context@751332afa7a75f63835b7ae13a4952cc",
-  #     "method" => "page",
-  #     "params" => %{"page" => %{"guid" => "page@4f82dd5ce2a2ccbe68aa73b0d1f0a85d"}}
-  #   }
+  #
+  # %{
+  #   "guid" => "browser-context@751332afa7a75f63835b7ae13a4952cc",
+  #   "method" => "page",
+  #   "params" => %{"page" => %{"guid" => "page@4f82dd5ce2a2ccbe68aa73b0d1f0a85d"}}
+  # }
+  #
+  # %{
+  #   "guid" => "frame@730ea5a5d470d1264eda6aa5defb067a",
+  #   "method" => "loadstate",
+  #   "params" => %{"add" => "networkidle"}
+  # }
+  #
+  # %{
+  #   "guid" => "page@fb4b365e072903e38c52b75d3f553519",
+  #   "method" => "close",
+  #   "params" => %{}
+  # }
   defp process_json(_data, state) do
     # Logger.debug("processing JSON of some other kind: #{inspect(data)}")
     state

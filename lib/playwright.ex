@@ -26,14 +26,6 @@ defmodule Playwright do
     Playwright.ChannelOwner.BrowserContext.new_page(context)
   end
 
-  def goto(page, url) do
-    Playwright.ChannelOwner.Page.goto(page, url)
-  end
-
-  def text_content(page, selector) do
-    Playwright.ChannelOwner.Page.text_content(page, selector)
-  end
-
   def show(conn) do
     GenServer.call(conn, :show)
   end

@@ -5,7 +5,8 @@ defmodule PlaywrightTest do
 
   setup do
     Playwright.start()
-    [browser: browser()]
+    {connection, browser} = connect()
+    [browser: browser, connection: connection]
   end
 
   describe "Usage" do
@@ -17,10 +18,33 @@ defmodule PlaywrightTest do
 
       text =
         page
-        |> goto("https://playwright.dev")
-        |> text_content(".navbar__title")
+        |> Page.goto("https://playwright.dev")
+        |> Page.text_content(".navbar__title")
 
+      pause_for_effect()
       assert text == "Playwright"
     end
+  end
+
+  describe "Page" do
+    test ".close", %{browser: browser, connection: connection} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+
+      Playwright.Client.Connection.has(connection, page.guid)
+      |> assert()
+
+      pause_for_effect()
+      page |> Page.close()
+
+      Playwright.Client.Connection.has(connection, page.guid)
+      |> refute()
+    end
+  end
+
+  defp pause_for_effect() do
+    # :timer.sleep(2000)
   end
 end
