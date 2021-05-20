@@ -3,18 +3,24 @@ defmodule PlaywrightTest do
   use PlaywrightTest.Case
   doctest Playwright
 
-  describe "Usage" do
-    test "looks something like..." do
-      Playwright.start()
+  setup do
+    Playwright.start()
+    [browser: browser()]
+  end
 
-      content =
-        browser()
-        |> context()
-        |> page()
+  describe "Usage" do
+    test "looks something like...", %{browser: browser} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+
+      text =
+        page
         |> goto("https://playwright.dev")
         |> text_content(".navbar__title")
 
-      assert content == "Playwright"
+      assert text == "Playwright"
     end
   end
 end
