@@ -3,7 +3,6 @@ defmodule Playwright.Client.Connection do
 
   use GenServer
   alias Playwright.ChannelOwner.Root
-  # alias Playwright.Client.Connection
   alias Playwright.Client.Transport
 
   # API
@@ -29,11 +28,13 @@ defmodule Playwright.Client.Connection do
   def post(connection, message) do
     i = GenServer.call(connection, :increment)
 
-    result =
-      GenServer.call(connection, {:post, message, i})
-      |> parse_guid
+    case GenServer.call(connection, {:post, message, i}) |> parse_response do
+      {:guid, guid} ->
+        get(connection, guid)
 
-    get(connection, result)
+      {:value, value} ->
+        value
+    end
   end
 
   # @impl
@@ -41,7 +42,6 @@ defmodule Playwright.Client.Connection do
 
   def init([transport, [ws_endpoint, _opts]]) do
     pid = self()
-    Logger.info("Connection.init w/ self: #{inspect(pid)}")
 
     # WARN: this is potentially racy: the websocket must be opened *after* `root` is created.
     connection = %__MODULE__{
@@ -118,12 +118,20 @@ defmodule Playwright.Client.Connection do
     String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
   end
 
-  defp parse_guid(%{"result" => result}) do
-    {thing, _} = List.pop_at(Map.values(result), 0)
-    thing["guid"]
+  # TODO:
+  # - Probably add "type" to the result tuple as well.
+  defp parse_response(%{"result" => result}) do
+    case Map.to_list(result) do
+      [{"value", value}] ->
+        {:value, value}
+
+      [{_key, %{"guid" => guid}}] ->
+        {:guid, guid}
+    end
   end
 
-  # TODO: get the "deep atomize" from Apex, so we're not using string kyeys.
+  # TODO:
+  # - Get the "deep atomize" from Apex, so we're not using string kyeys.
   defp process_json(%{"id" => id} = data, %{queries: queries} = state) do
     # Logger.info("processing JSON of requested object, #{inspect(id)}, and data: #{inspect(data)}")
 
@@ -153,19 +161,20 @@ defmodule Playwright.Client.Connection do
     end
   end
 
-  defp process_json(%{"method" => "__dispose__"} = data, state) do
-    Logger.info("processing JSON to dispose: #{inspect(data)}")
+  defp process_json(%{"method" => "__dispose__"} = _data, state) do
+    # Logger.debug("processing JSON to dispose: #{inspect(data)}")
     state
   end
 
-  defp process_json(data, state) do
-    Logger.info("processing JSON of some other kind: #{inspect(data)}")
+  # TODO:
+  # - These tend to look like...
+  #   %{
+  #     "guid" => "browser-context@751332afa7a75f63835b7ae13a4952cc",
+  #     "method" => "page",
+  #     "params" => %{"page" => %{"guid" => "page@4f82dd5ce2a2ccbe68aa73b0d1f0a85d"}}
+  #   }
+  defp process_json(_data, state) do
+    # Logger.debug("processing JSON of some other kind: #{inspect(data)}")
     state
-    # TODO:
-    # %{
-    #   "guid" => "browser-context@751332afa7a75f63835b7ae13a4952cc",
-    #   "method" => "page",
-    #   "params" => %{"page" => %{"guid" => "page@4f82dd5ce2a2ccbe68aa73b0d1f0a85d"}}
-    # }
   end
 end

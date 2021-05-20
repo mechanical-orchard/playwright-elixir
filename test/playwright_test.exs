@@ -4,7 +4,6 @@ defmodule PlaywrightTest do
   doctest Playwright
 
   describe "Usage" do
-    @tag :skip
     test "looks something like..." do
       Playwright.start()
 

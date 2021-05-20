@@ -5,8 +5,6 @@ defmodule Playwright.ChannelOwner.Root do
   defstruct(connection: nil, parent: nil, objects: %{}, type: nil, guid: nil, initializer: nil)
 
   def new(connection) do
-    Logger.info("Root! (connection: #{inspect(connection)})")
-
     state = %__MODULE__{
       connection: connection,
       parent: connection,

@@ -15,5 +15,18 @@ defmodule Playwright.ChannelOwner.Page do
 
     conn = channel_owner.connection
     Connection.post(conn, message)
+    channel_owner
+  end
+
+  def text_content(channel_owner, selector) do
+    message = %{
+      guid: channel_owner.initializer["mainFrame"]["guid"],
+      method: "textContent",
+      params: %{selector: selector},
+      metadata: %{stack: [], apiName: "page.textContent"}
+    }
+
+    conn = channel_owner.connection
+    Connection.post(conn, message)
   end
 end

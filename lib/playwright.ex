@@ -30,8 +30,8 @@ defmodule Playwright do
     Playwright.ChannelOwner.Page.goto(page, url)
   end
 
-  def text_content(_page, _selector) do
-    ""
+  def text_content(page, selector) do
+    Playwright.ChannelOwner.Page.text_content(page, selector)
   end
 
   def show(conn) do

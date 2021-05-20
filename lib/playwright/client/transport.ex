@@ -10,15 +10,12 @@ defmodule Playwright.Client.Transport do
     defstruct(connection: nil)
 
     def start_link([ws_endpoint, connection]) do
-      Logger.info("Transport.start_link w/ connection: #{inspect(connection)}")
-
       WebSockex.start_link(ws_endpoint, __MODULE__, %__MODULE__{connection: connection}, [
         {:socket_recv_timeout, 120_000}
       ])
     end
 
     def start_link!(args) do
-      Logger.info("start_link! with args #{inspect(args)}")
       {:ok, pid} = start_link(args)
       pid
     end
