@@ -98,8 +98,20 @@ defmodule Playwright.Test.Functional.PageTest do
       |> Page.fill(".navbar__search-input", "text content")
       |> Page.press(".navbar__search-input", "Enter")
       |> Page.press(".navbar__search-input", "Enter")
+      |> Page.press(".navbar__search-input", "Enter")
 
       assert Page.text_content(page, "css=header > h1") == "Assertions"
+    end
+
+    test ".text_content/2", %{browser: browser} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+        |> Page.goto("https://playwright.dev")
+
+      assert Page.text_content(page, "h1.hero__title") ==
+               "Playwright enables reliable end-to-end testing for modern web apps."
     end
 
     test ".title/1", %{browser: browser} do
