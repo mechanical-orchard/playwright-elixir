@@ -42,4 +42,17 @@ defmodule Playwright.ChannelOwner.Page do
     conn = channel_owner.connection
     Connection.post(conn, message)
   end
+
+  def title(channel_owner) do
+    message = %{
+      guid: channel_owner.initializer["mainFrame"]["guid"],
+      method: "title",
+      metadata: %{
+        apiName: "page.title"
+      }
+    }
+
+    conn = channel_owner.connection
+    Connection.post(conn, message)
+  end
 end
