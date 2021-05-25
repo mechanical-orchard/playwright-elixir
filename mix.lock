@@ -1,4 +1,9 @@
 %{
+  "erlexec": {:hex, :erlexec, "1.18.11", "46cc6aa4ac94f0ff39611f28400b48fa794bbbdec8722202155374981da25682", [:rebar3], [], "hexpm", "2ba928f1bdf74e098c413465f109c10b5d1e1359568eb7bf4c99f91ac983b8ff"},
+  "exexec": {:hex, :exexec, "0.2.0", "a6ffc48cba3ac9420891b847e4dc7120692fb8c08c9e82220ebddc0bb8d96103", [:mix], [{:erlexec, "~> 1.10", [hex: :erlexec, repo: "hexpm", optional: false]}], "hexpm", "312cd1c9befba9e078e57f3541e4f4257eabda6eb9c348154fe899d6ac633299"},
+  "iconv": {:hex, :iconv, "1.0.12", "b0a7ec542ee0319848a53410c72380f628a39f7b694c60cbb6e02d9eb4322a3a", [:rebar3], [{:p1_utils, "1.0.21", [hex: :p1_utils, repo: "hexpm", optional: false]}], "hexpm", "44d1185eb7f80da439c4d0664387d847844ff8d212387b45529309015b77e38f"},
   "jason": {:hex, :jason, "1.2.2", "ba43e3f2709fd1aa1dce90aaabfd039d000469c05c56f0b8e31978e03fa39052", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "18a228f5f0058ee183f29f9eae0805c6e59d61c3b006760668d8d18ff0d12179"},
+  "p1_utils": {:hex, :p1_utils, "1.0.21", "9d6244bbd4af881e85af71655e8be5720b5b965b1bdd51a35c7871fd4142af9a", [:rebar3], [], "hexpm", "4b9b90e5863f5fed17f06427ba99b2dc37b216e4dd1308891f0903745e2fccbd"},
+  "porcelain": {:hex, :porcelain, "2.0.3", "2d77b17d1f21fed875b8c5ecba72a01533db2013bd2e5e62c6d286c029150fdc", [:mix], [], "hexpm", "dc996ab8fadbc09912c787c7ab8673065e50ea1a6245177b0c24569013d23620"},
   "websockex": {:hex, :websockex, "0.4.3", "92b7905769c79c6480c02daacaca2ddd49de936d912976a4d3c923723b647bf0", [:mix], [], "hexpm", "95f2e7072b85a3a4cc385602d42115b73ce0b74a9121d0d6dbbf557645ac53e4"},
 }

@@ -9,12 +9,12 @@ defmodule Playwright.Test do
   end
 
   setup do
-    {connection, browser} = connect()
+    # {connection, browser} = Playwright.connect("ws://localhost:3000/playwright")
+    {connection, browser} = Playwright.launch()
     [browser: browser, connection: connection]
   end
 
   describe "Usage" do
-    @tag :skip
     test "looks something like...", %{browser: browser} do
       page =
         browser

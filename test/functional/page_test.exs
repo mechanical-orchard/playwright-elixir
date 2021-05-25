@@ -9,7 +9,8 @@ defmodule Playwright.Test.Functional.PageTest do
   end
 
   setup do
-    {connection, browser} = connect()
+    # {connection, browser} = Playwright.connect("ws://localhost:3000/playwright")
+    {connection, browser} = Playwright.launch()
 
     [
       connection: connection,

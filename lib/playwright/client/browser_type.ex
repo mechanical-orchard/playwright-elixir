@@ -18,19 +18,34 @@ defmodule Playwright.Client.BrowserType do
     DynamicSupervisor.init(strategy: :one_for_one)
   end
 
-  def connect(ws_endpoint, opts \\ []) do
+  def connect(ws_endpoint) do
+    Logger.info("Connecting to #{inspect(ws_endpoint)}")
+
     {:ok, connection} =
       DynamicSupervisor.start_child(
         __MODULE__,
-        {Connection, [Transport.WebSocket, [ws_endpoint, opts]]}
+        {Connection, [Transport.WebSocket, [ws_endpoint]]}
       )
 
     playwright = Connection.get(connection, "Playwright")
-
     %{"guid" => guid} = playwright.initializer["preLaunchedBrowser"]
-
     browser = Connection.get(connection, guid)
     # OR?... browser = Playwright.ChannelOwner.Playwright.chromium()
+
+    {connection, browser}
+  end
+
+  def launch(driver_path) do
+    {:ok, connection} =
+      DynamicSupervisor.start_child(
+        __MODULE__,
+        {Connection, [Transport.Driver, [driver_path]]}
+      )
+
+    playwright = Connection.get(connection, "Playwright")
+    %{"guid" => guid} = playwright.initializer["chromium"]
+    chromium = Connection.get(connection, guid)
+    browser = Playwright.ChannelOwner.BrowserType.launch(chromium)
 
     {connection, browser}
   end

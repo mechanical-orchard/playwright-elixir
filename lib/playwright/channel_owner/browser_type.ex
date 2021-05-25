@@ -5,6 +5,18 @@ defmodule Playwright.ChannelOwner.BrowserType do
     channel_owner(parent, args)
   end
 
+  def launch(channel_owner) do
+    message = %{
+      guid: channel_owner.guid,
+      method: "launch",
+      params: %{ignoreAllDefaultArgs: false, headless: false},
+      metadata: %{stack: [], apiName: "browserType.launch"}
+    }
+
+    conn = channel_owner.connection
+    Connection.post(conn, message)
+  end
+
   def new_context(channel_owner) do
     message = %{
       guid: channel_owner.guid,

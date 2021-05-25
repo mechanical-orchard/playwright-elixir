@@ -5,17 +5,17 @@ defmodule Playwright do
   # ---------------------------------------------------------------------------
 
   def start() do
-    {:ok, _bt} = BrowserType.start_link([])
+    {:ok, _} = BrowserType.start_link([])
   end
 
-  def connect() do
-    {connection, browser} = BrowserType.connect("ws://localhost:3000/playwright")
+  def launch() do
+    {connection, browser} = BrowserType.launch("assets/node_modules/playwright/lib/cli/cli.js")
     {connection, browser}
   end
 
-  def browser() do
-    {_, browser} = connect()
-    browser
+  def connect(ws_endpoint) do
+    {connection, browser} = BrowserType.connect(ws_endpoint)
+    {connection, browser}
   end
 
   def new_context(browser) do
