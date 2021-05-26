@@ -5,17 +5,19 @@ defmodule Playwright.Test do
 
   setup_all do
     {:ok, _} = Playwright.start()
-    :ok
-  end
+    {:ok, _} = Playwright.Test.Support.AssetsServer.start(nil, nil)
 
-  setup do
     # {connection, browser} = Playwright.connect("ws://localhost:3000/playwright")
-    {connection, browser} = Playwright.launch()
-    [browser: browser, connection: connection]
+    {connection, browser} = launch()
+
+    [
+      connection: connection,
+      browser: browser
+    ]
   end
 
   describe "Usage" do
-    test "looks something like...", %{browser: browser} do
+    test "against a public domain", %{browser: browser} do
       page =
         browser
         |> new_context()
@@ -27,6 +29,18 @@ defmodule Playwright.Test do
         |> Page.text_content(".navbar__title")
 
       assert text == "Playwright"
+    end
+
+    test "against the local test assets server", %{browser: browser} do
+      page =
+        browser
+        |> new_context()
+        |> new_page()
+        |> Page.goto("http://localhost:3002/dom.html")
+
+      page
+      |> Page.query_selector("css=div#outer")
+      |> assert()
     end
   end
 end
