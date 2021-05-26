@@ -5,7 +5,7 @@ defmodule Playwright.MixProject do
     [
       app: :playwright_elixir,
       version: "0.1.0",
-      elixir: "~> 1.11",
+      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -23,6 +23,8 @@ defmodule Playwright.MixProject do
   defp deps do
     [
       {:jason, "~> 1.2"},
+      {:plug, "~> 1.11.1"},
+      {:plug_cowboy, "~> 2.5.0"},
       {:websockex, "~> 0.4.3"}
     ]
   end
