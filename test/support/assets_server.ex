@@ -1,6 +1,6 @@
-defmodule Playwright.Test.Helpers.AssetsServer do
+defmodule Playwright.Test.Support.AssetsServer do
   use Application
-  alias Playwright.Test.Helpers.AssetsServer
+  alias Playwright.Test.Support.AssetsServer
 
   # @impl
   # ----------------------------------------------------------------------------
