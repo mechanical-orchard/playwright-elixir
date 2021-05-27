@@ -28,6 +28,10 @@ defmodule Playwright.Client.Connection do
     GenServer.call(connection, {:get, guid})
   end
 
+  def get_message(connection, id) do
+    GenServer.call(connection, {:get_message, id})
+  end
+
   def has(connection, guid) do
     GenServer.call(connection, {:has, guid})
   end
@@ -37,18 +41,19 @@ defmodule Playwright.Client.Connection do
 
     try do
       case GenServer.call(connection, {:post, message, i}) |> parse_response do
-        # {:error, error} ->
-        #   Logger.error(error)
-        #   :ok
-
-        {:guid, guid} ->
+        {:response_with_object, {:message, id, :key, key}} ->
+          %{"result" => %{^key => %{"guid" => guid}}} = get_message(connection, id)
           get(connection, guid)
 
-        {:value, value} ->
+        {:response_with_value, value} ->
           value
+
+        {:empty_response, {:message, id}} ->
+          get_message(connection, id)
 
         nil ->
           # TODO: ???
+          Logger.error("FIXME: should not have nil here")
           nil
 
         :ok ->
@@ -69,10 +74,6 @@ defmodule Playwright.Client.Connection do
 
   def init([transport_module, args]) do
     pid = self()
-
-    # Logger.info(
-    #   "Initializing Connection with #{inspect(transport_module)}, args: #{inspect(args)}"
-    # )
 
     # WARN:
     # This is potentially racy: the transport connection must be made
@@ -108,6 +109,13 @@ defmodule Playwright.Client.Connection do
 
       result ->
         {:reply, result, state}
+    end
+  end
+
+  def handle_call({:get_message, id}, _from, %{messages: messages} = state) do
+    case Map.pop(messages, id) do
+      {result, messages} ->
+        {:reply, result, Map.put(state, :messages, messages)}
     end
   end
 
@@ -165,45 +173,47 @@ defmodule Playwright.Client.Connection do
 
   # TODO:
   # - Probably add "type" to the result tuple as well.
-  defp parse_response(%{"result" => result}) do
+  # - And send message id
+  defp parse_response(%{"id" => id, "result" => result}) do
     case Map.to_list(result) do
       [{"elements", value}] ->
-        {:value, value}
+        {:response_with_value, value}
 
       [{"value", value}] ->
-        {:value, value}
+        {:response_with_value, value}
 
-      [{_key, %{"guid" => guid}}] ->
-        {:guid, guid}
+      [{key, %{"guid" => _guid}}] ->
+        {:response_with_object, {:message, id, :key, key}}
 
       [] ->
-        nil
+        {:response_with_value, nil}
     end
   end
 
+  # TODO: TDD an error case, such as when `sdkLanguage` is not sent.
   # defp parse_response(%{"error" => error, "id" => _id}) do
   #   [{"error", details}] = Map.to_list(error)
   #   # {:error, details} |> IO.inspect()
   #   {:error, details}
   # end
 
-  defp parse_response(%{"id" => _id}) do
-    # Logger.error("Unhandled response for id: #{inspect(id)}")
-    :ok
+  defp parse_response(%{"id" => id}) do
+    {:empty_response, {:message, id}}
   end
 
-  defp parse_response(_other) do
-    # Logger.debug("Unhandled response: #{inspect(other)}")
+  defp parse_response(other) do
+    Logger.debug("Unhandled response: #{inspect(other)}")
     :ok
   end
 
   # TODO:
   # - Add "deep atomization" so we're not using string kyeys.
-  defp process_json(%{"id" => id} = data, %{queries: queries} = state) do
+  defp process_json(%{"id" => id} = data, %{messages: messages, queries: queries} = state) do
     {from, queries} = Map.pop(queries, id)
     GenServer.reply(from, data)
 
     Map.put(state, :queries, queries)
+    |> Map.put(:messages, Map.put(messages, id, data))
   end
 
   defp process_json(
@@ -215,8 +225,6 @@ defmodule Playwright.Client.Connection do
          %{queries: queries} = state
        ) do
     instance = apply(channel_owner(params), :new, [state.guid_map[parent_guid], params])
-
-    # Logger.debug("processing JSON to create: #{inspect(parent_guid)}; #{inspect(params["guid"])}")
 
     case Map.pop(queries, _guid = params["guid"], nil) do
       {nil, _queries} ->
