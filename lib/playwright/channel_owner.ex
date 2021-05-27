@@ -5,6 +5,7 @@ defmodule Playwright.ChannelOwner do
     quote do
       require Logger
       import Playwright.ChannelOwner
+      alias Playwright.ChannelOwner.BrowserContext
       alias Playwright.Client.Connection
     end
   end

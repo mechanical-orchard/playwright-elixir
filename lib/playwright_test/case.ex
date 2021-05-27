@@ -3,6 +3,7 @@ defmodule PlaywrightTest.Case do
     quote do
       import Playwright
 
+      alias Playwright.ChannelOwner.Browser
       alias Playwright.ChannelOwner.BrowserContext
       alias Playwright.ChannelOwner.BrowserType
       alias Playwright.ChannelOwner.Page

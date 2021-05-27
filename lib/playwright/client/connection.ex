@@ -33,17 +33,14 @@ defmodule Playwright.Client.Connection do
 
     try do
       case GenServer.call(connection, {:post, message, i}) |> parse_response do
+        {:error, error} ->
+          throw({:error, error})
+
         {:guid, guid} ->
           get(connection, guid)
 
         {:value, value} ->
           value
-
-        nil ->
-          nil
-
-        :ok ->
-          :ok
       end
     catch
       :exit, value ->
@@ -164,7 +161,18 @@ defmodule Playwright.Client.Connection do
     end
   end
 
-  defp parse_response(%{"id" => _id}) do
+  defp parse_response(%{"error" => error, "id" => _id}) do
+    [{"error", details}] = Map.to_list(error)
+    {:error, details}
+  end
+
+  defp parse_response(%{"id" => id}) do
+    Logger.error("Unhandled response for id: #{inspect(id)}")
+    :ok
+  end
+
+  defp parse_response(other) do
+    Logger.debug("Unhandled response: #{inspect(other)}")
     :ok
   end
 
