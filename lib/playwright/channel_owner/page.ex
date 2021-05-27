@@ -23,6 +23,29 @@ defmodule Playwright.ChannelOwner.Page do
     channel_owner
   end
 
+  def evaluate(channel_owner, expression) do
+    message = %{
+      guid: channel_owner.initializer["mainFrame"]["guid"],
+      method: "evaluateExpression",
+      params: %{
+        expression: expression,
+        isFunction: true,
+        arg: %{
+          value: %{v: "undefined"},
+          handles: []
+        }
+      }
+    }
+
+    case Connection.post(channel_owner.connection, message) do
+      %{"s" => result} ->
+        result
+
+      %{"n" => result} ->
+        result
+    end
+  end
+
   def fill(channel_owner, selector, value) do
     message = %{
       guid: channel_owner.initializer["mainFrame"]["guid"],
