@@ -15,4 +15,11 @@ defmodule Playwright.ChannelOwner.Browser do
   def new_page(channel_owner) do
     new_context(channel_owner) |> BrowserContext.new_page()
   end
+
+  def contexts(channel_owner) do
+    Playwright.Client.Connection.find(channel_owner.connection, %{
+      parent: channel_owner,
+      type: "BrowserContext"
+    })
+  end
 end

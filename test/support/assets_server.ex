@@ -18,9 +18,12 @@ defmodule Playwright.Test.Support.AssetsServer do
       )
     ]
 
-    Supervisor.start_link(children, strategy: :one_for_one, name: __MODULE__)
+    {:ok, pid} =
+      Supervisor.start_link(children, strategy: :one_for_one, name: __MODULE__)
+      |> IO.inspect()
 
     %{
+      server: pid,
       prefix: "http://localhost:3002"
     }
   end

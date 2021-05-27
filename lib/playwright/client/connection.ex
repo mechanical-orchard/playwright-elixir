@@ -20,6 +20,10 @@ defmodule Playwright.Client.Connection do
     GenServer.start_link(__MODULE__, args)
   end
 
+  def find(connection, attributes) do
+    GenServer.call(connection, {:find, attributes})
+  end
+
   def get(connection, guid) do
     GenServer.call(connection, {:get, guid})
   end
@@ -79,6 +83,11 @@ defmodule Playwright.Client.Connection do
     }
 
     {:ok, connection}
+  end
+
+  def handle_call({:find, attrs}, _from, %{guid_map: guid_map} = state) do
+    selected = select(Map.values(guid_map), attrs, [])
+    {:reply, selected, state}
   end
 
   def handle_call(
@@ -225,5 +234,23 @@ defmodule Playwright.Client.Connection do
   defp process_json(_data, state) do
     # Logger.debug("processing JSON of some other kind: #{inspect(data)}")
     state
+  end
+
+  defp select([], _attrs, result) do
+    result
+  end
+
+  defp select([head | tail], attrs, result) when head.type == "" do
+    # Logger.debug("skipping Root")
+    select(tail, attrs, result)
+  end
+
+  defp select([head | tail], %{parent: parent, type: type} = attrs, result)
+       when head.parent.guid == parent.guid and head.type == type do
+    select(tail, attrs, result ++ [head])
+  end
+
+  defp select([_head | tail], attrs, result) do
+    select(tail, attrs, result)
   end
 end
