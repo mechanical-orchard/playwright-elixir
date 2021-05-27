@@ -1,29 +1,14 @@
-defmodule Playwright.Test.Functional.PageTest do
+defmodule Playwright.PageTest do
   use ExUnit.Case
   use PlaywrightTest.Case
-  doctest Playwright
-
-  setup_all do
-    {:ok, _} = Playwright.start()
-    :ok
-  end
-
-  setup do
-    # {connection, browser} = Playwright.connect("ws://localhost:3000/playwright")
-    {connection, browser} = Playwright.launch()
-
-    [
-      connection: connection,
-      browser: browser
-    ]
-  end
 
   describe "Page" do
+    @tag :skip
     test ".query_selector/2", %{browser: browser} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
         |> Page.goto("https://playwright.dev")
 
       page
@@ -35,11 +20,12 @@ defmodule Playwright.Test.Functional.PageTest do
       |> refute()
     end
 
+    @tag :skip
     test ".query_selector_all/2", %{browser: browser} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
         |> Page.goto("https://playwright.dev")
 
       elements = Page.query_selector_all(page, "css=div")
@@ -49,11 +35,12 @@ defmodule Playwright.Test.Functional.PageTest do
       assert length(elements) == 0
     end
 
+    @tag :skip
     test ".close/1", %{browser: browser, connection: connection} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
 
       Playwright.Client.Connection.has(connection, page.guid)
       |> assert()
@@ -64,11 +51,12 @@ defmodule Playwright.Test.Functional.PageTest do
       |> refute()
     end
 
+    @tag :skip
     test ".click/2", %{browser: browser} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
         |> Page.goto("https://playwright.dev")
 
       page |> Page.click("text=Get started")
@@ -80,11 +68,12 @@ defmodule Playwright.Test.Functional.PageTest do
       assert text == "Getting Started | Playwright"
     end
 
+    @tag :skip
     test ".fill/3", %{browser: browser} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
         |> Page.goto("https://playwright.dev")
 
       page
@@ -101,39 +90,40 @@ defmodule Playwright.Test.Functional.PageTest do
       |> assert()
     end
 
+    @tag :skip
     test ".press/2", %{browser: browser} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
         |> Page.goto("https://playwright.dev")
 
       # FIXME! (see note at `Page.press/3`)
       page
-      |> Page.fill(".navbar__search-input", "text content")
-      |> Page.press(".navbar__search-input", "Enter")
-      |> Page.press(".navbar__search-input", "Enter")
+      |> Page.fill(".navbar__search-input", "assert")
       |> Page.press(".navbar__search-input", "Enter")
 
       assert Page.text_content(page, "css=header > h1") == "Assertions"
     end
 
+    @tag :skip
     test ".text_content/2", %{browser: browser} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
         |> Page.goto("https://playwright.dev")
 
       assert Page.text_content(page, "h1.hero__title") ==
                "Playwright enables reliable end-to-end testing for modern web apps."
     end
 
+    @tag :skip
     test ".title/1", %{browser: browser} do
       page =
         browser
-        |> new_context()
-        |> new_page()
+        |> BrowserType.new_context()
+        |> BrowserContext.new_page()
         |> Page.goto("https://playwright.dev")
 
       text = page |> Page.title()

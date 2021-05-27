@@ -1,11 +1,9 @@
-defmodule Playwright.PageTest do
+defmodule Playwright.Test.Functional.PageTest do
   use ExUnit.Case
   use PlaywrightTest.Case
 
-  describe "Usage" do
-    test "against the local test assets server", %{browser: browser, server: server} do
-      IO.inspect(server)
-
+  describe "Local test assets derver" do
+    test "works", %{browser: browser, server: server} do
       page =
         browser
         |> BrowserType.new_context()

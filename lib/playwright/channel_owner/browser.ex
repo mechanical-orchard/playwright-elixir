@@ -9,14 +9,7 @@ defmodule Playwright.ChannelOwner.Browser do
   end
 
   def new_context(channel_owner) do
-    message = %{
-      guid: channel_owner.guid,
-      method: "newContext",
-      params: %{noDefaultViewport: false, sdkLanguage: "elixir"}
-    }
-
-    conn = channel_owner.connection
-    Connection.post(conn, message)
+    Channel.send(channel_owner, "newContext")
   end
 
   def new_page(channel_owner) do

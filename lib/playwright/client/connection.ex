@@ -41,6 +41,14 @@ defmodule Playwright.Client.Connection do
 
         {:value, value} ->
           value
+
+        nil ->
+          # TODO: ???
+          nil
+
+        :ok ->
+          # TODO (:ok -> :sent | :unhandled)
+          :ok
       end
     catch
       :exit, value ->
@@ -163,16 +171,16 @@ defmodule Playwright.Client.Connection do
 
   defp parse_response(%{"error" => error, "id" => _id}) do
     [{"error", details}] = Map.to_list(error)
-    {:error, details}
+    {:error, details} |> IO.inspect()
   end
 
-  defp parse_response(%{"id" => id}) do
-    Logger.error("Unhandled response for id: #{inspect(id)}")
+  defp parse_response(%{"id" => _id}) do
+    # Logger.error("Unhandled response for id: #{inspect(id)}")
     :ok
   end
 
-  defp parse_response(other) do
-    Logger.debug("Unhandled response: #{inspect(other)}")
+  defp parse_response(_other) do
+    # Logger.debug("Unhandled response: #{inspect(other)}")
     :ok
   end
 

@@ -6,14 +6,6 @@ defmodule Playwright.ChannelOwner.BrowserContext do
   end
 
   def new_page(channel_owner) do
-    message = %{
-      guid: channel_owner.guid,
-      method: "newPage",
-      params: %{sdkLanguage: "javascript", noDefaultViewport: false},
-      metadata: %{stack: [], apiName: "browserContext.newPage"}
-    }
-
-    conn = channel_owner.connection
-    Connection.post(conn, message)
+    Channel.send(channel_owner, "newPage")
   end
 end

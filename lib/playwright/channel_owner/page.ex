@@ -19,15 +19,7 @@ defmodule Playwright.ChannelOwner.Page do
   end
 
   def close(channel_owner) do
-    message = %{
-      guid: channel_owner.guid,
-      method: "close",
-      params: %{},
-      metadata: %{apiName: "page.close"}
-    }
-
-    conn = channel_owner.connection
-    Connection.post(conn, message)
+    Channel.send(channel_owner, "close")
     channel_owner
   end
 
