@@ -3,7 +3,7 @@ defmodule Playwright.PageTest do
   use PlaywrightTest.Case
 
   describe "Page" do
-    @tag :skip
+    # @tag :skip
     test ".query_selector/2", %{browser: browser} do
       page =
         browser
@@ -20,7 +20,7 @@ defmodule Playwright.PageTest do
       |> refute()
     end
 
-    @tag :skip
+    # @tag :skip
     test ".query_selector_all/2", %{browser: browser} do
       page =
         browser
@@ -35,7 +35,7 @@ defmodule Playwright.PageTest do
       assert length(elements) == 0
     end
 
-    @tag :skip
+    # @tag :skip
     test ".close/1", %{browser: browser, connection: connection} do
       page =
         browser
@@ -51,7 +51,7 @@ defmodule Playwright.PageTest do
       |> refute()
     end
 
-    @tag :skip
+    # @tag :skip
     test ".click/2", %{browser: browser} do
       page =
         browser
@@ -68,7 +68,7 @@ defmodule Playwright.PageTest do
       assert text == "Getting Started | Playwright"
     end
 
-    @tag :skip
+    # @tag :skip
     test ".fill/3", %{browser: browser} do
       page =
         browser
@@ -90,7 +90,7 @@ defmodule Playwright.PageTest do
       |> assert()
     end
 
-    @tag :skip
+    # @tag :skip
     test ".press/2", %{browser: browser} do
       page =
         browser
@@ -106,7 +106,7 @@ defmodule Playwright.PageTest do
       assert Page.text_content(page, "css=header > h1") == "Assertions"
     end
 
-    @tag :skip
+    # @tag :skip
     test ".text_content/2", %{browser: browser} do
       page =
         browser
@@ -118,7 +118,7 @@ defmodule Playwright.PageTest do
                "Playwright enables reliable end-to-end testing for modern web apps."
     end
 
-    @tag :skip
+    # @tag :skip
     test ".title/1", %{browser: browser} do
       page =
         browser

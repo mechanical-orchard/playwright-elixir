@@ -38,7 +38,8 @@ defmodule Playwright.Client.Connection do
     try do
       case GenServer.call(connection, {:post, message, i}) |> parse_response do
         {:error, error} ->
-          throw({:error, error})
+          Logger.error(error)
+          :ok
 
         {:guid, guid} ->
           get(connection, guid)
@@ -55,9 +56,11 @@ defmodule Playwright.Client.Connection do
           :ok
       end
     catch
-      :exit, value ->
-        Logger.error("Connection.post timed out with #{inspect(value)}")
-        :error
+      :exit, message ->
+        Logger.error("Connection.post timed out with #{inspect(message)}")
+        throw(message)
+        # :error
+        # nil
     end
   end
 
@@ -180,7 +183,8 @@ defmodule Playwright.Client.Connection do
 
   defp parse_response(%{"error" => error, "id" => _id}) do
     [{"error", details}] = Map.to_list(error)
-    {:error, details} |> IO.inspect()
+    # {:error, details} |> IO.inspect()
+    {:error, details}
   end
 
   defp parse_response(%{"id" => _id}) do

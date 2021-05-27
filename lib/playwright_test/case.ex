@@ -12,12 +12,13 @@ defmodule PlaywrightTest.Case do
       setup_all do
         # {connection, browser} = Playwright.connect("ws://localhost:3000/playwright")
         {connection, browser} = launch()
-        server = AssetsServer.start(nil, nil)
 
         [
           connection: connection,
           browser: browser,
-          server: server
+          server: %{
+            prefix: AssetsServer.prefix()
+          }
         ]
       end
     end
