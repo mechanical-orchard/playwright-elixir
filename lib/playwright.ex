@@ -17,16 +17,4 @@ defmodule Playwright do
     {connection, browser} = BrowserType.connect(ws_endpoint)
     {connection, browser}
   end
-
-  def new_context(browser) do
-    Playwright.ChannelOwner.BrowserType.new_context(browser)
-  end
-
-  def new_page(context) do
-    Playwright.ChannelOwner.BrowserContext.new_page(context)
-  end
-
-  def show(conn) do
-    GenServer.call(conn, :show)
-  end
 end

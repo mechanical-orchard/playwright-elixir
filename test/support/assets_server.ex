@@ -19,5 +19,9 @@ defmodule Playwright.Test.Support.AssetsServer do
     ]
 
     Supervisor.start_link(children, strategy: :one_for_one, name: __MODULE__)
+
+    %{
+      prefix: "http://localhost:3002"
+    }
   end
 end
