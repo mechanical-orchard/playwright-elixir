@@ -5,14 +5,12 @@ defmodule Playwright.ChannelOwner.Root do
   defstruct(connection: nil, parent: nil, objects: %{}, type: nil, guid: nil, initializer: nil)
 
   def new(connection) do
-    state = %__MODULE__{
+    %__MODULE__{
       connection: connection,
       parent: connection,
       type: "",
       guid: "",
       initializer: %{}
     }
-
-    send(connection, {:register, {"", state}})
   end
 end

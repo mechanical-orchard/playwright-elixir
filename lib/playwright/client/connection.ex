@@ -8,7 +8,6 @@ defmodule Playwright.Client.Connection do
   # ---------------------------------------------------------------------------
 
   defstruct(
-    root: nil,
     transport: %{},
     guid_map: %{},
     message_index: 0,
@@ -79,7 +78,7 @@ defmodule Playwright.Client.Connection do
     # This is potentially racy: the transport connection must be made
     # *after* `root` is created.
     connection = %__MODULE__{
-      root: Root.new(pid),
+      guid_map: %{"" => Root.new(self())},
       transport: %{
         mod: transport_module,
         pid: transport_module.start_link!(args ++ [pid])
@@ -90,8 +89,7 @@ defmodule Playwright.Client.Connection do
   end
 
   def handle_call({:find, attrs}, _from, %{guid_map: guid_map} = state) do
-    selected = select(Map.values(guid_map), attrs, [])
-    {:reply, selected, state}
+    {:reply, select(Map.values(guid_map), attrs, []), state}
   end
 
   def handle_call(
@@ -105,7 +103,7 @@ defmodule Playwright.Client.Connection do
     case guid_map[guid] do
       nil ->
         queries = Map.put(queries, guid, from)
-        {:noreply, Map.put(state, :queries, queries)}
+        {:noreply, %{state | queries: queries}}
 
       result ->
         {:reply, result, state}
@@ -115,7 +113,7 @@ defmodule Playwright.Client.Connection do
   def handle_call({:get_message, id}, _from, %{messages: messages} = state) do
     case Map.pop(messages, id) do
       {result, messages} ->
-        {:reply, result, Map.put(state, :messages, messages)}
+        {:reply, result, %{state | messages: messages}}
     end
   end
 
@@ -139,7 +137,7 @@ defmodule Playwright.Client.Connection do
         Logger.error(inspect(reason))
     end
 
-    {:noreply, Map.put(state, :queries, queries)}
+    {:noreply, %{state | queries: queries}}
   end
 
   def handle_call(:increment, _, state) do
@@ -161,7 +159,7 @@ defmodule Playwright.Client.Connection do
   end
 
   def handle_info({:register, {guid, item}}, state) do
-    {:noreply, %__MODULE__{state | guid_map: Map.put(state.guid_map, guid, item)}}
+    {:noreply, %{state | guid_map: Map.put(state.guid_map, guid, item)}}
   end
 
   # private
@@ -212,8 +210,7 @@ defmodule Playwright.Client.Connection do
     {from, queries} = Map.pop(queries, id)
     GenServer.reply(from, data)
 
-    Map.put(state, :queries, queries)
-    |> Map.put(:messages, Map.put(messages, id, data))
+    %{state | queries: queries, messages: Map.put(messages, id, data)}
   end
 
   defp process_json(
@@ -232,7 +229,7 @@ defmodule Playwright.Client.Connection do
 
       {from, queries} ->
         GenServer.reply(from, instance)
-        Map.put(state, :queries, queries)
+        %{state | queries: queries}
     end
   end
 
@@ -240,7 +237,7 @@ defmodule Playwright.Client.Connection do
   # - Dispose of dependents
   defp process_json(%{"method" => "__dispose__"} = data, %{guid_map: guid_map} = state) do
     {_disposed, guid_map} = Map.pop(guid_map, data["guid"])
-    Map.put(state, :guid_map, guid_map)
+    %{state | guid_map: guid_map}
   end
 
   defp process_json(_data, state) do
