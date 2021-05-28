@@ -5,7 +5,7 @@ defmodule Playwright.Channel do
     message = %{
       guid: channel_owner.guid,
       method: method,
-      params: Map.merge(%{noDefaultViewport: false, sdkLanguage: "elixir"}, params)
+      params: params
     }
 
     Connection.post(channel_owner.connection, message)
