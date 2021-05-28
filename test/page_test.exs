@@ -1,4 +1,4 @@
-defmodule Playwright.PageTest do
+defmodule Playwright.Test.PageTest do
   use ExUnit.Case
   use PlaywrightTest.Case
   require Logger

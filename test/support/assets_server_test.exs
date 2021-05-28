@@ -1,4 +1,4 @@
-defmodule Playwright.Test.Functional.PageTest do
+defmodule Playwright.Test.Support.AssetsServerTest do
   use ExUnit.Case
   use PlaywrightTest.Case
 
@@ -6,8 +6,7 @@ defmodule Playwright.Test.Functional.PageTest do
     test "works", %{browser: browser, server: server} do
       page =
         browser
-        |> BrowserType.new_context()
-        |> BrowserContext.new_page()
+        |> Browser.new_page()
         |> Page.goto(server.prefix <> "/dom.html")
 
       page

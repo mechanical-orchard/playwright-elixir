@@ -7,8 +7,7 @@ defmodule Playwright.Test do
     test "against a public domain", %{browser: browser} do
       page =
         browser
-        |> BrowserType.new_context()
-        |> BrowserContext.new_page()
+        |> Browser.new_page()
 
       text =
         page
@@ -16,18 +15,21 @@ defmodule Playwright.Test do
         |> Page.text_content(".navbar__title")
 
       assert text == "Playwright"
+
+      Page.close(page)
     end
 
     test "against the local test assets server", %{browser: browser} do
       page =
         browser
-        |> BrowserType.new_context()
-        |> BrowserContext.new_page()
+        |> Browser.new_page()
         |> Page.goto("http://localhost:3002/dom.html")
 
       page
       |> Page.query_selector("css=div#outer")
       |> assert()
+
+      Page.close(page)
     end
   end
 end

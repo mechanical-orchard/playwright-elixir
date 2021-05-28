@@ -9,6 +9,7 @@ defmodule Playwright.ChannelOwner.BrowserType do
     Channel.send(channel_owner, "launch", %{ignoreAllDefaultArgs: false, headless: false})
   end
 
+  # WARN! Likely broken at the moment. Use `Browser.new_page` instead.
   def new_context(channel_owner) do
     Channel.send(channel_owner, "newContext", %{ignoreAllDefaultArgs: false, headless: false})
   end

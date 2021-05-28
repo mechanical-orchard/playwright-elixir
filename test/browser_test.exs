@@ -1,4 +1,4 @@
-defmodule Playwright.BrowserTest do
+defmodule Playwright.Test.BrowserTest do
   use ExUnit.Case
   use PlaywrightTest.Case
 
