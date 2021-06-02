@@ -1,5 +1,5 @@
 defmodule Playwright.Channel do
-  alias Playwright.Client.Connection
+  alias Playwright.Connection
 
   def send(channel_owner, method, params \\ %{}) do
     message = %{
@@ -8,6 +8,6 @@ defmodule Playwright.Channel do
       params: params
     }
 
-    Connection.post(channel_owner.connection, message)
+    Connection.post(channel_owner.connection, {:data, message})
   end
 end

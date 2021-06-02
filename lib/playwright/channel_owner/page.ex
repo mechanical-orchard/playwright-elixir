@@ -78,6 +78,6 @@ defmodule Playwright.ChannelOwner.Page do
   # ---------------------------------------------------------------------------
 
   defp frame(channel_owner) do
-    Connection.get(channel_owner.connection, channel_owner.initializer["mainFrame"]["guid"])
+    Connection.get(channel_owner.connection, {:guid, channel_owner.initializer["mainFrame"]["guid"]})
   end
 end

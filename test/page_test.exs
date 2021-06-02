@@ -41,12 +41,12 @@ defmodule Playwright.Test.PageTest do
         browser
         |> Browser.new_page()
 
-      Playwright.Client.Connection.has(connection, page.guid)
+      Playwright.Connection.find(connection, %{guid: page.guid}, nil)
       |> assert()
 
       page |> Page.close()
 
-      Playwright.Client.Connection.has(connection, page.guid)
+      Playwright.Connection.find(connection, %{guid: page.guid}, nil)
       |> refute()
     end
 

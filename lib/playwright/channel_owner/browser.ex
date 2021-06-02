@@ -17,7 +17,7 @@ defmodule Playwright.ChannelOwner.Browser do
   end
 
   def contexts(channel_owner) do
-    Playwright.Client.Connection.find(channel_owner.connection, %{
+    Playwright.Connection.find(channel_owner.connection, %{
       parent: channel_owner,
       type: "BrowserContext"
     })

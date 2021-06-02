@@ -8,8 +8,8 @@ defmodule Playwright.ChannelOwner.Root do
     %__MODULE__{
       connection: connection,
       parent: connection,
-      type: "",
-      guid: "",
+      type: "Root",
+      guid: "Root",
       initializer: %{}
     }
   end
