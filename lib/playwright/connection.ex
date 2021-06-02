@@ -101,11 +101,6 @@ defmodule Playwright.Connection do
     {:noreply, _recv_(json, state)}
   end
 
-  @impl GenServer
-  def handle_info({:recv, {:text, json}}, state) do
-    handle_cast({:recv, {:text, json}}, state)
-  end
-
   # temp/legacy (while refactoring)
   # ----------------------------------------------------------------------------
   @impl GenServer
@@ -116,16 +111,14 @@ defmodule Playwright.Connection do
   # private
   # ----------------------------------------------------------------------------
 
-  defp _del_(guid, %{catalog: catalog, queries: queries} = state) do
-    case Map.pop(queries, guid, nil) do
-      {nil, _queries} ->
-        state
+  defp _del_(guid, catalog) do
+    children = select(Map.values(catalog), %{parent: catalog[guid]}, [])
 
-      {from, queries} ->
-        Logger.info("_del_ replying with deleted item: #{inspect(catalog[guid])}")
-        GenServer.reply(from, catalog[guid])
-        %{state | queries: queries}
-    end
+    catalog =
+      children
+      |> Enum.reduce(catalog, fn item, acc ->
+        _del_(item.guid, acc)
+      end)
 
     Map.delete(catalog, guid)
   end
@@ -180,13 +173,12 @@ defmodule Playwright.Connection do
     %{state | catalog: _put_(item, state)}
   end
 
-  # TODO: backfill test
-  defp _recv_(%{"guid" => guid, "method" => "__dispose__"}, state) do
-    %{state | catalog: _del_(guid, state)}
+  defp _recv_(%{"guid" => guid, "method" => "__dispose__"}, %{catalog: catalog} = state) do
+    %{state | catalog: _del_(guid, catalog)}
   end
 
-  defp _recv_(_data, state) do
-    # Logger.debug("_recv_ other   :: #{inspect(data)}")
+  defp _recv_(data, state) do
+    Logger.debug("_recv_ other   :: #{inspect(data)}")
     state
   end
 
@@ -237,6 +229,11 @@ defmodule Playwright.Connection do
 
   defp select([head | tail], %{parent: parent, type: type} = attrs, result)
        when head.parent.guid == parent.guid and head.type == type do
+    select(tail, attrs, result ++ [head])
+  end
+
+  defp select([head | tail], %{parent: parent} = attrs, result)
+       when head.parent.guid == parent.guid do
     select(tail, attrs, result ++ [head])
   end
 

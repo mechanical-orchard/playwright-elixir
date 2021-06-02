@@ -16,45 +16,86 @@ defmodule Playwright.ConnectionTest do
     end
   end
 
-  describe "post/2 ..." do
-    test "...", %{connection: connection} do
+  describe "post/2" do
+    test "creating a new item", %{connection: connection} do
       data = %{
         guid: "Browser",
         method: "newContext",
         params: %{headless: false}
       }
 
-      Process.send_after(
-        connection,
-        {:recv,
-         {:text,
-          Jason.encode!(%{
-            guid: "",
-            method: "__create__",
-            params: %{
-              guid: "context@1",
-              initializer: %{},
-              type: "BrowserContext"
-            }
-          })}},
-        100
-      )
+      Task.start(fn ->
+        :timer.sleep(50)
 
-      Process.send_after(
-        connection,
-        {:recv,
-         {:text,
-          Jason.encode!(%{
-            id: 1,
-            result: %{
-              context: %{guid: "context@1"}
-            }
-          })}},
-        150
-      )
+        Connection.recv(
+          connection,
+          {:text,
+           Jason.encode!(%{
+             guid: "",
+             method: "__create__",
+             params: %{
+               guid: "context@1",
+               initializer: %{},
+               type: "BrowserContext"
+             }
+           })}
+        )
+      end)
+
+      Task.start(fn ->
+        :timer.sleep(100)
+
+        Connection.recv(
+          connection,
+          {:text,
+           Jason.encode!(%{
+             id: 1,
+             result: %{
+               context: %{guid: "context@1"}
+             }
+           })}
+        )
+      end)
 
       result = Connection.post(connection, {:data, data})
       assert result.guid == "context@1"
+    end
+
+    test "removing an item via __dispose__ also removes its 'children'", %{connection: connection} do
+      %{catalog: catalog} = :sys.get_state(connection)
+      root = catalog["Root"]
+      json = Jason.encode!(%{guid: "browser@1", method: "__dispose__"})
+
+      catalog =
+        catalog
+        |> Map.put("browser@1", %{guid: "browser@1", parent: %{guid: "Root"}, type: "Browser"})
+        |> Map.put("context@1", %{guid: "context@1", parent: %{guid: "browser@1"}, type: "BrowserContext"})
+        |> Map.put("page@1", %{guid: "page@1", parent: %{guid: "context@1"}, type: "Page"})
+
+      :sys.replace_state(connection, fn state -> %{state | catalog: catalog} end)
+
+      Connection.find(connection, %{guid: "browser@1"}, nil)
+      |> assert()
+
+      Connection.find(connection, %{guid: "context@1"}, nil)
+      |> assert()
+
+      Connection.find(connection, %{guid: "page@1"}, nil)
+      |> assert()
+
+      Connection.recv(connection, {:text, json})
+
+      Connection.find(connection, %{guid: "browser@1"}, nil)
+      |> refute()
+
+      Connection.find(connection, %{guid: "context@1"}, nil)
+      |> refute()
+
+      Connection.find(connection, %{guid: "page@1"}, nil)
+      |> refute()
+
+      %{catalog: catalog} = :sys.get_state(connection)
+      assert catalog == %{"Root" => root}
     end
   end
 
