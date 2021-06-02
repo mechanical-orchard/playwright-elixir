@@ -3,7 +3,7 @@ defmodule Playwright.Client.Transport do
 
   defmodule Driver do
     use GenServer
-    alias Playwright.Driver.Frame
+    alias Playwright.Transport.DriverFrame
 
     # API
     # -------------------------------------------------------------------------
@@ -60,7 +60,7 @@ defmodule Playwright.Client.Transport do
         messages: messages,
         remaining: remaining,
         buffer: buffer
-      } = Frame.parse_frame(data, remaining, buffer, [])
+      } = DriverFrame.parse_frame(data, remaining, buffer, [])
 
       messages |> Enum.map(fn message -> post(state.connection, message) end)
 

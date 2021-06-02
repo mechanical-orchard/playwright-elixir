@@ -1,6 +1,4 @@
-defmodule Playwright.Driver.Frame do
-  require Logger
-
+defmodule Playwright.Transport.DriverFrame do
   # NOTE
   # - Frames contain:
   #   - Messages
