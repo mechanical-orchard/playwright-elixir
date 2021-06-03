@@ -5,7 +5,12 @@ defmodule Playwright.ChannelOwner.BrowserContext do
     channel_owner(parent, args)
   end
 
-  def new_page(channel_owner) do
-    Channel.send(channel_owner, "newPage")
+  def new_page(channel_owner, locals \\ nil) do
+    Channel.send(channel_owner, "newPage", %{}, locals)
+  end
+
+  def close(channel_owner) do
+    channel_owner |> Channel.send("close")
+    channel_owner
   end
 end

@@ -13,7 +13,8 @@ defmodule Playwright.ChannelOwner.Browser do
   end
 
   def new_page(channel_owner) do
-    new_context(channel_owner) |> BrowserContext.new_page()
+    context = new_context(channel_owner)
+    BrowserContext.new_page(context, %{owned_context: context})
   end
 
   def contexts(channel_owner) do

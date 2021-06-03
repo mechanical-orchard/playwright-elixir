@@ -1,31 +1,28 @@
 defmodule Playwright.ChannelOwner do
-  require Logger
+  @base [connection: nil, parent: nil, type: nil, guid: nil, initializer: nil]
 
-  defmacro __using__(_) do
+  defmacro __using__(fields \\ []) do
+    fields = @base ++ fields
+
     quote do
-      require Logger
-      import Playwright.ChannelOwner
       alias Playwright.Channel
       alias Playwright.ChannelOwner.BrowserContext
       alias Playwright.Connection
+
+      defstruct unquote(fields)
+
+      def channel_owner(
+            parent,
+            %{"guid" => guid, "type" => type, "initializer" => initializer} = args
+          ) do
+        %__MODULE__{
+          connection: parent.connection,
+          parent: parent,
+          type: type,
+          guid: guid,
+          initializer: initializer
+        }
+      end
     end
-  end
-
-  # API
-  # ---------------------------------------------------------------------------
-
-  defstruct(connection: nil, parent: nil, type: nil, guid: nil, initializer: nil)
-
-  def channel_owner(
-        parent,
-        %{"guid" => guid, "type" => type, "initializer" => initializer} = _args
-      ) do
-    %__MODULE__{
-      connection: parent.connection,
-      parent: parent,
-      type: type,
-      guid: guid,
-      initializer: initializer
-    }
   end
 end

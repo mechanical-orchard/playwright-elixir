@@ -25,12 +25,11 @@ defmodule Playwright.Connection do
     GenServer.call(connection, {:get, item})
   end
 
-  # API: messages...
-
-  # TODO: backfill test
   def find(connection, attributes, default \\ []) do
     GenServer.call(connection, {:find, attributes, default})
   end
+
+  # API: messages...
 
   def post(connection, {:data, _data} = message) do
     GenServer.call(connection, {:post, message})
@@ -82,13 +81,19 @@ defmodule Playwright.Connection do
   @impl GenServer
   def handle_call({:post, {:data, data}}, from, %{messages: messages, queries: queries, transport: transport} = state) do
     index = messages.count + 1
-    payload = Map.put(data, :id, index)
+    pending = data
+
+    payload =
+      data
+      |> Map.put(:id, index)
+      |> Map.delete(:locals)
+
     queries = Map.put(queries, index, from)
 
     messages =
       Map.merge(messages, %{
         count: index,
-        pending: Map.put(messages.pending, index, payload)
+        pending: Map.put(messages.pending, index, pending)
       })
 
     transport.mod.post(transport.pid, Jason.encode!(payload))
@@ -148,7 +153,6 @@ defmodule Playwright.Connection do
       [{"elements", value}] ->
         reply_with_value({message_id, value}, state)
 
-      # [{"value", <<value::binary>>}] ->
       [{"value", value}] ->
         reply_with_value({message_id, value}, state)
 
@@ -177,8 +181,8 @@ defmodule Playwright.Connection do
     %{state | catalog: _del_(guid, catalog)}
   end
 
-  defp _recv_(data, state) do
-    Logger.debug("_recv_ other   :: #{inspect(data)}")
+  defp _recv_(_data, state) do
+    # Logger.debug("_recv_ other   :: #{inspect(data)}")
     state
   end
 
@@ -187,21 +191,21 @@ defmodule Playwright.Connection do
   end
 
   defp reply_from_catalog({message_id, guid}, %{catalog: catalog, messages: messages, queries: queries} = state) do
-    {_message, pending} = Map.pop!(messages.pending, message_id)
+    {message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
 
-    GenServer.reply(from, catalog[guid])
+    item =
+      catalog[guid]
+      |> Map.merge(message.locals || %{})
 
-    %{state | messages: Map.put(messages, :pending, pending), queries: queries}
+    GenServer.reply(from, item)
+
+    %{state | catalog: Map.put(catalog, guid, item), messages: Map.put(messages, :pending, pending), queries: queries}
   end
 
   defp reply_from_messages({message_id, data}, %{catalog: _catalog, messages: messages, queries: queries} = state) do
     {message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
-
-    # Logger.debug(
-    #   "reply_from_messages with message: #{inspect(message)} and catalog keys: #{inspect(Map.keys(catalog))}"
-    # )
 
     # TODO (need to atomize keys):
     stringified = Jason.decode!(Jason.encode!(message))

@@ -1,5 +1,5 @@
 defmodule Playwright.ChannelOwner.Page do
-  use Playwright.ChannelOwner
+  use Playwright.ChannelOwner, owned_context: nil
 
   def new(parent, args) do
     channel_owner(parent, args)
@@ -14,6 +14,11 @@ defmodule Playwright.ChannelOwner.Page do
 
   def close(channel_owner) do
     channel_owner |> Channel.send("close")
+
+    if channel_owner.owned_context do
+      BrowserContext.close(channel_owner.owned_context)
+    end
+
     channel_owner
   end
 
