@@ -99,6 +99,17 @@ defmodule Playwright.Test.PageTest do
       Page.close(page)
     end
 
+    test ".set_content/2", %{browser: browser} do
+      page =
+        browser
+        |> Browser.new_page()
+        |> Page.set_content("<div id='content'>text</div>")
+
+      assert Page.text_content(page, "div#content") == "text"
+
+      Page.close(page)
+    end
+
     test ".text_content/2", %{browser: browser, server: server} do
       page =
         browser
@@ -118,6 +129,27 @@ defmodule Playwright.Test.PageTest do
 
       text = page |> Page.title()
       assert text == "Woof-Woof"
+
+      Page.close(page)
+    end
+
+    test ".wait_for_selector/2", %{browser: browser} do
+      page =
+        browser
+        |> Browser.new_page()
+        |> Page.set_content("<div id='outer'></div>")
+
+      Task.start(fn ->
+        :timer.sleep(100)
+
+        Page.evaluate(
+          page,
+          "function () { var div = document.querySelector('div#outer'); div.innerHTML = '<span class=\"inner\">target</span>'; }"
+        )
+      end)
+
+      Page.wait_for_selector(page, "span.inner", %{state: "attached"})
+      assert Page.text_content(page, "span.inner") == "target"
 
       Page.close(page)
     end

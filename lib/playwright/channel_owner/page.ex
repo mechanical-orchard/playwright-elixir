@@ -38,6 +38,9 @@ defmodule Playwright.ChannelOwner.Page do
 
       %{"n" => result} ->
         result
+
+      %{"v" => "undefined"} ->
+        nil
     end
   end
 
@@ -66,6 +69,16 @@ defmodule Playwright.ChannelOwner.Page do
     frame(channel_owner) |> Channel.send("querySelectorAll", %{selector: selector})
   end
 
+  def set_content(channel_owner, content) do
+    params = %{
+      "html" => content,
+      "waitUntil" => "load"
+    }
+
+    frame(channel_owner) |> Channel.send("setContent", params)
+    channel_owner
+  end
+
   def set_viewport_size(channel_owner, params) do
     channel_owner |> Channel.send("setViewportSize", %{"viewportSize" => params})
     channel_owner
@@ -77,6 +90,10 @@ defmodule Playwright.ChannelOwner.Page do
 
   def title(channel_owner) do
     frame(channel_owner) |> Channel.send("title")
+  end
+
+  def wait_for_selector(channel_owner, selector, options \\ %{}) do
+    frame(channel_owner) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
   end
 
   # private
