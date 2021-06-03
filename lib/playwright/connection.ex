@@ -106,13 +106,6 @@ defmodule Playwright.Connection do
     {:noreply, _recv_(json, state)}
   end
 
-  # temp/legacy (while refactoring)
-  # ----------------------------------------------------------------------------
-  @impl GenServer
-  def handle_info({:process_frame, {:data, data}}, state) do
-    handle_cast({:recv, {:text, Jason.encode!(data)}}, state)
-  end
-
   # private
   # ----------------------------------------------------------------------------
 
@@ -187,7 +180,14 @@ defmodule Playwright.Connection do
   end
 
   defp resource(%{"type" => type}) do
-    String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
+    try do
+      String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
+    rescue
+      ArgumentError ->
+        message = "ChannelOwner of type #{inspect(type)} is not yet defined"
+        Logger.debug(message)
+        exit(message)
+    end
   end
 
   defp reply_from_catalog({message_id, guid}, %{catalog: catalog, messages: messages, queries: queries} = state) do

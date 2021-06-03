@@ -1,6 +1,6 @@
 defmodule Playwright.Test.BrowserTest do
   use ExUnit.Case
-  use PlaywrightTest.Case
+  use PlaywrightTest.Case, transport: :driver
 
   describe "new_page/1" do
     test "creates a new Page", %{browser: browser} do

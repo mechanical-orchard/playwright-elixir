@@ -1,5 +1,5 @@
-defmodule Playwright.Transport.Driver do
-  alias Playwright.Client.Transport.Driver, as: Transport
+defmodule Playwright.Transport.WebSocket do
+  alias Playwright.Client.Transport.WebSocket, as: Transport
 
   # API
   # ----------------------------------------------------------------------------

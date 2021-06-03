@@ -1,6 +1,6 @@
 defmodule Playwright.Test do
   use ExUnit.Case
-  use PlaywrightTest.Case
+  use PlaywrightTest.Case, transport: :driver
   doctest Playwright
 
   describe "Usage" do
@@ -19,11 +19,11 @@ defmodule Playwright.Test do
       Page.close(page)
     end
 
-    test "against the local test assets server", %{browser: browser} do
+    test "against the local test assets server", %{server: server, browser: browser} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto("http://localhost:3002/dom.html")
+        |> Page.goto(server.prefix <> "/dom.html")
 
       page
       |> Page.query_selector("css=div#outer")

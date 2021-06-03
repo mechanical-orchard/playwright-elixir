@@ -1,5 +1,6 @@
 defmodule Playwright.Client.Transport do
   require Logger
+  alias Playwright.Connection
 
   defmodule Driver do
     use GenServer
@@ -76,8 +77,7 @@ defmodule Playwright.Client.Transport do
     # --------------------------------------------------------------------------
 
     def post(connection, json) do
-      data = Jason.decode!(json)
-      send(connection, {:process_frame, {:data, data}})
+      Connection.recv(connection, {:text, json})
     end
   end
 
@@ -90,8 +90,6 @@ defmodule Playwright.Client.Transport do
     defstruct(connection: nil)
 
     def start_link([ws_endpoint, connection]) do
-      Logger.info("WebSocket connecting to #{inspect(ws_endpoint)}")
-
       WebSockex.start_link(ws_endpoint, __MODULE__, %__MODULE__{connection: connection}, [
         {:socket_recv_timeout, 120_000}
       ])
@@ -116,7 +114,8 @@ defmodule Playwright.Client.Transport do
 
     @impl WebSockex
     def handle_frame(frame, %{connection: connection} = state) do
-      send(connection, {:process_frame, frame})
+      Connection.recv(connection, frame)
+
       {:ok, state}
     end
   end

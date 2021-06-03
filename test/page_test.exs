@@ -1,7 +1,6 @@
 defmodule Playwright.Test.PageTest do
   use ExUnit.Case
-  use PlaywrightTest.Case
-  require Logger
+  use PlaywrightTest.Case, transport: :driver
 
   describe "Page" do
     test ".query_selector/2", %{browser: browser, server: server} do
