@@ -1,0 +1,33 @@
+name: Playwright-Elixir CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Elixir
+      uses: erlef/setup-elixir@v1
+      with:
+        elixir-version: '1.12.0-otp-24'
+        otp-version: '24.0.1'
+    - name: Restore dependencies cache
+      uses: actions/cache@v2
+      with:
+        path: deps
+        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+        restore-keys: ${{ runner.os }}-mix-
+    - name: Install Elixir dependencies
+      run: mix deps.get
+    - name: Install Node dependencies
+      run: npm install --prefix assets
+    - name: Run tests
+      run: mix test
