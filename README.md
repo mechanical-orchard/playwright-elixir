@@ -3,19 +3,19 @@
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `playwright_elixir` to your list of dependencies in `mix.exs`:
+by adding `playwright` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:playwright_elixir, "~> 0.1.0"}
+    {:playwright, "~> 0.1.0"}
   ]
 end
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/playwright_elixir](https://hexdocs.pm/playwright_elixir).
+be found at [https://hexdocs.pm/playwright](https://hexdocs.pm/playwright).
 
 ## Usage
 
@@ -30,16 +30,15 @@ import * as playwright from "playwright";
 
 (async () => {
   const endpoint = "ws://localhost:3000";
-  const browser  = await playwright.chromium.connect({ wsEndpoint: endpoint });
-  const context  = await browser.newContext();
-  const page     = await context.newPage();
+  const browser = await playwright.chromium.connect({ wsEndpoint: endpoint });
+  const context = await browser.newContext();
+  const page = await context.newPage();
 
   await page.goto("https://playwright.dev");
-  await page.screenshot({ path: `screenshots/typescript.png` })
+  await page.screenshot({ path: `screenshots/typescript.png` });
   await browser.close();
 })();
 ```
-
 
 ### Python
 
@@ -61,7 +60,6 @@ async def main():
 asyncio.run(main())
 ```
 
-
 ### Elixir
 
 ```elixir
@@ -82,14 +80,11 @@ page
 Playwright.Browser.close(browser)
 ```
 
-
-
 ## Playwright Example - Video Conference (using Jitsi)
 
 ### TypeScript
 
 See [playwright-example-ts](https://github.com/geometerio/playwright-example-ts)
-
 
 ### Elixir (potential, using `playwright-elixir`)
 
@@ -168,4 +163,3 @@ defmodule Application.Features.MultiUserTest do
 	end
 end
 ```
-
