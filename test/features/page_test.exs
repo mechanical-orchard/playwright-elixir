@@ -1,4 +1,4 @@
-defmodule Playwright.Test.PageTest do
+defmodule Test.Features.PageTest do
   use ExUnit.Case
   use PlaywrightTest.Case, transport: :driver
 

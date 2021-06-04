@@ -1,7 +1,7 @@
-defmodule Playwright.ConnectionTest do
+defmodule Test.Unit.Playwright.ConnectionTest do
   use ExUnit.Case
   alias Playwright.Connection
-  alias Playwright.ConnectionTest.TestTransport
+  alias Test.Unit.Playwright.ConnectionTest.TestTransport
 
   setup do
     %{

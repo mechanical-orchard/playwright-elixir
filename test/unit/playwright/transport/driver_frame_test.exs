@@ -1,4 +1,4 @@
-defmodule Playwright.Test.Transport.DriverFrameTest do
+defmodule Test.Unit.Playwright.Transport.DriverFrameTest do
   use ExUnit.Case
   alias Playwright.Transport.DriverFrame
 
