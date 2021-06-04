@@ -1,4 +1,4 @@
-defmodule Playwright.Test.Support.AssetsServerTest do
+defmodule Test.Support.AssetsServerTest do
   use ExUnit.Case
   use PlaywrightTest.Case
 

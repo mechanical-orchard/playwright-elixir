@@ -1,7 +1,6 @@
-defmodule Test.PlaywrightTest do
+defmodule Test.ExampleTest do
   use ExUnit.Case
   use PlaywrightTest.Case, transport: :driver
-  doctest Playwright
 
   describe "Usage" do
     test "against a public domain", %{browser: browser} do

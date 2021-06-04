@@ -1,4 +1,4 @@
-defmodule Playwright.Test.Support.AssetsServer.Router do
+defmodule Test.Support.AssetsServer.Router do
   use Plug.Router
 
   plug(Plug.Static, at: "/", from: "#{__DIR__}/assets")

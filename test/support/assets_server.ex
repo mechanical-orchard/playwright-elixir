@@ -1,7 +1,7 @@
-defmodule Playwright.Test.Support.AssetsServer do
+defmodule Test.Support.AssetsServer do
   require Logger
   use Application
-  alias Playwright.Test.Support.AssetsServer
+  alias Test.Support.AssetsServer
 
   # @impl
   # ----------------------------------------------------------------------------
