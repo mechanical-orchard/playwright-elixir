@@ -1,4 +1,28 @@
 defmodule Playwright.ChannelOwner.Page do
+  @moduledoc """
+
+  A web page.
+
+  ## Selectors
+
+  Some functions in this module accept selectors:
+  * By default, selectors are assumed to be CSS: `a[href="/foo"]`
+  * If a selector starts with a single or double quote, it is a text selector: `"Login"`
+  * If a selector starts with `//`, it is an xpath selector: `//html/body`
+
+  Selector types can be made explicit by prefixing with `css=`, `text=`, or `xpath=`: `text="Login"`.
+
+  Playwright supports some useful psudeoselectors:
+  * text: `#nav-bar :text("Contact us")`
+  * inclusion: `.item-description:has(.item-promo-banner)`
+  * position: `input:right-of(:text("Username"))` (also `left-of`, `above`, `below`, `near`)
+  * visibility: `.login-button:visible`
+  * nth match: `:nth-match(:text("Buy"), 3)`
+  * match any of the conditions: `:is(button:has-text("Log in"), button:has-text("Sign in"))`
+
+  More info: https://playwright.dev/docs/selectors
+  """
+
   use Playwright.ChannelOwner, owned_context: nil
 
   def new(parent, args) do
