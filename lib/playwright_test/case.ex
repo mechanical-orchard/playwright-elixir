@@ -8,9 +8,15 @@ defmodule PlaywrightTest.Case do
       alias Playwright.Test.Support.AssetsServer
 
       setup_all do
-        [transport: transport] = Keyword.merge([transport: :driver], unquote(config))
+        config = unquote(config)
 
-        case transport do
+        {:ok, _} = Application.ensure_all_started(:playwright)
+
+        if Keyword.has_key?(config, :headless) do
+          Application.put_env(:playwright, :headless, Keyword.get(config, :headless))
+        end
+
+        case Keyword.get(config, :transport, :driver) do
           :driver ->
             {connection, browser} = Playwright.BrowserType.launch()
 

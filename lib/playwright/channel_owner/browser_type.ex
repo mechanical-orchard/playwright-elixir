@@ -6,6 +6,13 @@ defmodule Playwright.ChannelOwner.BrowserType do
   end
 
   def launch(channel_owner) do
-    Channel.send(channel_owner, "launch", %{ignoreAllDefaultArgs: false})
+    Channel.send(channel_owner, "launch", %{headless: headless?(), ignoreAllDefaultArgs: false})
+  end
+
+  # private
+  # ----------------------------------------------------------------------------
+
+  defp headless? do
+    Application.get_env(:playwright, :headless, true)
   end
 end
