@@ -145,6 +145,9 @@ defmodule Playwright.Connection do
       [{_key, %{guid: guid}}] ->
         reply_from_catalog({message_id, guid}, state)
 
+      [{:binary, value}] ->
+        reply_with_binary({message_id, value}, state)
+
       [{:elements, list}] ->
         reply_with_list({message_id, list}, state)
 
@@ -211,6 +214,10 @@ defmodule Playwright.Connection do
     GenServer.reply(from, Map.merge(message, data))
 
     %{state | messages: Map.put(messages, :pending, pending), queries: queries}
+  end
+
+  defp reply_with_binary(details, state) do
+    reply_with_value(details, state)
   end
 
   defp reply_with_list({message_id, list}, %{catalog: catalog, messages: messages, queries: queries} = state)

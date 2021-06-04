@@ -93,6 +93,23 @@ defmodule Playwright.ChannelOwner.Page do
     frame(channel_owner) |> Channel.send("querySelectorAll", %{selector: selector})
   end
 
+  def screenshot(channel_owner, params) do
+    case Map.pop(params, "path", nil) do
+      {nil, params} ->
+        channel_owner |> Channel.send("screenshot", params)
+
+      {path, params} ->
+        [_, type] = String.split(path, ".")
+
+        data =
+          channel_owner
+          |> Channel.send("screenshot", Map.put(params, :type, type))
+
+        File.write!(path, Base.decode64!(data))
+        data
+    end
+  end
+
   def set_content(channel_owner, content) do
     params = %{
       html: content,

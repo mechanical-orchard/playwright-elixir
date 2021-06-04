@@ -43,4 +43,13 @@ defmodule Playwright.Transport.DriverFrame do
     {message, tail} = String.split_at(data, read_length)
     parse_frame(tail, 0, "", accumulated ++ [buffer <> message])
   end
+
+  def parse_frame(<<data::binary>>, read_length, buffer, accumulated)
+      when byte_size(data) < read_length do
+    %{
+      messages: accumulated,
+      remaining: read_length - byte_size(data),
+      buffer: buffer <> data
+    }
+  end
 end

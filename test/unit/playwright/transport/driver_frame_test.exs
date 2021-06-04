@@ -92,5 +92,13 @@ defmodule Test.Unit.Playwright.Transport.DriverFrameTest do
                buffer: ""
              }
     end
+
+    test "when the frame is a 'partial'" do
+      assert DriverFrame.parse_frame("a partial", 51, "", []) == %{
+               messages: [],
+               remaining: 42,
+               buffer: "a partial"
+             }
+    end
   end
 end
