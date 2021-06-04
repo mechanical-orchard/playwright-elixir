@@ -12,7 +12,7 @@ defmodule PlaywrightTest.Case do
 
         case transport do
           :driver ->
-            {connection, browser} = Playwright.launch()
+            {connection, browser} = Playwright.BrowserType.launch()
 
             [
               connection: connection,
@@ -26,7 +26,7 @@ defmodule PlaywrightTest.Case do
           # This will become more configurable; it currently assumes
           # Playwright is running in a (customized) Docker container.
           :websocket ->
-            {connection, browser} = Playwright.connect("ws://localhost:3000/playwright")
+            {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
 
             [
               connection: connection,

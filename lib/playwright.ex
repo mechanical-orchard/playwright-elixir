@@ -1,20 +1,17 @@
 defmodule Playwright do
-  alias Playwright.Client.BrowserType
+  use Application
 
-  # __DEBUG__ (playground)
-  # ---------------------------------------------------------------------------
+  @impl Application
+  def start(_type, _args) do
+    children = [
+      {DynamicSupervisor, strategy: :one_for_one, name: Playwright.BrowserType.Supervisor}
+    ]
 
-  def start() do
-    {:ok, _} = BrowserType.start_link([])
-  end
+    options = [
+      name: Playwright.Supervisor,
+      strategy: :one_for_one
+    ]
 
-  def launch() do
-    {connection, browser} = BrowserType.launch("assets/node_modules/playwright/lib/cli/cli.js")
-    {connection, browser}
-  end
-
-  def connect(ws_endpoint) do
-    {connection, browser} = BrowserType.connect(ws_endpoint)
-    {connection, browser}
+    Supervisor.start_link(children, options)
   end
 end
