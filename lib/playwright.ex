@@ -14,4 +14,8 @@ defmodule Playwright do
 
     Supervisor.start_link(children, options)
   end
+
+  def start() do
+    start(nil, nil)
+  end
 end
