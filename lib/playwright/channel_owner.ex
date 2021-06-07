@@ -13,7 +13,7 @@ defmodule Playwright.ChannelOwner do
 
       def channel_owner(
             parent,
-            %{"guid" => guid, "type" => type, "initializer" => initializer} = args
+            %{guid: guid, type: type, initializer: initializer} = args
           ) do
         %__MODULE__{
           connection: parent.connection,

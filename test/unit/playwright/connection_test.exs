@@ -182,10 +182,10 @@ defmodule Test.Unit.Playwright.ConnectionTest do
       assert_received(
         {:tag,
          %{
-           "id" => 42,
-           "guid" => "page@1",
-           "method" => "click",
-           "params" => %{"selector" => "a.link"}
+           id: 42,
+           guid: "page@1",
+           method: "click",
+           params: %{selector: "a.link"}
          }}
       )
     end

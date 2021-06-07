@@ -2,7 +2,9 @@ defmodule Playwright.Connection do
   require Logger
 
   use GenServer
+
   alias Playwright.ChannelOwner.Root
+  alias Playwright.Extra
 
   # API
   # ----------------------------------------------------------------------------
@@ -135,18 +137,18 @@ defmodule Playwright.Connection do
   end
 
   defp _recv_(<<json::binary>>, state) do
-    _recv_(Jason.decode!(json), state)
+    _recv_(Jason.decode!(json) |> Extra.Map.deep_atomize_keys(), state)
   end
 
-  defp _recv_(%{"id" => message_id, "result" => result}, state) do
+  defp _recv_(%{id: message_id, result: result}, state) do
     case Map.to_list(result) do
-      [{_key, %{"guid" => guid}}] ->
+      [{_key, %{guid: guid}}] ->
         reply_from_catalog({message_id, guid}, state)
 
-      [{"elements", value}] ->
+      [{:elements, value}] ->
         reply_with_value({message_id, value}, state)
 
-      [{"value", value}] ->
+      [{:value, value}] ->
         reply_with_value({message_id, value}, state)
 
       [] ->
@@ -154,23 +156,23 @@ defmodule Playwright.Connection do
     end
   end
 
-  defp _recv_(%{"id" => message_id} = data, state) do
+  defp _recv_(%{id: message_id} = data, state) do
     reply_from_messages({message_id, data}, state)
   end
 
-  defp _recv_(%{"guid" => ""} = data, state) do
-    _recv_(Map.put(data, "guid", "Root"), state)
+  defp _recv_(%{guid: ""} = data, state) do
+    _recv_(Map.put(data, :guid, "Root"), state)
   end
 
   defp _recv_(
-         %{"guid" => parent_guid, "method" => "__create__", "params" => params},
+         %{guid: parent_guid, method: "__create__", params: params},
          %{catalog: catalog} = state
        ) do
     item = apply(resource(params), :new, [catalog[parent_guid], params])
     %{state | catalog: _put_(item, state)}
   end
 
-  defp _recv_(%{"guid" => guid, "method" => "__dispose__"}, %{catalog: catalog} = state) do
+  defp _recv_(%{guid: guid, method: "__dispose__"}, %{catalog: catalog} = state) do
     %{state | catalog: _del_(guid, catalog)}
   end
 
@@ -179,7 +181,7 @@ defmodule Playwright.Connection do
     state
   end
 
-  defp resource(%{"type" => type}) do
+  defp resource(%{type: type}) do
     try do
       String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
     rescue
@@ -206,10 +208,7 @@ defmodule Playwright.Connection do
   defp reply_from_messages({message_id, data}, %{catalog: _catalog, messages: messages, queries: queries} = state) do
     {message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
-
-    # TODO (need to atomize keys):
-    stringified = Jason.decode!(Jason.encode!(message))
-    GenServer.reply(from, Map.merge(stringified, data))
+    GenServer.reply(from, Map.merge(message, data))
 
     %{state | messages: Map.put(messages, :pending, pending), queries: queries}
   end

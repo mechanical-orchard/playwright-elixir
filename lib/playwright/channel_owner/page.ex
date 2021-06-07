@@ -57,13 +57,13 @@ defmodule Playwright.ChannelOwner.Page do
       }
     })
     |> case do
-      %{"s" => result} ->
+      %{s: result} ->
         result
 
-      %{"n" => result} ->
+      %{n: result} ->
         result
 
-      %{"v" => "undefined"} ->
+      %{v: "undefined"} ->
         nil
     end
   end
@@ -95,8 +95,8 @@ defmodule Playwright.ChannelOwner.Page do
 
   def set_content(channel_owner, content) do
     params = %{
-      "html" => content,
-      "waitUntil" => "load"
+      html: content,
+      waitUntil: "load"
     }
 
     frame(channel_owner) |> Channel.send("setContent", params)
@@ -104,7 +104,7 @@ defmodule Playwright.ChannelOwner.Page do
   end
 
   def set_viewport_size(channel_owner, params) do
-    channel_owner |> Channel.send("setViewportSize", %{"viewportSize" => params})
+    channel_owner |> Channel.send("setViewportSize", %{viewportSize: params})
     channel_owner
   end
 
@@ -124,6 +124,6 @@ defmodule Playwright.ChannelOwner.Page do
   # ---------------------------------------------------------------------------
 
   defp frame(channel_owner) do
-    Connection.get(channel_owner.connection, {:guid, channel_owner.initializer["mainFrame"]["guid"]})
+    Connection.get(channel_owner.connection, {:guid, channel_owner.initializer.mainFrame.guid})
   end
 end

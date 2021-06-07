@@ -18,7 +18,7 @@ defmodule Playwright.ChannelOwner.Playwright do
   # end
 
   # def chromimum(playwright_channel_owner) do
-  #   %{"guid" => guid} = playwright_channel_owner.initializer["chromium"]
+  #   %{guid: guid} = playwright_channel_owner.initializer["chromium"]
   #   GenServer.call(playwright_channel_owner.connection, {:wait_for, guid})
   # end
 

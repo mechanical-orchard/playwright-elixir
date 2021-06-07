@@ -27,7 +27,7 @@ defmodule Playwright.BrowserType do
 
   defp chromium(connection) do
     playwright = Connection.get(connection, {:guid, "Playwright"})
-    %{"guid" => guid} = playwright.initializer["chromium"]
+    %{guid: guid} = playwright.initializer.chromium
 
     Connection.get(connection, {:guid, guid})
     |> Playwright.ChannelOwner.BrowserType.launch()
@@ -35,7 +35,7 @@ defmodule Playwright.BrowserType do
 
   defp prelaunched(connection) do
     playwright = Connection.get(connection, {:guid, "Playwright"})
-    %{"guid" => guid} = playwright.initializer["preLaunchedBrowser"]
+    %{guid: guid} = playwright.initializer.preLaunchedBrowser
 
     Connection.get(connection, {:guid, guid})
   end
