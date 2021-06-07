@@ -2,16 +2,19 @@ defmodule Test.Features.PageTest do
   use ExUnit.Case
   use PlaywrightTest.Case, transport: :driver
 
+  alias Playwright.ChannelOwner.ElementHandle
+
   describe "Page" do
-    test ".query_selector/2", %{browser: browser, server: server} do
+    test ".query_selector/2", %{browser: browser, connection: connection, server: server} do
       page =
         browser
         |> Browser.new_page()
         |> Page.goto(server.prefix <> "/dom.html")
 
-      page
-      |> Page.query_selector("css=#outer")
-      |> assert()
+      assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: guid} =
+               page |> Page.query_selector("css=#outer")
+
+      assert guid != nil
 
       page
       |> Page.query_selector("css=#non-existent")
@@ -20,14 +23,18 @@ defmodule Test.Features.PageTest do
       Page.close(page)
     end
 
-    test ".query_selector_all/2", %{browser: browser, server: server} do
+    test ".query_selector_all/2", %{browser: browser, connection: connection, server: server} do
       page =
         browser
         |> Browser.new_page()
         |> Page.goto(server.prefix <> "/dom.html")
 
-      elements = Page.query_selector_all(page, "css=div")
-      assert length(elements) > 1
+      [outer_div, inner_div] = Page.query_selector_all(page, "css=div")
+      assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: outer_div_guid} = outer_div
+      assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: inner_div_guid} = inner_div
+      assert outer_div_guid != nil
+      assert inner_div_guid != nil
+      assert ElementHandle.text_content(outer_div) == "Text,\nmore text"
 
       elements = Page.query_selector_all(page, "css=non-existent")
       assert length(elements) == 0

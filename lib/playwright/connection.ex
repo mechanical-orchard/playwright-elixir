@@ -145,8 +145,8 @@ defmodule Playwright.Connection do
       [{_key, %{guid: guid}}] ->
         reply_from_catalog({message_id, guid}, state)
 
-      [{:elements, value}] ->
-        reply_with_value({message_id, value}, state)
+      [{:elements, list}] ->
+        reply_with_list({message_id, list}, state)
 
       [{:value, value}] ->
         reply_with_value({message_id, value}, state)
@@ -210,6 +210,15 @@ defmodule Playwright.Connection do
     {from, queries} = Map.pop!(queries, message_id)
     GenServer.reply(from, Map.merge(message, data))
 
+    %{state | messages: Map.put(messages, :pending, pending), queries: queries}
+  end
+
+  defp reply_with_list({message_id, list}, %{catalog: catalog, messages: messages, queries: queries} = state)
+       when is_list(list) do
+    data = list |> Enum.map(fn %{guid: guid} -> catalog[guid] end)
+    {_message, pending} = Map.pop!(messages.pending, message_id)
+    {from, queries} = Map.pop!(queries, message_id)
+    GenServer.reply(from, data)
     %{state | messages: Map.put(messages, :pending, pending), queries: queries}
   end
 
