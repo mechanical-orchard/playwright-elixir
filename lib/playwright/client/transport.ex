@@ -72,8 +72,8 @@ defmodule Playwright.Client.Transport do
     end
 
     def handle_info({_port, {:exit_status, status}}, state) do
-      Logger.warn("[transport@#{inspect(self())}] exit #{inspect(status)}")
-      {:noreply, %{state | exit_status: status}}
+      Logger.error("[transport@#{inspect(self())}] playwright driver exited with status: #{inspect(status)}")
+      {:stop, :port_closed, state}
     end
 
     # private
