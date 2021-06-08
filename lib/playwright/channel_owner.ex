@@ -11,6 +11,9 @@ defmodule Playwright.ChannelOwner do
 
       defstruct unquote(fields)
 
+      @type t() :: %__MODULE__{}
+
+      @doc false
       def channel_owner(
             parent,
             %{guid: guid, type: type, initializer: initializer} = args

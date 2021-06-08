@@ -7,6 +7,7 @@ defmodule Playwright.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
+      preferred_cli_env: [docs: :docs],
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -26,6 +27,7 @@ defmodule Playwright.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:ex_doc, "~> 0.24", only: :docs, runtime: false},
       {:jason, "~> 1.2"},
       {:plug, "~> 1.11.1", only: [:dev, :test]},
       {:plug_cowboy, "~> 2.5.0", only: [:dev, :test]},
