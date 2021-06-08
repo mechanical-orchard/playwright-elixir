@@ -3,6 +3,7 @@ defmodule Playwright.Connection do
 
   use GenServer
 
+  alias Playwright.ChannelMessage
   alias Playwright.ChannelOwner.Root
   alias Playwright.Extra
 
@@ -33,6 +34,7 @@ defmodule Playwright.Connection do
 
   # API: messages...
 
+  @spec post(pid(), {:data, ChannelMessage.t()}) :: term()
   def post(connection, {:data, _data} = message) do
     GenServer.call(connection, {:post, message})
   end
@@ -85,11 +87,7 @@ defmodule Playwright.Connection do
     index = messages.count + 1
     pending = data
 
-    payload =
-      data
-      |> Map.put(:id, index)
-      |> Map.delete(:locals)
-
+    payload = %{data | id: index}
     queries = Map.put(queries, index, from)
 
     messages =

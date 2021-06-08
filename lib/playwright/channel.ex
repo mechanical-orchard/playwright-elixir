@@ -1,8 +1,9 @@
 defmodule Playwright.Channel do
+  alias Playwright.ChannelMessage
   alias Playwright.Connection
 
   def send(channel_owner, method, params \\ %{}, locals \\ nil) do
-    message = %{
+    message = %ChannelMessage{
       guid: channel_owner.guid,
       method: method,
       params: params,

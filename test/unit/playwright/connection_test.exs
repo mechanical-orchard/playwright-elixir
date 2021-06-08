@@ -157,13 +157,12 @@ defmodule Test.Unit.Playwright.ConnectionTest do
 
       from = {self(), :tag}
 
-      data = %{
+      data = %Playwright.ChannelMessage{
         guid: "page@1",
+        id: 42,
         method: "click",
         params: %{selector: "a.link"}
       }
-
-      post = Map.put(data, :id, 42)
 
       {response, state} = Connection.handle_call({:post, {:data, data}}, from, state)
       assert response == :noreply
@@ -171,7 +170,7 @@ defmodule Test.Unit.Playwright.ConnectionTest do
       assert state.queries == %{42 => from}
 
       posted = TestTransport.dump(state.transport.pid)
-      assert posted == [Jason.encode!(post)]
+      assert posted == [Jason.encode!(data)]
 
       {_, %{messages: messages, queries: queries}} =
         Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: 42})}}, state)
