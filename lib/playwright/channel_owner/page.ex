@@ -25,6 +25,9 @@ defmodule Playwright.ChannelOwner.Page do
 
   use Playwright.ChannelOwner, owned_context: nil
 
+  alias Playwright.ChannelOwner.ElementHandle
+  alias Playwright.ChannelOwner.Page
+
   def new(parent, args) do
     channel_owner(parent, args)
   end
@@ -71,6 +74,10 @@ defmodule Playwright.ChannelOwner.Page do
   def fill(channel_owner, selector, value) do
     frame(channel_owner) |> Channel.send("fill", %{selector: selector, value: value})
     channel_owner
+  end
+
+  def get_attribute(channel_owner, selector, name) do
+    channel_owner |> Page.query_selector(selector) |> ElementHandle.get_attribute(name)
   end
 
   def goto(channel_owner, url) do
