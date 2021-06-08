@@ -12,4 +12,8 @@ defmodule Playwright.ChannelOwner.ElementHandle do
   def text_content(channel_owner) do
     channel_owner |> Channel.send("textContent")
   end
+
+  def click(channel_owner) do
+    channel_owner |> Channel.send("click")
+  end
 end
