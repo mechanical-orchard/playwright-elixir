@@ -22,7 +22,7 @@ defmodule Test.Features.BrowserTest do
       assert length(Browser.contexts(browser)) == 1
 
       Page.close(page2)
-      assert length(Browser.contexts(browser)) == 0
+      assert Browser.contexts(browser) == []
     end
   end
 end

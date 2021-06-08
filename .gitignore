@@ -11,7 +11,7 @@
 
 # Where third-party dependencies like ExDoc output generated docs.
 /doc/
-
+/priv/plts
 /.elixir_ls
 /rebar.lock
 

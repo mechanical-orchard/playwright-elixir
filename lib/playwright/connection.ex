@@ -1,4 +1,5 @@
 defmodule Playwright.Connection do
+  @moduledoc false
   require Logger
 
   use GenServer

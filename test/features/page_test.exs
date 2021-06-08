@@ -37,7 +37,7 @@ defmodule Test.Features.PageTest do
       assert ElementHandle.text_content(outer_div) == "Text,\nmore text"
 
       elements = Page.query_selector_all(page, "css=non-existent")
-      assert length(elements) == 0
+      assert elements == []
 
       Page.close(page)
     end

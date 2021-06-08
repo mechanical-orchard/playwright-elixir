@@ -1,4 +1,5 @@
 defmodule Playwright.Transport.Driver do
+  @moduledoc false
   alias Playwright.Client.Transport.Driver, as: Transport
 
   # API

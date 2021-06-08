@@ -1,10 +1,13 @@
 defmodule Playwright.Client.Transport do
+  @moduledoc false
   require Logger
   alias Playwright.Connection
 
   defmodule Driver do
+    @moduledoc false
     use GenServer
     alias Playwright.Transport.DriverFrame
+    require Logger
 
     # API
     # -------------------------------------------------------------------------
@@ -63,13 +66,13 @@ defmodule Playwright.Client.Transport do
         buffer: buffer
       } = DriverFrame.parse_frame(data, remaining, buffer, [])
 
-      messages |> Enum.map(fn message -> post(state.connection, message) end)
+      messages |> Enum.each(fn message -> post(state.connection, message) end)
 
       {:noreply, %{state | buffer: buffer, remaining: remaining}}
     end
 
     def handle_info({_port, {:exit_status, status}}, state) do
-      status |> IO.inspect(label: "exit")
+      Logger.warn("[transport@#{inspect(self())}] exit #{inspect(status)}")
       {:noreply, %{state | exit_status: status}}
     end
 
@@ -82,6 +85,7 @@ defmodule Playwright.Client.Transport do
   end
 
   defmodule WebSocket do
+    @moduledoc false
     use WebSockex
 
     # API

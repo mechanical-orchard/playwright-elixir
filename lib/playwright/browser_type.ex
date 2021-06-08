@@ -1,6 +1,7 @@
 defmodule Playwright.BrowserType do
-  require Logger
+  @moduledoc false
   alias Playwright.{BrowserType, Connection, Transport}
+  require Logger
 
   # API
   # ----------------------------------------------------------------------------

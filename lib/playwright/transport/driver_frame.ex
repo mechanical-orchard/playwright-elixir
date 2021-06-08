@@ -1,8 +1,11 @@
 defmodule Playwright.Transport.DriverFrame do
-  # NOTE
-  # - Frames contain:
-  #   - Messages
-  #   - Padding (which indicate "read length")
+  @moduledoc """
+  NOTE:
+
+  - Frames contain:
+    - Messages
+    - Padding (which indicate "read length")
+  """
 
   # API
   # ----------------------------------------------------------------------------

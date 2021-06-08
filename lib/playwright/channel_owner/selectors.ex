@@ -1,4 +1,5 @@
 defmodule Playwright.ChannelOwner.Selectors do
+  @moduledoc false
   use Playwright.ChannelOwner
 
   def new(parent, args) do

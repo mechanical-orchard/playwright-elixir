@@ -1,4 +1,7 @@
 defmodule Playwright do
+  @moduledoc """
+  An Elixir wrapper for [Playwright](https://playwright.dev).
+  """
   use Application
 
   @impl Application

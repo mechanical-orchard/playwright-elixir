@@ -1,4 +1,5 @@
 defmodule Playwright.ChannelOwner.Browser do
+  @moduledoc false
   use Playwright.ChannelOwner
 
   # API

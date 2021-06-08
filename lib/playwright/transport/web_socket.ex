@@ -1,4 +1,5 @@
 defmodule Playwright.Transport.WebSocket do
+  @moduledoc false
   alias Playwright.Client.Transport.WebSocket, as: Transport
 
   # API

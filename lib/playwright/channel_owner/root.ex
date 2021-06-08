@@ -1,4 +1,7 @@
 defmodule Playwright.ChannelOwner.Root do
+  @moduledoc """
+  Represents the root node of a browser page.
+  """
   require Logger
   # TS: Root extends ChannelOwner<channels.Channel>
 

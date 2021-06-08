@@ -1,4 +1,5 @@
 defmodule Playwright.Channel do
+  @moduledoc false
   alias Playwright.ChannelMessage
   alias Playwright.Connection
 

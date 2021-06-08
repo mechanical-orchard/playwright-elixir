@@ -1,4 +1,5 @@
 defmodule Playwright.ChannelOwner do
+  @moduledoc false
   @base [connection: nil, parent: nil, type: nil, guid: nil, initializer: nil]
 
   defmacro __using__(fields \\ []) do
