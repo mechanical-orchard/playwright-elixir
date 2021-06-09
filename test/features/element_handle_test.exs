@@ -22,7 +22,6 @@ defmodule Test.Features.ElementHandleTest do
     [page: page]
   end
 
-
   def visit_playground_fixture(%{browser: browser, server: server}) do
     page =
       browser

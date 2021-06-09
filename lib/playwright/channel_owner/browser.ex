@@ -10,7 +10,7 @@ defmodule Playwright.ChannelOwner.Browser do
     channel_owner(parent, args)
   end
 
-  def new_context(channel_owner) do
+  def new_context(%ChannelOwner.Browser{} = channel_owner) do
     context = Channel.send(channel_owner, "newContext", %{noDefaultViewport: false, sdkLanguage: "elixir"})
 
     case context do
