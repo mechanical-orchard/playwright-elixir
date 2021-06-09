@@ -42,9 +42,7 @@ defmodule PlaywrightTest.Case do
             [
               connection: connection,
               browser: browser,
-              server: %{
-                prefix: "http://localhost:3002"
-              }
+              transport: :driver
             ]
 
           # NOTE:
@@ -56,9 +54,7 @@ defmodule PlaywrightTest.Case do
             [
               connection: connection,
               browser: browser,
-              server: %{
-                prefix: "http://host.docker.internal:3002"
-              }
+              transport: :websocket
             ]
         end
       end

@@ -98,7 +98,7 @@
         {Credo.Check.Readability.LargeNumbers, []},
         {Credo.Check.Readability.MaxLineLength, [priority: :low, max_length: 120]},
         {Credo.Check.Readability.ModuleAttributeNames, []},
-        {Credo.Check.Readability.ModuleDoc, [ignore_names: ~r{AssetsServer}]},
+        {Credo.Check.Readability.ModuleDoc, [ignore_names: ~r{AssetsServer|TestCase}]},
         {Credo.Check.Readability.ModuleNames, []},
         {Credo.Check.Readability.ParenthesesInCondition, []},
         {Credo.Check.Readability.ParenthesesOnZeroArityDefs, []},

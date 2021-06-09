@@ -1,6 +1,5 @@
 defmodule Test.Features.Page.ScreenshotTest do
-  use ExUnit.Case
-  use PlaywrightTest.Case
+  use Playwright.TestCase
 
   describe "screenshot/2" do
     test "caputures a screenshot, returning the base64 encoded binary", %{browser: browser} do

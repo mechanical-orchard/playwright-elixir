@@ -1,6 +1,5 @@
 defmodule Test.Features.ElementHandleTest do
-  use ExUnit.Case
-  use PlaywrightTest.Case, transport: :driver
+  use Playwright.TestCase
 
   alias Playwright.ChannelOwner.ElementHandle
 

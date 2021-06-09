@@ -1,6 +1,5 @@
 defmodule Test.Support.AssetsServerTest do
-  use ExUnit.Case
-  use PlaywrightTest.Case
+  use Playwright.TestCase
 
   describe "Local test assets derver" do
     test "works", %{browser: browser, server: server} do
