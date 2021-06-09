@@ -1,16 +1,39 @@
 defmodule Playwright.BrowserType do
-  @moduledoc false
+  @moduledoc """
+  The `Playwright.BrowserType` module exposes functions that either:
+    * launch a new browser instance via a port
+    * connect to a running playwright websocket
+
+  ## Examples
+
+  Open a new chromium via the CLI driver:
+
+      {connection, browser} = Playwright.BrowserType.launch()
+
+  Connect to a running playwright instances:
+
+      {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
+
+  """
   alias Playwright.{BrowserType, ChannelOwner, Connection, Transport}
   require Logger
 
   # API
   # ----------------------------------------------------------------------------
 
+  @doc """
+  Connect to a running playwright server.
+  """
+  @spec connect(binary()) :: {pid(), ChannelOwner.Browser.t()}
   def connect(ws_endpoint) do
     {:ok, connection} = new_session(Transport.WebSocket, [ws_endpoint])
     {connection, prelaunched(connection)}
   end
 
+  @doc """
+  Launch a new local browser.
+  """
+  @spec launch() :: {pid(), ChannelOwner.Browser.t()}
   def launch() do
     {:ok, connection} = new_session(Transport.Driver, ["assets/node_modules/playwright/lib/cli/cli.js"])
     {connection, chromium(connection)}

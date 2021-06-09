@@ -17,6 +17,11 @@ defmodule PlaywrightTest.Case do
           end
         end
       end
+
+      defmodule Web.BrowserlessTest do
+        use ExUnit.Case
+        use PlaywrightTest.Case, transport: :websocket,
+      end
   """
   defmacro __using__(config \\ %{}) do
     quote do
@@ -49,7 +54,8 @@ defmodule PlaywrightTest.Case do
           # This will become more configurable; it currently assumes
           # Playwright is running in a (customized) Docker container.
           :websocket ->
-            {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
+            endpoint = Keyword.get(config, :playwright_endpoint, "ws://localhost:3000/playwright")
+            {connection, browser} = Playwright.BrowserType.connect(endpoint)
 
             [
               connection: connection,
