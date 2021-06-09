@@ -6,6 +6,7 @@ defmodule Playwright.Channel do
   def send(channel_owner, method, params \\ %{}, locals \\ nil) do
     message = %ChannelMessage{
       guid: channel_owner.guid,
+      id: System.unique_integer([:monotonic, :positive]),
       method: method,
       params: params,
       locals: locals

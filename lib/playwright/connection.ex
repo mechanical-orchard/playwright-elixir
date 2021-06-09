@@ -15,7 +15,7 @@ defmodule Playwright.Connection do
   @type transport_module :: module()
   @type transport_config :: {transport_module, [term()]}
 
-  defstruct(catalog: %{}, messages: %{count: 0, pending: %{}}, queries: %{}, transport: %{})
+  defstruct(catalog: %{}, messages: %{pending: %{}}, queries: %{}, transport: %{})
   # messages -> pending, awaiting, ...
 
   @spec start_link([transport_config]) :: GenServer.on_start()
@@ -85,19 +85,14 @@ defmodule Playwright.Connection do
 
   @impl GenServer
   def handle_call({:post, {:data, data}}, from, %{messages: messages, queries: queries, transport: transport} = state) do
-    index = messages.count + 1
-    pending = data
-
-    payload = %{data | id: index}
-    queries = Map.put(queries, index, from)
+    queries = Map.put(queries, data.id, from)
 
     messages =
       Map.merge(messages, %{
-        count: index,
-        pending: Map.put(messages.pending, index, pending)
+        pending: Map.put(messages.pending, data.id, data)
       })
 
-    transport.mod.post(transport.pid, Jason.encode!(payload))
+    transport.mod.post(transport.pid, Jason.encode!(data))
 
     {:noreply, %{state | messages: messages, queries: queries}}
   end

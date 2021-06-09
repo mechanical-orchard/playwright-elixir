@@ -153,7 +153,7 @@ defmodule Test.Unit.Playwright.ConnectionTest do
 
   describe "@impl: handle_call/3 for :post" do
     test "sends a message and blocks on a matching return message", %{connection: connection} do
-      state = %{:sys.get_state(connection) | messages: %{count: 41, pending: %{}}}
+      state = %{:sys.get_state(connection) | messages: %{pending: %{}}}
 
       from = {self(), :tag}
 
@@ -166,7 +166,7 @@ defmodule Test.Unit.Playwright.ConnectionTest do
 
       {response, state} = Connection.handle_call({:post, {:data, data}}, from, state)
       assert response == :noreply
-      assert state.messages == %{count: 42, pending: %{42 => data}}
+      assert state.messages == %{pending: %{42 => data}}
       assert state.queries == %{42 => from}
 
       posted = TestTransport.dump(state.transport.pid)

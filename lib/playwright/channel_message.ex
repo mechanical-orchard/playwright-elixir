@@ -17,7 +17,7 @@ defmodule Playwright.ChannelMessage do
 
   @type t() :: %__MODULE__{
           guid: binary(),
-          id: integer() | nil,
+          id: integer(),
           locals: map() | nil,
           method: binary(),
           params: map()
