@@ -1,6 +1,6 @@
 defmodule Playwright.BrowserType do
   @moduledoc false
-  alias Playwright.{BrowserType, Connection, Transport}
+  alias Playwright.{BrowserType, ChannelOwner, Connection, Transport}
   require Logger
 
   # API
@@ -28,10 +28,17 @@ defmodule Playwright.BrowserType do
 
   defp chromium(connection) do
     playwright = Connection.get(connection, {:guid, "Playwright"})
-    %{guid: guid} = playwright.initializer.chromium
 
-    Connection.get(connection, {:guid, guid})
-    |> Playwright.ChannelOwner.BrowserType.launch()
+    case playwright do
+      %ChannelOwner.Playwright{} ->
+        %{guid: guid} = playwright.initializer.chromium
+
+        Connection.get(connection, {:guid, guid})
+        |> Playwright.ChannelOwner.BrowserType.launch()
+
+      _other ->
+        raise("expected chromium to return a Playwright.ChannelOwner.Playwright, received: #{inspect(playwright)}")
+    end
   end
 
   defp prelaunched(connection) do
