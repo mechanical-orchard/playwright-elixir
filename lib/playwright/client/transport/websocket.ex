@@ -27,9 +27,9 @@ defmodule Playwright.Client.Transport.WebSocket do
   def init([ws_endpoint, connection]) do
     uri = URI.parse(ws_endpoint)
 
-    with {:ok, gun_pid} <- :gun.open(to_charlist(uri.host), port(uri)),
-         {:ok, _protocol} <- :gun.await_up(gun_pid),
-         stream_ref <- :gun.ws_upgrade(gun_pid, uri.path),
+    with {:ok, gun_pid} <- :gun.open(to_charlist(uri.host), port(uri), %{connect_timeout: 30_000}),
+         {:ok, _protocol} <- :gun.await_up(gun_pid, :timer.seconds(5)),
+         {:ok, stream_ref} <- ws_upgrade(gun_pid, uri.path),
          :ok <- wait_for_ws_upgrade() do
       ref = Process.monitor(gun_pid)
 
@@ -40,6 +40,8 @@ defmodule Playwright.Client.Transport.WebSocket do
          gun_process_monitor: ref,
          gun_stream_ref: stream_ref
        )}
+    else
+      error -> error
     end
   end
 
@@ -93,6 +95,8 @@ defmodule Playwright.Client.Transport.WebSocket do
         exit(:timeout)
     end
   end
+
+  defp ws_upgrade(gun_pid, path), do: {:ok, :gun.ws_upgrade(gun_pid, path)}
 
   defp debug(msg), do: Logger.debug("[websocket@#{inspect(self())}] #{msg}")
   defp warn(msg), do: Logger.warn("[websocket@#{inspect(self())}] #{msg}")
