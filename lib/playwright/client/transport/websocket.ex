@@ -78,9 +78,6 @@ defmodule Playwright.Client.Transport.WebSocket do
   defp port(%{scheme: "ws"}), do: 80
   defp port(%{scheme: "wss"}), do: 443
 
-  defp transport(%{scheme: "wss"}), do: :http
-  defp transport(%{scheme: "ws"}), do: :http
-
   defp wait_for_ws_upgrade do
     receive do
       {:gun_upgrade, _pid, _stream_ref, ["websocket"], _headers} ->

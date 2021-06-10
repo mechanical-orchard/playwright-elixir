@@ -202,14 +202,12 @@ defmodule Playwright.Connection do
   end
 
   defp resource(%{type: type}) do
-    try do
-      String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
-    rescue
-      ArgumentError ->
-        message = "ChannelOwner of type #{inspect(type)} is not yet defined"
-        Logger.debug(message)
-        exit(message)
-    end
+    String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
+  rescue
+    ArgumentError ->
+      message = "ChannelOwner of type #{inspect(type)} is not yet defined"
+      Logger.debug(message)
+      exit(message)
   end
 
   defp reply_from_catalog({message_id, guid}, %{catalog: catalog, messages: messages, queries: queries} = state) do
