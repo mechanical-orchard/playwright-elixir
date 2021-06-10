@@ -36,13 +36,14 @@ defmodule Playwright.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:cowlib, "~> 2.11.0", override: true},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.24", only: :docs, runtime: false},
+      {:gun, "~> 1.3"},
       {:jason, "~> 1.2"},
       {:plug, "~> 1.11.1", only: [:dev, :test]},
-      {:plug_cowboy, "~> 2.5.0", only: [:dev, :test]},
-      {:websockex, "~> 0.4.3"}
+      {:plug_cowboy, "~> 2.5.0", only: [:dev, :test]}
     ]
   end
 end

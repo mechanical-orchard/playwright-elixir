@@ -1,18 +1,21 @@
 defmodule Playwright.Client.Transport.WebSocket do
   @moduledoc false
-  use WebSockex
+  use GenServer
   alias Playwright.Connection
   require Logger
 
   # API
   # ---------------------------------------------------------------------------
 
-  defstruct(connection: nil)
+  defstruct([
+    :connection,
+    :gun,
+    :gun_process_monitor,
+    :gun_stream_ref
+  ])
 
   def start_link([ws_endpoint, connection]) do
-    WebSockex.start_link(ws_endpoint, __MODULE__, %__MODULE__{connection: connection}, [
-      {:socket_recv_timeout, 120_000}
-    ])
+    GenServer.start_link(__MODULE__, [ws_endpoint, connection])
   end
 
   def start_link!(args) do
@@ -20,24 +23,79 @@ defmodule Playwright.Client.Transport.WebSocket do
     pid
   end
 
+  @impl GenServer
+  def init([ws_endpoint, connection]) do
+    uri = URI.parse(ws_endpoint)
+
+    with {:ok, gun_pid} <- :gun.open(to_charlist(uri.host), port(uri)),
+         {:ok, _protocol} <- :gun.await_up(gun_pid),
+         stream_ref <- :gun.ws_upgrade(gun_pid, uri.path),
+         :ok <- wait_for_ws_upgrade() do
+      ref = Process.monitor(gun_pid)
+
+      {:ok,
+       __struct__(
+         connection: connection,
+         gun: gun_pid,
+         gun_process_monitor: ref,
+         gun_stream_ref: stream_ref
+       )}
+    end
+  end
+
+  @spec send_message(pid(), binary()) :: :ok
   def send_message(pid, message) do
-    WebSockex.send_frame(pid, {:text, message})
+    GenServer.cast(pid, {:send_message, message})
+    :ok
   end
 
   # @impl
   # ---------------------------------------------------------------------------
 
-  @impl WebSockex
-  def handle_connect(_conn, state) do
-    {:ok, state}
+  @impl true
+  def handle_cast({:send_message, message}, state) do
+    :gun.ws_send(state.gun, {:text, message})
+    {:noreply, state}
   end
 
-  @impl WebSockex
-  def handle_frame(frame, %{connection: connection} = state) do
-    {:text, data} = frame
-    Logger.debug("websocket frame: #{data}")
-    Connection.recv(connection, frame)
-
-    {:ok, state}
+  @impl true
+  def handle_info({:gun_ws, _gun_pid, _stream_ref, frame}, state) do
+    case frame do
+      {:text, data} ->
+        debug("frame: #{data}")
+        Connection.recv(state.connection, frame)
+    end
+    {:noreply, state}
   end
+
+  def handle_info({:DOWN, _ref, :process, pid, reason}, state) do
+    warn("Process went down: #{inspect(pid)}")
+    {:stop, reason, state}
+  end
+
+  defp port(%{port: port}) when not is_nil(port), do: port
+  defp port(%{scheme: "ws"}), do: 80
+  defp port(%{scheme: "wss"}), do: 443
+
+  defp transport(%{scheme: "wss"}), do: :http
+  defp transport(%{scheme: "ws"}), do: :http
+
+  defp wait_for_ws_upgrade do
+    receive do
+      {:gun_upgrade, _pid, _stream_ref, ["websocket"], _headers} ->
+        :ok
+
+      {:gun_response, _pid, _stream_ref, _, status, _headers} ->
+        {:error, status}
+
+      {:gun_error, _pid, _stream_ref, reason} ->
+        {:error, reason}
+    after
+      1000 ->
+        exit(:timeout)
+    end
+  end
+
+  defp debug(msg), do: Logger.debug("[websocket@#{inspect(self())}] #{msg}")
+  defp warn(msg), do: Logger.warn("[websocket@#{inspect(self())}] #{msg}")
 end
