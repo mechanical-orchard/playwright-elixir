@@ -65,6 +65,7 @@ defmodule Playwright.Client.Transport.WebSocket do
         debug("frame: #{data}")
         Connection.recv(state.connection, frame)
     end
+
     {:noreply, state}
   end
 
