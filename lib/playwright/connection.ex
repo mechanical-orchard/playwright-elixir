@@ -15,7 +15,15 @@ defmodule Playwright.Connection do
   @type transport_module :: module()
   @type transport_config :: {transport_module, [term()]}
 
-  defstruct(catalog: %{}, messages: %{pending: %{}}, queries: %{}, transport: %{})
+  defstruct(
+    catalog: %{},
+    channel_message_callers: %{},
+    channel_messages: %{},
+    messages: %{pending: %{}},
+    queries: %{},
+    transport: %{}
+  )
+
   # messages -> pending, awaiting, ...
 
   @spec start_link([transport_config]) :: GenServer.on_start()
@@ -24,6 +32,10 @@ defmodule Playwright.Connection do
   end
 
   # API: items...
+
+  def wait_for_channel_messages(connection, type) do
+    GenServer.call(connection, {:get_channel_messages, type})
+  end
 
   def get(connection, {:guid, _guid} = item) do
     GenServer.call(connection, {:get, item})
@@ -59,6 +71,15 @@ defmodule Playwright.Connection do
          pid: transport_module.start_link!([self()] ++ config)
        }
      }}
+  end
+
+  @impl GenServer
+  def handle_call({:get_channel_messages, type}, from, state) do
+    if Map.has_key?(state.channel_messages, type) do
+      {:reply, state.channel_messages[type], state}
+    else
+      {:noreply, %{state | channel_message_callers: Map.put(state.channel_message_callers, type, from)}}
+    end
   end
 
   @impl GenServer
@@ -130,7 +151,7 @@ defmodule Playwright.Connection do
     Map.put(catalog, item.guid, item)
   end
 
-  defp _recv_(<<json::binary>>, state) do
+  defp _recv_(json, state) when is_binary(json) do
     _recv_(Jason.decode!(json) |> Extra.Map.deep_atomize_keys(), state)
   end
 
@@ -166,7 +187,9 @@ defmodule Playwright.Connection do
          %{catalog: catalog} = state
        ) do
     item = apply(resource(params), :new, [catalog[parent_guid], params])
+
     %{state | catalog: _put_(item, state)}
+    |> update_channel_messages(item)
   end
 
   defp _recv_(%{guid: guid, method: "__dispose__"}, %{catalog: catalog} = state) do
@@ -257,5 +280,20 @@ defmodule Playwright.Connection do
 
   defp select([_head | tail], attrs, result) do
     select(tail, attrs, result)
+  end
+
+  defp update_channel_messages(state, item) do
+    channel_messages =
+      Map.update(state.channel_messages, item.type, [item], fn
+        items -> [item | items]
+      end)
+
+    if Map.has_key?(state.channel_message_callers, item.type) do
+      {caller, channel_message_callers} = Map.pop(state.channel_message_callers, item.type)
+      GenServer.reply(caller, channel_messages[item.type])
+      %{state | channel_messages: channel_messages, channel_message_callers: channel_message_callers}
+    else
+      %{state | channel_messages: channel_messages}
+    end
   end
 end

@@ -27,7 +27,22 @@ defmodule Playwright.BrowserType do
   @spec connect(binary()) :: {pid(), ChannelOwner.Browser.t()}
   def connect(ws_endpoint) do
     {:ok, connection} = new_session(Transport.WebSocket, [ws_endpoint])
-    {connection, prelaunched(connection)}
+
+    browser_guid =
+      case wait_for_browser(connection, "chromium") do
+        %{initializer: %{version: "91." <> _}} ->
+          playwright = Connection.get(connection, {:guid, "Playwright"})
+          %{guid: guid} = playwright.initializer.preLaunchedBrowser
+          guid
+
+        %{initializer: %{version: "87." <> _}} ->
+          remote_browser = Connection.get(connection, {:guid, "remoteBrowser"})
+          %{guid: guid} = remote_browser.initializer.browser
+          guid
+      end
+
+    browser = Connection.get(connection, {:guid, browser_guid})
+    {connection, browser}
   end
 
   @doc """
@@ -41,13 +56,6 @@ defmodule Playwright.BrowserType do
 
   # private
   # ----------------------------------------------------------------------------
-
-  defp new_session(transport, args) do
-    DynamicSupervisor.start_child(
-      BrowserType.Supervisor,
-      {Connection, [{transport, args}]}
-    )
-  end
 
   defp chromium(connection) do
     playwright = Connection.get(connection, {:guid, "Playwright"})
@@ -64,10 +72,15 @@ defmodule Playwright.BrowserType do
     end
   end
 
-  defp prelaunched(connection) do
-    playwright = Connection.get(connection, {:guid, "Playwright"})
-    %{guid: guid} = playwright.initializer.preLaunchedBrowser
+  defp new_session(transport, args) do
+    DynamicSupervisor.start_child(
+      BrowserType.Supervisor,
+      {Connection, [{transport, args}]}
+    )
+  end
 
-    Connection.get(connection, {:guid, guid})
+  defp wait_for_browser(connection, name) do
+    Connection.wait_for_channel_messages(connection, "Browser")
+    |> Enum.find(&(&1.initializer.name == name))
   end
 end

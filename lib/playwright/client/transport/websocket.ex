@@ -2,6 +2,7 @@ defmodule Playwright.Client.Transport.WebSocket do
   @moduledoc false
   use WebSockex
   alias Playwright.Connection
+  require Logger
 
   # API
   # ---------------------------------------------------------------------------
@@ -33,6 +34,8 @@ defmodule Playwright.Client.Transport.WebSocket do
 
   @impl WebSockex
   def handle_frame(frame, %{connection: connection} = state) do
+    {:text, data} = frame
+    Logger.debug("websocket frame: #{data}")
     Connection.recv(connection, frame)
 
     {:ok, state}
