@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     name: Build
-    runs-on: ubuntu-20.10
+    runs-on: ubuntu-20.04
     env:
       MIX_ENV: test
     steps:
@@ -31,7 +31,7 @@ jobs:
       run: npm install --prefix assets
   test:
     name: Test
-    runs-on: ubuntu-20.10
+    runs-on: ubuntu-20.04
     env:
       MIX_ENV: test
     services:
