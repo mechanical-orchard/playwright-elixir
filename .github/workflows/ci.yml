@@ -17,6 +17,7 @@ jobs:
         image: docker.io/geometer/playwright-proxy:latest
         ports:
           - 3000:3000
+          - 3002:3002
           - 8080:8080
         options: "-it --ipc=host"
     steps:
@@ -37,4 +38,4 @@ jobs:
     - name: Install Node dependencies
       run: npm install --prefix assets
     - name: Run tests
-      run: mix test
+      run: mix test test/example_test.exs
