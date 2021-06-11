@@ -26,7 +26,7 @@ defmodule Test.ExampleTest do
     end
 
     test "against the local test assets server", %{browser: browser} do
-      server = %{prefix: "http://localhost:3002"}
+      server = %{prefix: "http://playwright-assets:3002"}
       Logger.debug("Testing #{inspect(server.prefix)}")
 
       page =
