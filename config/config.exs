@@ -1,5 +1,5 @@
 import Config
 
 if config_env() == :test do
-  config :logger, level: :debug
+  config :logger, level: :info
 end

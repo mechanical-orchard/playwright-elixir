@@ -9,7 +9,7 @@ defmodule Test.ExampleTest do
 
   describe "Usage" do
     test "against a public domain", %{browser: browser} do
-      Logger.debug("Testing 'playwright.dev'")
+      Logger.info("Testing 'playwright.dev'")
 
       page =
         browser
@@ -27,7 +27,7 @@ defmodule Test.ExampleTest do
 
     test "against the local test assets server", %{browser: browser} do
       server = %{prefix: "http://playwright-assets:3002"}
-      Logger.debug("Testing #{inspect(server.prefix)}")
+      Logger.info("Testing #{inspect(server.prefix)}")
 
       page =
         browser
