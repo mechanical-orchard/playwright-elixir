@@ -42,6 +42,8 @@ defmodule Playwright.Client.Transport.WebSocket do
          gun_process_monitor: ref,
          gun_stream_ref: stream_ref
        )}
+    else
+      error -> error
     end
   end
 
