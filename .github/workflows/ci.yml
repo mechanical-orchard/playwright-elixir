@@ -38,4 +38,4 @@ jobs:
     - name: Install Node dependencies
       run: npm install --prefix assets
     - name: Run tests
-      run: mix test test/example_test.exs
+      run: mix test
