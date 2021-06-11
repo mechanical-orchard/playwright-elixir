@@ -4,11 +4,11 @@ defmodule Test.Features.PageTest do
   alias Playwright.ChannelOwner.ElementHandle
 
   describe "Page" do
-    test ".query_selector/2", %{browser: browser, connection: connection, server: server} do
+    test ".query_selector/2", %{assets: assets, browser: browser, connection: connection} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/dom.html")
+        |> Page.goto(assets.prefix <> "/dom.html")
 
       assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: guid} =
                page |> Page.query_selector("css=#outer")
@@ -22,11 +22,11 @@ defmodule Test.Features.PageTest do
       Page.close(page)
     end
 
-    test ".query_selector_all/2", %{browser: browser, connection: connection, server: server} do
+    test ".query_selector_all/2", %{assets: assets, browser: browser, connection: connection} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/dom.html")
+        |> Page.goto(assets.prefix <> "/dom.html")
 
       [outer_div, inner_div] = Page.query_selector_all(page, "css=div")
       assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: outer_div_guid} = outer_div
@@ -55,11 +55,11 @@ defmodule Test.Features.PageTest do
       |> refute()
     end
 
-    test ".click/2", %{browser: browser, server: server} do
+    test ".click/2", %{assets: assets, browser: browser} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/input/button.html")
+        |> Page.goto(assets.prefix <> "/input/button.html")
         |> Page.click("css=button")
 
       result = Page.evaluate(page, "function () { return window['result']; }")
@@ -79,11 +79,11 @@ defmodule Test.Features.PageTest do
       Page.close(page)
     end
 
-    test ".fill/3", %{browser: browser, server: server} do
+    test ".fill/3", %{assets: assets, browser: browser} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/input/textarea.html")
+        |> Page.goto(assets.prefix <> "/input/textarea.html")
         |> Page.fill("textarea", "some value")
 
       value = Page.evaluate(page, "function () { return window['result']; }")
@@ -92,11 +92,11 @@ defmodule Test.Features.PageTest do
       Page.close(page)
     end
 
-    test ".press/2", %{browser: browser, server: server} do
+    test ".press/2", %{assets: assets, browser: browser} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/input/textarea.html")
+        |> Page.goto(assets.prefix <> "/input/textarea.html")
         |> Page.press("textarea", "A")
 
       value = Page.evaluate(page, "function () { return document.querySelector('textarea').value; }")
@@ -116,22 +116,22 @@ defmodule Test.Features.PageTest do
       Page.close(page)
     end
 
-    test ".text_content/2", %{browser: browser, server: server} do
+    test ".text_content/2", %{assets: assets, browser: browser} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/dom.html")
+        |> Page.goto(assets.prefix <> "/dom.html")
 
       assert Page.text_content(page, "div#inner") == "Text,\nmore text"
 
       Page.close(page)
     end
 
-    test ".title/1", %{browser: browser, server: server} do
+    test ".title/1", %{assets: assets, browser: browser} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/title.html")
+        |> Page.goto(assets.prefix <> "/title.html")
 
       text = page |> Page.title()
       assert text == "Woof-Woof"

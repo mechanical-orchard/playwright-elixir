@@ -8,6 +8,8 @@ defmodule Test.Support.AssetsServer do
 
   @impl Application
   def start(_type, _args) do
+    Logger.info("Starting assets server")
+
     children = [
       Plug.Cowboy.child_spec(
         scheme: :http,

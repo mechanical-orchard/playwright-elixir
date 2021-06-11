@@ -3,29 +3,29 @@ defmodule Test.Features.ElementHandleTest do
 
   alias Playwright.ChannelOwner.ElementHandle
 
-  def visit_button_fixture(%{browser: browser, server: server}) do
+  def visit_button_fixture(%{assets: assets, browser: browser}) do
     page =
       browser
       |> Browser.new_page()
-      |> Page.goto(server.prefix <> "/input/button.html")
+      |> Page.goto(assets.prefix <> "/input/button.html")
 
     [page: page]
   end
 
-  def visit_dom_fixture(%{browser: browser, server: server}) do
+  def visit_dom_fixture(%{assets: assets, browser: browser}) do
     page =
       browser
       |> Browser.new_page()
-      |> Page.goto(server.prefix <> "/dom.html")
+      |> Page.goto(assets.prefix <> "/dom.html")
 
     [page: page]
   end
 
-  def visit_playground_fixture(%{browser: browser, server: server}) do
+  def visit_playground_fixture(%{assets: assets, browser: browser}) do
     page =
       browser
       |> Browser.new_page()
-      |> Page.goto(server.prefix <> "/playground.html")
+      |> Page.goto(assets.prefix <> "/playground.html")
 
     [page: page]
   end
@@ -51,11 +51,15 @@ defmodule Test.Features.ElementHandleTest do
       element = page |> Page.query_selector("#outer")
       assert element |> ElementHandle.get_attribute("name") == "value"
       assert element |> ElementHandle.get_attribute("foo") == nil
+
+      Page.close(page)
     end
 
     test "Page delegates to this get_attribute", %{page: page} do
       assert Page.get_attribute(page, "#outer", "name") == "value"
       assert Page.get_attribute(page, "#outer", "foo") == nil
+
+      Page.close(page)
     end
   end
 
@@ -69,6 +73,8 @@ defmodule Test.Features.ElementHandleTest do
       inner = second |> ElementHandle.query_selector(".inner")
 
       assert inner |> ElementHandle.text_content() == "A"
+
+      Page.close(page)
     end
   end
 

@@ -32,7 +32,8 @@ defmodule PlaywrightTest.Case do
       alias Playwright.Test.Support.AssetsServer
 
       setup_all do
-        config = unquote(config)
+        env = Application.get_all_env(:playwright)
+        config = Keyword.merge(env, unquote(config))
 
         {:ok, _} = Application.ensure_all_started(:playwright)
 
@@ -50,11 +51,8 @@ defmodule PlaywrightTest.Case do
               transport: :driver
             ]
 
-          # NOTE:
-          # This will become more configurable; it currently assumes
-          # Playwright is running in a (customized) Docker container.
           :websocket ->
-            endpoint = Keyword.get(config, :playwright_endpoint, "ws://localhost:3000/playwright")
+            endpoint = Keyword.get(config, :endpoint)
             {connection, browser} = Playwright.BrowserType.connect(endpoint)
 
             [

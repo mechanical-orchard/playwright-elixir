@@ -7,11 +7,25 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
-
-    name: Build and test
-    runs-on: ubuntu-latest
-
+  all:
+    name: Build & Test
+    runs-on: ubuntu-20.04
+    env:
+      MIX_ENV: test
+      PLAYWRIGHT_ENDPOINT: ws://localhost:3000/chromium
+      PLAYWRIGHT_TRANSPORT: websocket
+    services:
+      playwright-assets:
+        image: docker.io/geometer/playwright-assets:latest
+        ports:
+          - 3002:3002
+        options: "-it --ipc=host"
+      playwright-server:
+        image: docker.io/geometer/playwright-proxy:latest
+        ports:
+          - 3000:3000
+          - 8080:8080
+        options: "-it --ipc=host"
     steps:
     - uses: actions/checkout@v2
     - name: Set up Elixir
@@ -19,12 +33,6 @@ jobs:
       with:
         elixir-version: '1.12.0'
         otp-version: '24.0.1'
-    - name: Restore dependencies cache
-      uses: actions/cache@v2
-      with:
-        path: deps
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-        restore-keys: ${{ runner.os }}-mix-
     - name: Install Elixir dependencies
       run: mix deps.get
     - name: Install Node dependencies

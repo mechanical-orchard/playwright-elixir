@@ -27,6 +27,8 @@ defmodule Playwright.Client.Transport.WebSocket do
   def init([ws_endpoint, connection]) do
     uri = URI.parse(ws_endpoint)
 
+    Logger.debug("Connecting to websocket w/ URI: #{inspect(uri)}")
+
     with {:ok, gun_pid} <- :gun.open(to_charlist(uri.host), port(uri), %{connect_timeout: 30_000}),
          {:ok, _protocol} <- :gun.await_up(gun_pid, :timer.seconds(5)),
          {:ok, stream_ref} <- ws_upgrade(gun_pid, uri.path),
