@@ -26,13 +26,15 @@ defmodule Playwright.BrowserType do
   """
   @spec connect(binary()) :: {pid(), ChannelOwner.Browser.t()}
   def connect(ws_endpoint) do
-    {:ok, connection} = new_session(Transport.WebSocket, [ws_endpoint])
-
-    %{initializer: %{version: version}} = wait_for_browser(connection, "chromium")
-    browser_guid = browser_from_chromium(connection, version)
-
-    browser = Connection.get(connection, {:guid, browser_guid})
-    {connection, browser}
+    with {:ok, connection} <- new_session(Transport.WebSocket, [ws_endpoint]),
+         %{initializer: %{version: version}} <- wait_for_browser(connection, "chromium"),
+         browser_guid <- browser_from_chromium(connection, version),
+         browser <- Connection.get(connection, {:guid, browser_guid}) do
+      {connection, browser}
+    else
+      {:error, error} -> {:error, {"Error connecting to #{inspect(ws_endpoint)}", error}}
+      error -> {:error, {"Error connecting to #{inspect(ws_endpoint)}", error}}
+    end
   end
 
   @doc """
