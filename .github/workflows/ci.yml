@@ -2,16 +2,16 @@ name: Playwright-Elixir CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ 20210610-ci-setup ]
   pull_request:
     branches: [ main ]
 
 jobs:
   build:
-
-    name: Build and test
-    runs-on: ubuntu-latest
-
+    name: Build
+    runs-on: ubuntu-20.10
+    env:
+      MIX_ENV: test
     steps:
     - uses: actions/checkout@v2
     - name: Set up Elixir
@@ -29,5 +29,18 @@ jobs:
       run: mix deps.get
     - name: Install Node dependencies
       run: npm install --prefix assets
+  test:
+    name: Test
+    runs-on: ubuntu-20.10
+    env:
+      MIX_ENV: test
+    services:
+      playwright:
+        image: docker.io/geometer/playwright-proxy:latest
+        ports:
+          - 3000:3000
+          - 8080:8080
+        options: "-it --ipc=host"
+    steps:
     - name: Run tests
       run: mix test

@@ -1,8 +1,12 @@
 defmodule Test.ExampleTest do
-  use Playwright.TestCase
+  use PlaywrightTest.Case,
+    transport: :websocket,
+    playwright_endpoint: "ws://localhost:3000/chromium"
 
   describe "Usage" do
     test "against a public domain", %{browser: browser} do
+      Logger.debug("Testing 'playwright.dev'")
+
       page =
         browser
         |> Browser.new_page()
@@ -18,6 +22,8 @@ defmodule Test.ExampleTest do
     end
 
     test "against the local test assets server", %{server: server, browser: browser} do
+      Logger.debug("Testing #{inspect(server.prefix)}")
+
       page =
         browser
         |> Browser.new_page()
