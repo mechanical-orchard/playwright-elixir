@@ -1,7 +1,11 @@
 defmodule Test.ExampleTest do
+  use ExUnit.Case
+
   use PlaywrightTest.Case,
     transport: :websocket,
     playwright_endpoint: "ws://localhost:3000/chromium"
+
+  require Logger
 
   describe "Usage" do
     test "against a public domain", %{browser: browser} do
@@ -21,7 +25,8 @@ defmodule Test.ExampleTest do
       Page.close(page)
     end
 
-    test "against the local test assets server", %{server: server, browser: browser} do
+    test "against the local test assets server", %{browser: browser} do
+      server = %{prefix: "http://localhost:3002"}
       Logger.debug("Testing #{inspect(server.prefix)}")
 
       page =
