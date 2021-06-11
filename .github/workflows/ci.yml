@@ -12,13 +12,15 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       MIX_ENV: test
+      PLAYWRIGHT_ENDPOINT: ws://localhost:3000/chromium
+      PLAYWRIGHT_TRANSPORT: websocket
     services:
       playwright-assets:
         image: docker.io/geometer/playwright-assets:latest
         ports:
           - 3002:3002
         options: "-it --ipc=host"
-      playwright-proxy:
+      playwright-server:
         image: docker.io/geometer/playwright-proxy:latest
         ports:
           - 3000:3000

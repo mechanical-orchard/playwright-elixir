@@ -3,7 +3,7 @@ defmodule Playwright.TestCase do
 
   using do
     quote do
-      use PlaywrightTest.Case, transport: :driver
+      use PlaywrightTest.Case
     end
   end
 
@@ -11,11 +11,11 @@ defmodule Playwright.TestCase do
     prefix =
       case transport do
         :driver -> "http://localhost:3002"
-        :websocket -> "http://host.docker.internal:3002"
+        :websocket -> "http://playwright-assets:3002"
       end
 
     [
-      server: %{
+      assets: %{
         prefix: prefix
       }
     ]

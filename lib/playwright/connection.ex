@@ -61,7 +61,7 @@ defmodule Playwright.Connection do
 
   @impl GenServer
   def init([{transport_module, config}]) do
-    Logger.info("Starting up Playwright with config: #{inspect(config)}")
+    Logger.debug("Starting up Playwright with config: #{inspect(config)}")
 
     {:ok,
      %__MODULE__{

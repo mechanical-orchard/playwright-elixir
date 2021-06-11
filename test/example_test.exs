@@ -1,16 +1,12 @@
 defmodule Test.ExampleTest do
-  use ExUnit.Case
+  @moduledoc """
+  Use this `Test.ExampleTest` as a simple example of writing tests using
+  [`playwright-elixir`](https://github.com/geometerio/playwright-elixir).
+  """
+  use Playwright.TestCase
 
-  use PlaywrightTest.Case,
-    transport: :websocket,
-    playwright_endpoint: "ws://localhost:3000/chromium"
-
-  require Logger
-
-  describe "Usage" do
-    test "against a public domain", %{browser: browser} do
-      Logger.info("Testing 'playwright.dev'")
-
+  describe "Usage against a public domain" do
+    test "works", %{browser: browser} do
       page =
         browser
         |> Browser.new_page()
@@ -24,15 +20,14 @@ defmodule Test.ExampleTest do
 
       Page.close(page)
     end
+  end
 
-    test "against the local test assets server", %{browser: browser} do
-      server = %{prefix: "http://playwright-assets:3002"}
-      Logger.info("Testing #{inspect(server.prefix)}")
-
+  describe "Usage against the local server" do
+    test "works (using the playwright assets server)", %{assets: assets, browser: browser} do
       page =
         browser
         |> Browser.new_page()
-        |> Page.goto(server.prefix <> "/dom.html")
+        |> Page.goto(assets.prefix <> "/dom.html")
 
       page
       |> Page.query_selector("css=div#outer")
