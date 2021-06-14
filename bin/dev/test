@@ -1,0 +1,3 @@
+#!/bin/bash
+
+elixir -r .medic/require.exs -e "Medic.Test.run()" $*

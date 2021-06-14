@@ -34,4 +34,5 @@ playwright-*.tar
 # Temporary files for e.g. tests
 /tmp
 
-wip_test.exs
+.medic/skipped/
+.doctor.out

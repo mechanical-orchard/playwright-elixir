@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+set -e
+trap "exit" INT
+
+elixir -r .medic/require.exs -e "Medic.Update.run()" $*

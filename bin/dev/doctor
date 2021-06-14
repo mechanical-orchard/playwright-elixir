@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+set -o pipefail
+
+source ".medic/_support/doctor.sh"
+
+# run doctor in home directory if present
+if [[ -f "${HOME}/bin/dev/doctor" ]]; then
+  if ! step "Found a doctor script in home directory" "pushd ${HOME} > /dev/null && ./bin/dev/doctor && popd > /dev/null"; then
+    exit 1
+  fi
+fi
+
+cecho --green "\n▸" --bright-bold-cyan "Running initial doctor checks..."
+
+check "asdf: installed" \
+  "command -v asdf" \
+  "open 'https://asdf-vm.com/#/core-manage-asdf'"
+
+check "asdf: erlang plugin installed" \
+  "asdf plugin-list | grep erlang" \
+  "asdf plugin-add erlang"
+
+check "asdf: elixir plugin installed" \
+  "asdf plugin-list | grep elixir" \
+  "asdf plugin-add elixir"
+
+check "asdf: tools are installed" \
+  "asdf which erl > /dev/null && asdf which elixir > /dev/null" \
+  "asdf install"
+
+echo ""
+
+elixir -r .medic/require.exs -e "Medic.Doctor.run()" $*
