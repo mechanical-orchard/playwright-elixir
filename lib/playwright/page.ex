@@ -78,7 +78,7 @@ defmodule Playwright.Page do
   end
 
   def get_attribute(channel_owner, selector, name) do
-    channel_owner |> Page.query_selector(selector) |> ElementHandle.get_attribute(name)
+    channel_owner |> Page.query_selector!(selector) |> ElementHandle.get_attribute(name)
   end
 
   def goto(channel_owner, url) do
@@ -95,6 +95,13 @@ defmodule Playwright.Page do
 
   def query_selector(channel_owner, selector) do
     frame(channel_owner) |> Playwright.Client.Channel.send("querySelector", %{selector: selector})
+  end
+
+  def query_selector!(channel_owner, selector) do
+    case query_selector(channel_owner, selector) do
+      nil -> raise "No element found for selector: #{selector}"
+      element -> element
+    end
   end
 
   def query_selector_all(channel_owner, selector) do

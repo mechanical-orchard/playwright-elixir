@@ -20,6 +20,14 @@ defmodule Test.Features.PageTest do
       Playwright.Page.close(page)
     end
 
+    test "query_selector!/2", %{assets: assets, browser: browser} do
+      page = browser |> Playwright.Browser.new_page() |> Playwright.Page.goto(assets.prefix <> "/dom.html")
+
+      assert_raise RuntimeError, "No element found for selector: #non-existent", fn ->
+        page |> Playwright.Page.query_selector!("#non-existent")
+      end
+    end
+
     test ".query_selector_all/2", %{assets: assets, browser: browser, connection: connection} do
       page =
         browser
@@ -86,6 +94,22 @@ defmodule Test.Features.PageTest do
 
       value = Playwright.Page.evaluate(page, "function () { return window['result']; }")
       assert value == "some value"
+
+      Playwright.Page.close(page)
+    end
+
+    test ".get_attribute/3", %{assets: assets, browser: browser} do
+      page =
+        browser
+        |> Playwright.Browser.new_page()
+        |> Playwright.Page.goto(assets.prefix <> "/dom.html")
+
+      assert page |> Playwright.Page.get_attribute("div#outer", "name") == "value"
+      assert page |> Playwright.Page.get_attribute("div#outer", "foo") == nil
+
+      assert_raise RuntimeError, "No element found for selector: glorp", fn ->
+        page |> Playwright.Page.get_attribute("glorp", "foo")
+      end
 
       Playwright.Page.close(page)
     end
