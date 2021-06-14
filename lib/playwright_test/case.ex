@@ -28,7 +28,6 @@ defmodule PlaywrightTest.Case do
       alias Playwright.ChannelOwner.Browser
       alias Playwright.ChannelOwner.BrowserContext
       alias Playwright.ChannelOwner.Page
-      alias Playwright.Test.Support.AssetsServer
 
       setup_all do
         env = Application.get_all_env(:playwright)
