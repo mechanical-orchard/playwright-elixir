@@ -82,8 +82,12 @@ defmodule Playwright.Page do
   end
 
   def goto(channel_owner, url) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("goto", %{url: url, waitUntil: "load"})
-    channel_owner
+    if Playwright.Extra.URI.absolute?(url) do
+      frame(channel_owner) |> Playwright.Client.Channel.send("goto", %{url: url, waitUntil: "load"})
+      channel_owner
+    else
+      raise "Expected an absolute URL, got: #{inspect(url)}"
+    end
   end
 
   def press(channel_owner, selector, key) do

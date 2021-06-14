@@ -114,6 +114,12 @@ defmodule Test.Features.PageTest do
       Playwright.Page.close(page)
     end
 
+    test "goto/2 fails if the url is a relative URL", %{browser: browser} do
+      assert_raise RuntimeError, ~s|Expected an absolute URL, got: "/relative/path"|, fn ->
+        browser |> Playwright.Browser.new_page() |> Playwright.Page.goto("/relative/path")
+      end
+    end
+
     test ".press/2", %{assets: assets, browser: browser} do
       page =
         browser
