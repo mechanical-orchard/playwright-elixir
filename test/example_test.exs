@@ -9,16 +9,16 @@ defmodule Test.ExampleTest do
     test "works", %{browser: browser} do
       page =
         browser
-        |> Browser.new_page()
+        |> Playwright.Browser.new_page()
 
       text =
         page
-        |> Page.goto("https://playwright.dev")
-        |> Page.text_content(".navbar__title")
+        |> Playwright.Page.goto("https://playwright.dev")
+        |> Playwright.Page.text_content(".navbar__title")
 
       assert text == "Playwright"
 
-      Page.close(page)
+      Playwright.Page.close(page)
     end
   end
 
@@ -26,14 +26,14 @@ defmodule Test.ExampleTest do
     test "works (using the playwright assets server)", %{assets: assets, browser: browser} do
       page =
         browser
-        |> Browser.new_page()
-        |> Page.goto(assets.prefix <> "/dom.html")
+        |> Playwright.Browser.new_page()
+        |> Playwright.Page.goto(assets.prefix <> "/dom.html")
 
       page
-      |> Page.query_selector("css=div#outer")
+      |> Playwright.Page.query_selector("css=div#outer")
       |> assert()
 
-      Page.close(page)
+      Playwright.Page.close(page)
     end
   end
 end

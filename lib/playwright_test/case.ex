@@ -25,11 +25,6 @@ defmodule PlaywrightTest.Case do
   """
   defmacro __using__(config \\ %{}) do
     quote do
-      alias Playwright.Browser
-      alias Playwright.BrowserContext
-      alias Playwright.ElementHandle
-      alias Playwright.Page
-
       setup_all do
         env = Application.get_all_env(:playwright)
         config = Keyword.merge(env, unquote(config))

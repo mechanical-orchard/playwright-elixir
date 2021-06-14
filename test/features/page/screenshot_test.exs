@@ -1,15 +1,15 @@
-defmodule Test.Features.Page.ScreenshotTest do
+defmodule Test.Features.Playwright.Page.ScreenshotTest do
   use Playwright.TestCase
 
   describe "screenshot/2" do
     test "caputures a screenshot, returning the base64 encoded binary", %{browser: browser} do
       page =
         browser
-        |> Browser.new_page()
-        |> Page.goto("https://playwright.dev")
+        |> Playwright.Browser.new_page()
+        |> Playwright.Page.goto("https://playwright.dev")
 
       raw =
-        Page.screenshot(page, %{
+        Playwright.Page.screenshot(page, %{
           "fullPage" => true,
           "type" => "png"
         })
@@ -20,7 +20,7 @@ defmodule Test.Features.Page.ScreenshotTest do
       max_frame_size = 32_768
       assert byte_size(raw) > max_frame_size
 
-      Page.close(page)
+      Playwright.Page.close(page)
     end
 
     test "caputures a screenshot, optionally writing the result to local disk", %{browser: browser} do
@@ -32,10 +32,10 @@ defmodule Test.Features.Page.ScreenshotTest do
 
       page =
         browser
-        |> Browser.new_page()
-        |> Page.goto("https://playwright.dev")
+        |> Playwright.Browser.new_page()
+        |> Playwright.Page.goto("https://playwright.dev")
 
-      Page.screenshot(page, %{
+      Playwright.Page.screenshot(page, %{
         "fullPage" => true,
         "path" => path
       })
@@ -43,7 +43,7 @@ defmodule Test.Features.Page.ScreenshotTest do
       assert(File.exists?(path))
 
       File.rm!(path)
-      Page.close(page)
+      Playwright.Page.close(page)
     end
   end
 end

@@ -5,11 +5,11 @@ defmodule Test.Support.AssetsServerTest do
     test "works", %{assets: assets, browser: browser} do
       page =
         browser
-        |> Browser.new_page()
-        |> Page.goto(assets.prefix <> "/dom.html")
+        |> Playwright.Browser.new_page()
+        |> Playwright.Page.goto(assets.prefix <> "/dom.html")
 
       page
-      |> Page.query_selector("css=div#outer")
+      |> Playwright.Page.query_selector("css=div#outer")
       |> assert()
     end
   end

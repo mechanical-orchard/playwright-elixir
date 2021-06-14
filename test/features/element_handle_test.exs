@@ -4,8 +4,8 @@ defmodule Test.Features.ElementHandleTest do
   def visit_button_fixture(%{assets: assets, browser: browser}) do
     page =
       browser
-      |> Browser.new_page()
-      |> Page.goto(assets.prefix <> "/input/button.html")
+      |> Playwright.Browser.new_page()
+      |> Playwright.Page.goto(assets.prefix <> "/input/button.html")
 
     [page: page]
   end
@@ -13,8 +13,8 @@ defmodule Test.Features.ElementHandleTest do
   def visit_dom_fixture(%{assets: assets, browser: browser}) do
     page =
       browser
-      |> Browser.new_page()
-      |> Page.goto(assets.prefix <> "/dom.html")
+      |> Playwright.Browser.new_page()
+      |> Playwright.Page.goto(assets.prefix <> "/dom.html")
 
     [page: page]
   end
@@ -22,8 +22,8 @@ defmodule Test.Features.ElementHandleTest do
   def visit_playground_fixture(%{assets: assets, browser: browser}) do
     page =
       browser
-      |> Browser.new_page()
-      |> Page.goto(assets.prefix <> "/playground.html")
+      |> Playwright.Browser.new_page()
+      |> Playwright.Page.goto(assets.prefix <> "/playground.html")
 
     [page: page]
   end
@@ -32,13 +32,13 @@ defmodule Test.Features.ElementHandleTest do
     setup :visit_button_fixture
 
     test "click/1", %{page: page} do
-      element = page |> Page.query_selector("button")
-      assert element |> ElementHandle.click()
+      element = page |> Playwright.Page.query_selector("button")
+      assert element |> Playwright.ElementHandle.click()
 
-      result = Page.evaluate(page, "function () { return window['result']; }")
+      result = Playwright.Page.evaluate(page, "function () { return window['result']; }")
       assert result == "Clicked"
 
-      Page.close(page)
+      Playwright.Page.close(page)
     end
   end
 
@@ -46,18 +46,18 @@ defmodule Test.Features.ElementHandleTest do
     setup :visit_dom_fixture
 
     test "get_attribute/2", %{page: page} do
-      element = page |> Page.query_selector("#outer")
-      assert element |> ElementHandle.get_attribute("name") == "value"
-      assert element |> ElementHandle.get_attribute("foo") == nil
+      element = page |> Playwright.Page.query_selector("#outer")
+      assert element |> Playwright.ElementHandle.get_attribute("name") == "value"
+      assert element |> Playwright.ElementHandle.get_attribute("foo") == nil
 
-      Page.close(page)
+      Playwright.Page.close(page)
     end
 
     test "Page delegates to this get_attribute", %{page: page} do
-      assert Page.get_attribute(page, "#outer", "name") == "value"
-      assert Page.get_attribute(page, "#outer", "foo") == nil
+      assert Playwright.Page.get_attribute(page, "#outer", "name") == "value"
+      assert Playwright.Page.get_attribute(page, "#outer", "foo") == nil
 
-      Page.close(page)
+      Playwright.Page.close(page)
     end
   end
 
@@ -65,14 +65,16 @@ defmodule Test.Features.ElementHandleTest do
     setup :visit_playground_fixture
 
     test "query_selector/2", %{page: page} do
-      page |> Page.set_content(~S[<html><body><div class="second"><div class="inner">A</div></div></body></html>])
-      html = page |> Page.query_selector("html")
-      second = html |> ElementHandle.query_selector(".second")
-      inner = second |> ElementHandle.query_selector(".inner")
+      page
+      |> Playwright.Page.set_content(~S[<html><body><div class="second"><div class="inner">A</div></div></body></html>])
 
-      assert inner |> ElementHandle.text_content() == "A"
+      html = page |> Playwright.Page.query_selector("html")
+      second = html |> Playwright.ElementHandle.query_selector(".second")
+      inner = second |> Playwright.ElementHandle.query_selector(".inner")
 
-      Page.close(page)
+      assert inner |> Playwright.ElementHandle.text_content() == "A"
+
+      Playwright.Page.close(page)
     end
   end
 
@@ -81,10 +83,10 @@ defmodule Test.Features.ElementHandleTest do
 
     test "text_content/1", %{page: page} do
       assert page
-             |> Page.query_selector("css=#inner")
-             |> ElementHandle.text_content() == "Text,\nmore text"
+             |> Playwright.Page.query_selector("css=#inner")
+             |> Playwright.ElementHandle.text_content() == "Text,\nmore text"
 
-      Page.close(page)
+      Playwright.Page.close(page)
     end
   end
 end
