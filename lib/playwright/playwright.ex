@@ -1,4 +1,4 @@
-defmodule Playwright.ChannelOwner.Playwright do
+defmodule Playwright.Playwright do
   @moduledoc """
   When launching a browser or connecting to a running Playwright server, a
   `Playwright` message from the server indicates that the browser is ready
@@ -26,10 +26,10 @@ defmodule Playwright.ChannelOwner.Playwright do
 
   * When Playwright is started, the client blocks to wait for this message
     to have been received. In playwright server is older than `1.11.0`, the
-    server sends the `Playwright.ChannelOwner.RemoteBrowser` message instead.
+    server sends the ` Playwright.RemoteBrowser` message instead.
   """
   @moduledoc since: "Playwright 1.11.0"
-  use Playwright.ChannelOwner
+  use Playwright.Client.ChannelOwner
 
   def new(parent, args) do
     channel_owner(parent, args)

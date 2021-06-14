@@ -1,4 +1,4 @@
-defmodule Playwright.Transport.DriverFrame do
+defmodule Playwright.Client.Transport.DriverFrame do
   @moduledoc """
   NOTE:
 

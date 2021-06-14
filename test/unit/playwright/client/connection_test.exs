@@ -1,7 +1,7 @@
-defmodule Test.Unit.Playwright.ConnectionTest do
+defmodule Test.Unit.Playwright.Client.ConnectionTest do
   use ExUnit.Case
-  alias Playwright.Connection
-  alias Test.Unit.Playwright.ConnectionTest.TestTransport
+  alias Playwright.Client.Connection
+  alias Test.Unit.Playwright.Client.ConnectionTest.TestTransport
 
   setup do
     %{
@@ -157,7 +157,7 @@ defmodule Test.Unit.Playwright.ConnectionTest do
 
       from = {self(), :tag}
 
-      data = %Playwright.ChannelMessage{
+      data = %Playwright.Client.ChannelMessage{
         guid: "page@1",
         id: 42,
         method: "click",
@@ -211,7 +211,7 @@ defmodule Test.Unit.Playwright.ConnectionTest do
       assert queries == %{"Playwright" => from}
 
       Connection.handle_cast({:recv, {:text, json}}, state)
-      assert_received({:tag, %Playwright.ChannelOwner.Playwright{}})
+      assert_received({:tag, %Playwright.Playwright{}})
     end
   end
 

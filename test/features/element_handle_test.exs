@@ -1,8 +1,6 @@
 defmodule Test.Features.ElementHandleTest do
   use Playwright.TestCase
 
-  alias Playwright.ChannelOwner.ElementHandle
-
   def visit_button_fixture(%{assets: assets, browser: browser}) do
     page =
       browser

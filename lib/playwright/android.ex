@@ -1,6 +1,6 @@
-defmodule Playwright.ChannelOwner.Worker do
+defmodule Playwright.Android do
   @moduledoc false
-  use Playwright.ChannelOwner
+  use Playwright.Client.ChannelOwner
 
   def new(parent, args) do
     channel_owner(parent, args)

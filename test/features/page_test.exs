@@ -1,8 +1,6 @@
 defmodule Test.Features.PageTest do
   use Playwright.TestCase
 
-  alias Playwright.ChannelOwner.ElementHandle
-
   describe "Page" do
     test ".query_selector/2", %{assets: assets, browser: browser, connection: connection} do
       page =
@@ -46,12 +44,12 @@ defmodule Test.Features.PageTest do
         browser
         |> Browser.new_page()
 
-      Playwright.Connection.find(connection, %{guid: page.guid}, nil)
+      Playwright.Client.Connection.find(connection, %{guid: page.guid}, nil)
       |> assert()
 
       page |> Page.close()
 
-      Playwright.Connection.find(connection, %{guid: page.guid}, nil)
+      Playwright.Client.Connection.find(connection, %{guid: page.guid}, nil)
       |> refute()
     end
 

@@ -1,7 +1,7 @@
 defmodule Playwright.Client.Transport.WebSocket do
   @moduledoc false
   use GenServer
-  alias Playwright.Connection
+  alias Playwright.Client.Connection
   require Logger
 
   # API
@@ -14,8 +14,8 @@ defmodule Playwright.Client.Transport.WebSocket do
     :gun_stream_ref
   ])
 
-  def start_link([ws_endpoint, connection]) do
-    GenServer.start_link(__MODULE__, [ws_endpoint, connection])
+  def start_link([connection, ws_endpoint]) do
+    GenServer.start_link(__MODULE__, [connection, ws_endpoint])
   end
 
   def start_link!(args) do
@@ -23,8 +23,21 @@ defmodule Playwright.Client.Transport.WebSocket do
     pid
   end
 
+  def post(pid, message) do
+    send_message(pid, message)
+  end
+
+  @spec send_message(pid(), binary()) :: :ok
+  def send_message(pid, message) do
+    GenServer.cast(pid, {:send_message, message})
+    :ok
+  end
+
+  # @impl
+  # ---------------------------------------------------------------------------
+
   @impl GenServer
-  def init([ws_endpoint, connection]) do
+  def init([connection, ws_endpoint]) do
     uri = URI.parse(ws_endpoint)
 
     Logger.debug("Connecting to websocket w/ URI: #{inspect(uri)}")
@@ -46,15 +59,6 @@ defmodule Playwright.Client.Transport.WebSocket do
       error -> error
     end
   end
-
-  @spec send_message(pid(), binary()) :: :ok
-  def send_message(pid, message) do
-    GenServer.cast(pid, {:send_message, message})
-    :ok
-  end
-
-  # @impl
-  # ---------------------------------------------------------------------------
 
   @impl true
   def handle_cast({:send_message, message}, state) do

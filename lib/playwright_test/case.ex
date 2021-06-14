@@ -25,9 +25,10 @@ defmodule PlaywrightTest.Case do
   """
   defmacro __using__(config \\ %{}) do
     quote do
-      alias Playwright.ChannelOwner.Browser
-      alias Playwright.ChannelOwner.BrowserContext
-      alias Playwright.ChannelOwner.Page
+      alias Playwright.Browser
+      alias Playwright.BrowserContext
+      alias Playwright.ElementHandle
+      alias Playwright.Page
 
       setup_all do
         env = Application.get_all_env(:playwright)

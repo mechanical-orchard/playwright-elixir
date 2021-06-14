@@ -1,6 +1,6 @@
-defmodule Playwright.ChannelOwner.JSHandle do
+defmodule Playwright.JSHandle do
   @moduledoc false
-  use Playwright.ChannelOwner
+  use Playwright.Client.ChannelOwner
 
   # API
   # ---------------------------------------------------------------------------

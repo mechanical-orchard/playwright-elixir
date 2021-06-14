@@ -15,14 +15,13 @@ defmodule Playwright.BrowserType do
       {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
 
   """
-  use Playwright.ChannelOwner
+  use Playwright.Client.ChannelOwner
 
   require Logger
 
   alias Playwright.BrowserType
-  alias Playwright.ChannelOwner
-  alias Playwright.Connection
-  alias Playwright.Transport
+  alias Playwright.Client.Connection
+  alias Playwright.Client.Transport
 
   def new(parent, args) do
     channel_owner(parent, args)
@@ -31,7 +30,7 @@ defmodule Playwright.BrowserType do
   @doc """
   Connect to a running playwright server.
   """
-  @spec connect(binary()) :: {pid(), ChannelOwner.Browser.t()}
+  @spec connect(binary()) :: {pid(), Playwright.Browser.t()}
   def connect(ws_endpoint) do
     with {:ok, connection} <- new_session(Transport.WebSocket, [ws_endpoint]),
          %{initializer: %{version: version}} <- wait_for_browser(connection, "chromium"),
@@ -47,7 +46,7 @@ defmodule Playwright.BrowserType do
   @doc """
   Launch a new local browser.
   """
-  @spec launch() :: {pid(), ChannelOwner.Browser.t()}
+  @spec launch() :: {pid(), Playwright.Browser.t()}
   def launch do
     {:ok, connection} = new_session(Transport.Driver, ["assets/node_modules/playwright/lib/cli/cli.js"])
     {connection, chromium(connection)}
@@ -60,11 +59,11 @@ defmodule Playwright.BrowserType do
     browser = Channel.send(channel_owner, "launch", launch_args())
 
     case browser do
-      %ChannelOwner.Browser{} ->
+      %Playwright.Browser{} ->
         browser
 
       _other ->
-        raise("expected launch to return a Playwright.ChannelOwner.Browser, received: #{inspect(browser)}")
+        raise("expected launch to return a  Playwright.Browser, received: #{inspect(browser)}")
     end
   end
 
@@ -83,13 +82,13 @@ defmodule Playwright.BrowserType do
     playwright = Connection.get(connection, {:guid, "Playwright"})
 
     case playwright do
-      %ChannelOwner.Playwright{} ->
+      %Playwright.Playwright{} ->
         %{guid: guid} = playwright.initializer.chromium
 
         Connection.get(connection, {:guid, guid}) |> launch()
 
       _other ->
-        raise("expected chromium to return a Playwright.ChannelOwner.Playwright, received: #{inspect(playwright)}")
+        raise("expected chromium to return a  Playwright.Playwright, received: #{inspect(playwright)}")
     end
   end
 

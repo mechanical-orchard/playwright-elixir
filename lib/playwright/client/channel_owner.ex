@@ -1,4 +1,4 @@
-defmodule Playwright.ChannelOwner do
+defmodule Playwright.Client.ChannelOwner do
   @moduledoc false
   @base [connection: nil, parent: nil, type: nil, guid: nil, initializer: nil]
 
@@ -6,9 +6,8 @@ defmodule Playwright.ChannelOwner do
     fields = @base ++ fields
 
     quote do
-      alias Playwright.Channel
-      alias Playwright.ChannelOwner.BrowserContext
-      alias Playwright.Connection
+      alias Playwright.Client.Channel
+      alias Playwright.Client.Connection
 
       defstruct unquote(fields)
 

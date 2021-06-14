@@ -1,8 +1,8 @@
 defmodule Playwright.Client.Transport.Driver do
   @moduledoc false
   use GenServer
-  alias Playwright.Connection
-  alias Playwright.Transport.DriverFrame
+  alias Playwright.Client.Connection
+  alias Playwright.Client.Transport.DriverFrame
   require Logger
 
   # API
@@ -17,6 +17,10 @@ defmodule Playwright.Client.Transport.Driver do
     pid
   end
 
+  def post(pid, message) do
+    send_message(pid, message)
+  end
+
   def send_message(pid, message) do
     GenServer.cast(pid, {:send_message, message})
     :ok
@@ -25,7 +29,7 @@ defmodule Playwright.Client.Transport.Driver do
   # @impl
   # -------------------------------------------------------------------------
 
-  def init([driver_path, connection]) do
+  def init([connection, driver_path]) do
     cli = driver_path
     cmd = "run-driver"
 
@@ -62,7 +66,7 @@ defmodule Playwright.Client.Transport.Driver do
       buffer: buffer
     } = DriverFrame.parse_frame(data, remaining, buffer, [])
 
-    messages |> Enum.each(fn message -> post(state.connection, message) end)
+    messages |> Enum.each(fn message -> recv(state.connection, message) end)
 
     {:noreply, %{state | buffer: buffer, remaining: remaining}}
   end
@@ -75,7 +79,7 @@ defmodule Playwright.Client.Transport.Driver do
   # private
   # --------------------------------------------------------------------------
 
-  def post(connection, json) do
+  def recv(connection, json) do
     Connection.recv(connection, {:text, json})
   end
 end

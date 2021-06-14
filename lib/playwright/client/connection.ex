@@ -1,17 +1,16 @@
-defmodule Playwright.Connection do
+defmodule Playwright.Client.Connection do
   @moduledoc false
   require Logger
 
   use GenServer
 
-  alias Playwright.ChannelMessage
-  alias Playwright.ChannelOwner.Root
+  alias Playwright.Root
+  alias Playwright.Client.ChannelMessage
   alias Playwright.Extra
 
   # API
   # ----------------------------------------------------------------------------
 
-  # Transport.Driver | Transport.WebSocket
   @type transport_module :: module()
   @type transport_config :: {transport_module, [term()]}
 
@@ -203,10 +202,8 @@ defmodule Playwright.Connection do
     state
   end
 
-  defp resource(%{type: "BrowserType"}), do: Playwright.BrowserType
-
   defp resource(%{type: type}) do
-    String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
+    String.to_existing_atom("Elixir.Playwright.#{type}")
   rescue
     ArgumentError ->
       message = "ChannelOwner of type #{inspect(type)} is not yet defined"

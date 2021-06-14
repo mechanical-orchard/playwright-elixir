@@ -1,6 +1,6 @@
-defmodule Test.Unit.Playwright.Transport.DriverFrameTest do
+defmodule Test.Unit.Playwright.Client.Transport.DriverFrameTest do
   use ExUnit.Case
-  alias Playwright.Transport.DriverFrame
+  alias Playwright.Client.Transport.DriverFrame
 
   describe "parse_frame/4" do
     test "when the frame is only a UTF-32 character (a standalone length padding)" do

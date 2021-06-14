@@ -1,11 +1,11 @@
-defmodule Playwright.ChannelOwner.ElementHandle do
+defmodule Playwright.ElementHandle do
   @moduledoc """
   Defines a handle to a DOM element. ElementHandle structs may be returned
-  from Page functions such as `Playwright.ChannelOwner.Page.query_selector/2`.
+  from Page functions such as ` Playwright.Page.query_selector/2`.
   """
-  use Playwright.ChannelOwner
-  alias Playwright.ChannelMessage
-  alias Playwright.ChannelOwner.ElementHandle
+  use Playwright.Client.ChannelOwner
+  alias Playwright.Client.ChannelMessage
+  alias Playwright.ElementHandle
 
   @doc false
   def new(parent, args) do
@@ -17,7 +17,7 @@ defmodule Playwright.ChannelOwner.ElementHandle do
   """
   @spec click(ElementHandle.t()) :: ChannelMessage.t()
   def click(channel_owner) do
-    channel_owner |> Channel.send("click")
+    channel_owner |> Playwright.Client.Channel.send("click")
   end
 
   @doc """
@@ -25,7 +25,7 @@ defmodule Playwright.ChannelOwner.ElementHandle do
   """
   @spec get_attribute(ElementHandle.t(), binary()) :: binary() | nil
   def get_attribute(channel_owner, attr_name) do
-    channel_owner |> Channel.send("getAttribute", %{name: attr_name})
+    channel_owner |> Playwright.Client.Channel.send("getAttribute", %{name: attr_name})
   end
 
   @doc """
@@ -33,7 +33,7 @@ defmodule Playwright.ChannelOwner.ElementHandle do
   """
   @spec query_selector(ElementHandle.t(), binary()) :: ElementHandle.t() | nil
   def query_selector(channel_owner, selector) do
-    channel_owner |> Channel.send("querySelector", %{selector: selector})
+    channel_owner |> Playwright.Client.Channel.send("querySelector", %{selector: selector})
   end
 
   @doc """
@@ -41,6 +41,6 @@ defmodule Playwright.ChannelOwner.ElementHandle do
   """
   @spec text_content(ElementHandle.t()) :: binary() | nil
   def text_content(channel_owner) do
-    channel_owner |> Channel.send("textContent")
+    channel_owner |> Playwright.Client.Channel.send("textContent")
   end
 end
