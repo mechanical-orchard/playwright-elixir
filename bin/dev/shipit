@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+set -u
+set -o pipefail
+
+trap "exit" INT
+
+source ".medic/_support/doctor.sh"
+
+bin/dev/audit
+bin/dev/update
+bin/dev/test
+
+step "Pushing" "git push origin HEAD"
