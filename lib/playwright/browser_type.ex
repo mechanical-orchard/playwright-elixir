@@ -15,11 +15,18 @@ defmodule Playwright.BrowserType do
       {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
 
   """
-  alias Playwright.{BrowserType, ChannelOwner, Connection, Transport}
+  use Playwright.ChannelOwner
+
   require Logger
 
-  # API
-  # ----------------------------------------------------------------------------
+  alias Playwright.BrowserType
+  alias Playwright.ChannelOwner
+  alias Playwright.Connection
+  alias Playwright.Transport
+
+  def new(parent, args) do
+    channel_owner(parent, args)
+  end
 
   @doc """
   Connect to a running playwright server.
@@ -49,6 +56,29 @@ defmodule Playwright.BrowserType do
   # private
   # ----------------------------------------------------------------------------
 
+  defp launch(%BrowserType{} = channel_owner) do
+    browser = Channel.send(channel_owner, "launch", launch_args())
+
+    case browser do
+      %ChannelOwner.Browser{} ->
+        browser
+
+      _other ->
+        raise("expected launch to return a Playwright.ChannelOwner.Browser, received: #{inspect(browser)}")
+    end
+  end
+
+  defp launch_args do
+    %{
+      headless: launch_headless?(),
+      ignoreAllDefaultArgs: false
+    }
+  end
+
+  defp launch_headless? do
+    Application.get_env(:playwright, :headless, true)
+  end
+
   defp chromium(connection) do
     playwright = Connection.get(connection, {:guid, "Playwright"})
 
@@ -56,8 +86,7 @@ defmodule Playwright.BrowserType do
       %ChannelOwner.Playwright{} ->
         %{guid: guid} = playwright.initializer.chromium
 
-        Connection.get(connection, {:guid, guid})
-        |> Playwright.ChannelOwner.BrowserType.launch()
+        Connection.get(connection, {:guid, guid}) |> launch()
 
       _other ->
         raise("expected chromium to return a Playwright.ChannelOwner.Playwright, received: #{inspect(playwright)}")

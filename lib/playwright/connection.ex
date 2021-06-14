@@ -203,6 +203,8 @@ defmodule Playwright.Connection do
     state
   end
 
+  defp resource(%{type: "BrowserType"}), do: Playwright.BrowserType
+
   defp resource(%{type: type}) do
     String.to_existing_atom("Elixir.Playwright.ChannelOwner.#{type}")
   rescue

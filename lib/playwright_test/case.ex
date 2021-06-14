@@ -27,7 +27,6 @@ defmodule PlaywrightTest.Case do
     quote do
       alias Playwright.ChannelOwner.Browser
       alias Playwright.ChannelOwner.BrowserContext
-      alias Playwright.ChannelOwner.BrowserType
       alias Playwright.ChannelOwner.Page
       alias Playwright.Test.Support.AssetsServer
 
