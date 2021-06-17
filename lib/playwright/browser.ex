@@ -7,10 +7,11 @@ defmodule Playwright.Browser do
   - `Playwright.BrowserType.launch/0`, when using the "driver" transport.
   - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
   """
-  use Playwright.Client.ChannelOwner
+  use Playwright.Client.ChannelOwner, [:name, :version]
 
   @doc false
-  def new(parent, args) do
+  def new(parent, %{initializer: %{version: version} = initializer} = args) do
+    args = %{args | initializer: Map.put(initializer, :version, cut_version(version))}
     channel_owner(parent, args)
   end
 
@@ -62,5 +63,15 @@ defmodule Playwright.Browser do
       %Playwright.Page{} -> page
       _other -> raise("expected new_page to return a  Playwright.Page, received: #{inspect(page)}")
     end
+  end
+
+  # private
+  # ----------------------------------------------------------------------------
+
+  # Chromium version is \d+.\d+.\d+.\d+, but that doesn't parse well with
+  # `Version`. So, until it causes issue we're cutting it down to
+  # <major.minor.patch>.
+  defp cut_version(version) do
+    version |> String.split(".") |> Enum.take(3) |> Enum.join(".")
   end
 end

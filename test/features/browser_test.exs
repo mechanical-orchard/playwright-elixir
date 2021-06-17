@@ -36,4 +36,17 @@ defmodule Test.Features.BrowserTest do
       Playwright.Page.close(page)
     end
   end
+
+  describe "version/1" do
+    test "returns the expected version", %{browser: browser} do
+      case browser.name do
+        "chromium" ->
+          assert %{major: major, minor: _, patch: _} = Version.parse!(browser.version)
+          assert major >= 90
+
+        _name ->
+          assert %{major: _, minor: _} = Version.parse!(browser.version)
+      end
+    end
+  end
 end

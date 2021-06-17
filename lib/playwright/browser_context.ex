@@ -9,7 +9,7 @@ defmodule Playwright.BrowserContext do
   Playwright allows creation of "incognito" browser contexts with the
   `Playwright.Browser.new_context/1` function.
   """
-  use Playwright.Client.ChannelOwner, owner_page: nil
+  use Playwright.Client.ChannelOwner, [:owner_page]
 
   @doc false
   def new(parent, args) do

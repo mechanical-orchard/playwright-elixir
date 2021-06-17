@@ -1,12 +1,12 @@
 defmodule Playwright.Client.ChannelOwner do
   @moduledoc false
-  @base [connection: nil, parent: nil, type: nil, guid: nil, initializer: nil]
+  @base [:connection, :parent, :type, :guid, :initializer]
 
   defmacro __using__(extra \\ []) do
     fields = @base ++ extra
 
     quote do
-      @derive {Inspect, only: [:guid, :initializer] ++ Keyword.keys(unquote(extra))}
+      @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
 
       alias Playwright.Client.Channel
       alias Playwright.Client.Connection
@@ -20,13 +20,15 @@ defmodule Playwright.Client.ChannelOwner do
             parent,
             %{guid: guid, type: type, initializer: initializer} = args
           ) do
-        %__MODULE__{
+        base = %__MODULE__{
           connection: parent.connection,
           parent: parent,
           type: type,
           guid: guid,
           initializer: initializer
         }
+
+        struct(base, Enum.into(unquote(extra), %{}, fn e -> {e, initializer[e]} end))
       end
     end
   end

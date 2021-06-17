@@ -22,8 +22,7 @@ defmodule Playwright.Page do
 
   More info: https://playwright.dev/docs/selectors
   """
-
-  use Playwright.Client.ChannelOwner, owned_context: nil
+  use Playwright.Client.ChannelOwner, [:owned_context]
 
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle

@@ -109,7 +109,7 @@ defmodule Test.Unit.Playwright.Client.ConnectionTest do
           method: "__create__",
           params: %{
             guid: "page@1",
-            initializer: "definition",
+            initializer: %{},
             type: "Page"
           }
         })
