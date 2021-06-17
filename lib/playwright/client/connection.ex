@@ -45,6 +45,7 @@ defmodule Playwright.Client.Connection do
     GenServer.call(connection, {:on, event, handler})
   end
 
+  # updates the state of a resource and returns the updated resource
   def patch(connection, {:guid, _guid} = subject, data) do
     GenServer.call(connection, {:patch, subject, data})
   end
@@ -210,11 +211,10 @@ defmodule Playwright.Client.Connection do
   end
 
   defp _recv_(%{guid: guid, method: "__dispose__"}, %{catalog: catalog} = state) do
+    Logger.debug("__dispose__ #{inspect(guid)}")
     %{state | catalog: _del_(guid, catalog)}
   end
 
-  defp _recv_(_data, state) do
-    # Logger.debug("_recv_ other   :: #{inspect(data)}")
   defp _recv_(%{guid: guid, method: method}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["close"] do
     entry = catalog[guid]
@@ -239,6 +239,11 @@ defmodule Playwright.Client.Connection do
       handler.(event)
     end)
 
+    state
+  end
+
+  defp _recv_(data, state) do
+    Logger.error("_recv_ other  :: #{inspect(data)}")
     state
   end
 
