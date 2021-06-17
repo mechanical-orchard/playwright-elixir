@@ -56,7 +56,7 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp launch(%BrowserType{} = channel_owner) do
-    browser = Channel.send(channel_owner, "launch", launch_args())
+    browser = Channel.send(channel_owner, "launch", launch_options())
 
     case browser do
       %Playwright.Browser{} ->
@@ -67,11 +67,27 @@ defmodule Playwright.BrowserType do
     end
   end
 
+  defp launch_options do
+    Map.merge(
+      %{
+        args: launch_args(),
+        headless: launch_headless?(),
+        ignoreAllDefaultArgs: false
+      },
+      launch_channel()
+    )
+  end
+
   defp launch_args do
-    %{
-      headless: launch_headless?(),
-      ignoreAllDefaultArgs: false
-    }
+    Application.get_env(:playwright, :args, [])
+  end
+
+  defp launch_channel do
+    with channel when not is_nil(channel) <- Application.get_env(:playwright, :channel, nil) do
+      %{channel: channel}
+    else
+      _ -> %{}
+    end
   end
 
   defp launch_headless? do
