@@ -106,8 +106,9 @@ defmodule Playwright.Client.Connection do
 
   @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
-    catalog = Map.update!(catalog, guid, fn subject -> Map.merge(subject, data) end)
-    {:reply, :ok, %{state | catalog: catalog}}
+    subject = Map.merge(catalog[guid], data)
+    catalog = Map.put(catalog, guid, subject)
+    {:reply, subject, %{state | catalog: catalog}}
   end
 
   @impl GenServer

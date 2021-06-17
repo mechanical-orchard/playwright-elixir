@@ -36,7 +36,7 @@ defmodule Playwright.Browser do
 
     case context do
       %Playwright.BrowserContext{} ->
-        context
+        Playwright.Client.Connection.patch(context.connection, {:guid, context.guid}, %{browser: subject})
 
       _other ->
         raise("expected new_context to return a  Playwright.BrowserContext, received: #{inspect(context)}")
@@ -57,7 +57,7 @@ defmodule Playwright.Browser do
     context = new_context(subject)
     page = Playwright.BrowserContext.new_page(context, %{owned_context: context})
 
-    Playwright.Client.Connection.patch(subject.connection, {:guid, context.guid}, %{owner_page: page})
+    Playwright.Client.Connection.patch(context.connection, {:guid, context.guid}, %{owner_page: page})
 
     case page do
       %Playwright.Page{} -> page
