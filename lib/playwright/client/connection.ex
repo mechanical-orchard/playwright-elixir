@@ -23,14 +23,10 @@ defmodule Playwright.Client.Connection do
     transport: %{}
   )
 
-  # messages -> pending, awaiting, ...
-
   @spec start_link([transport_config]) :: GenServer.on_start()
   def start_link(config) do
     GenServer.start_link(__MODULE__, config)
   end
-
-  # API: items...
 
   def wait_for_channel_messages(connection, type) do
     GenServer.call(connection, {:get_channel_messages, type})
@@ -44,7 +40,10 @@ defmodule Playwright.Client.Connection do
     GenServer.call(connection, {:find, attributes, default})
   end
 
-  # API: messages...
+
+  def patch(connection, {:guid, _guid} = subject, data) do
+    GenServer.call(connection, {:patch, subject, data})
+  end
 
   @spec post(pid(), {:data, ChannelMessage.t()}) :: term()
   def post(connection, {:data, _data} = message) do
@@ -103,6 +102,12 @@ defmodule Playwright.Client.Connection do
       item ->
         {:reply, item, state}
     end
+  end
+
+  @impl GenServer
+  def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
+    catalog = Map.update!(catalog, guid, fn subject -> Map.merge(subject, data) end)
+    {:reply, :ok, %{state | catalog: catalog}}
   end
 
   @impl GenServer

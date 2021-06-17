@@ -33,6 +33,10 @@ defmodule Playwright.Page do
     channel_owner(parent, args)
   end
 
+  def context(subject) do
+    Playwright.Client.Connection.get(subject.connection, {:guid, subject.parent.guid})
+  end
+
   def click(channel_owner, selector) do
     frame(channel_owner)
     |> Playwright.Client.Channel.send("click", %{selector: selector})

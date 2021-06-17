@@ -1,18 +1,37 @@
 defmodule Playwright.Browser do
-  @moduledoc false
+  @moduledoc """
+  Browser represents a launched web browser instance managed by Playwright.
+
+  A Browser is created via:
+
+  - `Playwright.BrowserType.launch/0`, when using the "driver" transport.
+  - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
+  """
   use Playwright.Client.ChannelOwner
-  alias Playwright
 
-  # API
-  # ---------------------------------------------------------------------------
-
+  @doc false
   def new(parent, args) do
     channel_owner(parent, args)
   end
 
-  def new_context(%Playwright.Browser{} = channel_owner) do
+  @doc false
+  def contexts(subject) do
+    Playwright.Client.Connection.find(subject.connection, %{
+      parent: subject,
+      type: "BrowserContext"
+    })
+  end
+
+  @doc """
+  Create a new BrowserContext for this Browser. A BrowserContext is somewhat
+  equivalent to an "incognito" browser "window".
+  """
+  def new_context(%Playwright.Browser{} = subject) do
     context =
-      Playwright.Client.Channel.send(channel_owner, "newContext", %{noDefaultViewport: false, sdkLanguage: "elixir"})
+      Playwright.Client.Channel.send(subject, "newContext", %{
+        noDefaultViewport: false,
+        sdkLanguage: "elixir"
+      })
 
     case context do
       %Playwright.BrowserContext{} ->
@@ -23,21 +42,25 @@ defmodule Playwright.Browser do
     end
   end
 
+  @doc """
+  Create a new Page for this Browser. A Page is somewhat equivalent to a "tab"
+  in a browser "window".
+
+  Note that `Playwright.Browser.new_page/1` will also create a new
+  `Playwright.BrowserContext`. That `BrowserContext` becomes, both, the
+  *parent* the `Page`, and *owned by* the `Page`. When the `Page` closes,
+  the context goes with it.
+  """
   @spec new_page(Playwright.Browser.t()) :: Playwright.Page.t()
-  def new_page(channel_owner) do
-    context = new_context(channel_owner)
+  def new_page(subject) do
+    context = new_context(subject)
     page = Playwright.BrowserContext.new_page(context, %{owned_context: context})
+
+    Playwright.Client.Connection.patch(subject.connection, {:guid, context.guid}, %{owner_page: page})
 
     case page do
       %Playwright.Page{} -> page
       _other -> raise("expected new_page to return a  Playwright.Page, received: #{inspect(page)}")
     end
-  end
-
-  def contexts(channel_owner) do
-    Playwright.Client.Connection.find(channel_owner.connection, %{
-      parent: channel_owner,
-      type: "BrowserContext"
-    })
   end
 end

@@ -23,5 +23,17 @@ defmodule Test.Features.BrowserTest do
       Playwright.Page.close(page2)
       assert Playwright.Browser.contexts(browser) == []
     end
+
+    test "enforces 1-to-1 on Page and Context", %{browser: browser} do
+      page = Playwright.Browser.new_page(browser)
+
+      assert_raise RuntimeError, "Please use Playwright.Browser.new_context/1", fn ->
+        page
+        |> Playwright.Page.context()
+        |> Playwright.BrowserContext.new_page()
+      end
+
+      Playwright.Page.close(page)
+    end
   end
 end

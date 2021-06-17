@@ -2,10 +2,12 @@ defmodule Playwright.Client.ChannelOwner do
   @moduledoc false
   @base [connection: nil, parent: nil, type: nil, guid: nil, initializer: nil]
 
-  defmacro __using__(fields \\ []) do
-    fields = @base ++ fields
+  defmacro __using__(extra \\ []) do
+    fields = @base ++ extra
 
     quote do
+      @derive {Inspect, only: [:guid, :initializer] ++ Keyword.keys(unquote(extra))}
+
       alias Playwright.Client.Channel
       alias Playwright.Client.Connection
 
