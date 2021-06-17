@@ -54,10 +54,12 @@ defmodule Playwright.Page do
   end
 
   def evaluate(channel_owner, expression) do
+    function? = String.starts_with?(expression, "function")
+
     frame(channel_owner)
     |> Playwright.Client.Channel.send("evaluateExpression", %{
       expression: expression,
-      isFunction: true,
+      isFunction: function?,
       arg: %{
         value: %{v: "undefined"},
         handles: []
@@ -91,6 +93,11 @@ defmodule Playwright.Page do
     else
       raise "Expected an absolute URL, got: #{inspect(url)}"
     end
+  end
+
+  def on(channel_owner, event, handler) do
+    Playwright.Client.Connection.on(channel_owner.connection, event, handler)
+    channel_owner
   end
 
   def press(channel_owner, selector, key) do

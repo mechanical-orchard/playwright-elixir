@@ -18,6 +18,7 @@ defmodule Playwright.Client.Connection do
     catalog: %{},
     channel_message_callers: %{},
     channel_messages: %{},
+    handlers: %{},
     messages: %{pending: %{}},
     queries: %{},
     transport: %{}
@@ -40,6 +41,9 @@ defmodule Playwright.Client.Connection do
     GenServer.call(connection, {:find, attributes, default})
   end
 
+  def on(connection, event, handler) do
+    GenServer.call(connection, {:on, event, handler})
+  end
 
   def patch(connection, {:guid, _guid} = subject, data) do
     GenServer.call(connection, {:patch, subject, data})
@@ -102,6 +106,12 @@ defmodule Playwright.Client.Connection do
       item ->
         {:reply, item, state}
     end
+  end
+
+  @impl GenServer
+  def handle_call({:on, event, handler}, _from, %{handlers: handlers} = state) do
+    updated = Map.update(handlers, event, [handler], fn existing -> [handler | existing] end)
+    {:reply, :ok, %{state | handlers: updated}}
   end
 
   @impl GenServer
@@ -205,6 +215,30 @@ defmodule Playwright.Client.Connection do
 
   defp _recv_(_data, state) do
     # Logger.debug("_recv_ other   :: #{inspect(data)}")
+  defp _recv_(%{guid: guid, method: method}, %{catalog: catalog, handlers: handlers} = state)
+       when method in ["close"] do
+    entry = catalog[guid]
+    entry = Map.put(entry, :initializer, Map.put(entry.initializer, :isClosed, true))
+    event = {:on, Extra.Atom.from_string(method), entry}
+    handlers = Map.get(handlers, method, [])
+
+    Enum.each(handlers, fn handler ->
+      handler.(event)
+    end)
+
+    %{state | catalog: Map.put(catalog, guid, entry)}
+  end
+
+  defp _recv_(%{method: method, params: %{message: %{guid: guid}}}, %{catalog: catalog, handlers: handlers} = state)
+       when method in ["console"] do
+    entry = catalog[guid]
+    event = {:on, Extra.Atom.from_string(method), entry}
+    handlers = Map.get(handlers, method, [])
+
+    Enum.each(handlers, fn handler ->
+      handler.(event)
+    end)
+
     state
   end
 
