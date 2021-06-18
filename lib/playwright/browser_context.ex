@@ -10,6 +10,7 @@ defmodule Playwright.BrowserContext do
   `Playwright.Browser.new_context/1` function.
   """
   use Playwright.Client.ChannelOwner, [:browser, :owner_page]
+  alias Playwright.Client.Channel
 
   @doc false
   def new(parent, args) do
@@ -25,7 +26,7 @@ defmodule Playwright.BrowserContext do
   def new_page(subject, locals \\ nil) do
     case subject.owner_page do
       nil ->
-        Playwright.Client.Channel.send(subject, "newPage", %{}, locals)
+        Channel.send(subject, "newPage", %{}, locals)
 
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")
@@ -37,7 +38,7 @@ defmodule Playwright.BrowserContext do
   will be closed.
   """
   def close(subject) do
-    subject |> Playwright.Client.Channel.send("close")
+    subject |> Channel.send("close")
     subject
   end
 end

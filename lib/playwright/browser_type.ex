@@ -83,10 +83,12 @@ defmodule Playwright.BrowserType do
   end
 
   defp launch_channel do
-    with channel when not is_nil(channel) <- Application.get_env(:playwright, :channel, nil) do
-      %{channel: channel}
-    else
-      _ -> %{}
+    case Application.get_env(:playwright, :channel, nil) do
+      nil ->
+        %{}
+
+      channel ->
+        %{channel: channel}
     end
   end
 

@@ -4,9 +4,9 @@ defmodule Playwright.Client.Connection do
 
   use GenServer
 
-  alias Playwright.Root
   alias Playwright.Client.ChannelMessage
   alias Playwright.Extra
+  alias Playwright.Root
 
   # API
   # ----------------------------------------------------------------------------

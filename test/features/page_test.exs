@@ -1,5 +1,6 @@
 defmodule Test.Features.PageTest do
   use Playwright.TestCase
+  alias Playwright.Client.Connection
 
   describe "Page" do
     test ".query_selector/2", %{assets: assets, browser: browser, connection: connection} do
@@ -52,12 +53,12 @@ defmodule Test.Features.PageTest do
         browser
         |> Playwright.Browser.new_page()
 
-      Playwright.Client.Connection.find(connection, %{guid: page.guid}, nil)
+      Connection.find(connection, %{guid: page.guid}, nil)
       |> assert()
 
       page |> Playwright.Page.close()
 
-      Playwright.Client.Connection.find(connection, %{guid: page.guid}, nil)
+      Connection.find(connection, %{guid: page.guid}, nil)
       |> refute()
     end
 

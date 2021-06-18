@@ -8,6 +8,8 @@ defmodule Playwright.Browser do
   - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
   """
   use Playwright.Client.ChannelOwner, [:name, :version]
+  alias Playwright.Client.Channel
+  alias Playwright.Client.Connection
 
   @doc false
   def new(parent, %{initializer: %{version: version} = initializer} = args) do
@@ -17,7 +19,7 @@ defmodule Playwright.Browser do
 
   @doc false
   def contexts(subject) do
-    Playwright.Client.Connection.find(subject.connection, %{
+    Connection.find(subject.connection, %{
       parent: subject,
       type: "BrowserContext"
     })
@@ -29,14 +31,14 @@ defmodule Playwright.Browser do
   """
   def new_context(%Playwright.Browser{} = subject) do
     context =
-      Playwright.Client.Channel.send(subject, "newContext", %{
+      Channel.send(subject, "newContext", %{
         noDefaultViewport: false,
         sdkLanguage: "elixir"
       })
 
     case context do
       %Playwright.BrowserContext{} ->
-        Playwright.Client.Connection.patch(context.connection, {:guid, context.guid}, %{browser: subject})
+        Connection.patch(context.connection, {:guid, context.guid}, %{browser: subject})
 
       _other ->
         raise("expected new_context to return a  Playwright.BrowserContext, received: #{inspect(context)}")
@@ -57,7 +59,7 @@ defmodule Playwright.Browser do
     context = new_context(subject)
     page = Playwright.BrowserContext.new_page(context, %{owned_context: context})
 
-    Playwright.Client.Connection.patch(context.connection, {:guid, context.guid}, %{owner_page: page})
+    Connection.patch(context.connection, {:guid, context.guid}, %{owner_page: page})
 
     case page do
       %Playwright.Page{} -> page

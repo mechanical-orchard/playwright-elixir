@@ -25,6 +25,8 @@ defmodule Playwright.Page do
   use Playwright.Client.ChannelOwner, [:owned_context]
 
   alias Playwright.BrowserContext
+  alias Playwright.Client.Channel
+  alias Playwright.Client.Connection
   alias Playwright.ElementHandle
   alias Playwright.Page
 
@@ -33,12 +35,12 @@ defmodule Playwright.Page do
   end
 
   def context(subject) do
-    Playwright.Client.Connection.get(subject.connection, {:guid, subject.parent.guid})
+    Connection.get(subject.connection, {:guid, subject.parent.guid})
   end
 
   def click(channel_owner, selector) do
     frame(channel_owner)
-    |> Playwright.Client.Channel.send("click", %{selector: selector})
+    |> Channel.send("click", %{selector: selector})
 
     channel_owner
   end
@@ -57,7 +59,7 @@ defmodule Playwright.Page do
     function? = String.starts_with?(expression, "function")
 
     frame(channel_owner)
-    |> Playwright.Client.Channel.send("evaluateExpression", %{
+    |> Channel.send("evaluateExpression", %{
       expression: expression,
       isFunction: function?,
       arg: %{
@@ -78,7 +80,7 @@ defmodule Playwright.Page do
   end
 
   def fill(channel_owner, selector, value) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("fill", %{selector: selector, value: value})
+    frame(channel_owner) |> Channel.send("fill", %{selector: selector, value: value})
     channel_owner
   end
 
@@ -88,7 +90,7 @@ defmodule Playwright.Page do
 
   def goto(channel_owner, url) do
     if Playwright.Extra.URI.absolute?(url) do
-      frame(channel_owner) |> Playwright.Client.Channel.send("goto", %{url: url, waitUntil: "load"})
+      frame(channel_owner) |> Channel.send("goto", %{url: url, waitUntil: "load"})
       channel_owner
     else
       raise "Expected an absolute URL, got: #{inspect(url)}"
@@ -96,19 +98,19 @@ defmodule Playwright.Page do
   end
 
   def on(channel_owner, event, handler) do
-    Playwright.Client.Connection.on(channel_owner.connection, event, handler)
+    Connection.on(channel_owner.connection, event, handler)
     channel_owner
   end
 
   def press(channel_owner, selector, key) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("press", %{selector: selector, key: key})
+    frame(channel_owner) |> Channel.send("press", %{selector: selector, key: key})
     channel_owner
   end
 
   def q(channel_owner, selector), do: query_selector(channel_owner, selector)
 
   def query_selector(channel_owner, selector) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("querySelector", %{selector: selector})
+    frame(channel_owner) |> Channel.send("querySelector", %{selector: selector})
   end
 
   def query_selector!(channel_owner, selector) do
@@ -119,20 +121,20 @@ defmodule Playwright.Page do
   end
 
   def query_selector_all(channel_owner, selector) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("querySelectorAll", %{selector: selector})
+    frame(channel_owner) |> Channel.send("querySelectorAll", %{selector: selector})
   end
 
   def screenshot(channel_owner, params) do
     case Map.pop(params, "path", nil) do
       {nil, params} ->
-        channel_owner |> Playwright.Client.Channel.send("screenshot", params)
+        channel_owner |> Channel.send("screenshot", params)
 
       {path, params} ->
         [_, type] = String.split(path, ".")
 
         data =
           channel_owner
-          |> Playwright.Client.Channel.send("screenshot", Map.put(params, :type, type))
+          |> Channel.send("screenshot", Map.put(params, :type, type))
 
         File.write!(path, Base.decode64!(data))
         data
@@ -145,25 +147,25 @@ defmodule Playwright.Page do
       waitUntil: "load"
     }
 
-    frame(channel_owner) |> Playwright.Client.Channel.send("setContent", params)
+    frame(channel_owner) |> Channel.send("setContent", params)
     channel_owner
   end
 
   def set_viewport_size(channel_owner, params) do
-    channel_owner |> Playwright.Client.Channel.send("setViewportSize", %{viewportSize: params})
+    channel_owner |> Channel.send("setViewportSize", %{viewportSize: params})
     channel_owner
   end
 
   def text_content(channel_owner, selector) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("textContent", %{selector: selector})
+    frame(channel_owner) |> Channel.send("textContent", %{selector: selector})
   end
 
   def title(channel_owner) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("title")
+    frame(channel_owner) |> Channel.send("title")
   end
 
   def wait_for_selector(channel_owner, selector, options \\ %{}) do
-    frame(channel_owner) |> Playwright.Client.Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
+    frame(channel_owner) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
   end
 
   # private
