@@ -170,7 +170,13 @@ defmodule Playwright.Client.Connection do
   end
 
   defp _recv_(json, state) when is_binary(json) do
-    _recv_(Jason.decode!(json) |> Extra.Map.deep_atomize_keys(), state)
+    case Jason.decode(json) do
+      {:ok, data} ->
+        _recv_(data |> Extra.Map.deep_atomize_keys(), state)
+
+      _error ->
+        raise ArgumentError, message: inspect(json: Enum.join(for <<c::utf8 <- json>>, do: <<c::utf8>>))
+    end
   end
 
   defp _recv_(%{id: message_id, result: result}, state) do
@@ -205,6 +211,11 @@ defmodule Playwright.Client.Connection do
          %{catalog: catalog} = state
        ) do
     item = apply(resource(params), :new, [catalog[parent_guid], params])
+    Logger.debug("received type: " <> params.type)
+
+    if params.type == "ElementHandle" do
+      Logger.debug("received data: " <> inspect(params))
+    end
 
     %{state | catalog: _put_(item, state)}
     |> update_channel_messages(item)
@@ -229,6 +240,13 @@ defmodule Playwright.Client.Connection do
     %{state | catalog: Map.put(catalog, guid, entry)}
   end
 
+  defp _recv_(%{guid: guid, method: method, params: params}, %{catalog: catalog} = state)
+       when method in ["previewUpdated"] do
+    entry = catalog[guid]
+    new_entry = %Playwright.ElementHandle{entry | initializer: Map.put(entry.initializer, :preview, params.preview)}
+    %{state | catalog: Map.put(catalog, guid, new_entry)}
+  end
+
   defp _recv_(%{method: method, params: %{message: %{guid: guid}}}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["console"] do
     entry = catalog[guid]
@@ -243,7 +261,7 @@ defmodule Playwright.Client.Connection do
   end
 
   defp _recv_(data, state) do
-    Logger.error("_recv_ other  :: #{inspect(data)}")
+    Logger.debug("_recv_ other  :: #{inspect(data)}")
     state
   end
 
