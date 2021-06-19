@@ -58,7 +58,7 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp launch(%BrowserType{} = channel_owner) do
-    browser = Channel.send(channel_owner, "launch", Config.launch_options())
+    browser = Channel.send(channel_owner, "launch", Config.launch_options(true))
 
     case browser do
       %Playwright.Browser{} ->

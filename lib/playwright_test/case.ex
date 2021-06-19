@@ -8,6 +8,7 @@ defmodule PlaywrightTest.Case do
       defmodule Web.DriverTransportTest do
         use ExUnit.Case
         use PlaywrightTest.Case,
+          headless: false,
           transport: :driver
 
         describe "features" do
@@ -31,23 +32,23 @@ defmodule PlaywrightTest.Case do
       defmodule Web.WebSocketTransportTest do
         use ExUnit.Case
         use PlaywrightTest.Case,
-          endpoint: ws://localhost:3000,
           transport: :websocket
       end
   """
-  defmacro __using__(config \\ %{}) do
+  defmacro __using__(options \\ %{}) do
     quote do
+      alias Playwright.Runner.Config
+
       setup_all do
-        env = Application.get_all_env(:playwright)
-        config = Keyword.merge(env, unquote(config))
+        inline_options = unquote(options) |> Enum.into(%{})
+        launch_options = Map.merge(Config.launch_options(), inline_options)
+        runner_options = Map.merge(Config.playwright_test(), inline_options)
+
+        Application.put_env(:playwright, LaunchOptions, launch_options)
 
         {:ok, _} = Application.ensure_all_started(:playwright)
 
-        if Keyword.has_key?(config, :headless) do
-          Application.put_env(:playwright, :headless, Keyword.get(config, :headless))
-        end
-
-        case Keyword.get(config, :transport, :driver) do
+        case runner_options.transport do
           :driver ->
             {connection, browser} = Playwright.BrowserType.launch()
 
@@ -58,8 +59,8 @@ defmodule PlaywrightTest.Case do
             ]
 
           :websocket ->
-            endpoint = Keyword.get(config, :endpoint)
-            {connection, browser} = Playwright.BrowserType.connect(endpoint)
+            options = Config.connect_options()
+            {connection, browser} = Playwright.BrowserType.connect(options.ws_endpoint)
 
             [
               connection: connection,

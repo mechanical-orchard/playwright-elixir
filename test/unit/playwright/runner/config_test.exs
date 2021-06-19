@@ -2,6 +2,8 @@ defmodule Playwright.Runner.ConfigTest do
   use ExUnit.Case
   alias Playwright.Runner.Config
 
+  require Logger
+
   setup do
     env = Application.get_all_env(:playright)
 
@@ -18,7 +20,7 @@ defmodule Playwright.Runner.ConfigTest do
     test "reads from `:playwright, LaunchOptions` configuration" do
       Application.put_env(:playwright, LaunchOptions, headless: false)
       config = Config.launch_options()
-      assert config == %{"headless" => false}
+      assert config == %{headless: false}
     end
 
     test "excludes `nil` entries" do
@@ -39,10 +41,31 @@ defmodule Playwright.Runner.ConfigTest do
       assert config == %{}
     end
 
-    test "transforms snake-case keys to camelcase" do
+    test "optionally transforms snake-case keys to camelcase" do
       Application.put_env(:playwright, LaunchOptions, downloads_path: "./tmp")
+
       config = Config.launch_options()
+      assert config == %{downloads_path: "./tmp"}
+
+      config = Config.launch_options(true)
       assert config == %{"downloadsPath" => "./tmp"}
+    end
+  end
+
+  describe "playwright_test/0" do
+    setup do
+      Application.delete_env(:playwright, PlaywrightTest)
+    end
+
+    test "enables 'transport' configuration" do
+      Application.put_env(:playwright, PlaywrightTest, transport: :bogus)
+      config = Config.playwright_test()
+      assert config == %{transport: :bogus}
+    end
+
+    test "respects default 'transport'" do
+      config = Config.playwright_test()
+      assert config == %{transport: :driver}
     end
   end
 end

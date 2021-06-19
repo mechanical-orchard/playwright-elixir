@@ -4,15 +4,76 @@ defmodule Playwright.Runner.Config do
 
   Overview:
 
-      config :playwright, LaunchOptions, [...]
+      config :playwright, ConnectOptions,
+        [...]
+
+      config :playwright, LaunchOptions,
+        [...]
+
+      config :playwright, PlaywrightTest,
+        [...]
   """
 
   alias Playwright.Extra
+  alias Playwright.Runner.Config.Types
 
-  defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless]
+  defmodule Types do
+    @type connect_options :: %{
+            ws_endpoint: String.t()
+          }
+
+    @type launch_options :: %{
+            args: [String.t()],
+            channel: String.t(),
+            chromium_sandbox: boolean(),
+            devtools: boolean(),
+            downloads_path: String.t(),
+            env: any(),
+            executable_path: String.t(),
+            headless: boolean()
+          }
+
+    @type playwright_test :: %{
+            transport: atom()
+          }
+
+    defmodule ConnectOptions do
+      @moduledoc false
+      defstruct [:ws_endpoint]
+    end
+
+    defmodule LaunchOptions do
+      @moduledoc false
+      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless]
+    end
+
+    defmodule PlaywrightTest do
+      @moduledoc false
+      defstruct transport: :driver
+    end
+  end
 
   @doc """
-  Optional configuration for Playwright browser launch commands.
+  Configuration for connecting to a running Playwright browser server over a
+  WebSocket.
+
+  ## Parameter (required): `ws_endpoint`
+
+  A browser websocket endpoint to which the runner will connect.
+
+  e.g.,
+
+      config :playwright, ConnectOptions,
+        ws_endpoint: "ws://localhost:3000/playwright"
+  """
+  @spec connect_options(boolean()) :: Types.connect_options()
+  def connect_options(camelcase \\ false) do
+    config_for(ConnectOptions, %Types.ConnectOptions{}, camelcase) || %{}
+    # |> clean()
+  end
+
+  @doc """
+  Optional configuration for Playwright browser server launch commands.
 
   This function should not typically be used by consumers of the library.
   Rather, configuration is provided via `config :playwright` statements, which
@@ -131,49 +192,75 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         executable_path: "/Applications/..."
   """
-  @spec launch_options() :: %{
-          args: [binary()],
-          channel: binary(),
-          chromium_sandbox: boolean(),
-          devtools: boolean(),
-          downloads_path: binary(),
-          env: any(),
-          executable_path: binary(),
-          headless: boolean()
-        }
-  def launch_options do
-    config_for(LaunchOptions) || %{}
+  @spec launch_options(boolean()) :: Types.launch_options()
+  def launch_options(camelcase \\ false) do
+    config_for(LaunchOptions, %Types.LaunchOptions{}, camelcase) || %{}
+    # |> clean()
+  end
+
+  @doc """
+  Configuration for usage of `PlaywrightTest.Case`.
+
+  ## Option: `transport`
+
+  One of `:driver` or `:websocket`, defaults to `:driver`.
+
+  Additional configuration may be required depending on the transport
+  configuration:
+
+  - `Types.launch_options()` for the `:driver` transport
+  - `Types.connect_options()` for the `:websocket` transport
+
+  e.g.,
+
+      config :playwright, PlaywrightTest,
+        driver: :websocket
+  """
+  @spec playwright_test(boolean()) :: Types.playwright_test()
+  def playwright_test(camelcase \\ false) do
+    config_for(PlaywrightTest, %Types.PlaywrightTest{}, camelcase)
+    # |> Map.from_struct()
   end
 
   # private
   # ----------------------------------------------------------------------------
 
-  defp config_for(key) do
+  defp config_for(key, mod, camelcase) do
     configured =
       Application.get_env(:playwright, key, %{})
       |> Enum.into(%{})
 
-    build(configured) |> clean()
+    result = build(configured, mod) |> clean()
+    if camelcase, do: camelize(result), else: result
   end
 
-  defp build(source) do
+  defp build(source, mod) do
     result =
-      for key <- Map.keys(%__MODULE__{}) |> Enum.reject(fn key -> key == :__struct__ end),
+      for key <- Map.keys(mod) |> Enum.reject(fn key -> key == :__struct__ end),
           into: %{} do
-        {key, Map.get(source, key)}
+        case Map.get(source, key) do
+          nil ->
+            {key, Map.get(mod, key)}
+
+          value ->
+            {key, value}
+        end
       end
 
-    Map.merge(%__MODULE__{}, result)
+    Map.merge(mod, result)
   end
 
   defp clean(source) do
     Map.from_struct(source)
-    |> Extra.Map.deep_camelize_keys()
     |> Enum.reject(fn
       {_key, value} when is_nil(value) -> true
       {_key, value} when is_list(value) -> value == []
       _otherwise_ -> false
     end)
     |> Enum.into(%{})
+  end
+
+  defp camelize(source) do
+    Extra.Map.deep_camelize_keys(source)
   end
 end
