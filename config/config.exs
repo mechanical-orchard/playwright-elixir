@@ -1,6 +1,5 @@
 import Config
 
-# "channel" is one of (chrome|chrome-beta|chrome-dev|chrome-canary|msedge|msedge-beta|msedge-dev|msedge-canary|firefox-stable)
 channel = System.get_env("PLAYWRIGHT_CHANNEL", nil)
 endpoint = System.get_env("PLAYWRIGHT_ENDPOINT", "ws://localhost:3000/playwright")
 headless = String.to_atom(System.get_env("PLAYWRIGHT_HEADLESS", "true")) != false

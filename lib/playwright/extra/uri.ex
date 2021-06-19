@@ -1,8 +1,5 @@
 defmodule Playwright.Extra.URI do
-  @moduledoc """
-  Handy URI functions
-  """
-
+  @moduledoc false
   def absolute?(uri) do
     uri = URI.parse(uri)
     present?(uri.host) && present?(uri.scheme)

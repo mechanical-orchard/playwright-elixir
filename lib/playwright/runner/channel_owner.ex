@@ -1,4 +1,4 @@
-defmodule Playwright.Client.ChannelOwner do
+defmodule Playwright.Runner.ChannelOwner do
   @moduledoc false
   @base [:connection, :parent, :type, :guid, :initializer]
 
@@ -8,8 +8,8 @@ defmodule Playwright.Client.ChannelOwner do
     quote do
       @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
 
-      alias Playwright.Client.Channel
-      alias Playwright.Client.Connection
+      alias Playwright.Runner.Channel
+      alias Playwright.Runner.Connection
 
       defstruct unquote(fields)
 

@@ -1,15 +1,16 @@
 defmodule Playwright.Browser do
   @moduledoc """
-  Browser represents a launched web browser instance managed by Playwright.
+  `Playwright.Browser` represents a launched web browser instance managed by
+  Playwright.
 
-  A Browser is created via:
+  A `Playwright.Browser` is created via:
 
   - `Playwright.BrowserType.launch/0`, when using the "driver" transport.
   - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
   """
-  use Playwright.Client.ChannelOwner, [:name, :version]
-  alias Playwright.Client.Channel
-  alias Playwright.Client.Connection
+  use Playwright.Runner.ChannelOwner, [:name, :version]
+  alias Playwright.Runner.Channel
+  alias Playwright.Runner.Connection
 
   @doc false
   def new(parent, %{initializer: %{version: version} = initializer} = args) do

@@ -1,32 +1,39 @@
 defmodule Playwright.Page do
   @moduledoc """
-
-  A web page.
+  `Playwright.Page` represents a web page loaded in the Playwright browser
+  server.
 
   ## Selectors
 
   Some functions in this module accept selectors:
-  * By default, selectors are assumed to be CSS: `a[href="/foo"]`
-  * If a selector starts with a single or double quote, it is a text selector: `"Login"`
-  * If a selector starts with `//`, it is an xpath selector: `//html/body`
 
-  Selector types can be made explicit by prefixing with `css=`, `text=`, or `xpath=`: `text="Login"`.
+  - By default, selectors are assumed to be CSS: `a[href="/foo"]`
+  - If a selector starts with a single or double quote, it is a text selector:
+    `"Login"`
+  - If a selector starts with `//`, it is an xpath selector: `//html/body`
 
-  Playwright supports some useful psudeoselectors:
-  * text: `#nav-bar :text("Contact us")`
-  * inclusion: `.item-description:has(.item-promo-banner)`
-  * position: `input:right-of(:text("Username"))` (also `left-of`, `above`, `below`, `near`)
-  * visibility: `.login-button:visible`
-  * nth match: `:nth-match(:text("Buy"), 3)`
-  * match any of the conditions: `:is(button:has-text("Log in"), button:has-text("Sign in"))`
+  Selector types can be made explicit by prefixing with `css=`, `text=`, or
+  `xpath=`: `text="Login"`.
 
-  More info: https://playwright.dev/docs/selectors
+  Playwright supports some useful pseudo-selectors:
+
+  - text: `#nav-bar :text("Contact us")`
+  - inclusion: `.item-description:has(.item-promo-banner)`
+  - position: `input:right-of(:text("Username"))` (also `left-of`, `above`,
+    `below`, `near`)
+  - visibility: `.login-button:visible`
+  - nth match: `:nth-match(:text("Buy"), 3)`
+  - match any of the conditions:
+    `:is(button:has-text("Log in"), button:has-text("Sign in"))`
+
+  More info on Playwright selectors is available
+  [online](https://playwright.dev/docs/selectors).
   """
-  use Playwright.Client.ChannelOwner, [:owned_context]
+  use Playwright.Runner.ChannelOwner, [:owned_context]
 
   alias Playwright.BrowserContext
-  alias Playwright.Client.Channel
-  alias Playwright.Client.Connection
+  alias Playwright.Runner.Channel
+  alias Playwright.Runner.Connection
   alias Playwright.ElementHandle
   alias Playwright.Page
 
@@ -46,7 +53,7 @@ defmodule Playwright.Page do
   end
 
   def close(channel_owner) do
-    channel_owner |> Playwright.Client.Channel.send("close")
+    channel_owner |> Channel.send("close")
 
     if channel_owner.owned_context do
       BrowserContext.close(channel_owner.owned_context)

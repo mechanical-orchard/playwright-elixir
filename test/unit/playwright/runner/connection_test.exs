@@ -1,7 +1,7 @@
-defmodule Test.Unit.Playwright.Client.ConnectionTest do
+defmodule Playwright.Runner.ConnectionTest do
   use ExUnit.Case
-  alias Playwright.Client.Connection
-  alias Test.Unit.Playwright.Client.ConnectionTest.TestTransport
+  alias Playwright.Runner.Connection
+  alias Playwright.Runner.ConnectionTest.TestTransport
 
   setup do
     %{
@@ -157,7 +157,7 @@ defmodule Test.Unit.Playwright.Client.ConnectionTest do
 
       from = {self(), :tag}
 
-      data = %Playwright.Client.ChannelMessage{
+      data = %Playwright.Runner.ChannelMessage{
         guid: "page@1",
         id: 42,
         method: "click",

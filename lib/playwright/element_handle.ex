@@ -1,11 +1,11 @@
 defmodule Playwright.ElementHandle do
   @moduledoc """
-  Defines a handle to a DOM element. ElementHandle structs may be returned
-  from Page functions such as ` Playwright.Page.query_selector/2`.
+  Defines a handle to a DOM element. `Playwright.ElementHandle` structs may be returned
+  from `Playwright.Page` functions such as ` Playwright.Page.query_selector/2`.
   """
-  use Playwright.Client.ChannelOwner
-  alias Playwright.Client.Channel
-  alias Playwright.Client.ChannelMessage
+  use Playwright.Runner.ChannelOwner
+  alias Playwright.Runner.Channel
+  alias Playwright.Runner.ChannelMessage
   alias Playwright.ElementHandle
 
   @doc false

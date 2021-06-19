@@ -1,12 +1,12 @@
-defmodule Playwright.Client.Connection do
+defmodule Playwright.Runner.Connection do
   @moduledoc false
   require Logger
 
   use GenServer
 
-  alias Playwright.Client.ChannelMessage
   alias Playwright.Extra
-  alias Playwright.Root
+  alias Playwright.Runner.ChannelMessage
+  alias Playwright.Runner.Root
 
   # API
   # ----------------------------------------------------------------------------

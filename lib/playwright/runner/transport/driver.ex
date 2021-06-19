@@ -1,12 +1,13 @@
-defmodule Playwright.Client.Transport.Driver do
-  @moduledoc false
-  use GenServer
-  alias Playwright.Client.Connection
-  alias Playwright.Client.Transport.DriverFrame
-  require Logger
+defmodule Playwright.Runner.Transport.Driver do
+  @moduledoc """
+  A transport for negotiating messages with the embedded Playwright `driver`
+  CLI.
+  """
 
-  # API
-  # -------------------------------------------------------------------------
+  use GenServer
+  require Logger
+  alias Playwright.Runner.Connection
+  alias Playwright.Runner.Transport.DriverMessage
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args)
@@ -27,7 +28,7 @@ defmodule Playwright.Client.Transport.Driver do
   end
 
   # @impl
-  # -------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
 
   def init([connection, driver_path]) do
     cli = driver_path
@@ -61,12 +62,12 @@ defmodule Playwright.Client.Transport.Driver do
         %{buffer: buffer, remaining: remaining} = state
       ) do
     %{
-      messages: messages,
+      frames: frames,
       remaining: remaining,
       buffer: buffer
-    } = DriverFrame.parse_frame(data, remaining, buffer, [])
+    } = DriverMessage.parse(data, remaining, buffer, [])
 
-    messages |> Enum.each(fn message -> recv(state.connection, message) end)
+    frames |> Enum.each(fn frame -> recv(state.connection, frame) end)
 
     {:noreply, %{state | buffer: buffer, remaining: remaining}}
   end
@@ -77,7 +78,7 @@ defmodule Playwright.Client.Transport.Driver do
   end
 
   # private
-  # --------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
 
   def recv(connection, json) do
     Connection.recv(connection, {:text, json})

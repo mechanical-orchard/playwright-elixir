@@ -1,8 +1,9 @@
 defmodule Playwright.BrowserType do
   @moduledoc """
   The `Playwright.BrowserType` module exposes functions that either:
-    * launch a new browser instance via a port
-    * connect to a running playwright websocket
+
+  - launch a new browser instance via a `Port`
+  - connect to a running playwright websocket
 
   ## Examples
 
@@ -15,13 +16,13 @@ defmodule Playwright.BrowserType do
       {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
 
   """
-  use Playwright.Client.ChannelOwner
+  use Playwright.Runner.ChannelOwner
 
   require Logger
 
   alias Playwright.BrowserType
-  alias Playwright.Client.Connection
-  alias Playwright.Client.Transport
+  alias Playwright.Runner.Connection
+  alias Playwright.Runner.Transport
 
   def new(parent, args) do
     channel_owner(parent, args)

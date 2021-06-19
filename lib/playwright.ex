@@ -1,9 +1,10 @@
 defmodule Playwright do
   @moduledoc """
-  An Elixir wrapper for [Playwright](https://playwright.dev).
+  An Elixir client for [Playwright](https://playwright.dev) browser automation.
   """
   use Application
 
+  @doc false
   @impl Application
   def start(_type, _args) do
     children = [
@@ -16,9 +17,5 @@ defmodule Playwright do
     ]
 
     Supervisor.start_link(children, options)
-  end
-
-  def start do
-    start(nil, nil)
   end
 end

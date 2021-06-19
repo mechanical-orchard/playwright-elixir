@@ -1,7 +1,7 @@
-defmodule Playwright.Client.Channel do
+defmodule Playwright.Runner.Channel do
   @moduledoc false
-  alias Playwright.Client.ChannelMessage
-  alias Playwright.Client.Connection
+  alias Playwright.Runner.ChannelMessage
+  alias Playwright.Runner.Connection
 
   def send(channel_owner, method, params \\ %{}, locals \\ nil) do
     message = %ChannelMessage{

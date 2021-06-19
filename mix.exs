@@ -10,7 +10,8 @@ defmodule Playwright.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       preferred_cli_env: [credo: :test, dialyzer: :test, docs: :docs],
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      docs: docs()
     ]
   end
 
@@ -45,6 +46,36 @@ defmodule Playwright.MixProject do
       {:mix_audit, "~> 0.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.11.1", only: [:dev, :test]},
       {:plug_cowboy, "~> 2.5.0", only: [:dev, :test]}
+    ]
+  end
+
+  defp docs do
+    [
+      name: "Playwright",
+      source_url: "https://github.com/geometerio/playwright-elixir",
+      homepage_url: "https://github.com/geometerio/playwright-elixir",
+      main: "Playwright",
+      groups_for_modules: [
+        "Features (usage)": [
+          Playwright.Browser,
+          Playwright.BrowserContext,
+          Playwright.BrowserType,
+          Playwright.ElementHandle,
+          Playwright.Page,
+          Playwright.Playwright,
+          Playwright.RemoteBrowser
+        ],
+        "Helpers (usage)": [
+          PlaywrightTest.Case
+        ],
+        "Runner (internal)": [
+          Playwright.Runner.Config,
+          Playwright.Runner.ChannelMessage,
+          Playwright.Runner.Transport.Driver,
+          Playwright.Runner.Transport.DriverMessage,
+          Playwright.Runner.Transport.WebSocket
+        ]
+      ]
     ]
   end
 end

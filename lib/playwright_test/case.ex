@@ -1,26 +1,38 @@
 defmodule PlaywrightTest.Case do
   @moduledoc """
-  Use `PlaywrightTest.Case` in an ExUnit test module to start a Playwright server
-  and put it into the test context.
+  Use `PlaywrightTest.Case` in an ExUnit test module to start a Playwright
+  server and put it into the test context.
 
-  ## Example
+  ## Examples
 
-      defmodule Web.FeatureTest do
+      defmodule Web.DriverTransportTest do
         use ExUnit.Case
-        use PlaywrightTest.Case, transport: :driver, headless: true
+        use PlaywrightTest.Case,
+          transport: :driver
 
         describe "features" do
           test "goes to a page", %{browser: browser} do
-            _page =
-              Pw.Browser.new_page(browser)
-              |> Pw.Page.goto("https://playwright.dev")
+            page =
+              browser
+              |> Playwright.Browser.new_page()
+
+            text =
+              page
+              |> Playwright.Page.goto("https://playwright.dev")
+              |> Playwright.Page.text_content(".navbar__title")
+
+            assert text == "Playwright"
+
+            Playwright.Page.close(page)
           end
         end
       end
 
-      defmodule Web.BrowserlessTest do
+      defmodule Web.WebSocketTransportTest do
         use ExUnit.Case
-        use PlaywrightTest.Case, transport: :websocket,
+        use PlaywrightTest.Case,
+          endpoint: ws://localhost:3000,
+          transport: :websocket
       end
   """
   defmacro __using__(config \\ %{}) do

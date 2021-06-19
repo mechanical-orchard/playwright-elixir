@@ -1,7 +1,7 @@
 defmodule Playwright.BrowserContext do
   @moduledoc """
-  BrowserContexts provide a way to operate multiple independent browser
-  sessions.
+  `Playwright.BrowserContext` provides a way to operate multiple independent
+  browser sessions.
 
   If a page opens another page, e.g. with a `window.open` call, the popup will
   belong to the parent page's browser context.
@@ -9,8 +9,8 @@ defmodule Playwright.BrowserContext do
   Playwright allows creation of "incognito" browser contexts with the
   `Playwright.Browser.new_context/1` function.
   """
-  use Playwright.Client.ChannelOwner, [:browser, :owner_page]
-  alias Playwright.Client.Channel
+  use Playwright.Runner.ChannelOwner, [:browser, :owner_page]
+  alias Playwright.Runner.Channel
 
   @doc false
   def new(parent, args) do

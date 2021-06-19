@@ -1,8 +1,5 @@
-defmodule Playwright.Root do
-  @moduledoc """
-  Represents the root node of a browser page.
-  """
-
+defmodule Playwright.Runner.Root do
+  @moduledoc false
   defstruct(connection: nil, parent: nil, objects: %{}, type: nil, guid: nil, initializer: nil)
 
   def new(connection) do

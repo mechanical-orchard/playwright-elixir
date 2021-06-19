@@ -1,4 +1,4 @@
-defmodule Test.Unit.Playwright.BrowserTypeTest do
+defmodule Playwright.BrowserTypeTest do
   use ExUnit.Case
 
   alias Playwright.BrowserType

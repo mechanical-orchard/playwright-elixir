@@ -1,11 +1,12 @@
-defmodule Playwright.Client.Transport.WebSocket do
-  @moduledoc false
-  use GenServer
-  alias Playwright.Client.Connection
-  require Logger
+defmodule Playwright.Runner.Transport.WebSocket do
+  @moduledoc """
+  A transport for negotiating messages with a running Playwright websocket
+  server.
+  """
 
-  # API
-  # ---------------------------------------------------------------------------
+  use GenServer
+  require Logger
+  alias Playwright.Runner.Connection
 
   defstruct([
     :connection,
@@ -34,7 +35,7 @@ defmodule Playwright.Client.Transport.WebSocket do
   end
 
   # @impl
-  # ---------------------------------------------------------------------------
+  # ----------------------------------------------------------------------------
 
   @impl GenServer
   def init([connection, ws_endpoint]) do
@@ -81,6 +82,9 @@ defmodule Playwright.Client.Transport.WebSocket do
     warn("Process went down: #{inspect(pid)}")
     {:stop, reason, state}
   end
+
+  # private
+  # ----------------------------------------------------------------------------
 
   defp port(%{port: port}) when not is_nil(port), do: port
   defp port(%{scheme: "ws"}), do: 80

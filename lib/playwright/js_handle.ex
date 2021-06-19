@@ -1,9 +1,6 @@
 defmodule Playwright.JSHandle do
   @moduledoc false
-  use Playwright.Client.ChannelOwner
-
-  # API
-  # ---------------------------------------------------------------------------
+  use Playwright.Runner.ChannelOwner
 
   def new(parent, args) do
     channel_owner(parent, args)

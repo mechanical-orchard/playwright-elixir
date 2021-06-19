@@ -1,6 +1,6 @@
 defmodule Test.Features.PageTest do
   use Playwright.TestCase
-  alias Playwright.Client.Connection
+  alias Playwright.Runner.Connection
 
   describe "Page" do
     test ".query_selector/2", %{assets: assets, browser: browser, connection: connection} do
