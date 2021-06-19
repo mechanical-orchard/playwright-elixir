@@ -21,6 +21,7 @@ defmodule Playwright.BrowserType do
   require Logger
 
   alias Playwright.BrowserType
+  alias Playwright.Runner.Config
   alias Playwright.Runner.Connection
   alias Playwright.Runner.Transport
 
@@ -57,7 +58,7 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp launch(%BrowserType{} = channel_owner) do
-    browser = Channel.send(channel_owner, "launch", launch_options())
+    browser = Channel.send(channel_owner, "launch", Config.launch_options())
 
     case browser do
       %Playwright.Browser{} ->
@@ -66,35 +67,6 @@ defmodule Playwright.BrowserType do
       _other ->
         raise("expected launch to return a  Playwright.Browser, received: #{inspect(browser)}")
     end
-  end
-
-  defp launch_options do
-    Map.merge(
-      %{
-        args: launch_args(),
-        headless: launch_headless?(),
-        ignoreAllDefaultArgs: false
-      },
-      launch_channel()
-    )
-  end
-
-  defp launch_args do
-    Application.get_env(:playwright, :args, [])
-  end
-
-  defp launch_channel do
-    case Application.get_env(:playwright, :channel, nil) do
-      nil ->
-        %{}
-
-      channel ->
-        %{channel: channel}
-    end
-  end
-
-  defp launch_headless? do
-    Application.get_env(:playwright, :headless, true)
   end
 
   defp chromium(connection) do

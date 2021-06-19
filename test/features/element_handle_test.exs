@@ -1,33 +1,6 @@
 defmodule Test.Features.ElementHandleTest do
   use Playwright.TestCase
 
-  def visit_button_fixture(%{assets: assets, browser: browser}) do
-    page =
-      browser
-      |> Playwright.Browser.new_page()
-      |> Playwright.Page.goto(assets.prefix <> "/input/button.html")
-
-    [page: page]
-  end
-
-  def visit_dom_fixture(%{assets: assets, browser: browser}) do
-    page =
-      browser
-      |> Playwright.Browser.new_page()
-      |> Playwright.Page.goto(assets.prefix <> "/dom.html")
-
-    [page: page]
-  end
-
-  def visit_playground_fixture(%{assets: assets, browser: browser}) do
-    page =
-      browser
-      |> Playwright.Browser.new_page()
-      |> Playwright.Page.goto(assets.prefix <> "/playground.html")
-
-    [page: page]
-  end
-
   describe "click" do
     setup :visit_button_fixture
 
@@ -88,5 +61,35 @@ defmodule Test.Features.ElementHandleTest do
 
       Playwright.Page.close(page)
     end
+  end
+
+  # helpers
+  # ----------------------------------------------------------------------------
+
+  defp visit_button_fixture(%{assets: assets, browser: browser}) do
+    page =
+      browser
+      |> Playwright.Browser.new_page()
+      |> Playwright.Page.goto(assets.prefix <> "/input/button.html")
+
+    [page: page]
+  end
+
+  defp visit_dom_fixture(%{assets: assets, browser: browser}) do
+    page =
+      browser
+      |> Playwright.Browser.new_page()
+      |> Playwright.Page.goto(assets.prefix <> "/dom.html")
+
+    [page: page]
+  end
+
+  defp visit_playground_fixture(%{assets: assets, browser: browser}) do
+    page =
+      browser
+      |> Playwright.Browser.new_page()
+      |> Playwright.Page.goto(assets.prefix <> "/playground.html")
+
+    [page: page]
   end
 end

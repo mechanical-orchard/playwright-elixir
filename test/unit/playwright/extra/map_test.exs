@@ -19,4 +19,24 @@ defmodule Playwright.Extra.MapTest do
       assert map |> Extra.Map.deep_atomize_keys() == %{item1: "chapstick", item2: %{item3: ["mask", "altoids"]}}
     end
   end
+
+  describe "deep_camelize_keys" do
+    test "deeply converts keys from strings" do
+      map = %{"key" => "value", "key_with_converted_case" => %{"nested_pair" => "value"}}
+
+      assert map |> Extra.Map.deep_camelize_keys() == %{
+               "key" => "value",
+               "keyWithConvertedCase" => %{"nestedPair" => "value"}
+             }
+    end
+
+    test "deeply converts keys from atoms" do
+      map = %{key: "value", key_with_converted_case: %{nested_pair: "value"}}
+
+      assert map |> Extra.Map.deep_camelize_keys() == %{
+               "key" => "value",
+               "keyWithConvertedCase" => %{"nestedPair" => "value"}
+             }
+    end
+  end
 end

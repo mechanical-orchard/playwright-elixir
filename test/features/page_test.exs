@@ -27,6 +27,8 @@ defmodule Test.Features.PageTest do
       assert_raise RuntimeError, "No element found for selector: #non-existent", fn ->
         page |> Playwright.Page.query_selector!("#non-existent")
       end
+
+      Playwright.Page.close(page)
     end
 
     test ".query_selector_all/2", %{assets: assets, browser: browser, connection: connection} do

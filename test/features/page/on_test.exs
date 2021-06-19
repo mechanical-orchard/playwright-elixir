@@ -31,6 +31,8 @@ defmodule Test.Features.Page.OnTest do
 
       assert_received({:on, :console, %Playwright.ConsoleMessage{initializer: %{text: "lala!", type: "info"}}})
       assert_received({:on, :console, %Playwright.ConsoleMessage{initializer: %{text: "lulu!", type: "error"}}})
+
+      Playwright.Page.close(page)
     end
   end
 end
