@@ -57,12 +57,6 @@ defmodule Playwright.Runner.ConfigTest do
       Application.delete_env(:playwright, PlaywrightTest)
     end
 
-    test "enables 'transport' configuration" do
-      Application.put_env(:playwright, PlaywrightTest, transport: :bogus)
-      config = Config.playwright_test()
-      assert config == %{transport: :bogus}
-    end
-
     test "respects default 'transport'" do
       config = Config.playwright_test()
       assert config == %{transport: :driver}
