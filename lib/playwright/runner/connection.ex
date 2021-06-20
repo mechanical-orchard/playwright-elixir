@@ -211,10 +211,14 @@ defmodule Playwright.Runner.Connection do
          %{catalog: catalog} = state
        ) do
     item = apply(resource(params), :new, [catalog[parent_guid], params])
-    Logger.debug("received type: " <> params.type)
+    Logger.debug("received type to create: " <> params.type)
 
     if params.type == "ElementHandle" do
-      Logger.debug("received data: " <> inspect(params))
+      Logger.debug("  ...with data: " <> inspect(params))
+    end
+
+    if params.type == "JSHandle" do
+      Logger.debug("  ...with data: " <> inspect(params))
     end
 
     %{state | catalog: _put_(item, state)}
@@ -243,6 +247,7 @@ defmodule Playwright.Runner.Connection do
   defp _recv_(%{guid: guid, method: method, params: params}, %{catalog: catalog} = state)
        when method in ["previewUpdated"] do
     entry = catalog[guid]
+    Logger.debug("preview updated for #{inspect(entry)}")
     new_entry = %Playwright.ElementHandle{entry | initializer: Map.put(entry.initializer, :preview, params.preview)}
     %{state | catalog: Map.put(catalog, guid, new_entry)}
   end

@@ -33,6 +33,7 @@ defmodule Playwright.Page do
 
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle
+  alias Playwright.Extra
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
   alias Playwright.Page
@@ -74,16 +75,38 @@ defmodule Playwright.Page do
         handles: []
       }
     })
-    |> case do
-      %{s: result} ->
-        result
+    |> deserialize()
+  end
 
-      %{n: result} ->
-        result
+  def evaluate(subject, expression, handle) do
+    function? = String.starts_with?(expression, "function")
 
-      %{v: "undefined"} ->
-        nil
-    end
+    frame(subject)
+    |> Channel.send("evaluateExpression", %{
+      expression: expression,
+      isFunction: function?,
+      arg: %{
+        value: %{h: 0},
+        handles: [
+          %{guid: handle.guid}
+        ]
+      }
+    })
+    |> deserialize()
+  end
+
+  def evaluate_handle(subject, expression) do
+    function? = String.starts_with?(expression, "function")
+
+    frame(subject)
+    |> Channel.send("evaluateExpressionHandle", %{
+      expression: expression,
+      isFunction: function?,
+      arg: %{
+        value: %{v: "undefined"},
+        handles: []
+      }
+    })
   end
 
   def fill(subject, selector, value) do
@@ -180,5 +203,31 @@ defmodule Playwright.Page do
 
   defp frame(subject) do
     Connection.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
+  end
+
+  defp deserialize(value) do
+    case value do
+      %{b: boolean} ->
+        boolean
+
+      %{n: number} ->
+        number
+
+      %{o: object} ->
+        Enum.map(object, fn item ->
+          {item.k, deserialize(item.v)}
+        end)
+        |> Enum.into(%{})
+        |> Extra.Map.deep_atomize_keys()
+
+      %{s: string} ->
+        string
+
+      %{v: "null"} ->
+        nil
+
+      %{v: "undefined"} ->
+        nil
+    end
   end
 end
