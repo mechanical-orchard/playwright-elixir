@@ -69,6 +69,16 @@ defmodule PlaywrightTest.Case do
             ]
         end
       end
+
+      setup %{browser: browser} do
+        page = Playwright.Browser.new_page(browser)
+
+        on_exit(:ok, fn ->
+          Playwright.Page.close(page)
+        end)
+
+        [page: page]
+      end
     end
   end
 end

@@ -32,9 +32,9 @@ defmodule Playwright.Page do
   use Playwright.Runner.ChannelOwner, [:owned_context]
 
   alias Playwright.BrowserContext
+  alias Playwright.ElementHandle
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
-  alias Playwright.ElementHandle
   alias Playwright.Page
 
   def new(parent, args) do

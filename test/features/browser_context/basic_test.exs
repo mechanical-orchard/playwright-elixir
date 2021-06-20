@@ -8,6 +8,8 @@ defmodule Test.Features.BrowserContext.BasicTest do
   # end
 
   describe ".new_context/1" do
+    setup :without_page_fixture
+
     test "creates a new context, bound to the browser", %{browser: browser} do
       assert Playwright.Browser.contexts(browser) == []
 
@@ -18,5 +20,10 @@ defmodule Test.Features.BrowserContext.BasicTest do
       Playwright.BrowserContext.close(context)
       assert Playwright.Browser.contexts(browser) == []
     end
+  end
+
+  defp without_page_fixture(%{page: page}) do
+    Playwright.Page.close(page)
+    :ok
   end
 end

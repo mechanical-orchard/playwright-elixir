@@ -4,9 +4,9 @@ defmodule Playwright.ElementHandle do
   from `Playwright.Page` functions such as ` Playwright.Page.query_selector/2`.
   """
   use Playwright.Runner.ChannelOwner
+  alias Playwright.ElementHandle
   alias Playwright.Runner.Channel
   alias Playwright.Runner.ChannelMessage
-  alias Playwright.ElementHandle
 
   @doc false
   def new(parent, args) do

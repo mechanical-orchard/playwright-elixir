@@ -222,10 +222,7 @@ defmodule Playwright.Runner.Config do
     # |> Map.from_struct()
   end
 
-  # private
-  # ----------------------------------------------------------------------------
-
-  defp config_for(key, mod, camelcase) do
+  def config_for(key, mod, camelcase \\ false) do
     configured =
       Application.get_env(:playwright, key, %{})
       |> Enum.into(%{})
@@ -233,6 +230,9 @@ defmodule Playwright.Runner.Config do
     result = build(configured, mod) |> clean()
     if camelcase, do: camelize(result), else: result
   end
+
+  # private
+  # ----------------------------------------------------------------------------
 
   defp build(source, mod) do
     result =

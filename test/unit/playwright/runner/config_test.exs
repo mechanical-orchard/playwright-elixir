@@ -4,61 +4,48 @@ defmodule Playwright.Runner.ConfigTest do
 
   require Logger
 
-  setup do
-    env = Application.get_all_env(:playright)
-
-    on_exit(:ok, fn ->
-      Application.put_all_env(playwright: env)
-    end)
-  end
-
+  # NOTE: We short-circuit the calls here and jump to `config_for` in order to
+  # avoid setting state on the *actual* env keys. Otherwise, it's challenging to
+  # eliminate test pollution.
   describe "launch_options/0" do
-    setup do
-      Application.delete_env(:playwright, LaunchOptions)
-    end
-
-    test "reads from `:playwright, LaunchOptions` configuration" do
-      Application.put_env(:playwright, LaunchOptions, headless: false)
-      config = Config.launch_options()
+    test "reads from `:playwright, LaunchOptions` configuration", context do
+      config = helper(context, headless: false)
       assert config == %{headless: false}
     end
 
-    test "excludes `nil` entries" do
-      Application.put_env(:playwright, LaunchOptions, channel: nil)
-      config = Config.launch_options()
+    test "excludes `nil` entries", context do
+      config = helper(context, channel: nil)
       assert config == %{}
     end
 
-    test "excludes empty entries" do
-      Application.put_env(:playwright, LaunchOptions, args: [])
-      config = Config.launch_options()
+    test "excludes empty entries", context do
+      config = helper(context, args: [])
       assert config == %{}
     end
 
-    test "excludes unrecognized attributes" do
-      Application.put_env(:playwright, LaunchOptions, bogus: "value")
-      config = Config.launch_options()
+    test "excludes unrecognized attributes", context do
+      config = helper(context, bogus: "value")
       assert config == %{}
     end
 
-    test "optionally transforms snake-case keys to camelcase" do
-      Application.put_env(:playwright, LaunchOptions, downloads_path: "./tmp")
-
-      config = Config.launch_options()
+    test "optionally transforms snake-case keys to camelcase", context do
+      config = helper(context, downloads_path: "./tmp")
       assert config == %{downloads_path: "./tmp"}
 
-      config = Config.launch_options(true)
+      config = Config.config_for(context.test, %Config.Types.LaunchOptions{}, true)
       assert config == %{"downloadsPath" => "./tmp"}
+    end
+
+    defp helper(context, settings) do
+      key = context.test
+      Application.put_env(:playwright, key, settings)
+      Config.config_for(key, %Config.Types.LaunchOptions{})
     end
   end
 
   describe "playwright_test/0" do
-    setup do
-      Application.delete_env(:playwright, PlaywrightTest)
-    end
-
-    test "respects default 'transport'" do
-      config = Config.playwright_test()
+    test "respects default 'transport'", context do
+      config = Config.config_for(context.test, %Config.Types.PlaywrightTest{})
       assert config == %{transport: :driver}
     end
   end
