@@ -3,15 +3,15 @@ defmodule Playwright.Runner.Channel do
   alias Playwright.Runner.ChannelMessage
   alias Playwright.Runner.Connection
 
-  def send(channel_owner, method, params \\ %{}, locals \\ nil) do
+  def send(subject, method, params \\ %{}, locals \\ nil) do
     message = %ChannelMessage{
-      guid: channel_owner.guid,
+      guid: subject.guid,
       id: System.unique_integer([:monotonic, :positive]),
       method: method,
       params: params,
       locals: locals
     }
 
-    Connection.post(channel_owner.connection, {:data, message})
+    Connection.post(subject.connection, {:data, message})
   end
 end
