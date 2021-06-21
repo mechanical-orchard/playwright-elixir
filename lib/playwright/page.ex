@@ -34,9 +34,9 @@ defmodule Playwright.Page do
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle
   alias Playwright.Extra
+  alias Playwright.Page
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
-  alias Playwright.Page
 
   def new(parent, args) do
     channel_owner(parent, args)

@@ -59,7 +59,7 @@ defmodule Test.Features.Page.PageEvaluateHandleTest do
     #   assert result == "lala"
     # end
 
-    # TODO (page/page-evaluate-handle.spec.ts):
+    # Pending (page/page-evaluate-handle.spec.ts):
     # - it('should throw for circular objects', async ({page}) => {
     # - it('should accept same handle multiple times', async ({page}) => {
     # - it('should accept same nested object multiple times', async ({page}) => {
