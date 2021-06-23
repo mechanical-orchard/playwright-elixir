@@ -63,34 +63,14 @@ defmodule Playwright.Page do
     subject
   end
 
-  def evaluate(subject, expression) do
+  def evaluate(subject, expression, arg \\ nil) do
     function? = String.starts_with?(expression, "function")
 
     frame(subject)
     |> Channel.send("evaluateExpression", %{
       expression: expression,
       isFunction: function?,
-      arg: %{
-        value: %{v: "undefined"},
-        handles: []
-      }
-    })
-    |> deserialize()
-  end
-
-  def evaluate(subject, expression, handle) do
-    function? = String.starts_with?(expression, "function")
-
-    frame(subject)
-    |> Channel.send("evaluateExpression", %{
-      expression: expression,
-      isFunction: function?,
-      arg: %{
-        value: %{h: 0},
-        handles: [
-          %{guid: handle.guid}
-        ]
-      }
+      arg: serialize(arg)
     })
     |> deserialize()
   end
@@ -229,5 +209,77 @@ defmodule Playwright.Page do
       %{v: "undefined"} ->
         nil
     end
+  end
+
+  require Logger
+
+  defp serialize(arg) do
+    {value, handles} = serialize(arg, [], 0)
+    %{value: Extra.Map.deep_atomize_keys(value), handles: handles}
+  end
+
+  def serialize(_value, _handles, depth) when depth > 100 do
+    raise ArgumentError, message: "Maximum argument depth exceeded"
+  end
+
+  def serialize(nil, handles, _depth) do
+    {%{v: "null"}, handles}
+  end
+
+  def serialize(%Playwright.ElementHandle{} = value, _handles, _depth) do
+    Logger.error("not implemented: `serialize` for ElementHandle: #{inspect(value)}")
+  end
+
+  def serialize(%Playwright.JSHandle{} = value, handles, _depth) do
+    index = length(handles)
+    {%{h: index}, handles ++ [%{guid: value.guid}]}
+  end
+
+  def serialize(value, _handles, _depth) when is_float(value) do
+    Logger.error("not implemented: `serialize` for float: #{inspect(value)}")
+  end
+
+  def serialize(%DateTime{} = value, _handles, _depth) do
+    Logger.error("not implemented: `serialize` for datetime: #{inspect(value)}")
+  end
+
+  def serialize(value, _handles, _depth) when is_boolean(value) do
+    Logger.error("not implemented: `serialize` for boolean: #{inspect(value)}")
+  end
+
+  def serialize(value, _handles, _depth) when is_binary(value) do
+    Logger.error("not implemented: `serialize` for binary/string: #{inspect(value)}")
+  end
+
+  def serialize(value, handles, depth) when is_list(value) do
+    {_, result} =
+      Enum.map_reduce(value, %{handles: handles, items: []}, fn e, acc ->
+        {value, handles} = serialize(e, acc.handles, depth + 1)
+
+        {
+          {value, handles},
+          %{handles: handles, items: acc.items ++ [value]}
+        }
+      end)
+
+    {%{a: result.items}, result.handles}
+  end
+
+  def serialize(value, handles, depth) when is_map(value) do
+    {_, result} =
+      Enum.map_reduce(value, %{handles: handles, objects: []}, fn {k, v}, acc ->
+        {value, handles} = serialize(v, acc.handles, depth + 1)
+
+        {
+          {%{k: k, v: value}, handles},
+          %{handles: handles, objects: acc.objects ++ [%{k: k, v: value}]}
+        }
+      end)
+
+    {%{o: result.objects}, result.handles}
+  end
+
+  def serialize(_other, handles, _depth) do
+    {%{v: "undefined"}, handles}
   end
 end

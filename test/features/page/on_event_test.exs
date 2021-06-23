@@ -1,4 +1,4 @@
-defmodule Test.Features.Page.PageOnEventTest do
+defmodule Test.Features.Page.OnEventTest do
   use Playwright.TestCase
 
   describe "Page.on/3" do
