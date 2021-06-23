@@ -2,8 +2,17 @@ defmodule Playwright.Runner.ChannelOwner do
   @moduledoc false
   @base [:connection, :parent, :type, :guid, :initializer]
 
-  defmacro __using__(extra \\ []) do
-    fields = @base ++ extra
+  defmacro __using__(config \\ []) do
+    extra =
+      case config do
+        [fields: fields] ->
+          fields
+
+        _ ->
+          []
+      end
+
+    fields = extra ++ @base
 
     quote do
       @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}

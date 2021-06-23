@@ -9,7 +9,7 @@ defmodule Playwright.BrowserContext do
   Playwright allows creation of "incognito" browser contexts with the
   `Playwright.Browser.new_context/1` function.
   """
-  use Playwright.Runner.ChannelOwner, [:browser, :owner_page]
+  use Playwright.Runner.ChannelOwner, fields: [:browser, :owner_page]
   alias Playwright.Runner.Channel
 
   @doc false

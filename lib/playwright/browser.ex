@@ -8,7 +8,7 @@ defmodule Playwright.Browser do
   - `Playwright.BrowserType.launch/0`, when using the "driver" transport.
   - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
   """
-  use Playwright.Runner.ChannelOwner, [:name, :version]
+  use Playwright.Runner.ChannelOwner, fields: [:name, :version]
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
 
