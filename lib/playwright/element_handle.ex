@@ -3,7 +3,7 @@ defmodule Playwright.ElementHandle do
   Defines a handle to a DOM element. `Playwright.ElementHandle` structs may be returned
   from `Playwright.Page` functions such as ` Playwright.Page.query_selector/2`.
   """
-  use Playwright.Runner.ChannelOwner
+  use Playwright.Runner.ChannelOwner, fields: [:preview]
   alias Playwright.ElementHandle
   alias Playwright.Runner.Channel
   alias Playwright.Runner.ChannelMessage

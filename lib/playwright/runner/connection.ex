@@ -182,6 +182,12 @@ defmodule Playwright.Runner.Connection do
   defp _recv_(%{id: message_id, result: result}, state) do
     case Map.to_list(result) do
       [{_key, %{guid: guid}}] ->
+        # if key == :element do
+        #   Logger.info("RECV message for element w/ result: #{inspect(result)}")
+        # else
+        #   Logger.warn("RECV message for other: #{inspect(key)}")
+        # end
+
         reply_from_catalog({message_id, guid}, state)
 
       [{:binary, value}] ->
@@ -211,15 +217,19 @@ defmodule Playwright.Runner.Connection do
          %{catalog: catalog} = state
        ) do
     item = apply(resource(params), :new, [catalog[parent_guid], params])
-    Logger.debug("received type to create: " <> params.type)
+    # Logger.info("received type to create: " <> params.type)
 
-    if params.type == "ElementHandle" do
-      Logger.debug("  ...with data: " <> inspect(params))
-    end
+    # if params.type == "ElementHandle" do
+    #   Logger.info("  ...with data: " <> inspect(params))
+    # end
 
-    if params.type == "JSHandle" do
-      Logger.debug("  ...with data: " <> inspect(params))
-    end
+    # if params.type == "Frame" do
+    #   Logger.info("  ...with data: " <> inspect(params))
+    # end
+
+    # if params.type == "JSHandle" do
+    #   Logger.info("  ...with data: " <> inspect(params))
+    # end
 
     %{state | catalog: _put_(item, state)}
     |> update_channel_messages(item)
@@ -246,10 +256,9 @@ defmodule Playwright.Runner.Connection do
 
   defp _recv_(%{guid: guid, method: method, params: params}, %{catalog: catalog} = state)
        when method in ["previewUpdated"] do
-    entry = catalog[guid]
-    Logger.debug("preview updated for #{inspect(entry)}")
-    new_entry = %Playwright.ElementHandle{entry | initializer: Map.put(entry.initializer, :preview, params.preview)}
-    %{state | catalog: Map.put(catalog, guid, new_entry)}
+    Logger.debug("preview updated for #{inspect(guid)}")
+    updated = %Playwright.ElementHandle{catalog[guid] | preview: params.preview}
+    %{state | catalog: Map.put(catalog, guid, updated)}
   end
 
   defp _recv_(%{method: method, params: %{message: %{guid: guid}}}, %{catalog: catalog, handlers: handlers} = state)
@@ -266,7 +275,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp _recv_(data, state) do
-    Logger.debug("_recv_ other  :: #{inspect(data)}")
+    Logger.debug("_recv_ UNKNOWN :: method: #{inspect(data.method)}; data: #{inspect(data)}")
     state
   end
 
@@ -337,6 +346,11 @@ defmodule Playwright.Runner.Connection do
 
   defp select([head | tail], %{parent: parent} = attrs, result)
        when head.parent.guid == parent.guid do
+    select(tail, attrs, result ++ [head])
+  end
+
+  defp select([head | tail], %{type: type} = attrs, result)
+       when head.type == type do
     select(tail, attrs, result ++ [head])
   end
 

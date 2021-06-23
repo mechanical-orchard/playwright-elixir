@@ -1,6 +1,26 @@
 defmodule Test.Features.ElementHandleTest do
   use Playwright.TestCase
 
+  alias Playwright.Page
+
+  describe "...preview" do
+    test "...(also found in 'convenience test' in TS)", %{assets: assets, page: page} do
+      Page.goto(page, assets.prefix <> "/dom.html")
+
+      outer = Page.q(page, "#outer")
+      inner = Page.q(page, "#inner")
+      check = Page.q(page, "#check")
+      # child = ElementHandle.evaluate_handle(inner, "e => e.firstChild")
+
+      assert outer.preview == ~s|JSHandle@<div id="outer" name="value">…</div>|
+      assert inner.preview == ~s|JSHandle@<div id="inner">Text,↵more text</div>|
+      assert check.preview == ~s|JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>|
+      # assert child == "JSHandle@#text=Text,↵more text"
+
+      Page.close(page)
+    end
+  end
+
   describe "click" do
     setup :visit_button_fixture
 

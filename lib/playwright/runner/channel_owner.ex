@@ -17,6 +17,7 @@ defmodule Playwright.Runner.ChannelOwner do
     quote do
       @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
 
+      alias Playwright.Extra
       alias Playwright.Runner.Channel
       alias Playwright.Runner.Connection
 
@@ -37,7 +38,21 @@ defmodule Playwright.Runner.ChannelOwner do
           initializer: initializer
         }
 
-        struct(base, Enum.into(unquote(extra), %{}, fn e -> {e, initializer[e]} end))
+        struct(
+          base,
+          Enum.into(unquote(extra), %{}, fn e ->
+            {e, initializer[camelcase(e)]}
+          end)
+        )
+      end
+
+      # private
+      # ------------------------------------------------------------------------
+
+      defp camelcase(atom) do
+        Extra.Atom.to_string(atom)
+        |> Recase.to_camel()
+        |> Extra.Atom.from_string()
       end
     end
   end

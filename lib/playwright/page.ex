@@ -29,7 +29,7 @@ defmodule Playwright.Page do
   More info on Playwright selectors is available
   [online](https://playwright.dev/docs/selectors).
   """
-  use Playwright.Runner.ChannelOwner, fields: [:owned_context]
+  use Playwright.Runner.ChannelOwner, fields: [:frames, :main_frame, :owned_context]
 
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle
@@ -75,17 +75,14 @@ defmodule Playwright.Page do
     |> deserialize()
   end
 
-  def evaluate_handle(subject, expression) do
+  def evaluate_handle(subject, expression, arg \\ nil) do
     function? = String.starts_with?(expression, "function")
 
     frame(subject)
     |> Channel.send("evaluateExpressionHandle", %{
       expression: expression,
       isFunction: function?,
-      arg: %{
-        value: %{v: "undefined"},
-        handles: []
-      }
+      arg: serialize(arg)
     })
   end
 
@@ -119,8 +116,14 @@ defmodule Playwright.Page do
 
   def q(subject, selector), do: query_selector(subject, selector)
 
+  # How about these?
+  # def q!(subject, selector), do: query_selector!(subject, selector)
+  # def q?(subject, selector), do: query_selector?(subject, selector)
+
   def query_selector(subject, selector) do
-    frame(subject) |> Channel.send("querySelector", %{selector: selector})
+    frame(subject)
+    |> Channel.send("querySelector", %{selector: selector})
+    |> hydrate()
   end
 
   def query_selector!(subject, selector) do
@@ -131,7 +134,9 @@ defmodule Playwright.Page do
   end
 
   def query_selector_all(subject, selector) do
-    frame(subject) |> Channel.send("querySelectorAll", %{selector: selector})
+    frame(subject)
+    |> Channel.send("querySelectorAll", %{selector: selector})
+    |> hydrate()
   end
 
   def screenshot(subject, params) do
@@ -181,10 +186,6 @@ defmodule Playwright.Page do
   # private
   # ---------------------------------------------------------------------------
 
-  defp frame(subject) do
-    Connection.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
-  end
-
   defp deserialize(value) do
     case value do
       %{b: boolean} ->
@@ -211,6 +212,31 @@ defmodule Playwright.Page do
     end
   end
 
+  defp frame(subject) do
+    Connection.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
+  end
+
+  require Logger
+
+  defp hydrate(nil) do
+    nil
+  end
+
+  defp hydrate(%Playwright.ElementHandle{} = handle) do
+    case handle.preview do
+      "JSHandle@node" ->
+        :timer.sleep(5)
+        hydrate(Connection.get(handle.connection, {:guid, handle.guid}))
+
+      _hydrated ->
+        handle
+    end
+  end
+
+  defp hydrate(handles) when is_list(handles) do
+    Enum.map(handles, &hydrate/1)
+  end
+
   require Logger
 
   defp serialize(arg) do
@@ -218,40 +244,44 @@ defmodule Playwright.Page do
     %{value: Extra.Map.deep_atomize_keys(value), handles: handles}
   end
 
-  def serialize(_value, _handles, depth) when depth > 100 do
+  defp serialize(_value, _handles, depth) when depth > 100 do
     raise ArgumentError, message: "Maximum argument depth exceeded"
   end
 
-  def serialize(nil, handles, _depth) do
+  defp serialize(nil, handles, _depth) do
     {%{v: "null"}, handles}
   end
 
-  def serialize(%Playwright.ElementHandle{} = value, _handles, _depth) do
+  defp serialize(%Playwright.ElementHandle{} = value, _handles, _depth) do
     Logger.error("not implemented: `serialize` for ElementHandle: #{inspect(value)}")
   end
 
-  def serialize(%Playwright.JSHandle{} = value, handles, _depth) do
+  defp serialize(%Playwright.JSHandle{} = value, handles, _depth) do
     index = length(handles)
     {%{h: index}, handles ++ [%{guid: value.guid}]}
   end
 
-  def serialize(value, _handles, _depth) when is_float(value) do
+  defp serialize(value, _handles, _depth) when is_float(value) do
     Logger.error("not implemented: `serialize` for float: #{inspect(value)}")
   end
 
-  def serialize(%DateTime{} = value, _handles, _depth) do
+  defp serialize(value, handles, _depth) when is_integer(value) do
+    {%{n: value}, handles}
+  end
+
+  defp serialize(%DateTime{} = value, _handles, _depth) do
     Logger.error("not implemented: `serialize` for datetime: #{inspect(value)}")
   end
 
-  def serialize(value, _handles, _depth) when is_boolean(value) do
-    Logger.error("not implemented: `serialize` for boolean: #{inspect(value)}")
+  defp serialize(value, handles, _depth) when is_boolean(value) do
+    {%{b: value}, handles}
   end
 
-  def serialize(value, _handles, _depth) when is_binary(value) do
-    Logger.error("not implemented: `serialize` for binary/string: #{inspect(value)}")
+  defp serialize(value, handles, _depth) when is_binary(value) do
+    {%{s: value}, handles}
   end
 
-  def serialize(value, handles, depth) when is_list(value) do
+  defp serialize(value, handles, depth) when is_list(value) do
     {_, result} =
       Enum.map_reduce(value, %{handles: handles, items: []}, fn e, acc ->
         {value, handles} = serialize(e, acc.handles, depth + 1)
@@ -265,7 +295,7 @@ defmodule Playwright.Page do
     {%{a: result.items}, result.handles}
   end
 
-  def serialize(value, handles, depth) when is_map(value) do
+  defp serialize(value, handles, depth) when is_map(value) do
     {_, result} =
       Enum.map_reduce(value, %{handles: handles, objects: []}, fn {k, v}, acc ->
         {value, handles} = serialize(v, acc.handles, depth + 1)
@@ -279,7 +309,7 @@ defmodule Playwright.Page do
     {%{o: result.objects}, result.handles}
   end
 
-  def serialize(_other, handles, _depth) do
+  defp serialize(_other, handles, _depth) do
     {%{v: "undefined"}, handles}
   end
 end

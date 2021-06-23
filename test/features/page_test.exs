@@ -27,12 +27,27 @@ defmodule Test.Features.PageTest do
     test ".query_selector_all/2", %{assets: assets, connection: connection, page: page} do
       Playwright.Page.goto(page, assets.prefix <> "/dom.html")
 
-      [outer_div, inner_div] = Playwright.Page.query_selector_all(page, "css=div")
-      assert %Playwright.ElementHandle{type: "ElementHandle", connection: ^connection, guid: outer_div_guid} = outer_div
-      assert %Playwright.ElementHandle{type: "ElementHandle", connection: ^connection, guid: inner_div_guid} = inner_div
-      assert outer_div_guid != nil
-      assert inner_div_guid != nil
-      assert Playwright.ElementHandle.text_content(outer_div) == "Text,\nmore text"
+      [outer, inner] = Playwright.Page.query_selector_all(page, "css=div")
+
+      assert %Playwright.ElementHandle{
+               type: "ElementHandle",
+               connection: ^connection,
+               guid: outer_guid,
+               preview: outer_preview
+             } = outer
+
+      assert %Playwright.ElementHandle{
+               type: "ElementHandle",
+               connection: ^connection,
+               guid: inner_guid,
+               preview: inner_preview
+             } = inner
+
+      assert outer_guid != nil
+      assert inner_guid != nil
+      assert outer_preview != "JSHandle@node"
+      assert inner_preview != "JSHandle@node"
+      assert Playwright.ElementHandle.text_content(outer) == "Text,\nmore text"
 
       elements = Playwright.Page.query_selector_all(page, "css=non-existent")
       assert elements == []
