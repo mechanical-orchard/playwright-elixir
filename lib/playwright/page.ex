@@ -92,7 +92,9 @@ defmodule Playwright.Page do
   end
 
   def get_attribute(subject, selector, name) do
-    subject |> Page.query_selector!(selector) |> ElementHandle.get_attribute(name)
+    subject
+    |> Page.query_selector!(selector)
+    |> ElementHandle.get_attribute(name)
   end
 
   def goto(subject, url) do
@@ -252,8 +254,9 @@ defmodule Playwright.Page do
     {%{v: "null"}, handles}
   end
 
-  defp serialize(%Playwright.ElementHandle{} = value, _handles, _depth) do
-    Logger.error("not implemented: `serialize` for ElementHandle: #{inspect(value)}")
+  defp serialize(%Playwright.ElementHandle{} = value, handles, _depth) do
+    index = length(handles)
+    {%{h: index}, handles ++ [%{guid: value.guid}]}
   end
 
   defp serialize(%Playwright.JSHandle{} = value, handles, _depth) do
