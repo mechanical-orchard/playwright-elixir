@@ -1,17 +1,23 @@
 defmodule Playwright.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/geometerio/playwright-elixir"
+
   def project do
     [
       app: :playwright,
+      deps: deps(),
+      description: "Playwright is an Elixir library to automate Chromium, Firefox and WebKit browsers with a single API. Playwright delivers automation that is ever-green, capable, reliable and fast.",
       dialyzer: dialyzer(),
-      version: "0.1.0",
+      docs: docs(),
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
+      homepage_url: @source_url,
+      package: package(),
       preferred_cli_env: [credo: :test, dialyzer: :test, docs: :docs],
+      source_url: @source_url,
       start_permanent: Mix.env() == :prod,
-      deps: deps(),
-      docs: docs()
+      version: "0.1.0-preview"
     ]
   end
 
@@ -37,11 +43,11 @@ defmodule Playwright.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowlib, "~> 2.11.0", override: true},
+      {:cowlib, "~> 2.11.0"},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.24", only: :docs, runtime: false},
-      {:gun, "~> 1.3"},
+      {:ex_doc, "~> 0.24", only: :dev, runtime: false},
+      {:gun, "~> 2.0.0-rc.2"},
       {:jason, "~> 1.2"},
       {:mix_audit, "~> 0.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.11.1", only: [:dev, :test]},
@@ -53,8 +59,8 @@ defmodule Playwright.MixProject do
   defp docs do
     [
       name: "Playwright",
-      source_url: "https://github.com/geometerio/playwright-elixir",
-      homepage_url: "https://github.com/geometerio/playwright-elixir",
+      source_url: @source_url,
+      homepage_url: @source_url,
       main: "Playwright",
       groups_for_modules: [
         "Features (usage)": [
@@ -78,6 +84,16 @@ defmodule Playwright.MixProject do
           Playwright.Runner.Transport.WebSocket
         ]
       ]
+    ]
+  end
+
+  defp package do
+    [
+      licenses: ["MIT"],
+      links: %{
+        homepage: @source_url,
+        source: @source_url
+      }
     ]
   end
 end
