@@ -23,10 +23,10 @@ defmodule Playwright.BrowserContext do
   `Browser.new_page`), raise an error because there should be a 1-to-1 mapping
   in that case.
   """
-  def new_page(subject, locals \\ nil) do
+  def new_page(subject) do
     case subject.owner_page do
       nil ->
-        Channel.send(subject, "newPage", %{}, locals)
+        Channel.send(subject, "newPage")
 
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")

@@ -58,12 +58,13 @@ defmodule Playwright.Browser do
   @spec new_page(Playwright.Browser.t()) :: Playwright.Page.t()
   def new_page(subject) do
     context = new_context(subject)
-    page = Playwright.BrowserContext.new_page(context, %{owned_context: context})
+    page = Playwright.BrowserContext.new_page(context)
 
     Connection.patch(context.connection, {:guid, context.guid}, %{owner_page: page})
 
     case page do
-      %Playwright.Page{} -> page
+      %Playwright.Page{} ->
+        Connection.patch(page.connection, {:guid, page.guid}, %{owned_context: context})
       _other -> raise("expected new_page to return a  Playwright.Page, received: #{inspect(page)}")
     end
   end

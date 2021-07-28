@@ -5,7 +5,7 @@ defmodule Playwright.Runner.Connection do
   use GenServer
 
   alias Playwright.Extra
-  alias Playwright.Runner.ChannelMessage
+  alias Playwright.Runner.Channel
   alias Playwright.Runner.Root
 
   # API
@@ -50,9 +50,9 @@ defmodule Playwright.Runner.Connection do
     GenServer.call(connection, {:patch, subject, data})
   end
 
-  @spec post(pid(), {:data, ChannelMessage.t()}) :: term()
-  def post(connection, {:data, _data} = message) do
-    GenServer.call(connection, {:post, message})
+  @spec post(pid(), Channel.Command.t()) :: term()
+  def post(connection, command) do
+    GenServer.call(connection, {:post, {:cmd, command}})
   end
 
   def recv(connection, {:text, _json} = message) do
@@ -122,8 +122,9 @@ defmodule Playwright.Runner.Connection do
     {:reply, subject, %{state | catalog: catalog}}
   end
 
+  # HERE... posting with an ID (channel:command)
   @impl GenServer
-  def handle_call({:post, {:data, data}}, from, %{messages: messages, queries: queries, transport: transport} = state) do
+  def handle_call({:post, {:cmd, data}}, from, %{messages: messages, queries: queries, transport: transport} = state) do
     queries = Map.put(queries, data.id, from)
 
     messages =
@@ -179,6 +180,7 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
+  # HERE... receiving with and ID (channel:response)
   defp _recv_(%{id: message_id, result: result}, state) do
     case Map.to_list(result) do
       [{_key, %{guid: guid}}] ->
@@ -204,6 +206,7 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
+  # HERE... receiving with and ID (channel:response)
   defp _recv_(%{id: message_id} = data, state) do
     reply_from_messages({message_id, data}, state)
   end
@@ -212,6 +215,7 @@ defmodule Playwright.Runner.Connection do
     _recv_(Map.put(data, :guid, "Root"), state)
   end
 
+  # NEXT... channel:event
   defp _recv_(
          %{guid: parent_guid, method: "__create__", params: params},
          %{catalog: catalog} = state
@@ -235,6 +239,7 @@ defmodule Playwright.Runner.Connection do
     |> update_channel_messages(item)
   end
 
+  # NEXT... channel:event
   defp _recv_(%{guid: guid, method: "__dispose__"}, %{catalog: catalog} = state) do
     Logger.debug("__dispose__ #{inspect(guid)}")
     %{state | catalog: _del_(guid, catalog)}
@@ -288,19 +293,21 @@ defmodule Playwright.Runner.Connection do
       exit(message)
   end
 
+  # HERE... handling a channel:response
   defp reply_from_catalog({message_id, guid}, %{catalog: catalog, messages: messages, queries: queries} = state) do
-    {message, pending} = Map.pop!(messages.pending, message_id)
-    {from, queries} = Map.pop!(queries, message_id)
+    {_message, pending} = Map.pop(messages.pending, message_id)
+    {from, queries} = Map.pop(queries, message_id, nil)
 
-    item =
-      catalog[guid]
-      |> Map.merge(message.locals || %{})
+    item = catalog[guid]
 
-    GenServer.reply(from, item)
+    if from do
+      GenServer.reply(from, item)
+    end
 
     %{state | catalog: Map.put(catalog, guid, item), messages: Map.put(messages, :pending, pending), queries: queries}
   end
 
+  # HERE... handling a channel:response
   defp reply_from_messages({message_id, data}, %{catalog: _catalog, messages: messages, queries: queries} = state) do
     {message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
@@ -309,10 +316,12 @@ defmodule Playwright.Runner.Connection do
     %{state | messages: Map.put(messages, :pending, pending), queries: queries}
   end
 
+  # HERE... handling a channel:response
   defp reply_with_binary(details, state) do
     reply_with_value(details, state)
   end
 
+  # HERE... handling a channel:response
   defp reply_with_list({message_id, list}, %{catalog: catalog, messages: messages, queries: queries} = state)
        when is_list(list) do
     data = list |> Enum.map(fn %{guid: guid} -> catalog[guid] end)
@@ -322,6 +331,7 @@ defmodule Playwright.Runner.Connection do
     %{state | messages: Map.put(messages, :pending, pending), queries: queries}
   end
 
+  # HERE... handling a channel:response
   defp reply_with_value({message_id, value}, %{messages: messages, queries: queries} = state) do
     {_message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)

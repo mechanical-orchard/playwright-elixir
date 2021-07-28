@@ -1,5 +1,6 @@
 defmodule Playwright.Runner.ConnectionTest do
   use ExUnit.Case
+  alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
   alias Playwright.Runner.ConnectionTest.TestTransport
 
@@ -17,17 +18,12 @@ defmodule Playwright.Runner.ConnectionTest do
   end
 
   describe "post/2" do
-    # SKIP: this appears to be generating an non-realistic scenario and, therefore, failing.
-    @tag :skip
+    @tag :skip # flaky. worth investigating to determine if there's a real issue here.
     test "creating a new item", %{connection: connection} do
-      data = %{
-        guid: "Browser",
-        method: "newContext",
-        params: %{headless: false}
-      }
+      cmd = Channel.Command.new("Browser", "newContext", %{headless: false})
 
       Task.start(fn ->
-        :timer.sleep(50)
+        :timer.sleep(10)
 
         Connection.recv(
           connection,
@@ -45,7 +41,7 @@ defmodule Playwright.Runner.ConnectionTest do
       end)
 
       Task.start(fn ->
-        :timer.sleep(100)
+        :timer.sleep(20)
 
         Connection.recv(
           connection,
@@ -59,7 +55,7 @@ defmodule Playwright.Runner.ConnectionTest do
         )
       end)
 
-      result = Connection.post(connection, {:data, data})
+      result = Connection.post(connection, cmd)
       assert result.guid == "context@1"
     end
 
@@ -156,24 +152,19 @@ defmodule Playwright.Runner.ConnectionTest do
       state = %{:sys.get_state(connection) | messages: %{pending: %{}}}
 
       from = {self(), :tag}
+      cmd = Channel.Command.new("page@1", "click", %{selector: "a.link"})
+      cid = cmd.id
 
-      data = %Playwright.Runner.ChannelMessage{
-        guid: "page@1",
-        id: 42,
-        method: "click",
-        params: %{selector: "a.link"}
-      }
-
-      {response, state} = Connection.handle_call({:post, {:data, data}}, from, state)
+      {response, state} = Connection.handle_call({:post, {:cmd, cmd}}, from, state)
       assert response == :noreply
-      assert state.messages == %{pending: %{42 => data}}
-      assert state.queries == %{42 => from}
+      assert state.messages == %{pending: %{cid => cmd}}
+      assert state.queries == %{cid => from}
 
       posted = TestTransport.dump(state.transport.pid)
-      assert posted == [Jason.encode!(data)]
+      assert posted == [Jason.encode!(cmd)]
 
       {_, %{messages: messages, queries: queries}} =
-        Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: 42})}}, state)
+        Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: cid})}}, state)
 
       assert messages.pending == %{}
       assert queries == %{}
@@ -181,7 +172,7 @@ defmodule Playwright.Runner.ConnectionTest do
       assert_received(
         {:tag,
          %{
-           id: 42,
+           id: ^cid,
            guid: "page@1",
            method: "click",
            params: %{selector: "a.link"}

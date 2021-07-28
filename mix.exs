@@ -78,7 +78,7 @@ defmodule Playwright.MixProject do
         "Runner (internal)": [
           Playwright.Runner.Config,
           Playwright.Runner.Config.Types,
-          Playwright.Runner.ChannelMessage,
+          Playwright.Runner.Channel.Command,
           Playwright.Runner.Transport.Driver,
           Playwright.Runner.Transport.DriverMessage,
           Playwright.Runner.Transport.WebSocket
