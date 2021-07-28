@@ -1,4 +1,17 @@
 defmodule Test.Support.AssetsServer do
+  @moduledoc """
+  An simple server to provide assets needed for tests. The assets are acquired
+  from the main [Playwright project](https://github.com/microsoft/playwright)
+  and are imported/updated here as follows:
+
+  ```shell
+  source="https://github.com/microsoft/playwright.git"
+  target="test/support/assets_server/assets"
+
+  git remote add --fetch --master master --no-tags playwright ${source}
+  git read-tree --prefix=${target} -u playwright/master:tests/assets
+  ```
+  """
   require Logger
   use Application
   alias Test.Support.AssetsServer

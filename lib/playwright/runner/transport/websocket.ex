@@ -63,7 +63,7 @@ defmodule Playwright.Runner.Transport.WebSocket do
 
   @impl true
   def handle_cast({:send_message, message}, state) do
-    :gun.ws_send(state.gun, {:text, message})
+    :gun.ws_send(state.gun, state.gun_stream_ref, {:text, message})
     {:noreply, state}
   end
 

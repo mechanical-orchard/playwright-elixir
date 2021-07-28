@@ -1,4 +1,3 @@
-elixir 1.12.0-otp-24
-erlang 24.0.1
-nodejs 16.2.0
-
+elixir 1.12.2-otp-24
+erlang 24.0.4
+nodejs 16.5.0
