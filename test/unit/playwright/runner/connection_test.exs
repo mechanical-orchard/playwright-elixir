@@ -72,24 +72,24 @@ defmodule Playwright.Runner.ConnectionTest do
 
       :sys.replace_state(connection, fn state -> %{state | catalog: catalog} end)
 
-      Connection.find(connection, %{guid: "browser@1"}, nil)
+      Connection.get(connection, %{guid: "browser@1"}, nil)
       |> assert()
 
-      Connection.find(connection, %{guid: "context@1"}, nil)
+      Connection.get(connection, %{guid: "context@1"}, nil)
       |> assert()
 
-      Connection.find(connection, %{guid: "page@1"}, nil)
+      Connection.get(connection, %{guid: "page@1"}, nil)
       |> assert()
 
       Connection.recv(connection, {:text, json})
 
-      Connection.find(connection, %{guid: "browser@1"}, nil)
+      Connection.get(connection, %{guid: "browser@1"}, nil)
       |> refute()
 
-      Connection.find(connection, %{guid: "context@1"}, nil)
+      Connection.get(connection, %{guid: "context@1"}, nil)
       |> refute()
 
-      Connection.find(connection, %{guid: "page@1"}, nil)
+      Connection.get(connection, %{guid: "page@1"}, nil)
       |> refute()
 
       %{catalog: catalog} = :sys.get_state(connection)

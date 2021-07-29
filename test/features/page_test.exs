@@ -54,12 +54,12 @@ defmodule Test.Features.PageTest do
     end
 
     test ".close/1", %{connection: connection, page: page} do
-      Connection.find(connection, %{guid: page.guid}, nil)
+      Connection.get(connection, %{guid: page.guid}, nil)
       |> assert()
 
       page |> Playwright.Page.close()
 
-      Connection.find(connection, %{guid: page.guid}, nil)
+      Connection.get(connection, %{guid: page.guid}, nil)
       |> refute()
     end
 

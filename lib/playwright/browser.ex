@@ -20,7 +20,7 @@ defmodule Playwright.Browser do
 
   @doc false
   def contexts(subject) do
-    Connection.find(subject.connection, %{
+    Connection.get(subject.connection, %{
       parent: subject,
       type: "BrowserContext"
     })

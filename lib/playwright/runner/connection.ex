@@ -28,28 +28,47 @@ defmodule Playwright.Runner.Connection do
     GenServer.start_link(__MODULE__, config)
   end
 
+  # Catalog or callback(`GenServer.reply`).
+  # - Like `find` (now another `get`, below), does not send/post.
+  # - Unlike `find` (`get`, below), will register a "from" to receive a reply, if not already in the catalog.
   def get(connection, {:guid, _guid} = item) do
     GenServer.call(connection, {:get, item})
   end
 
-  def find(connection, attributes, default \\ []) do
-    GenServer.call(connection, {:find, attributes, default})
+  # Catalog-only.
+  # - Attempts to retrieve an existing entry, and returns that or "default".
+  # - Could probably be collapsed with `get` (above), with some options or similar.
+  def get(connection, attributes, default \\ []) do
+    GenServer.call(connection, {:get, attributes, default})
   end
 
+  # Callback-only (remote event).
+  # - Registers a handler (can have multiple... consider MultiDict from "Elixir in Action").
+  # - No Catalog interaction.
+  # - Does not yet have any handling of `once`, `off`, etc.
   def on(connection, event, handler) do
     GenServer.call(connection, {:on, event, handler})
   end
 
-  # updates the state of a resource and returns the updated resource
+  # Catalog-only.
+  # - Updates the state of a resource and returns the updated resource.
+  # - Assumes existence.
   def patch(connection, {:guid, _guid} = subject, data) do
     GenServer.call(connection, {:patch, subject, data})
   end
 
+  # Transport-bound + callback(`GenServer.reply`)
+  # - Is the one "API function" that sends to/over the Transport.
+  # - Registers a "from" to receive the reply (knowing it will NOT be in the Catalog).
+  # - ...in fact, any related Catalog changes are side-effects, likely delivered via an Event.
   @spec post(pid(), Channel.Command.t()) :: term()
   def post(connection, command) do
     GenServer.call(connection, {:post, {:cmd, command}})
   end
 
+  # Transport-bound.
+  # - Is the one "API function" that receives from the Transport.
+  # - ...therefore, all `reply`, `handler`, etc. "clearing" MUST originate here.
   def recv(connection, {:text, _json} = message) do
     GenServer.cast(connection, {:recv, message})
   end
@@ -68,17 +87,7 @@ defmodule Playwright.Runner.Connection do
        },
        transport: Transport.connect(transport_module, [self()] ++ config)
      }}
-  end
-
-  @impl GenServer
-  def handle_call({:find, attrs, default}, _from, %{catalog: catalog} = state) do
-    case select(Map.values(catalog), attrs, []) do
-      [] ->
-        {:reply, default, state}
-
-      result ->
-        {:reply, result, state}
-    end
+    #  catalog: Catalog.open(...)
   end
 
   @impl GenServer
@@ -89,6 +98,17 @@ defmodule Playwright.Runner.Connection do
 
       item ->
         {:reply, item, state}
+    end
+  end
+
+  @impl GenServer
+  def handle_call({:get, attrs, default}, _from, %{catalog: catalog} = state) do
+    case select(Map.values(catalog), attrs, []) do
+      [] ->
+        {:reply, default, state}
+
+      result ->
+        {:reply, result, state}
     end
   end
 
