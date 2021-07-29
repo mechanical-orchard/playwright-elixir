@@ -16,8 +16,6 @@ defmodule Playwright.Runner.Connection do
 
   defstruct(
     catalog: %{},
-    channel_message_callers: %{},
-    channel_messages: %{},
     handlers: %{},
     messages: %{pending: %{}},
     queries: %{},
@@ -27,10 +25,6 @@ defmodule Playwright.Runner.Connection do
   @spec start_link([transport_config]) :: GenServer.on_start()
   def start_link(config) do
     GenServer.start_link(__MODULE__, config)
-  end
-
-  def wait_for_channel_messages(connection, type) do
-    GenServer.call(connection, {:get_channel_messages, type})
   end
 
   def get(connection, {:guid, _guid} = item) do
@@ -76,15 +70,6 @@ defmodule Playwright.Runner.Connection do
          pid: transport_module.start_link!([self()] ++ config)
        }
      }}
-  end
-
-  @impl GenServer
-  def handle_call({:get_channel_messages, type}, from, state) do
-    if Map.has_key?(state.channel_messages, type) do
-      {:reply, state.channel_messages[type], state}
-    else
-      {:noreply, %{state | channel_message_callers: Map.put(state.channel_message_callers, type, from)}}
-    end
   end
 
   @impl GenServer
@@ -236,7 +221,6 @@ defmodule Playwright.Runner.Connection do
     # end
 
     %{state | catalog: _put_(item, state)}
-    |> update_channel_messages(item)
   end
 
   # NEXT... channel:event
@@ -371,20 +355,5 @@ defmodule Playwright.Runner.Connection do
 
   defp select([_head | tail], attrs, result) do
     select(tail, attrs, result)
-  end
-
-  defp update_channel_messages(state, item) do
-    channel_messages =
-      Map.update(state.channel_messages, item.type, [item], fn
-        items -> [item | items]
-      end)
-
-    if Map.has_key?(state.channel_message_callers, item.type) do
-      {caller, channel_message_callers} = Map.pop(state.channel_message_callers, item.type)
-      GenServer.reply(caller, channel_messages[item.type])
-      %{state | channel_messages: channel_messages, channel_message_callers: channel_message_callers}
-    else
-      %{state | channel_messages: channel_messages}
-    end
   end
 end

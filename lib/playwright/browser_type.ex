@@ -35,9 +35,8 @@ defmodule Playwright.BrowserType do
   @spec connect(binary()) :: {pid(), Playwright.Browser.t()}
   def connect(ws_endpoint) do
     with {:ok, connection} <- new_session(Transport.WebSocket, [ws_endpoint]),
-         %{initializer: %{version: version}} <- wait_for_browser(connection, "chromium"),
-         browser_guid <- browser_from_chromium(connection, version),
-         browser <- Connection.get(connection, {:guid, browser_guid}) do
+         launched <- launched_browser(connection),
+         browser <- Connection.get(connection, {:guid, launched}) do
       {connection, browser}
     else
       {:error, error} -> {:error, {"Error connecting to #{inspect(ws_endpoint)}", error}}
@@ -90,24 +89,9 @@ defmodule Playwright.BrowserType do
     )
   end
 
-  defp wait_for_browser(connection, name) do
-    Connection.wait_for_channel_messages(connection, "Browser")
-    |> Enum.find(&(&1.initializer.name == name))
-  end
-
-  defp browser_from_chromium(connection, version) do
-    version = version |> String.split(".") |> Enum.take(3) |> Enum.join(".")
-
-    case Version.compare(version, "90.0.0") do
-      :gt ->
-        playwright = Connection.get(connection, {:guid, "Playwright"})
-        %{guid: guid} = playwright.initializer.preLaunchedBrowser
-        guid
-
-      _ ->
-        remote_browser = Connection.get(connection, {:guid, "remoteBrowser"})
-        %{guid: guid} = remote_browser.initializer.browser
-        guid
-    end
+  defp launched_browser(connection) do
+    playwright = Connection.get(connection, {:guid, "Playwright"})
+    %{guid: guid} = playwright.initializer.preLaunchedBrowser
+    guid
   end
 end
