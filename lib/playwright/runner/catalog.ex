@@ -43,7 +43,6 @@ defmodule Playwright.Runner.Catalog do
       [] ->
         default
       result ->
-        # IO.inspect(result, label: "result............")
         result
     end
   end
@@ -52,19 +51,11 @@ defmodule Playwright.Runner.Catalog do
     Map.get(catalog.dictionary, key)
   end
 
+  # when is struct...
   def put(catalog, key, entry) do
-    # IO.inspect(key, label: "put")
-
-    # if Map.has_key?(catalog.dictionary, key) do
-    #   Logger.warn("Catalog.put called with existing key: #{inspect(key)}")
-    #   Logger.error("  --> DIFF:  #{inspect(JSONDiff.diff(catalog.dictionary[key], entry))}")
-    #   Logger.info("  --> TRACE: #{inspect(Process.info(self(), :current_stacktrace))}")
-    # end
-
     subscriber = Map.get(catalog.awaiting, key)
 
     if subscriber do
-      # Logger.info("  --> FOUND! subscriber #{inspect(subscriber)}")
       found!(catalog, entry, subscriber)
     end
 

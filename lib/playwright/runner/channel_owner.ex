@@ -2,6 +2,8 @@ defmodule Playwright.Runner.ChannelOwner do
   @moduledoc false
   @base [:connection, :parent, :type, :guid, :initializer]
 
+  require Logger
+
   defmacro __using__(config \\ []) do
     extra =
       case config do
@@ -55,5 +57,22 @@ defmodule Playwright.Runner.ChannelOwner do
         |> Extra.Atom.from_string()
       end
     end
+  end
+
+  @doc false
+  def from_params(params, parent) do
+    apply(module(params), :new, [parent, params])
+  end
+
+  # private
+  # ------------------------------------------------------------------------
+
+  defp module(%{type: type}) do
+    String.to_existing_atom("Elixir.Playwright.#{type}")
+  rescue
+    ArgumentError ->
+      message = "ChannelOwner of type #{inspect(type)} is not yet defined"
+      Logger.debug(message)
+      exit(message)
   end
 end

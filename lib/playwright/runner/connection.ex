@@ -8,6 +8,7 @@ defmodule Playwright.Runner.Connection do
   alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
+  alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Transport
 
   # API
@@ -89,6 +90,7 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
+    Logger.info("handle_call:get w/ guid: #{inspect(guid)}")
     {:noreply, %{state | catalog: Catalog.await(catalog, guid, subscriber)}}
   end
 
@@ -191,7 +193,7 @@ defmodule Playwright.Runner.Connection do
          %{guid: parent_guid, method: "__create__", params: params},
          %{catalog: catalog} = state
        ) do
-    item = apply(resource(params), :new, [Catalog.get(catalog, parent_guid), params])
+    item = ChannelOwner.from_params(params, Catalog.get(catalog, parent_guid))
     %{state | catalog: Catalog.put(catalog, item.guid, item)}
   end
 
@@ -241,15 +243,6 @@ defmodule Playwright.Runner.Connection do
   defp _recv_(data, state) do
     Logger.debug("_recv_ UNKNOWN :: method: #{inspect(data.method)}; data: #{inspect(data)}")
     state
-  end
-
-  defp resource(%{type: type}) do
-    String.to_existing_atom("Elixir.Playwright.#{type}")
-  rescue
-    ArgumentError ->
-      message = "ChannelOwner of type #{inspect(type)} is not yet defined"
-      Logger.debug(message)
-      exit(message)
   end
 
   # channel:response
