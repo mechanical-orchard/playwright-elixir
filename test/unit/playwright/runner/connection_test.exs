@@ -6,7 +6,7 @@ defmodule Playwright.Runner.ConnectionTest do
 
   setup do
     %{
-      connection: start_supervised!({Connection, [{TestTransport, ["param"]}]})
+      connection: start_supervised!({Connection, {TestTransport, ["param"]}})
     }
   end
 

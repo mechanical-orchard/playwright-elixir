@@ -85,7 +85,7 @@ defmodule Playwright.BrowserType do
   defp new_session(transport, args) do
     DynamicSupervisor.start_child(
       BrowserType.Supervisor,
-      {Connection, [{transport, args}]}
+      {Connection, {transport, args}}
     )
   end
 

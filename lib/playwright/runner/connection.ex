@@ -7,6 +7,7 @@ defmodule Playwright.Runner.Connection do
   alias Playwright.Extra
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Root
+  alias Playwright.Runner.Transport
 
   # API
   # ----------------------------------------------------------------------------
@@ -19,10 +20,10 @@ defmodule Playwright.Runner.Connection do
     handlers: %{},
     messages: %{pending: %{}},
     queries: %{},
-    transport: %{}
+    transport: nil
   )
 
-  @spec start_link([transport_config]) :: GenServer.on_start()
+  @spec start_link(transport_config) :: GenServer.on_start()
   def start_link(config) do
     GenServer.start_link(__MODULE__, config)
   end
@@ -57,7 +58,7 @@ defmodule Playwright.Runner.Connection do
   # ----------------------------------------------------------------------------
 
   @impl GenServer
-  def init([{transport_module, config}]) do
+  def init({transport_module, config}) do
     Logger.debug("Starting up Playwright with config: #{inspect(config)}")
 
     {:ok,
@@ -65,10 +66,7 @@ defmodule Playwright.Runner.Connection do
        catalog: %{
          "Root" => Root.new(self())
        },
-       transport: %{
-         mod: transport_module,
-         pid: transport_module.start_link!([self()] ++ config)
-       }
+       transport: Transport.connect(transport_module, [self()] ++ config)
      }}
   end
 
@@ -117,7 +115,7 @@ defmodule Playwright.Runner.Connection do
         pending: Map.put(messages.pending, data.id, data)
       })
 
-    transport.mod.post(transport.pid, Jason.encode!(data))
+    Transport.post(transport, Jason.encode!(data))
 
     {:noreply, %{state | messages: messages, queries: queries}}
   end
