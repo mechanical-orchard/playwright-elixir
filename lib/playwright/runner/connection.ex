@@ -5,6 +5,7 @@ defmodule Playwright.Runner.Connection do
   use GenServer
 
   alias Playwright.Extra
+  alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Transport
@@ -16,10 +17,9 @@ defmodule Playwright.Runner.Connection do
   @type transport_config :: {transport_module, [term()]}
 
   defstruct(
+    callbacks: %{},
     catalog: nil,
-    handlers: %{},
-    messages: %{pending: %{}},
-    queries: %{},
+    handlers: %{}, # !!!
     transport: nil
   )
 
@@ -110,19 +110,15 @@ defmodule Playwright.Runner.Connection do
     {:reply, subject, %{state | catalog: catalog}}
   end
 
-  # HERE... posting with an ID (channel:command)
   @impl GenServer
-  def handle_call({:post, {:cmd, data}}, from, %{messages: messages, queries: queries, transport: transport} = state) do
-    queries = Map.put(queries, data.id, from)
+  def handle_call({:post, {:cmd, message}}, from, %{callbacks: callbacks, transport: transport} = state) do
+    Logger.warn("POST: #{inspect(message.id)}: #{inspect(message)}")
+    Transport.post(transport, Jason.encode!(message))
 
-    messages =
-      Map.merge(messages, %{
-        pending: Map.put(messages.pending, data.id, data)
-      })
-
-    Transport.post(transport, Jason.encode!(data))
-
-    {:noreply, %{state | messages: messages, queries: queries}}
+    {
+      :noreply,
+      %{state | callbacks: Map.put(callbacks, message.id, Callback.new(from, message))}
+    }
   end
 
   @impl GenServer
@@ -145,19 +141,6 @@ defmodule Playwright.Runner.Connection do
     Catalog.delete(catalog, guid)
   end
 
-  defp _put_(item, %{catalog: catalog, queries: queries} = state) do
-    case Map.pop(queries, item.guid, nil) do
-      {nil, _queries} ->
-        state
-
-      {from, queries} ->
-        GenServer.reply(from, item)
-        %{state | queries: queries}
-    end
-
-    Catalog.put(catalog, item.guid, item)
-  end
-
   defp _recv_(json, state) when is_binary(json) do
     case Jason.decode(json) do
       {:ok, data} ->
@@ -168,16 +151,12 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
-  # HERE... receiving with and ID (channel:response)
-  defp _recv_(%{id: message_id, result: result}, state) do
+  # receiving with an ID (channel:response... exec callback)
+  defp _recv_(%{id: message_id, result: result} = data, state) do
+    Logger.warn("RECa: #{inspect(message_id)}: #{inspect(data)}")
+
     case Map.to_list(result) do
       [{_key, %{guid: guid}}] ->
-        # if key == :element do
-        #   Logger.info("RECV message for element w/ result: #{inspect(result)}")
-        # else
-        #   Logger.warn("RECV message for other: #{inspect(key)}")
-        # end
-
         reply_from_catalog({message_id, guid}, state)
 
       [{:binary, value}] ->
@@ -194,8 +173,9 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
-  # HERE... receiving with and ID (channel:response)
+  # receiving with an ID (channel:response... exec callback)
   defp _recv_(%{id: message_id} = data, state) do
+    Logger.warn("RECb: #{inspect(message_id)}: #{inspect(data)}")
     reply_from_messages({message_id, data}, state)
   end
 
@@ -206,22 +186,22 @@ defmodule Playwright.Runner.Connection do
     _recv_(Map.put(data, :guid, "Root"), state)
   end
 
-  # NEXT... channel:event (special)
+  # channel:event (special)
   defp _recv_(
          %{guid: parent_guid, method: "__create__", params: params},
          %{catalog: catalog} = state
        ) do
     item = apply(resource(params), :new, [Catalog.get(catalog, parent_guid), params])
-    %{state | catalog: _put_(item, state)}
+    %{state | catalog: Catalog.put(catalog, item.guid, item)}
   end
 
-  # NEXT... channel:event (special)
+  # channel:event (special)
   defp _recv_(%{guid: guid, method: "__dispose__"}, %{catalog: catalog} = state) do
     Logger.debug("__dispose__ #{inspect(guid)}")
     %{state | catalog: _del_(guid, catalog)}
   end
 
-  # NEXT... channel:event (emit(method, channels))
+  # channel:event (emit(method, channels))
   defp _recv_(%{guid: guid, method: method}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["close"] do
     entry = Catalog.get(catalog, guid)
@@ -236,7 +216,7 @@ defmodule Playwright.Runner.Connection do
     %{state | catalog: Catalog.put(catalog, guid, entry)}
   end
 
-  # NEXT... channel:event (emit(method, channels))
+  # channel:event (emit(method, channels))
   defp _recv_(%{guid: guid, method: method, params: params}, %{catalog: catalog} = state)
        when method in ["previewUpdated"] do
     Logger.debug("preview updated for #{inspect(guid)}")
@@ -244,7 +224,7 @@ defmodule Playwright.Runner.Connection do
     %{state | catalog: Catalog.put(catalog, guid, updated)}
   end
 
-  # NEXT... channel:event (emit(method, channels))
+  # channel:event (emit(method, channels))
   defp _recv_(%{method: method, params: %{message: %{guid: guid}}}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["console"] do
     entry = Catalog.get(catalog, guid)
@@ -272,58 +252,52 @@ defmodule Playwright.Runner.Connection do
       exit(message)
   end
 
-  # HERE... handling a channel:response
-  defp reply_from_catalog({message_id, guid}, %{catalog: catalog, messages: messages, queries: queries} = state) do
-    # IO.puts("reply op 2 ..................................")
-    {_message, pending} = Map.pop(messages.pending, message_id)
-    {from, queries} = Map.pop(queries, message_id, nil)
+  # channel:response
+  defp reply_from_catalog({message_id, guid}, %{callbacks: callbacks, catalog: catalog} = state) do
+    resource = Catalog.get(catalog, guid)
 
-    # Logger.warn("  --> from catalog MSG: #{inspect(message)}")
+    {callback, updated} = Map.pop!(callbacks, message_id)
+    Callback.resolve(callback, resource)
 
-    item = Catalog.get(catalog, guid)
-
-    if from do
-      # Logger.warn("  --> from catalog SUB: #{inspect(from)}")
-      GenServer.reply(from, item)
-    end
-
-    %{state | catalog: Catalog.put(catalog, guid, item), messages: Map.put(messages, :pending, pending), queries: queries}
+    %{state | callbacks: updated}
   end
 
-  # HERE... handling a channel:response
-  defp reply_from_messages({message_id, data}, %{catalog: _catalog, messages: messages, queries: queries} = state) do
-    # IO.puts("reply op 3 ..................................")
-    {message, pending} = Map.pop!(messages.pending, message_id)
-    {from, queries} = Map.pop!(queries, message_id)
-    GenServer.reply(from, Map.merge(message, data))
+  # channel:response
+  defp reply_from_messages({message_id, data}, %{callbacks: callbacks} = state) do
+    resource = data
 
-    %{state | messages: Map.put(messages, :pending, pending), queries: queries}
+    {callback, updated} = Map.pop!(callbacks, message_id)
+    Callback.resolve(callback, resource)
+
+    %{state | callbacks: updated}
   end
 
-  # HERE... handling a channel:response
+  # channel:response
   defp reply_with_binary(details, state) do
     reply_with_value(details, state)
   end
 
-  # HERE... handling a channel:response
-  defp reply_with_list({message_id, list}, %{catalog: catalog, messages: messages, queries: queries} = state)
+  # channel:response
+  defp reply_with_list({message_id, list}, %{callbacks: callbacks, catalog: catalog} = state)
        when is_list(list) do
-    # IO.puts("reply op 4 ..................................")
-    data = list |> Enum.map(fn %{guid: guid} -> Catalog.get(catalog, guid) end)
-    {_message, pending} = Map.pop!(messages.pending, message_id)
-    {from, queries} = Map.pop!(queries, message_id)
-    GenServer.reply(from, data)
-    %{state | messages: Map.put(messages, :pending, pending), queries: queries}
+    resource = Enum.map(list, fn %{guid: guid} -> Catalog.get(catalog, guid) end)
+
+    {callback, updated} = Map.pop!(callbacks, message_id)
+    Callback.resolve(callback, resource)
+
+    %{state | callbacks: updated}
   end
 
-  # HERE... handling a channel:response
-  defp reply_with_value({message_id, value}, %{messages: messages, queries: queries} = state) do
-    # IO.puts("reply op 5 ..................................")
-    {_message, pending} = Map.pop!(messages.pending, message_id)
-    {from, queries} = Map.pop!(queries, message_id)
+  # channel:response
+  defp reply_with_value({message_id, value}, %{callbacks: callbacks} = state) do
+    resource = value
 
-    GenServer.reply(from, value)
+    {callback, updated} = Map.pop!(callbacks, message_id)
+    Callback.resolve(callback, resource)
 
-    %{state | messages: Map.put(messages, :pending, pending), queries: queries}
+    %{state | callbacks: updated}
   end
+
+  # defp hydrate() do
+  # end
 end

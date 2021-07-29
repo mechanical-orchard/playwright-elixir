@@ -1,5 +1,6 @@
 defmodule Playwright.Runner.ConnectionTest do
   use ExUnit.Case
+  alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
@@ -109,7 +110,7 @@ defmodule Playwright.Runner.ConnectionTest do
 
   describe "@impl: handle_call/3 for :post" do
     test "sends a message and blocks on a matching return message", %{connection: connection} do
-      state = %{:sys.get_state(connection) | messages: %{pending: %{}}}
+      state = %{:sys.get_state(connection) | callbacks: %{}}
 
       from = {self(), :tag}
       cmd = Channel.Command.new("page@1", "click", %{selector: "a.link"})
@@ -117,27 +118,16 @@ defmodule Playwright.Runner.ConnectionTest do
 
       {response, state} = Connection.handle_call({:post, {:cmd, cmd}}, from, state)
       assert response == :noreply
-      assert state.messages == %{pending: %{cid => cmd}}
-      assert state.queries == %{cid => from}
+      assert state.callbacks == %{cid => %Callback{listener: from, message: cmd}}
 
       posted = TestTransport.dump(state.transport.pid)
       assert posted == [Jason.encode!(cmd)]
 
-      {_, %{messages: messages, queries: queries}} =
+      {_, %{callbacks: callbacks}} =
         Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: cid})}}, state)
 
-      assert messages.pending == %{}
-      assert queries == %{}
-
-      assert_received(
-        {:tag,
-         %{
-           id: ^cid,
-           guid: "page@1",
-           method: "click",
-           params: %{selector: "a.link"}
-         }}
-      )
+      assert callbacks == %{}
+      assert_received({:tag, %{id: ^cid}})
     end
   end
 
