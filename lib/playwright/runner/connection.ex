@@ -90,7 +90,6 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
-    Logger.info("handle_call:get w/ guid: #{inspect(guid)}")
     {:noreply, %{state | catalog: Catalog.await(catalog, guid, subscriber)}}
   end
 
@@ -153,32 +152,13 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
-  # receiving with an ID (channel:response... exec callback)
-  defp _recv_(%{id: message_id, result: result} = data, state) do
-    Logger.warn("RECa: #{inspect(message_id)}: #{inspect(data)}")
+  defp _recv_(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
+    response = Channel.Response.new(message, catalog)
 
-    case Map.to_list(result) do
-      [{_key, %{guid: guid}}] ->
-        reply_from_catalog({message_id, guid}, state)
+    {callback, updated} = Map.pop!(callbacks, message_id)
+    Callback.resolve(callback, response)
 
-      [{:binary, value}] ->
-        reply_with_binary({message_id, value}, state)
-
-      [{:elements, list}] ->
-        reply_with_list({message_id, list}, state)
-
-      [{:value, value}] ->
-        reply_with_value({message_id, value}, state)
-
-      [] ->
-        reply_with_value({message_id, nil}, state)
-    end
-  end
-
-  # receiving with an ID (channel:response... exec callback)
-  defp _recv_(%{id: message_id} = data, state) do
-    Logger.warn("RECb: #{inspect(message_id)}: #{inspect(data)}")
-    reply_from_messages({message_id, data}, state)
+    %{state | callbacks: updated}
   end
 
   # Workaround: Playwright sends back empty string: "" for top-level objects,
@@ -244,53 +224,4 @@ defmodule Playwright.Runner.Connection do
     Logger.debug("_recv_ UNKNOWN :: method: #{inspect(data.method)}; data: #{inspect(data)}")
     state
   end
-
-  # channel:response
-  defp reply_from_catalog({message_id, guid}, %{callbacks: callbacks, catalog: catalog} = state) do
-    resource = Catalog.get(catalog, guid)
-
-    {callback, updated} = Map.pop!(callbacks, message_id)
-    Callback.resolve(callback, resource)
-
-    %{state | callbacks: updated}
-  end
-
-  # channel:response
-  defp reply_from_messages({message_id, data}, %{callbacks: callbacks} = state) do
-    resource = data
-
-    {callback, updated} = Map.pop!(callbacks, message_id)
-    Callback.resolve(callback, resource)
-
-    %{state | callbacks: updated}
-  end
-
-  # channel:response
-  defp reply_with_binary(details, state) do
-    reply_with_value(details, state)
-  end
-
-  # channel:response
-  defp reply_with_list({message_id, list}, %{callbacks: callbacks, catalog: catalog} = state)
-       when is_list(list) do
-    resource = Enum.map(list, fn %{guid: guid} -> Catalog.get(catalog, guid) end)
-
-    {callback, updated} = Map.pop!(callbacks, message_id)
-    Callback.resolve(callback, resource)
-
-    %{state | callbacks: updated}
-  end
-
-  # channel:response
-  defp reply_with_value({message_id, value}, %{callbacks: callbacks} = state) do
-    resource = value
-
-    {callback, updated} = Map.pop!(callbacks, message_id)
-    Callback.resolve(callback, resource)
-
-    %{state | callbacks: updated}
-  end
-
-  # defp hydrate() do
-  # end
 end
