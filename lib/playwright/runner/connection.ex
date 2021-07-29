@@ -5,8 +5,8 @@ defmodule Playwright.Runner.Connection do
   use GenServer
 
   alias Playwright.Extra
+  alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
-  alias Playwright.Runner.Root
   alias Playwright.Runner.Transport
 
   # API
@@ -16,7 +16,7 @@ defmodule Playwright.Runner.Connection do
   @type transport_config :: {transport_module, [term()]}
 
   defstruct(
-    catalog: %{},
+    catalog: nil,
     handlers: %{},
     messages: %{pending: %{}},
     queries: %{},
@@ -82,17 +82,14 @@ defmodule Playwright.Runner.Connection do
 
     {:ok,
      %__MODULE__{
-       catalog: %{
-         "Root" => Root.new(self())
-       },
+       catalog: Catalog.new(self()),
        transport: Transport.connect(transport_module, [self()] ++ config)
      }}
-    #  catalog: Catalog.open(...)
   end
 
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, from, %{catalog: catalog, queries: queries} = state) do
-    case catalog[guid] do
+    case Catalog.get(catalog, guid) do
       nil ->
         {:noreply, %{state | queries: Map.put(queries, guid, from)}}
 
@@ -103,7 +100,7 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:get, attrs, default}, _from, %{catalog: catalog} = state) do
-    case select(Map.values(catalog), attrs, []) do
+    case select(Catalog.values(catalog), attrs, []) do
       [] ->
         {:reply, default, state}
 
@@ -121,7 +118,7 @@ defmodule Playwright.Runner.Connection do
   @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
     subject = Map.merge(catalog[guid], data)
-    catalog = Map.put(catalog, guid, subject)
+    catalog = Catalog.put(catalog, guid, subject)
     {:reply, subject, %{state | catalog: catalog}}
   end
 
@@ -149,7 +146,7 @@ defmodule Playwright.Runner.Connection do
   # ----------------------------------------------------------------------------
 
   defp _del_(guid, catalog) do
-    children = select(Map.values(catalog), %{parent: catalog[guid]}, [])
+    children = select(Catalog.values(catalog), %{parent: Catalog.get(catalog, guid)}, [])
 
     catalog =
       children
@@ -157,7 +154,7 @@ defmodule Playwright.Runner.Connection do
         _del_(item.guid, acc)
       end)
 
-    Map.delete(catalog, guid)
+    Catalog.delete(catalog, guid)
   end
 
   defp _put_(item, %{catalog: catalog, queries: queries} = state) do
@@ -170,7 +167,7 @@ defmodule Playwright.Runner.Connection do
         %{state | queries: queries}
     end
 
-    Map.put(catalog, item.guid, item)
+    Catalog.put(catalog, item.guid, item)
   end
 
   defp _recv_(json, state) when is_binary(json) do
@@ -214,6 +211,9 @@ defmodule Playwright.Runner.Connection do
     reply_from_messages({message_id, data}, state)
   end
 
+  # Workaround: Playwright sends back empty string: "" for top-level objects,
+  # to be attached to the "Root". So, let's at least rename the parent as
+  # "Root", instead of "", respectively.
   defp _recv_(%{guid: ""} = data, state) do
     _recv_(Map.put(data, :guid, "Root"), state)
   end
@@ -223,7 +223,8 @@ defmodule Playwright.Runner.Connection do
          %{guid: parent_guid, method: "__create__", params: params},
          %{catalog: catalog} = state
        ) do
-    item = apply(resource(params), :new, [catalog[parent_guid], params])
+    item = apply(resource(params), :new, [Catalog.get(catalog, parent_guid), params])
+
     # Logger.info("received type to create: " <> params.type)
 
     # if params.type == "ElementHandle" do
@@ -249,7 +250,7 @@ defmodule Playwright.Runner.Connection do
 
   defp _recv_(%{guid: guid, method: method}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["close"] do
-    entry = catalog[guid]
+    entry = Catalog.get(catalog, guid)
     entry = Map.put(entry, :initializer, Map.put(entry.initializer, :isClosed, true))
     event = {:on, Extra.Atom.from_string(method), entry}
     handlers = Map.get(handlers, method, [])
@@ -258,19 +259,19 @@ defmodule Playwright.Runner.Connection do
       handler.(event)
     end)
 
-    %{state | catalog: Map.put(catalog, guid, entry)}
+    %{state | catalog: Catalog.put(catalog, guid, entry)}
   end
 
   defp _recv_(%{guid: guid, method: method, params: params}, %{catalog: catalog} = state)
        when method in ["previewUpdated"] do
     Logger.debug("preview updated for #{inspect(guid)}")
-    updated = %Playwright.ElementHandle{catalog[guid] | preview: params.preview}
-    %{state | catalog: Map.put(catalog, guid, updated)}
+    updated = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
+    %{state | catalog: Catalog.put(catalog, guid, updated)}
   end
 
   defp _recv_(%{method: method, params: %{message: %{guid: guid}}}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["console"] do
-    entry = catalog[guid]
+    entry = Catalog.get(catalog, guid)
     event = {:on, Extra.Atom.from_string(method), entry}
     handlers = Map.get(handlers, method, [])
 
@@ -300,13 +301,13 @@ defmodule Playwright.Runner.Connection do
     {_message, pending} = Map.pop(messages.pending, message_id)
     {from, queries} = Map.pop(queries, message_id, nil)
 
-    item = catalog[guid]
+    item = Catalog.get(catalog, guid)
 
     if from do
       GenServer.reply(from, item)
     end
 
-    %{state | catalog: Map.put(catalog, guid, item), messages: Map.put(messages, :pending, pending), queries: queries}
+    %{state | catalog: Catalog.put(catalog, guid, item), messages: Map.put(messages, :pending, pending), queries: queries}
   end
 
   # HERE... handling a channel:response
@@ -326,7 +327,7 @@ defmodule Playwright.Runner.Connection do
   # HERE... handling a channel:response
   defp reply_with_list({message_id, list}, %{catalog: catalog, messages: messages, queries: queries} = state)
        when is_list(list) do
-    data = list |> Enum.map(fn %{guid: guid} -> catalog[guid] end)
+    data = list |> Enum.map(fn %{guid: guid} -> Catalog.get(catalog, guid) end)
     {_message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
     GenServer.reply(from, data)

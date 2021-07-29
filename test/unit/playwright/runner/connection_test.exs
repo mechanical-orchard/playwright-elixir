@@ -1,5 +1,6 @@
 defmodule Playwright.Runner.ConnectionTest do
   use ExUnit.Case
+  alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
   alias Playwright.Runner.ConnectionTest.TestTransport
@@ -61,14 +62,15 @@ defmodule Playwright.Runner.ConnectionTest do
 
     test "removing an item via __dispose__ also removes its 'children'", %{connection: connection} do
       %{catalog: catalog} = :sys.get_state(connection)
-      root = catalog["Root"]
+      # root = catalog["Root"]
+      root = Catalog.get(catalog, "Root")
       json = Jason.encode!(%{guid: "browser@1", method: "__dispose__"})
 
       catalog =
         catalog
-        |> Map.put("browser@1", %{guid: "browser@1", parent: %{guid: "Root"}, type: "Browser"})
-        |> Map.put("context@1", %{guid: "context@1", parent: %{guid: "browser@1"}, type: "BrowserContext"})
-        |> Map.put("page@1", %{guid: "page@1", parent: %{guid: "context@1"}, type: "Page"})
+        |> Catalog.put("browser@1", %{guid: "browser@1", parent: %{guid: "Root"}, type: "Browser"})
+        |> Catalog.put("context@1", %{guid: "context@1", parent: %{guid: "browser@1"}, type: "BrowserContext"})
+        |> Catalog.put("page@1", %{guid: "page@1", parent: %{guid: "context@1"}, type: "Page"})
 
       :sys.replace_state(connection, fn state -> %{state | catalog: catalog} end)
 
@@ -93,7 +95,7 @@ defmodule Playwright.Runner.ConnectionTest do
       |> refute()
 
       %{catalog: catalog} = :sys.get_state(connection)
-      assert catalog == %{"Root" => root}
+      assert catalog.dictionary == %{"Root" => root}
     end
   end
 
