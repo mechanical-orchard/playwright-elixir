@@ -88,14 +88,8 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
-  def handle_call({:get, {:guid, guid}}, from, %{catalog: catalog, queries: queries} = state) do
-    case Catalog.get(catalog, guid) do
-      nil ->
-        {:noreply, %{state | queries: Map.put(queries, guid, from)}}
-
-      item ->
-        {:reply, item, state}
-    end
+  def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
+    {:noreply, %{state | catalog: Catalog.await(catalog, guid, subscriber)}}
   end
 
   @impl GenServer
@@ -298,6 +292,7 @@ defmodule Playwright.Runner.Connection do
 
   # HERE... handling a channel:response
   defp reply_from_catalog({message_id, guid}, %{catalog: catalog, messages: messages, queries: queries} = state) do
+    # IO.puts("reply op 2 ..................................")
     {_message, pending} = Map.pop(messages.pending, message_id)
     {from, queries} = Map.pop(queries, message_id, nil)
 
@@ -312,6 +307,7 @@ defmodule Playwright.Runner.Connection do
 
   # HERE... handling a channel:response
   defp reply_from_messages({message_id, data}, %{catalog: _catalog, messages: messages, queries: queries} = state) do
+    # IO.puts("reply op 3 ..................................")
     {message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
     GenServer.reply(from, Map.merge(message, data))
@@ -327,6 +323,7 @@ defmodule Playwright.Runner.Connection do
   # HERE... handling a channel:response
   defp reply_with_list({message_id, list}, %{catalog: catalog, messages: messages, queries: queries} = state)
        when is_list(list) do
+    # IO.puts("reply op 4 ..................................")
     data = list |> Enum.map(fn %{guid: guid} -> Catalog.get(catalog, guid) end)
     {_message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
@@ -336,6 +333,7 @@ defmodule Playwright.Runner.Connection do
 
   # HERE... handling a channel:response
   defp reply_with_value({message_id, value}, %{messages: messages, queries: queries} = state) do
+    # IO.puts("reply op 5 ..................................")
     {_message, pending} = Map.pop!(messages.pending, message_id)
     {from, queries} = Map.pop!(queries, message_id)
 

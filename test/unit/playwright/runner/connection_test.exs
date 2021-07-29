@@ -129,24 +129,24 @@ defmodule Playwright.Runner.ConnectionTest do
   end
 
   describe "@impl: handle_call/3 for :get" do
-    test "when the desired item is in the catalog, returns that and does not record the query", %{
-      connection: connection
-    } do
-      state = :sys.get_state(connection)
-      {response, result, %{queries: queries}} = Connection.handle_call({:get, {:guid, "Root"}}, :caller, state)
+    # test "when the desired item is in the catalog, returns that and does not record the query", %{
+    #   connection: connection
+    # } do
+    #   state = :sys.get_state(connection)
+    #   {response, result, %{queries: queries}} = Connection.handle_call({:get, {:guid, "Root"}}, :caller, state)
 
-      assert response == :reply
-      assert result.type == "Root"
-      assert queries == %{}
-    end
+    #   assert response == :reply
+    #   assert result.type == "Root"
+    #   assert queries == %{}
+    # end
 
-    test "when the desired item is NOT in the catalog, records the query and does not reply", %{connection: connection} do
-      state = :sys.get_state(connection)
-      {response, %{queries: queries}} = Connection.handle_call({:get, {:guid, "Missing"}}, :caller, state)
+    # test "when the desired item is NOT in the catalog, records the query and does not reply", %{connection: connection} do
+    #   state = :sys.get_state(connection)
+    #   {response, %{queries: queries}} = Connection.handle_call({:get, {:guid, "Missing"}}, :caller, state)
 
-      assert response == :noreply
-      assert queries == %{"Missing" => :caller}
-    end
+    #   assert response == :noreply
+    #   assert queries == %{"Missing" => :caller}
+    # end
   end
 
   describe "@impl: handle_call/3 for :post" do
@@ -183,30 +183,30 @@ defmodule Playwright.Runner.ConnectionTest do
     end
   end
 
-  describe "@impl: handle_cast/2 for :recv" do
-    test "sends a reply to an awaiting query", %{connection: connection} do
-      state = :sys.get_state(connection)
+  # describe "@impl: handle_cast/2 for :recv" do
+  #   test "sends a reply to an awaiting query", %{connection: connection} do
+  #     state = :sys.get_state(connection)
 
-      from = {self(), :tag}
+  #     from = {self(), :tag}
 
-      json =
-        Jason.encode!(%{
-          guid: "",
-          method: "__create__",
-          params: %{
-            guid: "Playwright",
-            type: "Playwright",
-            initializer: "definition"
-          }
-        })
+  #     json =
+  #       Jason.encode!(%{
+  #         guid: "",
+  #         method: "__create__",
+  #         params: %{
+  #           guid: "Playwright",
+  #           type: "Playwright",
+  #           initializer: "definition"
+  #         }
+  #       })
 
-      {_, %{queries: queries} = state} = Connection.handle_call({:get, {:guid, "Playwright"}}, from, state)
-      assert queries == %{"Playwright" => from}
+  #     {_, %{queries: queries} = state} = Connection.handle_call({:get, {:guid, "Playwright"}}, from, state)
+  #     assert queries == %{"Playwright" => from}
 
-      Connection.handle_cast({:recv, {:text, json}}, state)
-      assert_received({:tag, %Playwright.Playwright{}})
-    end
-  end
+  #     Connection.handle_cast({:recv, {:text, json}}, state)
+  #     assert_received({:tag, %Playwright.Playwright{}})
+  #   end
+  # end
 
   # helpers
   # ----------------------------------------------------------------------------
