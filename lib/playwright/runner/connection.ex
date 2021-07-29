@@ -93,14 +93,8 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
-  def handle_call({:get, attrs, default}, _from, %{catalog: catalog} = state) do
-    case select(Catalog.values(catalog), attrs, []) do
-      [] ->
-        {:reply, default, state}
-
-      result ->
-        {:reply, result, state}
-    end
+  def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
+    {:reply, Catalog.find(catalog, filter, default), state}
   end
 
   @impl GenServer
@@ -140,7 +134,7 @@ defmodule Playwright.Runner.Connection do
   # ----------------------------------------------------------------------------
 
   defp _del_(guid, catalog) do
-    children = select(Catalog.values(catalog), %{parent: Catalog.get(catalog, guid)}, [])
+    children = Catalog.find(catalog, %{parent: Catalog.get(catalog, guid)}, [])
 
     catalog =
       children
@@ -212,36 +206,22 @@ defmodule Playwright.Runner.Connection do
     _recv_(Map.put(data, :guid, "Root"), state)
   end
 
-  # NEXT... channel:event
+  # NEXT... channel:event (special)
   defp _recv_(
          %{guid: parent_guid, method: "__create__", params: params},
          %{catalog: catalog} = state
        ) do
     item = apply(resource(params), :new, [Catalog.get(catalog, parent_guid), params])
-
-    # Logger.info("received type to create: " <> params.type)
-
-    # if params.type == "ElementHandle" do
-    #   Logger.info("  ...with data: " <> inspect(params))
-    # end
-
-    # if params.type == "Frame" do
-    #   Logger.info("  ...with data: " <> inspect(params))
-    # end
-
-    # if params.type == "JSHandle" do
-    #   Logger.info("  ...with data: " <> inspect(params))
-    # end
-
     %{state | catalog: _put_(item, state)}
   end
 
-  # NEXT... channel:event
+  # NEXT... channel:event (special)
   defp _recv_(%{guid: guid, method: "__dispose__"}, %{catalog: catalog} = state) do
     Logger.debug("__dispose__ #{inspect(guid)}")
     %{state | catalog: _del_(guid, catalog)}
   end
 
+  # NEXT... channel:event (emit(method, channels))
   defp _recv_(%{guid: guid, method: method}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["close"] do
     entry = Catalog.get(catalog, guid)
@@ -256,6 +236,7 @@ defmodule Playwright.Runner.Connection do
     %{state | catalog: Catalog.put(catalog, guid, entry)}
   end
 
+  # NEXT... channel:event (emit(method, channels))
   defp _recv_(%{guid: guid, method: method, params: params}, %{catalog: catalog} = state)
        when method in ["previewUpdated"] do
     Logger.debug("preview updated for #{inspect(guid)}")
@@ -263,6 +244,7 @@ defmodule Playwright.Runner.Connection do
     %{state | catalog: Catalog.put(catalog, guid, updated)}
   end
 
+  # NEXT... channel:event (emit(method, channels))
   defp _recv_(%{method: method, params: %{message: %{guid: guid}}}, %{catalog: catalog, handlers: handlers} = state)
        when method in ["console"] do
     entry = Catalog.get(catalog, guid)
@@ -296,9 +278,12 @@ defmodule Playwright.Runner.Connection do
     {_message, pending} = Map.pop(messages.pending, message_id)
     {from, queries} = Map.pop(queries, message_id, nil)
 
+    # Logger.warn("  --> from catalog MSG: #{inspect(message)}")
+
     item = Catalog.get(catalog, guid)
 
     if from do
+      # Logger.warn("  --> from catalog SUB: #{inspect(from)}")
       GenServer.reply(from, item)
     end
 
@@ -340,37 +325,5 @@ defmodule Playwright.Runner.Connection do
     GenServer.reply(from, value)
 
     %{state | messages: Map.put(messages, :pending, pending), queries: queries}
-  end
-
-  defp select([], _attrs, result) do
-    result
-  end
-
-  defp select([head | tail], attrs, result) when head.type == "" do
-    select(tail, attrs, result)
-  end
-
-  defp select([head | tail], %{parent: parent, type: type} = attrs, result)
-       when head.parent.guid == parent.guid and head.type == type do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([head | tail], %{parent: parent} = attrs, result)
-       when head.parent.guid == parent.guid do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([head | tail], %{type: type} = attrs, result)
-       when head.type == type do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([head | tail], %{guid: guid} = attrs, result)
-       when head.guid == guid do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([_head | tail], attrs, result) do
-    select(tail, attrs, result)
   end
 end

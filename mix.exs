@@ -49,6 +49,7 @@ defmodule Playwright.MixProject do
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       {:gun, "~> 2.0.0-rc.2"},
       {:jason, "~> 1.2"},
+      {:json_diff, "~> 0.1.3"},
       {:mix_audit, "~> 0.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.11.1", only: [:dev, :test]},
       {:recase, "~> 0.7.0"},
