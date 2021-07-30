@@ -123,8 +123,7 @@ defmodule Playwright.Runner.ConnectionTest do
       posted = TestTransport.dump(state.transport.pid)
       assert posted == [Jason.encode!(cmd)]
 
-      {_, %{callbacks: callbacks}} =
-        Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: cid})}}, state)
+      {_, %{callbacks: callbacks}} = Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: cid})}}, state)
 
       assert callbacks == %{}
       assert_received({:tag, %{id: ^cid}})
@@ -134,6 +133,7 @@ defmodule Playwright.Runner.ConnectionTest do
   describe "@impl: handle_cast/2 for :recv" do
     test "sends a reply to an awaiting query", %{connection: connection} do
       state = :sys.get_state(connection)
+
       json =
         Jason.encode!(%{
           guid: "",

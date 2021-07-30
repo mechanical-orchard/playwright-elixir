@@ -121,7 +121,7 @@ defmodule Playwright.Runner.Connection do
   @impl GenServer
   def handle_cast({:on, {event, subject}, handler}, %{catalog: catalog} = state) do
     listeners = [handler | subject.listeners[event] || []]
-    subject = %{subject | listeners: %{ event => listeners }}
+    subject = %{subject | listeners: %{event => listeners}}
 
     {:noreply, %{state | catalog: Catalog.put(catalog, subject)}}
   end

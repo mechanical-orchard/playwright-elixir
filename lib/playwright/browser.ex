@@ -65,7 +65,9 @@ defmodule Playwright.Browser do
     case page do
       %Playwright.Page{} ->
         Connection.patch(page.connection, {:guid, page.guid}, %{owned_context: context})
-      _other -> raise("expected new_page to return a  Playwright.Page, received: #{inspect(page)}")
+
+      _other ->
+        raise("expected new_page to return a  Playwright.Page, received: #{inspect(page)}")
     end
   end
 

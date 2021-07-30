@@ -15,11 +15,11 @@ defmodule Playwright.Runner.Channel.Command do
   ]
 
   @type t() :: %__MODULE__{
-    guid: binary(),
-    id: integer(),
-    method: binary(),
-    params: map()
-  }
+          guid: binary(),
+          id: integer(),
+          method: binary(),
+          params: map()
+        }
 
   @doc """
   Creates a new `Command` struct. A monotonically-incremented `id` is added.

@@ -23,6 +23,7 @@ defmodule Playwright.Runner.Catalog do
     case get(catalog, key) do
       nil ->
         found?(catalog, key, subscriber)
+
       val ->
         found!(catalog, val, subscriber)
     end
@@ -42,6 +43,7 @@ defmodule Playwright.Runner.Catalog do
     case select(values(catalog), filter, []) do
       [] ->
         default
+
       result ->
         result
     end

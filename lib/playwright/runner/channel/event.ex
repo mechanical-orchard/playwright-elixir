@@ -54,6 +54,7 @@ defmodule Playwright.Runner.Channel.Event do
 
     if handlers do
       event = {:on, Extra.Atom.from_string(event_type), resource}
+
       Enum.each(handlers, fn handler ->
         handler.(event)
       end)

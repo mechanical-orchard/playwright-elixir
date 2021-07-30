@@ -13,6 +13,7 @@ defmodule Playwright.Worker do
   def channel__on(subject, "close") do
     subject
   end
+
   # this._channel.on('close', () => {
   #   if (this._page)
   #     this._page._workers.delete(this);
