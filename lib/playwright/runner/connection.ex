@@ -4,12 +4,11 @@ defmodule Playwright.Runner.Connection do
 
   use GenServer
 
-  alias Playwright.Extra
   alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
-  alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Transport
+  alias Playwright.Extra
 
   # API
   # ----------------------------------------------------------------------------
@@ -20,7 +19,6 @@ defmodule Playwright.Runner.Connection do
   defstruct(
     callbacks: %{},
     catalog: nil,
-    handlers: %{}, # !!!
     transport: nil
   )
 
@@ -45,10 +43,13 @@ defmodule Playwright.Runner.Connection do
 
   # Callback-only (remote event).
   # - Registers a handler (can have multiple... consider MultiDict from "Elixir in Action").
-  # - No Catalog interaction.
+  # - No Catalog interaction. !!! This is likely to change, as the listeners/handlers
+  #   should be closely related to a specific and particular resource.
   # - Does not yet have any handling of `once`, `off`, etc.
-  def on(connection, event, handler) do
-    GenServer.call(connection, {:on, event, handler})
+  # - Could perhaps move to Channel. That would more closely match other implementations
+  #   and is feasible given that ChannelOwner/subject structs have `connection`.
+  def on(connection, {event, subject}, handler) do
+    GenServer.cast(connection, {:on, {event, subject}, handler})
   end
 
   # Catalog-only.
@@ -99,12 +100,6 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
-  def handle_call({:on, event, handler}, _from, %{handlers: handlers} = state) do
-    updated = Map.update(handlers, event, [handler], fn existing -> [handler | existing] end)
-    {:reply, :ok, %{state | handlers: updated}}
-  end
-
-  @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
     subject = Map.merge(catalog[guid], data)
     catalog = Catalog.put(catalog, guid, subject)
@@ -113,7 +108,7 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:post, {:cmd, message}}, from, %{callbacks: callbacks, transport: transport} = state) do
-    Logger.warn("POST: #{inspect(message.id)}: #{inspect(message)}")
+    # Logger.warn("POST: #{inspect(message.id)}: #{inspect(message)}")
     Transport.post(transport, Jason.encode!(message))
 
     {
@@ -123,34 +118,27 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
+  def handle_cast({:on, {event, subject}, handler}, %{catalog: catalog} = state) do
+    listeners = [handler | subject.listeners[event] || []]
+    subject = %{subject | listeners: %{ event => listeners }}
+
+    {:noreply, %{state | catalog: Catalog.put(catalog, subject)}}
+  end
+
+  @impl GenServer
   def handle_cast({:recv, {:text, json}}, state) do
-    {:noreply, _recv_(json, state)}
-  end
-
-  # private
-  # ----------------------------------------------------------------------------
-
-  defp _del_(guid, catalog) do
-    children = Catalog.find(catalog, %{parent: Catalog.get(catalog, guid)}, [])
-
-    catalog =
-      children
-      |> Enum.reduce(catalog, fn item, acc ->
-        _del_(item.guid, acc)
-      end)
-
-    Catalog.delete(catalog, guid)
-  end
-
-  defp _recv_(json, state) when is_binary(json) do
     case Jason.decode(json) do
       {:ok, data} ->
-        _recv_(data |> Extra.Map.deep_atomize_keys(), state)
+        state = _recv_(data |> Extra.Map.deep_atomize_keys(), state)
+        {:noreply, state}
 
       _error ->
         raise ArgumentError, message: inspect(json: Enum.join(for <<c::utf8 <- json>>, do: <<c::utf8>>))
     end
   end
+
+  # private
+  # ----------------------------------------------------------------------------
 
   defp _recv_(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
     response = Channel.Response.new(message, catalog)
@@ -168,60 +156,7 @@ defmodule Playwright.Runner.Connection do
     _recv_(Map.put(data, :guid, "Root"), state)
   end
 
-  # channel:event (special)
-  defp _recv_(
-         %{guid: parent_guid, method: "__create__", params: params},
-         %{catalog: catalog} = state
-       ) do
-    item = ChannelOwner.from_params(params, Catalog.get(catalog, parent_guid))
-    %{state | catalog: Catalog.put(catalog, item.guid, item)}
-  end
-
-  # channel:event (special)
-  defp _recv_(%{guid: guid, method: "__dispose__"}, %{catalog: catalog} = state) do
-    Logger.debug("__dispose__ #{inspect(guid)}")
-    %{state | catalog: _del_(guid, catalog)}
-  end
-
-  # channel:event (emit(method, channels))
-  defp _recv_(%{guid: guid, method: method}, %{catalog: catalog, handlers: handlers} = state)
-       when method in ["close"] do
-    entry = Catalog.get(catalog, guid)
-    entry = Map.put(entry, :initializer, Map.put(entry.initializer, :isClosed, true))
-    event = {:on, Extra.Atom.from_string(method), entry}
-    handlers = Map.get(handlers, method, [])
-
-    Enum.each(handlers, fn handler ->
-      handler.(event)
-    end)
-
-    %{state | catalog: Catalog.put(catalog, guid, entry)}
-  end
-
-  # channel:event (emit(method, channels))
-  defp _recv_(%{guid: guid, method: method, params: params}, %{catalog: catalog} = state)
-       when method in ["previewUpdated"] do
-    Logger.debug("preview updated for #{inspect(guid)}")
-    updated = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
-    %{state | catalog: Catalog.put(catalog, guid, updated)}
-  end
-
-  # channel:event (emit(method, channels))
-  defp _recv_(%{method: method, params: %{message: %{guid: guid}}}, %{catalog: catalog, handlers: handlers} = state)
-       when method in ["console"] do
-    entry = Catalog.get(catalog, guid)
-    event = {:on, Extra.Atom.from_string(method), entry}
-    handlers = Map.get(handlers, method, [])
-
-    Enum.each(handlers, fn handler ->
-      handler.(event)
-    end)
-
-    state
-  end
-
-  defp _recv_(data, state) do
-    Logger.debug("_recv_ UNKNOWN :: method: #{inspect(data.method)}; data: #{inspect(data)}")
-    state
+  defp _recv_(%{method: _method} = event, %{catalog: catalog} = state) do
+    %{state | catalog: Channel.Event.handle(event, catalog)}
   end
 end

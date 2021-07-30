@@ -52,6 +52,10 @@ defmodule Playwright.Runner.Catalog do
   end
 
   # when is struct...
+  def put(catalog, entry) do
+    put(catalog, entry.guid, entry)
+  end
+
   def put(catalog, key, entry) do
     subscriber = Map.get(catalog.awaiting, key)
 

@@ -41,4 +41,12 @@ defmodule Playwright.BrowserContext do
     subject |> Channel.send("close")
     subject
   end
+
+  # .channel__on (things that might want to move to Channel)
+  # ----------------------------------------------------------------------------
+
+  @doc false
+  def channel__on(subject, "close") do
+    subject
+  end
 end

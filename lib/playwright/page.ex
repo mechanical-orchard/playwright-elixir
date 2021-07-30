@@ -42,6 +42,8 @@ defmodule Playwright.Page do
     channel_owner(parent, args)
   end
 
+  # ----------------------------------------------------------------------------
+
   def context(subject) do
     Connection.get(subject.connection, {:guid, subject.parent.guid})
   end
@@ -107,7 +109,7 @@ defmodule Playwright.Page do
   end
 
   def on(subject, event, handler) do
-    Connection.on(subject.connection, event, handler)
+    Connection.on(subject.connection, {event, subject}, handler)
     subject
   end
 
@@ -183,6 +185,20 @@ defmodule Playwright.Page do
 
   def wait_for_selector(subject, selector, options \\ %{}) do
     frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
+  end
+
+  # .channel__on (things that might want to move to Channel)
+  # ----------------------------------------------------------------------------
+
+  @doc false
+  def channel__on(subject, "close") do
+    %{subject | initializer: Map.put(subject.initializer, :isClosed, true)}
+  end
+
+  @doc false
+  def channel__on(subject, other)
+      when other in ["console"] do
+    subject
   end
 
   # private

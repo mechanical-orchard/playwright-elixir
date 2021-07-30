@@ -1,6 +1,6 @@
 defmodule Playwright.Runner.ChannelOwner do
   @moduledoc false
-  @base [:connection, :parent, :type, :guid, :initializer]
+  @base [:connection, :guid, :initializer, :parent, :type, :listeners]
 
   require Logger
 
@@ -17,7 +17,8 @@ defmodule Playwright.Runner.ChannelOwner do
     fields = extra ++ @base
 
     quote do
-      @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
+      # @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
+      @derive {Inspect, only: [:guid, :listeners] ++ unquote(extra)}
 
       alias Playwright.Extra
       alias Playwright.Runner.Channel
@@ -30,14 +31,15 @@ defmodule Playwright.Runner.ChannelOwner do
       @doc false
       def channel_owner(
             parent,
-            %{guid: guid, type: type, initializer: initializer} = args
+            %{guid: guid, initializer: initializer, type: type} = args
           ) do
         base = %__MODULE__{
           connection: parent.connection,
+          guid: guid,
+          initializer: initializer,
           parent: parent,
           type: type,
-          guid: guid,
-          initializer: initializer
+          listeners: %{}
         }
 
         struct(
@@ -60,7 +62,7 @@ defmodule Playwright.Runner.ChannelOwner do
   end
 
   @doc false
-  def from_params(params, parent) do
+  def from(params, parent) do
     apply(module(params), :new, [parent, params])
   end
 
