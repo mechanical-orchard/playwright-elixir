@@ -4,12 +4,12 @@ defmodule Playwright.Runner.Connection do
   use GenServer
   require Logger
 
+  alias Playwright.Extra
   alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Root
   alias Playwright.Runner.Transport
-  alias Playwright.Extra
 
   # API
   # ----------------------------------------------------------------------------

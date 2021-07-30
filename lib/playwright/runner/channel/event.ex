@@ -4,9 +4,9 @@ defmodule Playwright.Runner.Channel.Event do
   action taken related to a resource.
   """
   require Logger
+  alias Playwright.Extra
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.ChannelOwner
-  alias Playwright.Extra
 
   @doc """
   Handles an event.
