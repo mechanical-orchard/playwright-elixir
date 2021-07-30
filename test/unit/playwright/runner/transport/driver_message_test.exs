@@ -1,5 +1,5 @@
 defmodule Playwright.Runner.Transport.DriverMessageTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Playwright.Runner.Transport.DriverMessage
 
   describe "parse/4" do

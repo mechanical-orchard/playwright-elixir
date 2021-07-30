@@ -1,5 +1,5 @@
 defmodule Test.Features.PageTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.Runner.Connection
 
   describe "Page" do

@@ -1,5 +1,5 @@
 defmodule Test.Features.Page.OnEventTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   describe "Page.on/3" do
     test "on 'close'", %{page: page} do

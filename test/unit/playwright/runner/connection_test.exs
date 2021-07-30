@@ -1,5 +1,5 @@
 defmodule Playwright.Runner.ConnectionTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel

@@ -1,5 +1,5 @@
 defmodule Test.Features.ElementHandleTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   alias Playwright.Page
 

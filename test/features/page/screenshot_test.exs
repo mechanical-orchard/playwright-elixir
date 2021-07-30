@@ -1,5 +1,5 @@
 defmodule Test.Features.Playwright.Page.ScreenshotTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   # NOTE: in addition to the explicit assertions made by these tests, we're also
   # demonstrating a couple other capabilities/quirks:

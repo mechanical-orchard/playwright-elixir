@@ -1,6 +1,6 @@
 # src: page/jshandle-as-element.spec.ts
 defmodule Test.Features.Page.JSHandleAsElementTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   describe "JSHandle.as_element/1" do
     alias Playwright.JSHandle

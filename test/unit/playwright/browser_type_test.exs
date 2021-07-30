@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserTypeTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Playwright.BrowserType
 

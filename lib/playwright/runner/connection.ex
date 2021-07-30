@@ -1,12 +1,13 @@
 defmodule Playwright.Runner.Connection do
   @moduledoc false
-  require Logger
 
   use GenServer
+  require Logger
 
   alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
+  alias Playwright.Runner.Root
   alias Playwright.Runner.Transport
   alias Playwright.Extra
 
@@ -84,7 +85,7 @@ defmodule Playwright.Runner.Connection do
 
     {:ok,
      %__MODULE__{
-       catalog: Catalog.new(self()),
+       catalog: Catalog.new(Root.new(self())),
        transport: Transport.connect(transport_module, [self()] ++ config)
      }}
   end

@@ -1,5 +1,5 @@
 defmodule Playwright.Runner.ConfigTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Playwright.Runner.Config
 
   require Logger

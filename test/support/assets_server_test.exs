@@ -1,5 +1,5 @@
 defmodule Test.Support.AssetsServerTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   describe "Local test assets derver" do
     test "works", %{assets: assets, browser: browser} do

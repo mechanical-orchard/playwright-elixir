@@ -1,17 +1,17 @@
 defmodule Playwright.Runner.Catalog do
   @moduledoc false
   require Logger
-  alias Playwright.Runner.Root
 
-  @enforce_keys [:connection, :dictionary]
+  # API
+  # ----------------------------------------------------------------------------
 
-  defstruct [:connection, :dictionary, :awaiting]
+  @enforce_keys [:dictionary]
+  defstruct [:dictionary, :awaiting]
 
-  def new(connection) do
+  def new(root) do
     %__MODULE__{
-      connection: connection,
       dictionary: %{
-        "Root" => Root.new(connection)
+        "Root" => root
       },
       awaiting: %{}
     }
