@@ -127,9 +127,16 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_cast({:recv, {:text, json}}, state) do
+    recv_payload(json, state)
+  end
+
+  # private
+  # ----------------------------------------------------------------------------
+
+  defp recv_payload(<<json::binary>>, state) do
     case Jason.decode(json) do
       {:ok, data} ->
-        state = _recv_(data |> Extra.Map.deep_atomize_keys(), state)
+        state = recv_payload(data |> Extra.Map.deep_atomize_keys(), state)
         {:noreply, state}
 
       _error ->
@@ -137,26 +144,14 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
-  # private
-  # ----------------------------------------------------------------------------
-
-  defp _recv_(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
-    response = Channel.Response.new(message, catalog)
-
+  defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
     {callback, updated} = Map.pop!(callbacks, message_id)
-    Callback.resolve(callback, response)
+    Callback.resolve(callback, Channel.Response.new(message, catalog))
 
     %{state | callbacks: updated}
   end
 
-  # Workaround: Playwright sends back empty string: "" for top-level objects,
-  # to be attached to the "Root". So, let's at least rename the parent as
-  # "Root", instead of "", respectively.
-  defp _recv_(%{guid: ""} = data, state) do
-    _recv_(Map.put(data, :guid, "Root"), state)
-  end
-
-  defp _recv_(%{method: _method} = event, %{catalog: catalog} = state) do
+  defp recv_payload(%{method: _method} = event, %{catalog: catalog} = state) do
     %{state | catalog: Channel.Event.handle(event, catalog)}
   end
 end

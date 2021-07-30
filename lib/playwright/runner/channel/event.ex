@@ -31,6 +31,13 @@ defmodule Playwright.Runner.Channel.Event do
     Catalog.delete(catalog, guid)
   end
 
+  # The Playwright server sends back empty string: "" as the parent "guid"
+  # for top-level resources. "Root" is nicer, and is how the Root resource
+  # is keyed in the Catalog.
+  defp handle("__create__", %{guid: ""} = event, catalog) do
+    handle("__create__", %{event | guid: "Root"}, catalog)
+  end
+
   defp handle("__create__", %{guid: parent, params: params} = _event, catalog) do
     resource = ChannelOwner.from(params, Catalog.get(catalog, parent))
     Catalog.put(catalog, resource)
