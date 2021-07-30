@@ -12,6 +12,7 @@ defmodule Playwright.Runner.Channel.Event do
   Handles an event.
   """
   def handle(%{method: method} = event, catalog) do
+    Logger.warn("  -> Event.handle w/ method: #{inspect(method)}, event: #{inspect(event)}")
     handle(method, event, catalog)
   end
 
@@ -39,8 +40,9 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("__create__", %{guid: parent, params: params} = _event, catalog) do
+    Logger.info("Event.__create__ w/ catalog: #{inspect(catalog)} and parent guid: #{inspect(parent)}")
     resource = ChannelOwner.from(params, Catalog.get(catalog, parent))
-    Catalog.put(catalog, resource)
+    Catalog.add(catalog, resource)
   end
 
   defp handle("__dispose__", %{guid: guid} = _event, catalog) do
@@ -59,7 +61,7 @@ defmodule Playwright.Runner.Channel.Event do
       end)
     end
 
-    Catalog.put(catalog, resource)
+    Catalog.add(catalog, resource)
   end
 
   defp handle("console" = event_type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog) do
@@ -76,12 +78,12 @@ defmodule Playwright.Runner.Channel.Event do
       end)
     end
 
-    Catalog.put(catalog, resource)
+    Catalog.add(catalog, resource)
   end
 
   defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
     resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
-    Catalog.put(catalog, resource)
+    Catalog.add(catalog, resource)
   end
 
   defp handle(_method, _event, catalog) do

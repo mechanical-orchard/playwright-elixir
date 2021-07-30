@@ -32,6 +32,7 @@ defmodule Playwright.Runner.Connection do
   # - Like `find` (now another `get`, below), does not send/post.
   # - Unlike `find` (`get`, below), will register a "from" to receive a reply, if not already in the catalog.
   def get(connection, {:guid, _guid} = item) do
+    Logger.warn("Connection.get A on conn: #{inspect(connection)}")
     GenServer.call(connection, {:get, item})
   end
 
@@ -39,6 +40,7 @@ defmodule Playwright.Runner.Connection do
   # - Attempts to retrieve an existing entry, and returns that or "default".
   # - Could probably be collapsed with `get` (above), with some options or similar.
   def get(connection, attributes, default \\ []) do
+    Logger.warn("Connection.get B")
     GenServer.call(connection, {:get, attributes, default})
   end
 
@@ -50,6 +52,7 @@ defmodule Playwright.Runner.Connection do
   # - Could perhaps move to Channel. That would more closely match other implementations
   #   and is feasible given that ChannelOwner/subject structs have `connection`.
   def on(connection, {event, subject}, handler) do
+    Logger.warn("Connection.on")
     GenServer.cast(connection, {:on, {event, subject}, handler})
   end
 
@@ -57,6 +60,7 @@ defmodule Playwright.Runner.Connection do
   # - Updates the state of a resource and returns the updated resource.
   # - Assumes existence.
   def patch(connection, {:guid, _guid} = subject, data) do
+    Logger.warn("Connection.patch")
     GenServer.call(connection, {:patch, subject, data})
   end
 
@@ -66,13 +70,15 @@ defmodule Playwright.Runner.Connection do
   # - ...in fact, any related Catalog changes are side-effects, likely delivered via an Event.
   @spec post(pid(), Channel.Command.t()) :: term()
   def post(connection, command) do
+    Logger.warn("Connection.post")
     GenServer.call(connection, {:post, {:cmd, command}})
   end
 
   # Transport-bound.
   # - Is the one "API function" that receives from the Transport.
   # - ...therefore, all `reply`, `handler`, etc. "clearing" MUST originate here.
-  def recv(connection, {:text, _json} = message) do
+  def recv(connection, {:text, json} = message) do
+    Logger.warn("Connection.recv on conn: #{inspect(connection)} w/ payload: #{inspect(Jason.decode!(json))}")
     GenServer.cast(connection, {:recv, message})
   end
 
@@ -83,76 +89,97 @@ defmodule Playwright.Runner.Connection do
   def init({transport_module, config}) do
     Logger.debug("Starting up Playwright with config: #{inspect(config)}")
 
+    {:ok, catalog} = Catalog.start_link(Root.new(self()))
+    Logger.info("CONNECT.............. #{inspect(self())}")
+    Logger.info("CATALOG.............. #{inspect(catalog)}")
+
     {:ok,
      %__MODULE__{
-       catalog: Catalog.new(Root.new(self())),
+       catalog: catalog,
        transport: Transport.connect(transport_module, [self()] ++ config)
      }}
   end
 
   @impl GenServer
-  def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
-    {:noreply, %{state | catalog: Catalog.await(catalog, guid, subscriber)}}
+  def handle_call({:get, {:guid, guid}}, _, %{catalog: catalog} = state) do
+    Logger.error("handle_call:get")
+    result = Catalog.get(catalog, guid)
+    Logger.error("  -> result: #{inspect(result)}")
+    {:reply, result, state}
   end
 
-  @impl GenServer
-  def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
-    {:reply, Catalog.find(catalog, filter, default), state}
-  end
+  # @impl GenServer
+  # def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
+  #   Logger.error("NOPb")
+  #   # {:reply, Catalog.find(catalog, filter, default), state}
+  # end
 
-  @impl GenServer
-  def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
-    subject = Map.merge(catalog[guid], data)
-    catalog = Catalog.put(catalog, guid, subject)
-    {:reply, subject, %{state | catalog: catalog}}
-  end
+  # @impl GenServer
+  # def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
+  #   Logger.error("NOPa")
+  #   # subject = Map.merge(catalog[guid], data)
+  #   # catalog = Catalog.put(catalog, guid, subject)
+  #   # {:reply, subject, %{state | catalog: catalog}}
+  # end
 
-  @impl GenServer
-  def handle_call({:post, {:cmd, message}}, from, %{callbacks: callbacks, transport: transport} = state) do
-    # Logger.warn("POST: #{inspect(message.id)}: #{inspect(message)}")
-    Transport.post(transport, Jason.encode!(message))
+  # @impl GenServer
+  # def handle_call({:post, {:cmd, message}}, from, %{callbacks: callbacks, transport: transport} = state) do
+  #   Logger.warn("POST: #{inspect(message.id)}: #{inspect(message)}")
+  #   Transport.post(transport, Jason.encode!(message))
 
-    {
-      :noreply,
-      %{state | callbacks: Map.put(callbacks, message.id, Callback.new(from, message))}
-    }
-  end
+  #   {
+  #     :noreply,
+  #     %{state | callbacks: Map.put(callbacks, message.id, Callback.new(from, message))}
+  #   }
+  # end
 
-  @impl GenServer
-  def handle_cast({:on, {event, subject}, handler}, %{catalog: catalog} = state) do
-    listeners = [handler | subject.listeners[event] || []]
-    subject = %{subject | listeners: %{ event => listeners }}
+  # @impl GenServer
+  # def handle_cast({:on, {event, subject}, handler}, %{catalog: catalog} = state) do
+  #   Logger.error("NOPc")
+  #   # listeners = [handler | subject.listeners[event] || []]
+  #   # subject = %{subject | listeners: %{ event => listeners }}
 
-    {:noreply, %{state | catalog: Catalog.put(catalog, subject)}}
-  end
+  #   # {:noreply, %{state | catalog: Catalog.put(catalog, subject)}}
+  # end
+
+  # @impl GenServer
+  # def handle_cast({:recv, {:text, json}}, state) do
+  #   IO.puts("  -> handle_cast:recv")
+  #   Logger.warn("  -> handle_cast:recv")
+  #   recv_payload(json, state)
+  #   {:noreply, state}
+  # end
 
   @impl GenServer
   def handle_cast({:recv, {:text, json}}, state) do
-    recv_payload(json, state)
+    Logger.error("handle_call:recv")
+    recv_json(json, state)
+    {:noreply, state}
   end
 
   # private
   # ----------------------------------------------------------------------------
 
-  defp recv_payload(<<json::binary>>, state) do
+  defp recv_json(<<json::binary>>, state) do
     case Jason.decode(json) do
       {:ok, data} ->
-        state = recv_payload(data |> Extra.Map.deep_atomize_keys(), state)
-        {:noreply, state}
+        recv_data(data |> Extra.Map.deep_atomize_keys(), state)
+        # {:noreply, state}
 
       _error ->
         raise ArgumentError, message: inspect(json: Enum.join(for <<c::utf8 <- json>>, do: <<c::utf8>>))
     end
   end
 
-  defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
+  defp recv_data(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
     {callback, updated} = Map.pop!(callbacks, message_id)
     Callback.resolve(callback, Channel.Response.new(message, catalog))
 
     %{state | callbacks: updated}
   end
 
-  defp recv_payload(%{method: _method} = event, %{catalog: catalog} = state) do
-    %{state | catalog: Channel.Event.handle(event, catalog)}
+  defp recv_data(%{method: _method} = event, %{catalog: catalog} = state) do
+    Channel.Event.handle(event, catalog)
+    state
   end
 end

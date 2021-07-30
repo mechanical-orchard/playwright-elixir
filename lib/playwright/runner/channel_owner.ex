@@ -18,7 +18,8 @@ defmodule Playwright.Runner.ChannelOwner do
 
     quote do
       # @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
-      @derive {Inspect, only: [:guid, :listeners] ++ unquote(extra)}
+      # @derive {Inspect, only: [:guid, :listeners] ++ unquote(extra)}
+      @derive {Inspect, only: [:guid] ++ unquote(extra)}
 
       alias Playwright.Extra
       alias Playwright.Runner.Channel
