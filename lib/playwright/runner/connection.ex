@@ -83,7 +83,7 @@ defmodule Playwright.Runner.Connection do
   def init({transport_module, config}) do
     Logger.debug("Starting up Playwright with config: #{inspect(config)}")
 
-    {:ok, catalog} = Catalog.Server.start_link(Root.new(self()))
+    {:ok, catalog} = Catalog.start_link(Root.new(self()))
 
     {:ok,
      %__MODULE__{
@@ -96,20 +96,20 @@ defmodule Playwright.Runner.Connection do
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
     # {:noreply, %{state | catalog: Catalog.get(catalog, guid, subscriber)}}
-    Catalog.Server.get(catalog, guid, subscriber)
+    Catalog.get(catalog, guid, subscriber)
     {:noreply, state}
   end
 
   @impl GenServer
   def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
-    {:reply, Catalog.Server.find(catalog, filter, default), state}
+    {:reply, Catalog.find(catalog, filter, default), state}
   end
 
   # NOTE: this should move to be part of `Catalog.put`
   @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
-    subject = Map.merge(Catalog.Server.get(catalog, guid), data)
-    Catalog.Server.put(catalog, subject)
+    subject = Map.merge(Catalog.get(catalog, guid), data)
+    Catalog.put(catalog, subject)
     {:reply, subject, state}
   end
 
@@ -129,7 +129,7 @@ defmodule Playwright.Runner.Connection do
     listeners = [handler | subject.listeners[event] || []]
     subject = %{subject | listeners: %{event => listeners}}
 
-    Catalog.Server.put(catalog, subject)
+    Catalog.put(catalog, subject)
     {:noreply, state}
   end
 

@@ -20,10 +20,10 @@ defmodule Playwright.Runner.Channel.Event do
 
   # move to Catalog?
   defp dispose(guid, catalog) do
-    children = Catalog.Server.find(catalog, %{parent: Catalog.Server.get(catalog, guid)}, [])
+    children = Catalog.find(catalog, %{parent: Catalog.get(catalog, guid)}, [])
     children |> Enum.each(fn child -> dispose(child.guid, catalog) end)
 
-    Catalog.Server.rm(catalog, guid)
+    Catalog.rm(catalog, guid)
   end
 
   # The Playwright server sends back empty string: "" as the parent "guid"
@@ -34,8 +34,8 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("__create__", %{guid: parent, params: params} = _event, catalog) do
-    resource = ChannelOwner.from(params, Catalog.Server.get(catalog, parent))
-    Catalog.Server.put(catalog, resource)
+    resource = ChannelOwner.from(params, Catalog.get(catalog, parent))
+    Catalog.put(catalog, resource)
   end
 
   defp handle("__dispose__", %{guid: guid} = _event, catalog) do
@@ -43,7 +43,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("close" = event_type, %{guid: guid}, catalog) do
-    resource = Catalog.Server.get(catalog, guid)
+    resource = Catalog.get(catalog, guid)
     resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
@@ -55,16 +55,16 @@ defmodule Playwright.Runner.Channel.Event do
       end)
     end
 
-    Catalog.Server.put(catalog, resource)
+    Catalog.put(catalog, resource)
   end
 
   defp handle("console" = event_type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog) do
-    resource = Catalog.Server.get(catalog, guid)
+    resource = Catalog.get(catalog, guid)
     resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
     if handlers do
-      message = Catalog.Server.get(catalog, message_guid)
+      message = Catalog.get(catalog, message_guid)
       event = {:on, Extra.Atom.from_string(event_type), message}
 
       Enum.each(handlers, fn handler ->
@@ -72,12 +72,12 @@ defmodule Playwright.Runner.Channel.Event do
       end)
     end
 
-    Catalog.Server.put(catalog, resource)
+    Catalog.put(catalog, resource)
   end
 
   defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
-    resource = %Playwright.ElementHandle{Catalog.Server.get(catalog, guid) | preview: params.preview}
-    Catalog.Server.put(catalog, resource)
+    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
+    Catalog.put(catalog, resource)
   end
 
   defp handle(_method, _event, catalog) do
