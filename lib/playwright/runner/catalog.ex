@@ -39,6 +39,12 @@ defmodule Playwright.Runner.Catalog do
 
     # ---
 
+    def find(pid, filter, default \\ nil) do
+      GenServer.call(pid, {:find, {filter, default}})
+    end
+
+    # ---
+
     def init(root) do
       {:ok, %__MODULE__{callers: %{}, storage: %{"Root" => root}}}
     end
@@ -77,6 +83,53 @@ defmodule Playwright.Runner.Catalog do
 
     def handle_call({:values}, _, %{storage: storage} = state) do
       {:reply, Map.values(storage), state}
+    end
+
+    # ---
+
+    # def find(pid, filter, default \\ nil) do
+    def handle_call({:find, {filter, default}}, _, %{storage: storage} = state) do
+      case select(Map.values(storage), filter, []) do
+        [] ->
+          {:reply, default, state}
+
+        result ->
+          {:reply, result, state}
+      end
+    end
+
+    # ---
+
+    defp select([], _attrs, result) do
+      result
+    end
+
+    defp select([head | tail], attrs, result) when head.type == "" do
+      select(tail, attrs, result)
+    end
+
+    defp select([head | tail], %{parent: parent, type: type} = attrs, result)
+         when head.parent.guid == parent.guid and head.type == type do
+      select(tail, attrs, result ++ [head])
+    end
+
+    defp select([head | tail], %{parent: parent} = attrs, result)
+         when head.parent.guid == parent.guid do
+      select(tail, attrs, result ++ [head])
+    end
+
+    defp select([head | tail], %{type: type} = attrs, result)
+         when head.type == type do
+      select(tail, attrs, result ++ [head])
+    end
+
+    defp select([head | tail], %{guid: guid} = attrs, result)
+         when head.guid == guid do
+      select(tail, attrs, result ++ [head])
+    end
+
+    defp select([_head | tail], attrs, result) do
+      select(tail, attrs, result)
     end
   end
 
@@ -123,13 +176,7 @@ defmodule Playwright.Runner.Catalog do
   # ----------------------------------------------------------------------------
 
   def find(catalog, filter, default \\ nil) do
-    case select(values(catalog), filter, []) do
-      [] ->
-        default
-
-      result ->
-        result
-    end
+    Server.find(catalog.server, filter, default)
   end
 
   # private
@@ -143,41 +190,5 @@ defmodule Playwright.Runner.Catalog do
   defp found!(catalog, item, caller) do
     Server.found!(catalog.server, {item, caller})
     catalog
-  end
-
-  defp select([], _attrs, result) do
-    result
-  end
-
-  defp select([head | tail], attrs, result) when head.type == "" do
-    select(tail, attrs, result)
-  end
-
-  defp select([head | tail], %{parent: parent, type: type} = attrs, result)
-       when head.parent.guid == parent.guid and head.type == type do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([head | tail], %{parent: parent} = attrs, result)
-       when head.parent.guid == parent.guid do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([head | tail], %{type: type} = attrs, result)
-       when head.type == type do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([head | tail], %{guid: guid} = attrs, result)
-       when head.guid == guid do
-    select(tail, attrs, result ++ [head])
-  end
-
-  defp select([_head | tail], attrs, result) do
-    select(tail, attrs, result)
-  end
-
-  defp values(catalog) do
-    Server.values(catalog.server)
   end
 end
