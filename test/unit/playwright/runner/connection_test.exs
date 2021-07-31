@@ -53,8 +53,8 @@ defmodule Playwright.Runner.ConnectionTest do
       Connection.get(connection, %{guid: "page@1"}, nil)
       |> refute()
 
-      %{catalog: catalog} = :sys.get_state(connection)
-      assert catalog.dictionary == %{"Root" => root}
+      Connection.get(connection, %{guid: root.guid}, nil)
+      |> assert()
     end
   end
 
@@ -88,7 +88,7 @@ defmodule Playwright.Runner.ConnectionTest do
   end
 
   describe "@impl: handle_call/3 for :get" do
-    test "when the desired item is in the catalog, sends that back asynchronously", %{
+    test "when the desired item is in the catalog, sends that", %{
       connection: connection
     } do
       state = :sys.get_state(connection)
@@ -97,14 +97,6 @@ defmodule Playwright.Runner.ConnectionTest do
       {response, _} = Connection.handle_call({:get, {:guid, "Root"}}, from, state)
       assert response == :noreply
       assert_received({:tag, %Playwright.Runner.Root{}})
-    end
-
-    test "when the desired item is NOT in the catalog, records the query and does not reply", %{connection: connection} do
-      state = :sys.get_state(connection)
-      {response, %{catalog: catalog}} = Connection.handle_call({:get, {:guid, "Missing"}}, :caller, state)
-
-      assert response == :noreply
-      assert Map.has_key?(catalog.awaiting, "Missing")
     end
   end
 

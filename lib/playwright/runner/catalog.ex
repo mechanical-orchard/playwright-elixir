@@ -33,6 +33,10 @@ defmodule Playwright.Runner.Catalog do
       GenServer.call(pid, {:found, {item, caller}})
     end
 
+    def values(pid) do
+      GenServer.call(pid, {:values})
+    end
+
     # ---
 
     def init(root) do
@@ -43,8 +47,14 @@ defmodule Playwright.Runner.Catalog do
       {:reply, storage[guid], state}
     end
 
-    def handle_call({:put, item}, _, %{storage: storage} = state) do
+    def handle_call({:put, item}, _, %{callers: callers, storage: storage} = state) do
       with updated <- Map.put(storage, item.guid, item) do
+        caller = Map.get(callers, item.guid)
+
+        if caller do
+          handle_call({:found, {item, caller}}, nil, state)
+        end
+
         {:reply, updated, %{state | storage: updated}}
       end
     end
@@ -64,26 +74,22 @@ defmodule Playwright.Runner.Catalog do
     def handle_call({:found, {item, caller}}, _, state) do
       {:reply, GenServer.reply(caller, item), state}
     end
+
+    def handle_call({:values}, _, %{storage: storage} = state) do
+      {:reply, Map.values(storage), state}
+    end
   end
 
   # API
   # ----------------------------------------------------------------------------
 
-  @enforce_keys [:dictionary]
-  defstruct [:dictionary, :awaiting, :server]
+  defstruct [:server]
 
   alias Playwright.Runner.Catalog.Server
 
   def new(root) do
     {:ok, server} = Server.start_link(root)
-
-    %__MODULE__{
-      dictionary: %{
-        "Root" => root
-      },
-      awaiting: %{},
-      server: server
-    }
+    %__MODULE__{server: server}
   end
 
   # ----------------------------------------------------------------------------
@@ -91,7 +97,7 @@ defmodule Playwright.Runner.Catalog do
   def get(catalog, key, caller) do
     case Server.get(catalog.server, key) do
       nil ->
-        found?(catalog, key, caller)
+        await!(catalog, key, caller)
 
       val ->
         found!(catalog, val, caller)
@@ -105,24 +111,16 @@ defmodule Playwright.Runner.Catalog do
 
   # NOTE: should merge with existing
   def put(catalog, item) do
-    caller = Map.get(catalog.awaiting, item.guid)
-
-    if caller do
-      found!(catalog, item, caller)
-    end
-
-    %__MODULE__{catalog | dictionary: Server.put(catalog.server, item)}
+    Server.put(catalog.server, item)
+    catalog
   end
 
   def delete(catalog, guid) do
-    %__MODULE__{catalog | dictionary: Server.rm(catalog.server, guid)}
+    Server.rm(catalog.server, guid)
+    catalog
   end
 
   # ----------------------------------------------------------------------------
-
-  # def fetch(catalog, guid) do
-  #   Map.fetch(catalog.dictionary, guid)
-  # end
 
   def find(catalog, filter, default \\ nil) do
     case select(values(catalog), filter, []) do
@@ -137,8 +135,9 @@ defmodule Playwright.Runner.Catalog do
   # private
   # ---------------------------------------------------------------------------
 
-  defp found?(catalog, guid, caller) do
-    %__MODULE__{catalog | awaiting: Server.await!(catalog.server, {guid, caller})}
+  defp await!(catalog, guid, caller) do
+    Server.await!(catalog.server, {guid, caller})
+    catalog
   end
 
   defp found!(catalog, item, caller) do
@@ -179,6 +178,6 @@ defmodule Playwright.Runner.Catalog do
   end
 
   defp values(catalog) do
-    Map.values(catalog.dictionary)
+    Server.values(catalog.server)
   end
 end
