@@ -36,7 +36,6 @@ defmodule Playwright.Page do
   alias Playwright.Extra
   alias Playwright.Page
   alias Playwright.Runner.Channel
-  alias Playwright.Runner.Connection
 
   def new(parent, args) do
     channel_owner(parent, args)
@@ -45,7 +44,7 @@ defmodule Playwright.Page do
   # ----------------------------------------------------------------------------
 
   def context(subject) do
-    Connection.get(subject.connection, {:guid, subject.parent.guid})
+    Channel.get(subject.connection, {:guid, subject.parent.guid})
   end
 
   def click(subject, selector) do
@@ -109,7 +108,7 @@ defmodule Playwright.Page do
   end
 
   def on(subject, event, handler) do
-    Connection.on(subject.connection, {event, subject}, handler)
+    Channel.on(subject.connection, {event, subject}, handler)
     subject
   end
 
@@ -231,7 +230,7 @@ defmodule Playwright.Page do
   end
 
   defp frame(subject) do
-    Connection.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
+    Channel.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
   end
 
   require Logger
@@ -244,7 +243,7 @@ defmodule Playwright.Page do
     case handle.preview do
       "JSHandle@node" ->
         :timer.sleep(5)
-        hydrate(Connection.get(handle.connection, {:guid, handle.guid}))
+        hydrate(Channel.get(handle.connection, {:guid, handle.guid}))
 
       _hydrated ->
         handle

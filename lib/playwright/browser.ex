@@ -10,7 +10,6 @@ defmodule Playwright.Browser do
   """
   use Playwright.Runner.ChannelOwner, fields: [:name, :version]
   alias Playwright.Runner.Channel
-  alias Playwright.Runner.Connection
 
   @doc false
   def new(parent, %{initializer: %{version: version} = initializer} = args) do
@@ -20,7 +19,7 @@ defmodule Playwright.Browser do
 
   @doc false
   def contexts(subject) do
-    Connection.get(subject.connection, %{
+    Channel.all(subject.connection, %{
       parent: subject,
       type: "BrowserContext"
     })
@@ -30,7 +29,7 @@ defmodule Playwright.Browser do
   Create a new BrowserContext for this Browser. A BrowserContext is somewhat
   equivalent to an "incognito" browser "window".
   """
-  def new_context(%Playwright.Browser{} = subject) do
+  def new_context(%Playwright.Browser{connection: connection} = subject) do
     context =
       Channel.send(subject, "newContext", %{
         noDefaultViewport: false,
@@ -39,7 +38,7 @@ defmodule Playwright.Browser do
 
     case context do
       %Playwright.BrowserContext{} ->
-        Connection.patch(context.connection, {:guid, context.guid}, %{browser: subject})
+        Channel.patch(connection, context.guid, %{browser: subject})
 
       _other ->
         raise("expected new_context to return a  Playwright.BrowserContext, received: #{inspect(context)}")
@@ -56,15 +55,15 @@ defmodule Playwright.Browser do
   the context goes with it.
   """
   @spec new_page(Playwright.Browser.t()) :: Playwright.Page.t()
-  def new_page(subject) do
+  def new_page(%{connection: connection} = subject) do
     context = new_context(subject)
     page = Playwright.BrowserContext.new_page(context)
 
-    Connection.patch(context.connection, {:guid, context.guid}, %{owner_page: page})
+    Channel.patch(connection, context.guid, %{owner_page: page})
 
     case page do
       %Playwright.Page{} ->
-        Connection.patch(page.connection, {:guid, page.guid}, %{owned_context: context})
+        Channel.patch(connection, page.guid, %{owned_context: context})
 
       _other ->
         raise("expected new_page to return a  Playwright.Page, received: #{inspect(page)}")

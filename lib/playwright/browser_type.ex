@@ -36,7 +36,7 @@ defmodule Playwright.BrowserType do
   def connect(ws_endpoint) do
     with {:ok, connection} <- new_session(Transport.WebSocket, [ws_endpoint]),
          launched <- launched_browser(connection),
-         browser <- Connection.get(connection, {:guid, launched}) do
+         browser <- Channel.get(connection, {:guid, launched}) do
       {connection, browser}
     else
       {:error, error} -> {:error, {"Error connecting to #{inspect(ws_endpoint)}", error}}
@@ -69,13 +69,13 @@ defmodule Playwright.BrowserType do
   end
 
   defp chromium(connection) do
-    playwright = Connection.get(connection, {:guid, "Playwright"})
+    playwright = Channel.get(connection, {:guid, "Playwright"})
 
     case playwright do
       %Playwright.Playwright{} ->
         %{guid: guid} = playwright.initializer.chromium
 
-        Connection.get(connection, {:guid, guid}) |> launch()
+        Channel.get(connection, {:guid, guid}) |> launch()
 
       _other ->
         raise("expected chromium to return a  Playwright.Playwright, received: #{inspect(playwright)}")
@@ -90,7 +90,7 @@ defmodule Playwright.BrowserType do
   end
 
   defp launched_browser(connection) do
-    playwright = Connection.get(connection, {:guid, "Playwright"})
+    playwright = Channel.get(connection, {:guid, "Playwright"})
     %{guid: guid} = playwright.initializer.preLaunchedBrowser
     guid
   end
