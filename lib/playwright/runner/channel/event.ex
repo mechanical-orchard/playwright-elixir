@@ -20,7 +20,7 @@ defmodule Playwright.Runner.Channel.Event do
 
   # move to Catalog?
   defp dispose(guid, catalog) do
-    children = Catalog.find(catalog, %{parent: Catalog.get(catalog, guid)}, [])
+    children = Catalog.filter(catalog, %{parent: Catalog.get(catalog, guid)}, [])
     children |> Enum.each(fn child -> dispose(child.guid, catalog) end)
 
     Catalog.rm(catalog, guid)

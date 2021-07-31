@@ -87,7 +87,6 @@ defmodule Playwright.Runner.Connection do
 
     {:ok,
      %__MODULE__{
-      #  catalog: Catalog.new(Root.new(self())),
        catalog: catalog,
        transport: Transport.connect(transport_module, [self()] ++ config)
      }}
@@ -95,14 +94,13 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
-    # {:noreply, %{state | catalog: Catalog.get(catalog, guid, subscriber)}}
     Catalog.get(catalog, guid, subscriber)
     {:noreply, state}
   end
 
   @impl GenServer
   def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
-    {:reply, Catalog.find(catalog, filter, default), state}
+    {:reply, Catalog.filter(catalog, filter, default), state}
   end
 
   # NOTE: this should move to be part of `Catalog.put`
@@ -115,7 +113,6 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:post, {:cmd, message}}, from, %{callbacks: callbacks, transport: transport} = state) do
-    # Logger.warn("POST: #{inspect(message.id)}: #{inspect(message)}")
     Transport.post(transport, Jason.encode!(message))
 
     {

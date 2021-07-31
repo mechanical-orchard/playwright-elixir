@@ -3,7 +3,6 @@ defmodule Playwright.Runner.Catalog do
 
   use GenServer
   require Logger
-  alias Playwright.Runner.Catalog
 
   @enforce_keys [:callers, :storage]
   defstruct [:callers, :storage]
@@ -17,12 +16,12 @@ defmodule Playwright.Runner.Catalog do
   end
 
   def get(pid, guid, caller) do
-    case Catalog.get(pid, guid) do
+    case get(pid, guid) do
       nil ->
-        Catalog.await!(pid, {guid, caller})
+        await!(pid, {guid, caller})
 
       item ->
-        Catalog.found!(pid, {item, caller})
+        found!(pid, {item, caller})
     end
   end
 
@@ -34,25 +33,18 @@ defmodule Playwright.Runner.Catalog do
     GenServer.call(pid, {:rm, guid})
   end
 
-  def await!(pid, {guid, caller}) do
-    GenServer.call(pid, {:await, {guid, caller}})
-  end
+  # ---
 
-  def found!(pid, {item, caller}) do
-    GenServer.call(pid, {:found, {item, caller}})
+  def filter(pid, filter, default \\ nil) do
+    GenServer.call(pid, {:filter, {filter, default}})
   end
 
   def values(pid) do
     GenServer.call(pid, {:values})
   end
 
-  # ---
-
-  def find(pid, filter, default \\ nil) do
-    GenServer.call(pid, {:find, {filter, default}})
-  end
-
-  # ---
+  # @impl
+  # ----------------------------------------------------------------------------
 
   def init(root) do
     {:ok, %__MODULE__{callers: %{}, storage: %{"Root" => root}}}
@@ -94,10 +86,7 @@ defmodule Playwright.Runner.Catalog do
     {:reply, Map.values(storage), state}
   end
 
-  # ---
-
-  # def find(pid, filter, default \\ nil) do
-  def handle_call({:find, {filter, default}}, _, %{storage: storage} = state) do
+  def handle_call({:filter, {filter, default}}, _, %{storage: storage} = state) do
     case select(Map.values(storage), filter, []) do
       [] ->
         {:reply, default, state}
@@ -107,7 +96,16 @@ defmodule Playwright.Runner.Catalog do
     end
   end
 
-  # ---
+  # private
+  # ----------------------------------------------------------------------------
+
+  def await!(pid, {guid, caller}) do
+    GenServer.call(pid, {:await, {guid, caller}})
+  end
+
+  def found!(pid, {item, caller}) do
+    GenServer.call(pid, {:found, {item, caller}})
+  end
 
   defp select([], _attrs, result) do
     result
