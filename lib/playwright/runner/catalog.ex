@@ -143,16 +143,4 @@ defmodule Playwright.Runner.Catalog do
       select(tail, attrs, result)
     end
   end
-
-  # API
-  # ----------------------------------------------------------------------------
-
-  defstruct [:server]
-
-  alias Playwright.Runner.Catalog.Server
-
-  def new(root) do
-    {:ok, server} = Server.start_link(root)
-    %__MODULE__{server: server}
-  end
 end

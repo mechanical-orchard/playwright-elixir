@@ -32,7 +32,7 @@ defmodule Playwright.Runner.Channel.Response do
   end
 
   defp parse([{_key, %{guid: guid}}], catalog) do
-    Catalog.Server.get(catalog.server, guid)
+    Catalog.Server.get(catalog, guid)
   end
 
   defp parse([{:binary, value}], _catalog) do
@@ -40,7 +40,7 @@ defmodule Playwright.Runner.Channel.Response do
   end
 
   defp parse([{:elements, value}], catalog) do
-    Enum.map(value, fn %{guid: guid} -> Catalog.Server.get(catalog.server, guid) end)
+    Enum.map(value, fn %{guid: guid} -> Catalog.Server.get(catalog, guid) end)
   end
 
   defp parse([{:value, value}], _catalog) do
