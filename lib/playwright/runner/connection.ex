@@ -92,7 +92,7 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
-    {:noreply, %{state | catalog: Catalog.await(catalog, guid, subscriber)}}
+    {:noreply, %{state | catalog: Catalog.get(catalog, guid, subscriber)}}
   end
 
   @impl GenServer
@@ -102,8 +102,8 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
-    subject = Map.merge(catalog[guid], data)
-    catalog = Catalog.put(catalog, guid, subject)
+    subject = Map.merge(Catalog.get!(catalog, guid), data)
+    catalog = Catalog.put(catalog, subject)
     {:reply, subject, %{state | catalog: catalog}}
   end
 
