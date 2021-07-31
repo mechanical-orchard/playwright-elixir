@@ -64,17 +64,6 @@ defmodule Playwright.Runner.Catalog do
       {:reply, storage[guid], state}
     end
 
-    # def handle_call({:get, {guid, caller}}, _, %{storage: storage} = state) do
-    #   case Server.get(catalog.server, key) do
-    #     nil ->
-    #       await!(catalog, key, caller)
-
-    #     val ->
-    #       found!(catalog, val, caller)
-    #   end
-    #   {:reply, storage[guid], state}
-    # end
-
     def handle_call({:put, item}, _, %{callers: callers, storage: storage} = state) do
       with updated <- Map.put(storage, item.guid, item) do
         caller = Map.get(callers, item.guid)
@@ -165,34 +154,5 @@ defmodule Playwright.Runner.Catalog do
   def new(root) do
     {:ok, server} = Server.start_link(root)
     %__MODULE__{server: server}
-  end
-
-  # ----------------------------------------------------------------------------
-
-  # NOTE: should probably raise if not found.
-  def get(catalog, guid) do
-    Server.get(catalog.server, guid)
-  end
-
-  def get(catalog, guid, caller) do
-    Server.get(catalog.server, guid, caller)
-    catalog
-  end
-
-  # NOTE: should merge with existing
-  def put(catalog, item) do
-    Server.put(catalog.server, item)
-    catalog
-  end
-
-  def delete(catalog, guid) do
-    Server.rm(catalog.server, guid)
-    catalog
-  end
-
-  # ----------------------------------------------------------------------------
-
-  def find(catalog, filter, default \\ nil) do
-    Server.find(catalog.server, filter, default)
   end
 end

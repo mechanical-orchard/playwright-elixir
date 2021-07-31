@@ -92,19 +92,22 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
-    {:noreply, %{state | catalog: Catalog.get(catalog, guid, subscriber)}}
+    # {:noreply, %{state | catalog: Catalog.get(catalog, guid, subscriber)}}
+    Catalog.Server.get(catalog.server, guid, subscriber)
+    {:noreply, state}
   end
 
   @impl GenServer
   def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
-    {:reply, Catalog.find(catalog, filter, default), state}
+    {:reply, Catalog.Server.find(catalog.server, filter, default), state}
   end
 
+  # NOTE: this should move to be part of `Catalog.put`
   @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
-    subject = Map.merge(Catalog.get(catalog, guid), data)
-    catalog = Catalog.put(catalog, subject)
-    {:reply, subject, %{state | catalog: catalog}}
+    subject = Map.merge(Catalog.Server.get(catalog.server, guid), data)
+    Catalog.Server.put(catalog.server, subject)
+    {:reply, subject, state}
   end
 
   @impl GenServer
@@ -123,7 +126,8 @@ defmodule Playwright.Runner.Connection do
     listeners = [handler | subject.listeners[event] || []]
     subject = %{subject | listeners: %{event => listeners}}
 
-    {:noreply, %{state | catalog: Catalog.put(catalog, subject)}}
+    Catalog.Server.put(catalog.server, subject)
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -153,6 +157,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{method: _method} = event, %{catalog: catalog} = state) do
-    %{state | catalog: Channel.Event.handle(event, catalog)}
+    Channel.Event.handle(event, catalog)
+    state
   end
 end
