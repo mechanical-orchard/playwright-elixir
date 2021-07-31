@@ -20,7 +20,7 @@ defmodule Playwright.Runner.Channel.Event do
 
   # move to Catalog?
   defp dispose(guid, catalog) do
-    children = Catalog.find(catalog, %{parent: Catalog.get!(catalog, guid)}, [])
+    children = Catalog.find(catalog, %{parent: Catalog.get(catalog, guid)}, [])
 
     catalog =
       children
@@ -39,7 +39,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("__create__", %{guid: parent, params: params} = _event, catalog) do
-    resource = ChannelOwner.from(params, Catalog.get!(catalog, parent))
+    resource = ChannelOwner.from(params, Catalog.get(catalog, parent))
     Catalog.put(catalog, resource)
   end
 
@@ -48,7 +48,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("close" = event_type, %{guid: guid}, catalog) do
-    resource = Catalog.get!(catalog, guid)
+    resource = Catalog.get(catalog, guid)
     resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
@@ -64,12 +64,12 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("console" = event_type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog) do
-    resource = Catalog.get!(catalog, guid)
+    resource = Catalog.get(catalog, guid)
     resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
     if handlers do
-      message = Catalog.get!(catalog, message_guid)
+      message = Catalog.get(catalog, message_guid)
       event = {:on, Extra.Atom.from_string(event_type), message}
 
       Enum.each(handlers, fn handler ->
@@ -81,7 +81,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
-    resource = %Playwright.ElementHandle{Catalog.get!(catalog, guid) | preview: params.preview}
+    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
     Catalog.put(catalog, resource)
   end
 

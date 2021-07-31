@@ -22,7 +22,7 @@ defmodule Playwright.Runner.ConnectionTest do
   describe "post/2" do
     test "removing an item via __dispose__ also removes its 'children'", %{connection: connection} do
       %{catalog: catalog} = :sys.get_state(connection)
-      root = Catalog.get!(catalog, "Root")
+      root = Catalog.get(catalog, "Root")
       json = Jason.encode!(%{guid: "browser@1", method: "__dispose__"})
 
       catalog =

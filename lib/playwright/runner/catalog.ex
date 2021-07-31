@@ -17,6 +17,17 @@ defmodule Playwright.Runner.Catalog do
       GenServer.call(pid, {:get, guid})
     end
 
+    def get(pid, guid, caller) do
+      # GenServer.call(pid, {:get, {guid, caller}})
+      case Server.get(pid, guid) do
+        nil ->
+          Server.await!(pid, {guid, caller})
+
+        item ->
+          Server.found!(pid, {item, caller})
+      end
+    end
+
     def put(pid, item) do
       GenServer.call(pid, {:put, item})
     end
@@ -52,6 +63,17 @@ defmodule Playwright.Runner.Catalog do
     def handle_call({:get, guid}, _, %{storage: storage} = state) do
       {:reply, storage[guid], state}
     end
+
+    # def handle_call({:get, {guid, caller}}, _, %{storage: storage} = state) do
+    #   case Server.get(catalog.server, key) do
+    #     nil ->
+    #       await!(catalog, key, caller)
+
+    #     val ->
+    #       found!(catalog, val, caller)
+    #   end
+    #   {:reply, storage[guid], state}
+    # end
 
     def handle_call({:put, item}, _, %{callers: callers, storage: storage} = state) do
       with updated <- Map.put(storage, item.guid, item) do
@@ -147,19 +169,14 @@ defmodule Playwright.Runner.Catalog do
 
   # ----------------------------------------------------------------------------
 
-  def get(catalog, key, caller) do
-    case Server.get(catalog.server, key) do
-      nil ->
-        await!(catalog, key, caller)
-
-      val ->
-        found!(catalog, val, caller)
-    end
+  # NOTE: should probably raise if not found.
+  def get(catalog, guid) do
+    Server.get(catalog.server, guid)
   end
 
-  # NOTE: should probably raise if not found.
-  def get!(catalog, guid) do
-    Server.get(catalog.server, guid)
+  def get(catalog, guid, caller) do
+    Server.get(catalog.server, guid, caller)
+    catalog
   end
 
   # NOTE: should merge with existing
@@ -177,18 +194,5 @@ defmodule Playwright.Runner.Catalog do
 
   def find(catalog, filter, default \\ nil) do
     Server.find(catalog.server, filter, default)
-  end
-
-  # private
-  # ---------------------------------------------------------------------------
-
-  defp await!(catalog, guid, caller) do
-    Server.await!(catalog.server, {guid, caller})
-    catalog
-  end
-
-  defp found!(catalog, item, caller) do
-    Server.found!(catalog.server, {item, caller})
-    catalog
   end
 end
