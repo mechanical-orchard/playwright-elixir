@@ -33,6 +33,12 @@ defmodule Playwright.Runner.Catalog do
     GenServer.call(pid, {:rm, guid})
   end
 
+  def rm_r(pid, guid) do
+    children = filter(pid, %{parent: get(pid, guid)}, [])
+    children |> Enum.each(fn child -> rm_r(pid, child.guid) end)
+
+    rm(pid, guid)
+  end
   # ---
 
   def filter(pid, filter, default \\ nil) do

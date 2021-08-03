@@ -18,14 +18,6 @@ defmodule Playwright.Runner.Channel.Event do
   # private
   # ---------------------------------------------------------------------------
 
-  # move to Catalog?
-  defp dispose(guid, catalog) do
-    children = Catalog.filter(catalog, %{parent: Catalog.get(catalog, guid)}, [])
-    children |> Enum.each(fn child -> dispose(child.guid, catalog) end)
-
-    Catalog.rm(catalog, guid)
-  end
-
   # The Playwright server sends back empty string: "" as the parent "guid"
   # for top-level resources. "Root" is nicer, and is how the Root resource
   # is keyed in the Catalog.
@@ -39,7 +31,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle("__dispose__", %{guid: guid} = _event, catalog) do
-    dispose(guid, catalog)
+    Catalog.rm_r(catalog, guid)
   end
 
   defp handle("close" = event_type, %{guid: guid}, catalog) do
