@@ -1,4 +1,4 @@
-defmodule Playwright.Runner.Root do
+defmodule Playwright.Runner.Channel.Root do
   @moduledoc false
   defstruct(connection: nil, parent: nil, objects: %{}, type: nil, guid: nil, initializer: nil)
 

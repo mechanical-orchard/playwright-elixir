@@ -1,8 +1,7 @@
 defmodule Playwright.Runner.Transport.WebSocket do
-  @moduledoc """
-  A transport for negotiating messages with a running Playwright websocket
-  server.
-  """
+  @moduledoc false
+  # A transport for negotiating messages with a running Playwright websocket
+  # server.
 
   use GenServer
   require Logger

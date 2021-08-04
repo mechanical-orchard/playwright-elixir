@@ -1,6 +1,8 @@
 defmodule Playwright.Runner.ChannelOwner do
   @moduledoc false
-  @base [:connection, :parent, :type, :guid, :initializer]
+  @base [:connection, :guid, :initializer, :parent, :type, :listeners]
+
+  require Logger
 
   defmacro __using__(config \\ []) do
     extra =
@@ -28,14 +30,15 @@ defmodule Playwright.Runner.ChannelOwner do
       @doc false
       def channel_owner(
             parent,
-            %{guid: guid, type: type, initializer: initializer} = args
+            %{guid: guid, initializer: initializer, type: type} = args
           ) do
         base = %__MODULE__{
           connection: parent.connection,
+          guid: guid,
+          initializer: initializer,
           parent: parent,
           type: type,
-          guid: guid,
-          initializer: initializer
+          listeners: %{}
         }
 
         struct(
@@ -55,5 +58,22 @@ defmodule Playwright.Runner.ChannelOwner do
         |> Extra.Atom.from_string()
       end
     end
+  end
+
+  @doc false
+  def from(params, parent) do
+    apply(module(params), :new, [parent, params])
+  end
+
+  # private
+  # ------------------------------------------------------------------------
+
+  defp module(%{type: type}) do
+    String.to_existing_atom("Elixir.Playwright.#{type}")
+  rescue
+    ArgumentError ->
+      message = "ChannelOwner of type #{inspect(type)} is not yet defined"
+      Logger.debug(message)
+      exit(message)
   end
 end

@@ -1,16 +1,35 @@
 defmodule Test.Features.Page.OnEventTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   describe "Page.on/3" do
     test "on 'close'", %{page: page} do
-      test_pid = self()
+      this = self()
+      guid = page.guid
 
       Playwright.Page.on(page, "close", fn event ->
-        send(test_pid, event)
+        send(this, event)
       end)
 
       Playwright.Page.close(page)
-      assert_received({:on, :close, %Playwright.Page{initializer: %{isClosed: true}}})
+      assert_received({:on, :close, %Playwright.Page{guid: ^guid, initializer: %{isClosed: true}}})
+    end
+
+    # NOTE: this is really about *any* `on` event handling
+    test "on 'close' of one Page does not affect another", %{browser: browser} do
+      this = self()
+
+      %{guid: guid_one} = page_one = Playwright.Browser.new_page(browser)
+      %{guid: guid_two} = page_two = Playwright.Browser.new_page(browser)
+
+      Playwright.Page.on(page_one, "close", fn {:on, :close, page} ->
+        send(this, page.guid)
+      end)
+
+      Playwright.Page.close(page_one)
+      Playwright.Page.close(page_two)
+
+      assert_received(^guid_one)
+      refute_received(^guid_two)
     end
 
     test "on 'console'", %{page: page} do

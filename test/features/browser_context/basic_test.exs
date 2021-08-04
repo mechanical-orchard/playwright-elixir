@@ -1,6 +1,6 @@
 # src: browsercontext-basic.spec.ts
 defmodule Test.Features.BrowserContext.BasicTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   # describe "contexts/1" do
   #   test "returns a list of open browser contexts" do

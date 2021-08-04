@@ -2,7 +2,7 @@ defmodule Playwright.Runner.Config do
   @moduledoc """
   Configuration for Playwright.
 
-  Overview:
+  ## Overview
 
       config :playwright, ConnectOptions,
         [...]
@@ -12,74 +12,29 @@ defmodule Playwright.Runner.Config do
 
       config :playwright, PlaywrightTest,
         [...]
-  """
 
-  alias Playwright.Extra
-  alias Playwright.Runner.Config.Types
+  ## Details for `ConnectOptions`
 
-  defmodule Types do
-    @type connect_options :: %{
-            ws_endpoint: String.t()
-          }
-
-    @type launch_options :: %{
-            args: [String.t()],
-            channel: String.t(),
-            chromium_sandbox: boolean(),
-            devtools: boolean(),
-            downloads_path: String.t(),
-            env: any(),
-            executable_path: String.t(),
-            headless: boolean()
-          }
-
-    @type playwright_test :: %{
-            transport: atom()
-          }
-
-    defmodule ConnectOptions do
-      @moduledoc false
-      defstruct [:ws_endpoint]
-    end
-
-    defmodule LaunchOptions do
-      @moduledoc false
-      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless]
-    end
-
-    defmodule PlaywrightTest do
-      @moduledoc false
-      defstruct transport: :driver
-    end
-  end
-
-  @doc """
   Configuration for connecting to a running Playwright browser server over a
   WebSocket.
 
-  ## Parameter (required): `ws_endpoint`
+  ### `ws_endpoint` (required)
 
   A browser websocket endpoint to which the runner will connect.
+
+  This option is required when using the `:driver` transport to communicate with
+  a Playwright browser server.
 
   e.g.,
 
       config :playwright, ConnectOptions,
         ws_endpoint: "ws://localhost:3000/playwright"
-  """
-  @spec connect_options(boolean()) :: Types.connect_options()
-  def connect_options(camelcase \\ false) do
-    config_for(ConnectOptions, %Types.ConnectOptions{}, camelcase) || %{}
-    # |> clean()
-  end
 
-  @doc """
-  Optional configuration for Playwright browser server launch commands.
+  ## Details for `LaunchOptions`
 
-  This function should not typically be used by consumers of the library.
-  Rather, configuration is provided via `config :playwright` statements, which
-  are utilized by `Playwright.Runner` at runtime.
+  Configuration for Playwright browser server launch commands.
 
-  ## Option: `args`
+  ### `args` (optional)
 
   Additional arguments to pass to the browser instance. The list of Chromium
   flags may be found [online](http://peter.sh/experiments/chromium-command-line-switches/).
@@ -92,7 +47,7 @@ defmodule Playwright.Runner.Config do
           "--use-fake-device-for-media-stream"
         ]
 
-  ## Option: `channel`
+  ### `channel` (optional)
 
   Browser distribution channel for Chromium. Supported values are:
 
@@ -113,7 +68,7 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         channel: "chrome"
 
-  ## Option: `chromium_sandbox`
+  ### `chromium_sandbox` (optional)
 
   Enable Chromium sandboxing. Defaults to `false`.
 
@@ -122,7 +77,7 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         chromium_sandbox: true
 
-  ## Option: `devtools`
+  ### `devtools` (optional)
 
   With Chromium, specifies whether to auto-open a "Developer Tools" panel for
   each tab. If this option is `true`, the `headless` option will be set to
@@ -135,7 +90,7 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         devtools: true
 
-  ## Option: `headless`
+  ### `headless` (optional)
 
   Specifies whether to run the browser in "headless" mode. See:
 
@@ -149,7 +104,7 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         headless: false # e.g., see a browser window pop up in "dev".
 
-  ## Option: `downloads_path`
+  ### `downloads_path` (optional)
 
   **WARNING: not yet implemented**
 
@@ -161,7 +116,7 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         downloads_path: "./doc/downloads"
 
-  ## Option: `env`
+  ### `env` (optional)
 
   **WARNING: not yet implemented**
 
@@ -173,7 +128,7 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         env: ["DEBUG", "true"]
 
-  ## Option: `executable_path`
+  ### `executable_path` (optional)
 
   A filesystem path to a browser executable to run instead of the bundled
   browser. If `executable_path` is a relative path, then it is resolved relative
@@ -185,43 +140,99 @@ defmodule Playwright.Runner.Config do
   browsers, but it works best with the bundled version of Chromium. There is no
   guarantee that it will work with any other version.
 
-  Use `executable_path` option with extreme caution.
+  **Use `executable_path` option with extreme caution.**
 
   e.g.,
 
       config :playwright, LaunchOptions,
         executable_path: "/Applications/..."
-  """
-  @spec launch_options(boolean()) :: Types.launch_options()
-  def launch_options(camelcase \\ false) do
-    config_for(LaunchOptions, %Types.LaunchOptions{}, camelcase) || %{}
-    # |> clean()
-  end
 
-  @doc """
+  ## Details for `PlaywrightTest`
+
   Configuration for usage of `PlaywrightTest.Case`.
 
-  ## Option: `transport`
+  ### `transport` (optional)
 
   One of `:driver` or `:websocket`, defaults to `:driver`.
 
   Additional configuration may be required depending on the transport
   configuration:
 
-  - `Types.launch_options()` for the `:driver` transport
-  - `Types.connect_options()` for the `:websocket` transport
+    - `LaunchOptions` for the `:driver` transport
+    - `ConnectOptions` for the `:websocket` transport
 
   e.g.,
 
       config :playwright, PlaywrightTest,
-        driver: :websocket
+        transport: :websocket
   """
+
+  alias Playwright.Extra
+  alias Playwright.Runner.Config.Types
+
+  @typedoc false
+  @type connect_options :: %{
+          ws_endpoint: String.t()
+        }
+
+  @typedoc false
+  @type launch_options :: %{
+          args: [String.t()],
+          channel: String.t(),
+          chromium_sandbox: boolean(),
+          devtools: boolean(),
+          downloads_path: String.t(),
+          env: any(),
+          executable_path: String.t(),
+          headless: boolean()
+        }
+
+  @typedoc false
+  @type playwright_test :: %{
+          transport: atom()
+        }
+
+  defmodule Types do
+    @moduledoc false
+
+    defmodule ConnectOptions do
+      @moduledoc false
+      defstruct [:ws_endpoint]
+    end
+
+    defmodule LaunchOptions do
+      @moduledoc false
+      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless]
+    end
+
+    defmodule PlaywrightTest do
+      @moduledoc false
+      defstruct transport: :driver
+    end
+  end
+
+  @doc false
+  @spec connect_options(boolean()) :: Types.connect_options()
+  def connect_options(camelcase \\ false) do
+    config_for(ConnectOptions, %Types.ConnectOptions{}, camelcase) || %{}
+    # |> clean()
+  end
+
+  @doc false
+  @spec launch_options(boolean()) :: Types.launch_options()
+  def launch_options(camelcase \\ false) do
+    config_for(LaunchOptions, %Types.LaunchOptions{}, camelcase) || %{}
+    # |> clean()
+  end
+
+  @doc false
   @spec playwright_test(boolean()) :: Types.playwright_test()
   def playwright_test(camelcase \\ false) do
     config_for(PlaywrightTest, %Types.PlaywrightTest{}, camelcase)
     # |> Map.from_struct()
   end
 
+  @doc false
   def config_for(key, mod, camelcase \\ false) do
     configured =
       Application.get_env(:playwright, key, %{})

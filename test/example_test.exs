@@ -3,7 +3,7 @@ defmodule Test.ExampleTest do
   Use this `Test.ExampleTest` as a simple example of writing tests using
   [`playwright-elixir`](https://github.com/geometerio/playwright-elixir).
   """
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   use PlaywrightTest.Case
 
   describe "Usage against a public domain" do

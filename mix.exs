@@ -7,7 +7,8 @@ defmodule Playwright.MixProject do
     [
       app: :playwright,
       deps: deps(),
-      description: "Playwright is an Elixir library to automate Chromium, Firefox and WebKit browsers with a single API. Playwright delivers automation that is ever-green, capable, reliable and fast.",
+      description:
+        "Playwright is an Elixir library to automate Chromium, Firefox and WebKit browsers with a single API. Playwright delivers automation that is ever-green, capable, reliable and fast.",
       dialyzer: dialyzer(),
       docs: docs(),
       elixir: "~> 1.12",
@@ -46,9 +47,10 @@ defmodule Playwright.MixProject do
       {:cowlib, "~> 2.11.0"},
       {:credo, "~> 1.4", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.24", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.25", only: :dev, runtime: false},
       {:gun, "~> 2.0.0-rc.2"},
       {:jason, "~> 1.2"},
+      {:json_diff, "~> 0.1.3"},
       {:mix_audit, "~> 0.1", only: [:dev, :test], runtime: false},
       {:plug, "~> 1.11.1", only: [:dev, :test]},
       {:recase, "~> 0.7.0"},
@@ -61,9 +63,16 @@ defmodule Playwright.MixProject do
       name: "Playwright",
       source_url: @source_url,
       homepage_url: @source_url,
-      main: "Playwright",
+      main: "README",
+      extras: [
+        "README.md": [filename: "README"],
+        "guides/getting-started.md": [title: "Getting started"]
+      ],
       groups_for_modules: [
-        "Features (usage)": [
+        Configuration: [
+          Playwright.Runner.Config
+        ],
+        Features: [
           Playwright.Browser,
           Playwright.BrowserContext,
           Playwright.BrowserType,
@@ -72,16 +81,8 @@ defmodule Playwright.MixProject do
           Playwright.Playwright,
           Playwright.RemoteBrowser
         ],
-        "Helpers (usage)": [
+        Helpers: [
           PlaywrightTest.Case
-        ],
-        "Runner (internal)": [
-          Playwright.Runner.Config,
-          Playwright.Runner.Config.Types,
-          Playwright.Runner.ChannelMessage,
-          Playwright.Runner.Transport.Driver,
-          Playwright.Runner.Transport.DriverMessage,
-          Playwright.Runner.Transport.WebSocket
         ]
       ]
     ]

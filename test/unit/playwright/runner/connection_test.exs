@@ -1,11 +1,13 @@
 defmodule Playwright.Runner.ConnectionTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
+  alias Playwright.Runner.Catalog
+  alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
   alias Playwright.Runner.ConnectionTest.TestTransport
 
   setup do
     %{
-      connection: start_supervised!({Connection, [{TestTransport, ["param"]}]})
+      connection: start_supervised!({Connection, {TestTransport, ["param"]}})
     }
   end
 
@@ -17,87 +19,39 @@ defmodule Playwright.Runner.ConnectionTest do
   end
 
   describe "post/2" do
-    # SKIP: this appears to be generating an non-realistic scenario and, therefore, failing.
-    @tag :skip
-    test "creating a new item", %{connection: connection} do
-      data = %{
-        guid: "Browser",
-        method: "newContext",
-        params: %{headless: false}
-      }
-
-      Task.start(fn ->
-        :timer.sleep(50)
-
-        Connection.recv(
-          connection,
-          {:text,
-           Jason.encode!(%{
-             guid: "",
-             method: "__create__",
-             params: %{
-               guid: "context@1",
-               initializer: %{},
-               type: "BrowserContext"
-             }
-           })}
-        )
-      end)
-
-      Task.start(fn ->
-        :timer.sleep(100)
-
-        Connection.recv(
-          connection,
-          {:text,
-           Jason.encode!(%{
-             id: 1,
-             result: %{
-               context: %{guid: "context@1"}
-             }
-           })}
-        )
-      end)
-
-      result = Connection.post(connection, {:data, data})
-      assert result.guid == "context@1"
-    end
-
     test "removing an item via __dispose__ also removes its 'children'", %{connection: connection} do
       %{catalog: catalog} = :sys.get_state(connection)
-      root = catalog["Root"]
+      root = Catalog.get(catalog, "Root")
       json = Jason.encode!(%{guid: "browser@1", method: "__dispose__"})
 
-      catalog =
-        catalog
-        |> Map.put("browser@1", %{guid: "browser@1", parent: %{guid: "Root"}, type: "Browser"})
-        |> Map.put("context@1", %{guid: "context@1", parent: %{guid: "browser@1"}, type: "BrowserContext"})
-        |> Map.put("page@1", %{guid: "page@1", parent: %{guid: "context@1"}, type: "Page"})
+      Catalog.put(catalog, %{guid: "browser@1", parent: %{guid: "Root"}, type: "Browser"})
+      Catalog.put(catalog, %{guid: "context@1", parent: %{guid: "browser@1"}, type: "BrowserContext"})
+      Catalog.put(catalog, %{guid: "page@1", parent: %{guid: "context@1"}, type: "Page"})
 
       :sys.replace_state(connection, fn state -> %{state | catalog: catalog} end)
 
-      Connection.find(connection, %{guid: "browser@1"}, nil)
+      Connection.get(connection, %{guid: "browser@1"}, nil)
       |> assert()
 
-      Connection.find(connection, %{guid: "context@1"}, nil)
+      Connection.get(connection, %{guid: "context@1"}, nil)
       |> assert()
 
-      Connection.find(connection, %{guid: "page@1"}, nil)
+      Connection.get(connection, %{guid: "page@1"}, nil)
       |> assert()
 
       Connection.recv(connection, {:text, json})
 
-      Connection.find(connection, %{guid: "browser@1"}, nil)
+      Connection.get(connection, %{guid: "browser@1"}, nil)
       |> refute()
 
-      Connection.find(connection, %{guid: "context@1"}, nil)
+      Connection.get(connection, %{guid: "context@1"}, nil)
       |> refute()
 
-      Connection.find(connection, %{guid: "page@1"}, nil)
+      Connection.get(connection, %{guid: "page@1"}, nil)
       |> refute()
 
-      %{catalog: catalog} = :sys.get_state(connection)
-      assert catalog == %{"Root" => root}
+      Connection.get(connection, %{guid: root.guid}, nil)
+      |> assert()
     end
   end
 
@@ -131,70 +85,43 @@ defmodule Playwright.Runner.ConnectionTest do
   end
 
   describe "@impl: handle_call/3 for :get" do
-    test "when the desired item is in the catalog, returns that and does not record the query", %{
+    test "when the desired item is in the catalog, sends that", %{
       connection: connection
     } do
       state = :sys.get_state(connection)
-      {response, result, %{queries: queries}} = Connection.handle_call({:get, {:guid, "Root"}}, :caller, state)
+      from = {self(), :tag}
 
-      assert response == :reply
-      assert result.type == "Root"
-      assert queries == %{}
-    end
-
-    test "when the desired item is NOT in the catalog, records the query and does not reply", %{connection: connection} do
-      state = :sys.get_state(connection)
-      {response, %{queries: queries}} = Connection.handle_call({:get, {:guid, "Missing"}}, :caller, state)
-
+      {response, _} = Connection.handle_call({:get, {:guid, "Root"}}, from, state)
       assert response == :noreply
-      assert queries == %{"Missing" => :caller}
+      assert_received({:tag, %Playwright.Runner.Channel.Root{}})
     end
   end
 
   describe "@impl: handle_call/3 for :post" do
     test "sends a message and blocks on a matching return message", %{connection: connection} do
-      state = %{:sys.get_state(connection) | messages: %{pending: %{}}}
+      state = %{:sys.get_state(connection) | callbacks: %{}}
 
       from = {self(), :tag}
+      cmd = Channel.Command.new("page@1", "click", %{selector: "a.link"})
+      cid = cmd.id
 
-      data = %Playwright.Runner.ChannelMessage{
-        guid: "page@1",
-        id: 42,
-        method: "click",
-        params: %{selector: "a.link"}
-      }
-
-      {response, state} = Connection.handle_call({:post, {:data, data}}, from, state)
+      {response, state} = Connection.handle_call({:post, {:cmd, cmd}}, from, state)
       assert response == :noreply
-      assert state.messages == %{pending: %{42 => data}}
-      assert state.queries == %{42 => from}
+      assert state.callbacks == %{cid => %Channel.Callback{listener: from, message: cmd}}
 
       posted = TestTransport.dump(state.transport.pid)
-      assert posted == [Jason.encode!(data)]
+      assert posted == [Jason.encode!(cmd)]
 
-      {_, %{messages: messages, queries: queries}} =
-        Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: 42})}}, state)
+      {_, %{callbacks: callbacks}} = Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: cid})}}, state)
 
-      assert messages.pending == %{}
-      assert queries == %{}
-
-      assert_received(
-        {:tag,
-         %{
-           id: 42,
-           guid: "page@1",
-           method: "click",
-           params: %{selector: "a.link"}
-         }}
-      )
+      assert callbacks == %{}
+      assert_received({:tag, %{id: ^cid}})
     end
   end
 
   describe "@impl: handle_cast/2 for :recv" do
     test "sends a reply to an awaiting query", %{connection: connection} do
       state = :sys.get_state(connection)
-
-      from = {self(), :tag}
 
       json =
         Jason.encode!(%{
@@ -207,10 +134,11 @@ defmodule Playwright.Runner.ConnectionTest do
           }
         })
 
-      {_, %{queries: queries} = state} = Connection.handle_call({:get, {:guid, "Playwright"}}, from, state)
-      assert queries == %{"Playwright" => from}
+      from = {self(), :tag}
 
+      {_, state} = Connection.handle_call({:get, {:guid, "Playwright"}}, from, state)
       Connection.handle_cast({:recv, {:text, json}}, state)
+
       assert_received({:tag, %Playwright.Playwright{}})
     end
   end

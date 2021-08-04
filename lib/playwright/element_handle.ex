@@ -6,7 +6,6 @@ defmodule Playwright.ElementHandle do
   use Playwright.Runner.ChannelOwner, fields: [:preview]
   alias Playwright.ElementHandle
   alias Playwright.Runner.Channel
-  alias Playwright.Runner.ChannelMessage
 
   @doc false
   def new(parent, args) do
@@ -16,7 +15,8 @@ defmodule Playwright.ElementHandle do
   @doc """
   Clicks on the given element.
   """
-  @spec click(ElementHandle.t()) :: ChannelMessage.t()
+  # @spec click(ElementHandle.t()) :: Channel.Command.t()
+  @spec click(ElementHandle.t()) :: nil
   def click(subject) do
     subject |> Channel.send("click")
   end

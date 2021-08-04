@@ -36,3 +36,4 @@ playwright-*.tar
 
 .medic/skipped/
 .doctor.out
+.vscode

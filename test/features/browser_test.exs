@@ -1,5 +1,5 @@
 defmodule Test.Features.BrowserTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   describe "new_page/1" do
     setup :without_page_fixture
