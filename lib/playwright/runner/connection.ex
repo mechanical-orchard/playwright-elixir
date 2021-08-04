@@ -5,14 +5,9 @@ defmodule Playwright.Runner.Connection do
   require Logger
 
   alias Playwright.Extra
-  alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
-  alias Playwright.Runner.Root
   alias Playwright.Runner.Transport
-
-  # API
-  # ----------------------------------------------------------------------------
 
   @type transport_module :: module()
   @type transport_config :: {transport_module, [term()]}
@@ -83,7 +78,7 @@ defmodule Playwright.Runner.Connection do
   def init({transport_module, config}) do
     Logger.debug("Starting up Playwright with config: #{inspect(config)}")
 
-    {:ok, catalog} = Catalog.start_link(Root.new(self()))
+    {:ok, catalog} = Catalog.start_link(Channel.Root.new(self()))
 
     {:ok,
      %__MODULE__{
@@ -117,7 +112,7 @@ defmodule Playwright.Runner.Connection do
 
     {
       :noreply,
-      %{state | callbacks: Map.put(callbacks, message.id, Callback.new(from, message))}
+      %{state | callbacks: Map.put(callbacks, message.id, Channel.Callback.new(from, message))}
     }
   end
 
@@ -151,7 +146,7 @@ defmodule Playwright.Runner.Connection do
 
   defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
     {callback, updated} = Map.pop!(callbacks, message_id)
-    Callback.resolve(callback, Channel.Response.new(message, catalog))
+    Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
 
     %{state | callbacks: updated}
   end

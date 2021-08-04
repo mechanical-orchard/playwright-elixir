@@ -1,16 +1,12 @@
 defmodule Playwright.Runner.Channel.Event do
-  @moduledoc """
-  `Event` represents a message received from the Playwright server of some
-  action taken related to a resource.
-  """
+  @moduledoc false
+  # `Event` represents a message received from the Playwright server of some
+  # action taken related to a resource.
   require Logger
   alias Playwright.Extra
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.ChannelOwner
 
-  @doc """
-  Handles an event.
-  """
   def handle(%{method: method} = event, catalog) do
     handle(method, event, catalog)
   end

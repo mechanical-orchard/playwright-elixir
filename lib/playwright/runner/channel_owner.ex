@@ -17,8 +17,7 @@ defmodule Playwright.Runner.ChannelOwner do
     fields = extra ++ @base
 
     quote do
-      # @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
-      @derive {Inspect, only: [:guid, :listeners] ++ unquote(extra)}
+      @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
 
       alias Playwright.Extra
       alias Playwright.Runner.Channel

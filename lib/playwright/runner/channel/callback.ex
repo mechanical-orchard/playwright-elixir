@@ -1,4 +1,4 @@
-defmodule Playwright.Runner.Callback do
+defmodule Playwright.Runner.Channel.Callback do
   @moduledoc false
   require Logger
   alias Playwright.Runner.Channel.Response

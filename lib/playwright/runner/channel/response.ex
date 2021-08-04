@@ -1,8 +1,7 @@
 defmodule Playwright.Runner.Channel.Response do
-  @moduledoc """
-  `Response` represents a message received from the Playwright server that is
-  in response to a `Command` previously sent.
-  """
+  @moduledoc false
+  # `Response` represents a message received from the Playwright server that is
+  # in response to a `Command` previously sent.
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel.Response
 
@@ -13,9 +12,6 @@ defmodule Playwright.Runner.Channel.Response do
   #   parsed: binary()
   # }
 
-  @doc """
-  Creates a new `Response` struct.
-  """
   def new(message, catalog) do
     %Response{message: message, parsed: parse(message, catalog)}
   end

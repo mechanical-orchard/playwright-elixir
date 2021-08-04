@@ -1,8 +1,7 @@
 defmodule Playwright.Runner.Transport.Driver do
-  @moduledoc """
-  A transport for negotiating messages with the embedded Playwright `driver`
-  CLI.
-  """
+  @moduledoc false
+  # A transport for negotiating messages with the embedded Playwright `driver`
+  # CLI.
 
   use GenServer
   require Logger
@@ -19,17 +18,13 @@ defmodule Playwright.Runner.Transport.Driver do
   end
 
   def post(pid, message) do
-    send_message(pid, message)
-  end
-
-  def send_message(pid, message) do
-    GenServer.cast(pid, {:send_message, message})
-    :ok
+    GenServer.cast(pid, {:post, message})
   end
 
   # @impl
   # ----------------------------------------------------------------------------
 
+  @impl GenServer
   def init([connection, driver_path]) do
     cli = driver_path
     cmd = "run-driver"
@@ -47,7 +42,8 @@ defmodule Playwright.Runner.Transport.Driver do
     }
   end
 
-  def handle_cast({:send_message, message}, %{port: port} = state) do
+  @impl GenServer
+  def handle_cast({:post, message}, %{port: port} = state) do
     length = String.length(message)
     padding = <<length::utf32-little>>
 
@@ -57,6 +53,7 @@ defmodule Playwright.Runner.Transport.Driver do
     {:noreply, state}
   end
 
+  @impl GenServer
   def handle_info(
         {_port, {:data, data}},
         %{buffer: buffer, remaining: remaining} = state
@@ -72,6 +69,7 @@ defmodule Playwright.Runner.Transport.Driver do
     {:noreply, %{state | buffer: buffer, remaining: remaining}}
   end
 
+  @impl GenServer
   def handle_info({_port, {:exit_status, status}}, state) do
     Logger.error("[transport@#{inspect(self())}] playwright driver exited with status: #{inspect(status)}")
     {:stop, :port_closed, state}
@@ -80,7 +78,7 @@ defmodule Playwright.Runner.Transport.Driver do
   # private
   # ----------------------------------------------------------------------------
 
-  def recv(connection, json) do
+  defp recv(connection, json) do
     Connection.recv(connection, {:text, json})
   end
 end

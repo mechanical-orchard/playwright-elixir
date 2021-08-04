@@ -7,7 +7,7 @@ defmodule Playwright.BrowserTypeTest do
     test "includes the websocket endpoint in the error message when there is a failure" do
       assert {
                :error,
-               {~s|Error connecting to "ws://example.com/server"|, {{_, {_, {_, {:error, _}}}}, _}}
+               {~s|Error connecting to "ws://example.com/server"|, _detail}
              } = BrowserType.connect("ws://example.com/server")
     end
   end

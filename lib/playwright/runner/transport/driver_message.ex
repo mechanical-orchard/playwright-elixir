@@ -1,40 +1,36 @@
 defmodule Playwright.Runner.Transport.DriverMessage do
-  @moduledoc """
-  A "message" received from the Playwright browser server over the `Driver`
-  transport.
+  @moduledoc false
+  # A "message" received from the Playwright browser server over the `Driver`
+  # transport.
+  #
+  # Messages provide "frames" of data and may be received as:
+  #
+  # - A standalone frame "header", indicating what to expect in coming messages.
+  # - A single complete frame, with header and "body".
+  # - A full frame body, following a previously sent header.
+  # - A series: multiple frames in a single message.
+  # - A fragment: a partial frame which will span multiple messages.
+  #
+  # Message parsing is matched as follows:
+  #
+  # 1. `<<head::utf32-little>>` -- Message is a standalone header, indicating
+  #   the `read_length` of the following frame.
+  # 2. `<<head::utf32-little>><<data::binary>>` -- Message is a
+  #   series of one or more frames starting with the beginning (i.e., the
+  #   preceding message was complete) of a complete frame (i.e., with header
+  #   and body). For example, a mult-frame series might look something like
+  #   `<<11, 0, 0, 0>>1st-message<<14, 0, 0, 0>>second-message`
+  # 3. `<<data::binary>>` and non-zero `read_length` equal to the length of the
+  #   data -- A full, unfragmented frame body with `read_length` derived from the
+  #   preceding header message.
+  # 4. `<<data::binary>>` and a non-zero `read_length` *less than* the length of
+  #   the data -- a series beginning with a full or partial frame body. If the
+  #   frame body is a partial (fragment), it will be appended to the provided
+  #   `buffer`.
+  # 5. `<<data::binary>>` and a non-zero `read_length` *greater than* the length of
+  #   the data -- A frame body fragment that will be continued in following
+  #   messages.
 
-  Messages provide "frames" of data and may be received as:
-
-  - A standalone frame "header", indicating what to expect in coming messages.
-  - A single complete frame, with header and "body".
-  - A full frame body, following a previously sent header.
-  - A series: multiple frames in a single message.
-  - A fragment: a partial frame which will span multiple messages.
-  """
-
-  @doc """
-  Parse a message.
-
-  Matched as follows:
-
-  1. `<<head::utf32-little>>` -- Message is a standalone header, indicating
-    the `read_length` of the following frame.
-  2. `<<head::utf32-little>><<data::binary>>` -- Message is a
-    series of one or more frames starting with the beginning (i.e., the
-    preceding message was complete) of a complete frame (i.e., with header
-    and body). For example, a mult-frame series might look something like
-    `<<11, 0, 0, 0>>1st-message<<14, 0, 0, 0>>second-message`
-  3. `<<data::binary>>` and non-zero `read_length` equal to the length of the
-    data -- A full, unfragmented frame body with `read_length` derived from the
-    preceding header message.
-  4. `<<data::binary>>` and a non-zero `read_length` *less than* the length of
-    the data -- a series beginning with a full or partial frame body. If the
-    frame body is a partial (fragment), it will be appended to the provided
-    `buffer`.
-  5. `<<data::binary>>` and a non-zero `read_length` *greater than* the length of
-    the data -- A frame body fragment that will be continued in following
-    messages.
-  """
   @spec parse(data :: binary(), read_length :: number(), buffer :: binary(), accumulated :: list()) :: %{
           buffer: binary(),
           frames: list(),

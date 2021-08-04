@@ -1,6 +1,5 @@
 defmodule Playwright.Runner.ConnectionTest do
   use ExUnit.Case, async: true
-  alias Playwright.Runner.Callback
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
@@ -94,7 +93,7 @@ defmodule Playwright.Runner.ConnectionTest do
 
       {response, _} = Connection.handle_call({:get, {:guid, "Root"}}, from, state)
       assert response == :noreply
-      assert_received({:tag, %Playwright.Runner.Root{}})
+      assert_received({:tag, %Playwright.Runner.Channel.Root{}})
     end
   end
 
@@ -108,7 +107,7 @@ defmodule Playwright.Runner.ConnectionTest do
 
       {response, state} = Connection.handle_call({:post, {:cmd, cmd}}, from, state)
       assert response == :noreply
-      assert state.callbacks == %{cid => %Callback{listener: from, message: cmd}}
+      assert state.callbacks == %{cid => %Channel.Callback{listener: from, message: cmd}}
 
       posted = TestTransport.dump(state.transport.pid)
       assert posted == [Jason.encode!(cmd)]

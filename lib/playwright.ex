@@ -1,7 +1,5 @@
 defmodule Playwright do
-  @moduledoc """
-  An Elixir client for [Playwright](https://playwright.dev) browser automation.
-  """
+  @moduledoc false
   use Application
 
   @doc false
