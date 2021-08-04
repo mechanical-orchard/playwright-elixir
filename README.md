@@ -14,7 +14,7 @@ by adding `playwright` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:playwright, "~> 0.1.0-preview"}
+    {:playwright, "~> 0.1.1-preview"}
   ]
 end
 ```
