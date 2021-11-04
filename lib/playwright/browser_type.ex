@@ -49,7 +49,7 @@ defmodule Playwright.BrowserType do
   """
   @spec launch() :: {pid(), Playwright.Browser.t()}
   def launch do
-    {:ok, connection} = new_session(Transport.Driver, ["assets/node_modules/playwright/lib/cli/cli.js"])
+    {:ok, connection} = new_session(Transport.Driver, ["assets/node_modules/playwright/cli.js"])
     {connection, chromium(connection)}
   end
 
