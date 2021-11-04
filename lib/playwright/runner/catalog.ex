@@ -13,9 +13,11 @@ defmodule Playwright.Runner.Catalog do
     GenServer.start_link(__MODULE__, arg)
   end
 
-  # Retrieve an entry from the `Catalog` storage. In this case (without a
-  # `caller` provided), the entry is expected to exist. `nil` will be
-  # returned if it does not.
+  @doc """
+  Retrieve an entry from the `Catalog` storage. In this case (without a
+  `caller` provided), the entry is expected to exist. `nil` will be
+  returned if it does not.
+  """
   def get(pid, guid) do
     GenServer.call(pid, {:get, guid})
   end
