@@ -31,6 +31,11 @@ defmodule Playwright.Runner.Channel.Response do
     Catalog.get(catalog, guid)
   end
 
+  # e.g., [rootAXNode: %{children: [%{name: "Hello World", role: "text"}], name: "", role: "WebArea"}],
+  defp parse([{_key, %{} = result}], _catalog) do
+    result
+  end
+
   defp parse([{:binary, value}], _catalog) do
     value
   end
