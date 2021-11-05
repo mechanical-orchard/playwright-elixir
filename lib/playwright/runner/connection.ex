@@ -80,11 +80,25 @@ defmodule Playwright.Runner.Connection do
 
     {:ok, catalog} = Catalog.start_link(Channel.Root.new(self()))
 
-    {:ok,
-     %__MODULE__{
-       catalog: catalog,
-       transport: Transport.connect(transport_module, [self()] ++ config)
-     }}
+    state = %__MODULE__{
+      catalog: catalog,
+      transport: Transport.connect(transport_module, [self()] ++ config)
+    }
+
+    {:ok, state, {:continue, :initialize}}
+  end
+
+  @impl GenServer
+  def handle_continue(:initialize, %{transport: transport} = state) do
+    message = %{
+      guid: "",
+      method: "initialize",
+      params: %{sdkLanguage: "elixir"},
+      metadata: %{} # NOTE: things blow up without the presence of this `metadata`.
+    }
+    Transport.post(transport, Jason.encode!(message))
+
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -133,6 +147,7 @@ defmodule Playwright.Runner.Connection do
   # private
   # ----------------------------------------------------------------------------
 
+  # JS: const { id, guid, method, params, result, error } = message as any;
   defp recv_payload(<<json::binary>>, state) do
     case Jason.decode(json) do
       {:ok, data} ->
@@ -153,6 +168,16 @@ defmodule Playwright.Runner.Connection do
 
   defp recv_payload(%{method: _method} = event, %{catalog: catalog} = state) do
     Channel.Event.handle(event, catalog)
+    state
+  end
+
+  defp recv_payload(%{result: _result}, %{catalog: _catalog} = state) do
+    # Logger.warn("Connection.recv_payload w/ result: #{inspect(result)}")
+    # Logger.info("  ...catalog includes: #{inspect(Catalog.keys(catalog))}")
+
+    # JS/Python: replace_guids_with_channels(result)
+
+    # Channel.Event.handle(event, catalog)
     state
   end
 end

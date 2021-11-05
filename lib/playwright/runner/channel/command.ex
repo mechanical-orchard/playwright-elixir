@@ -12,7 +12,8 @@ defmodule Playwright.Runner.Channel.Command do
     :guid,
     :id,
     :method,
-    :params
+    :params,
+    :metadata
   ]
 
   @type t() :: %__MODULE__{
@@ -31,7 +32,8 @@ defmodule Playwright.Runner.Channel.Command do
       guid: guid,
       id: System.unique_integer([:monotonic, :positive]),
       method: method,
-      params: params
+      params: params,
+      metadata: %{}
     }
   end
 end

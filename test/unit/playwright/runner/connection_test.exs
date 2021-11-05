@@ -110,7 +110,7 @@ defmodule Playwright.Runner.ConnectionTest do
       assert state.callbacks == %{cid => %Channel.Callback{listener: from, message: cmd}}
 
       posted = TestTransport.dump(state.transport.pid)
-      assert posted == [Jason.encode!(cmd)]
+      assert List.last(posted) == Jason.encode!(cmd)
 
       {_, %{callbacks: callbacks}} = Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: cid})}}, state)
 

@@ -4,16 +4,16 @@ defmodule Test.Features.Page.EvaluateHandleTest do
   describe "Page.evaluate_handle/2" do
     alias Playwright.Page
 
-    test "returns a JSHandle, given a function", %{page: page} do
+    test "returns a JSHandle for the Window, given a function", %{page: page} do
       handle = Page.evaluate_handle(page, "function() { return window; }")
       assert is_struct(handle, Playwright.JSHandle)
-      assert handle.preview == "JSHandle@object"
+      assert handle.preview == "Window"
     end
 
-    test "returns a JSHandle, given an object reference", %{page: page} do
+    test "returns a JSHandle for the Window, given an object reference", %{page: page} do
       handle = Page.evaluate_handle(page, "window")
       assert is_struct(handle, Playwright.JSHandle)
-      assert handle.preview == "JSHandle@object"
+      assert handle.preview == "Window"
     end
 
     test "returns a handle that can be used as a later argument, as a handle to an object", %{page: page} do

@@ -13,6 +13,14 @@ defmodule Playwright.Runner.Catalog do
     GenServer.start_link(__MODULE__, arg)
   end
 
+  # def all(pid) do
+  #   GenServer.call(pid, {:all})
+  # end
+
+  # def keys(pid) do
+  #   Map.keys(all(pid))
+  # end
+
   @doc """
   Retrieve an entry from the `Catalog` storage. In this case (without a
   `caller` provided), the entry is expected to exist. `nil` will be
@@ -69,6 +77,11 @@ defmodule Playwright.Runner.Catalog do
   def init(root) do
     {:ok, %__MODULE__{callers: %{}, storage: %{"Root" => root}}}
   end
+
+  # @impl GenServer
+  # def handle_call({:all}, _, %{storage: storage} = state) do
+  #   {:reply, storage, state}
+  # end
 
   @impl GenServer
   def handle_call({:get, guid}, _, %{storage: storage} = state) do
@@ -145,6 +158,11 @@ defmodule Playwright.Runner.Catalog do
   defp select([head | tail], %{parent: parent, type: type} = attrs, result)
        when head.parent.guid == parent.guid and head.type == type do
     select(tail, attrs, result ++ [head])
+  end
+
+  defp select([head | tail], %{parent: parent, type: type} = attrs, result)
+       when head.parent.guid != parent.guid or head.type != type do
+    select(tail, attrs, result)
   end
 
   defp select([head | tail], %{parent: parent} = attrs, result)
