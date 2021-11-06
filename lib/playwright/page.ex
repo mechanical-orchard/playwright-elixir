@@ -29,7 +29,8 @@ defmodule Playwright.Page do
   More info on Playwright selectors is available
   [online](https://playwright.dev/docs/selectors).
   """
-  use Playwright.Runner.ChannelOwner, fields: [:frames, :main_frame, :owned_context]
+  use Playwright.Runner.ChannelOwner,
+    fields: [:frames, :main_frame, :owned_context]
 
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle
@@ -42,13 +43,6 @@ defmodule Playwright.Page do
   end
 
   # ----------------------------------------------------------------------------
-
-  def accessibility_snapshot(subject, params \\ %{}) do
-    subject
-    |> Channel.send("accessibilitySnapshot", params)
-    # |> IO.inspect()
-    |> ax_node_from_protocol()
-  end
 
   def context(subject) do
     Channel.get(subject.connection, {:guid, subject.parent.guid})
@@ -221,42 +215,6 @@ defmodule Playwright.Page do
 
   # private
   # ---------------------------------------------------------------------------
-
-  defp ax_node_from_protocol(%{role: role} = input)
-      when role in ["text"] do
-    ax_node_from_protocol(input, fn e -> e.role != "text" end)
-  end
-
-  defp ax_node_from_protocol(input) do
-    ax_node_from_protocol(input, fn _ -> true end)
-  end
-
-  defp ax_node_from_protocol(input, filter) do
-    Enum.reduce(input, %{}, fn({k, v}, acc) ->
-      cond do
-        is_list(v) ->
-          normal = v
-          |> Enum.map(&ax_node_from_protocol/1)
-          |> Enum.filter(filter)
-
-          Map.put(acc, k, normal)
-
-        k == :checked ->
-          normal = case v do
-            "checked" -> true
-            "unchecked" -> false
-            other -> other
-          end
-          Map.put(acc, k, normal)
-
-        k == :valueString ->
-          Map.put(acc, :value, v)
-
-        true ->
-          Map.put(acc, k, v)
-      end
-    end)
-  end
 
   defp deserialize(value) do
     case value do

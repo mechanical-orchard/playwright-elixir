@@ -1,5 +1,6 @@
 defmodule Test.Features.Page.AccessibilityTest do
   use Playwright.TestCase, async: true
+  doctest Playwright.Page.Accessibility
 
   # alias Playwright.Browser
   alias Playwright.Page
@@ -27,7 +28,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       # Page.wait_for_function(page, "document.activeElement.hasAttribute('autofocus')")
       # ... this hasn't actually been a problem yet, here.
 
-      assert Page.accessibility_snapshot(page) == %{
+      assert Page.Accessibility.snapshot(page) == %{
         role: "WebArea",
         name: "Accessibility Test",
         children: [
@@ -46,42 +47,42 @@ defmodule Test.Features.Page.AccessibilityTest do
     test "with regular text", %{page: page} do
       Page.set_content(page, "<div>Hello World</div>")
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{role: "text", name: "Hello World"}
     end
 
     test "with ARIA roledescription", %{page: page} do
       Page.set_content(page, "<p tabIndex=-1 aria-roledescription='foo'>Hi</p>")
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element.roledescription == "foo"
     end
 
     test "with ARIA orientation", %{page: page} do
       Page.set_content(page, "<a href='' role='slider' aria-orientation='vertical'>11</a>")
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element.orientation == "vertical"
     end
 
     test "with ARIA autocomplete", %{page: page} do
       Page.set_content(page, "<div role='textbox' aria-autocomplete='list'>hi</div>")
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element.autocomplete == "list"
     end
 
     test "with ARIA multiselectable", %{page: page} do
       Page.set_content(page, "<div role='grid' tabIndex=-1 aria-multiselectable=true>hey</div>")
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element.multiselectable == true
     end
 
     test "with ARIA keyshortcuts", %{page: page} do
       Page.set_content(page, "<div role='grid' tabIndex=-1 aria-keyshortcuts='foo'>hey</div>")
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element.keyshortcuts == "foo"
     end
 
@@ -91,7 +92,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       <div>This is the content</div>
       """)
 
-      snapshot = Page.accessibility_snapshot(page)
+      snapshot = Page.Accessibility.snapshot(page)
       assert snapshot.name == "This is the title"
 
       [content | _] = snapshot.children
@@ -108,7 +109,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       </div>
       """)
 
-      assert Page.accessibility_snapshot(page) == %{
+      assert Page.Accessibility.snapshot(page) == %{
         role: "WebArea",
         name: "",
         children: [
@@ -125,7 +126,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       </div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "generic",
         name: "",
@@ -144,7 +145,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       </div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "textbox",
         name: "",
@@ -162,7 +163,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       <div contenteditable="plaintext-only" role="textbox">Edit this image: <img src="fakeimage.png" alt="my fake image"></div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "textbox",
         name: "",
@@ -176,7 +177,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       <div contenteditable="plaintext-only">Edit this image: <img src="fakeimage.png" alt="my fake image"></div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "generic",
         name: "",
@@ -189,7 +190,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       <div contenteditable="plaintext-only" tabIndex=0>Edit this image: <img src="fakeimage.png" alt="my fake image"></div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "generic",
         name: "",
@@ -205,7 +206,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       </div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "textbox",
         name: "my favorite textbox",
@@ -221,7 +222,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       </div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "checkbox",
         name: "my favorite checkbox",
@@ -237,7 +238,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       </div>
       """)
 
-      [element | _] = Page.accessibility_snapshot(page).children
+      [element | _] = Page.Accessibility.snapshot(page).children
       assert element == %{
         role: "checkbox",
         name: "this is the inner content yo",
@@ -251,7 +252,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       Page.set_content(page, "<button>My Button</button>")
 
       element = Page.query_selector!(page, "button")
-      assert Page.accessibility_snapshot(page, %{root: element}) == %{
+      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
         role: "button",
         name: "My Button"
       }
@@ -261,7 +262,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       Page.set_content(page, "<input title='My Input' value='My Value'>")
 
       element = Page.query_selector!(page, "input")
-      assert Page.accessibility_snapshot(page, %{root: element}) == %{
+      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
         role: "textbox",
         name: "My Input",
         value: "My Value"
@@ -278,7 +279,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       """)
 
       element = Page.query_selector!(page, "div[role='menu']")
-      assert Page.accessibility_snapshot(page, %{root: element}) == %{
+      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
         role: "menu",
         name: "My Menu",
         children: [
@@ -320,7 +321,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       element = Page.query_selector!(page, "button")
       Page.eval_on_selector(page, "button", "button => button.remove()")
 
-      refute Page.accessibility_snapshot(page, %{root: element})
+      refute Page.Accessibility.snapshot(page, %{root: element})
     end
   end
 
@@ -338,7 +339,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       """)
 
       element = Page.query_selector!(page, "#root")
-      snapshot = Page.accessibility_snapshot(page, %{root: element, interestingOnly: false})
+      snapshot = Page.Accessibility.snapshot(page, %{root: element, interestingOnly: false})
 
       assert snapshot.role == "textbox"
       assert String.contains?(snapshot.value, "hello")
