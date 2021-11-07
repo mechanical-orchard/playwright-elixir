@@ -339,7 +339,7 @@ defmodule Test.Features.Page.AccessibilityTest do
       """)
 
       element = Page.query_selector!(page, "#root")
-      snapshot = Page.Accessibility.snapshot(page, %{root: element, interestingOnly: false})
+      snapshot = Page.Accessibility.snapshot(page, %{root: element, interesting_only: false})
 
       assert snapshot.role == "textbox"
       assert String.contains?(snapshot.value, "hello")
