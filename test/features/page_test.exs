@@ -53,7 +53,10 @@ defmodule Test.Features.PageTest do
       assert elements == []
     end
 
-    test ".close/1", %{connection: connection, page: page} do
+    @tag without: [:page]
+    test ".close/1", %{browser: browser, connection: connection} do
+      page = Playwright.Browser.new_page(browser)
+
       Connection.get(connection, %{guid: page.guid}, nil)
       |> assert()
 

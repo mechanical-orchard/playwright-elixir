@@ -1,32 +1,33 @@
-defmodule Test.Features.Page.AccessibilityTest do
+defmodule Test.Page.Accessibility.SnapshotTest do
   use Playwright.TestCase, async: true
   doctest Playwright.Page.Accessibility
 
-  # alias Playwright.Browser
   alias Playwright.Page
 
-  describe "page accessibility" do
+  describe "snapshot/1" do
     test "snapshots", %{page: page} do
-      Page.set_content(page, """
-      <head>
-        <title>Accessibility Test</title>
-      </head>
-      <body>
-        <h1>Inputs</h1>
-        <input placeholder="Empty input" autofocus />
-        <input placeholder="readonly input" readonly />
-        <input placeholder="disabled input" disabled />
-        <input aria-label="Input with whitespace" value="  " />
-        <input value="value only" />
-        <input aria-placeholder="placeholder" value="and a value" />
-        <div aria-hidden="true" id="desc">This is a description!</div>
-        <input aria-placeholder="placeholder" value="and a value" aria-describedby="desc" />
-      </body>
-      """)
+      page
+      |> Page.set_content("""
+        <head>
+          <title>Accessibility Test</title>
+        </head>
+        <body>
+          <h1>Inputs</h1>
+          <input placeholder="Empty input" autofocus />
+          <input placeholder="readonly input" readonly />
+          <input placeholder="disabled input" disabled />
+          <input aria-label="Input with whitespace" value="  " />
+          <input value="value only" />
+          <input aria-placeholder="placeholder" value="and a value" />
+          <div aria-hidden="true" id="desc">This is a description!</div>
+          <input aria-placeholder="placeholder" value="and a value" aria-describedby="desc" />
+        </body>
+        """)
+      # |> Page.wait_for_function("document.activeElement.hasAttribute('autofocus')")
+      # |> IO.inspect()
 
-      # [sic] autofocus happens after a delay in chrome
+      # > Autofocus happens after a delay in chrome.
       # Page.wait_for_function(page, "document.activeElement.hasAttribute('autofocus')")
-      # ... this hasn't actually been a problem yet, here.
 
       assert Page.Accessibility.snapshot(page) == %{
         role: "WebArea",

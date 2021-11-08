@@ -2,8 +2,6 @@ defmodule Test.Features.BrowserTest do
   use Playwright.TestCase, async: true
 
   describe "new_page/1" do
-    setup :without_page_fixture
-
     test "creates a new Page", %{browser: browser} do
       page = Playwright.Browser.new_page(browser)
       assert page.type == "Page"
@@ -29,9 +27,7 @@ defmodule Test.Features.BrowserTest do
       assert length(Playwright.Browser.contexts(browser)) == initial
     end
 
-    test "enforces 1-to-1 on Page and Context", %{browser: browser} do
-      page = Playwright.Browser.new_page(browser)
-
+    test "enforces 1-to-1 on Page and Context", %{page: page} do
       assert_raise RuntimeError, "Please use Playwright.Browser.new_context/1", fn ->
         page
         |> Playwright.Page.context()
@@ -41,8 +37,6 @@ defmodule Test.Features.BrowserTest do
   end
 
   describe "version/1" do
-    setup :without_page_fixture
-
     test "returns the expected version", %{browser: browser} do
       case browser.name do
         "chromium" ->
@@ -53,11 +47,5 @@ defmodule Test.Features.BrowserTest do
           assert %{major: _, minor: _} = Version.parse!(browser.version)
       end
     end
-  end
-
-  defp without_page_fixture(%{page: page}) do
-    Playwright.Page.close(page)
-    :timer.sleep(10)
-    :ok
   end
 end

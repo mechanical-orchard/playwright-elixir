@@ -2,7 +2,9 @@ defmodule Test.Features.Page.OnEventTest do
   use Playwright.TestCase, async: true
 
   describe "Page.on/3" do
-    test "on 'close'", %{page: page} do
+    @tag exclude: [:page]
+    test "on 'close'", %{browser: browser} do
+      page = Playwright.Browser.new_page(browser)
       this = self()
       guid = page.guid
 

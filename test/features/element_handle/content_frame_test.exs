@@ -1,7 +1,6 @@
 defmodule Test.Features.ElementHandle.ContentFrameTest do
   use Playwright.TestCase, async: true
 
-  # alias Playwright.ElementHandle
   alias Playwright.JSHandle
   alias Playwright.Page
 

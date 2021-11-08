@@ -1,14 +1,14 @@
 defmodule Playwright.TestCase do
   @moduledoc """
   `TestCase` is a helper module intended for use by the tests *of* Playwright.
-  When using Playwright to wright tests for some other project, consider using
-  `PlaywrightTest.Case`.
+
+  When using Playwright to write tests for some other project, consider using `PlaywrightTest.Case`.
   """
   use ExUnit.CaseTemplate
 
-  using do
+  using(options) do
     quote do
-      use PlaywrightTest.Case
+      use PlaywrightTest.Case, unquote(options)
     end
   end
 

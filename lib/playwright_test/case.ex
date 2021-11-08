@@ -1,17 +1,29 @@
 defmodule PlaywrightTest.Case do
   @moduledoc """
-  Use `PlaywrightTest.Case` in an ExUnit test module to start a Playwright
-  server and put it into the test context.
+  Use `PlaywrightTest.Case` in an ExUnit test module to start a Playwright server and put it into the test context.
 
   ## Examples
 
-      defmodule Web.DriverTransportTest do
-        use ExUnit.Case
-        use PlaywrightTest.Case,
-          headless: false,
-          transport: :driver
+      defmodule Example.PageTest do
+        use PlaywrightTest.Case
 
-        describe "features" do
+        describe "features w/ default context" do
+          test "goes to a page", %{page: page} do
+            text =
+              page
+              |> Playwright.Page.goto("https://playwright.dev")
+              |> Playwright.Page.text_content(".navbar__title")
+
+            assert text == "Playwright"
+          end
+        end
+      end
+
+      defmodule Example.BrowserTest do
+        use PlaywrightTest.Case
+
+        describe "features w/out `page` context" do
+          @tag exclude: [:page]
           test "goes to a page", %{browser: browser} do
             page =
               browser
@@ -24,60 +36,58 @@ defmodule PlaywrightTest.Case do
 
             assert text == "Playwright"
 
+            # must close test-created `page`
             Playwright.Page.close(page)
           end
         end
       end
-
-      defmodule Web.WebSocketTransportTest do
-        use ExUnit.Case
-        use PlaywrightTest.Case,
-          transport: :websocket
-      end
   """
+
   defmacro __using__(options \\ %{}) do
     quote do
       alias Playwright.Runner.Config
 
-      setup_all do
+      setup_all(context) do
         inline_options = unquote(options) |> Enum.into(%{})
         launch_options = Map.merge(Config.launch_options(), inline_options)
         runner_options = Map.merge(Config.playwright_test(), inline_options)
 
         Application.put_env(:playwright, LaunchOptions, launch_options)
-
         {:ok, _} = Application.ensure_all_started(:playwright)
 
-        case runner_options.transport do
-          :driver ->
-            {connection, browser} = Playwright.BrowserType.launch()
+        {connection, browser} = setup_browser(runner_options)
+        [browser: browser, connection: connection, transport: runner_options.transport]
+      end
 
-            [
-              connection: connection,
-              browser: browser,
-              transport: :driver
-            ]
+      setup(context) do
+        tagged_exclude = Map.get(context, :exclude, [])
 
-          :websocket ->
-            options = Config.connect_options()
-            {connection, browser} = Playwright.BrowserType.connect(options.ws_endpoint)
+        case Enum.member?(tagged_exclude, :page) do
+          true ->
+            context
 
-            [
-              connection: connection,
-              browser: browser,
-              transport: :websocket
-            ]
+          false ->
+            page = Playwright.Browser.new_page(context.browser)
+
+            on_exit(:ok, fn ->
+              Playwright.Page.close(page)
+            end)
+
+            Map.put(context, :page, page)
         end
       end
 
-      setup %{browser: browser} do
-        page = Playwright.Browser.new_page(browser)
+      # ---
 
-        on_exit(:ok, fn ->
-          Playwright.Page.close(page)
-        end)
+      defp setup_browser(runner_options) do
+        case runner_options.transport do
+          :driver ->
+            Playwright.BrowserType.launch()
 
-        [page: page]
+          :websocket ->
+            options = Config.connect_options()
+            Playwright.BrowserType.connect(options.ws_endpoint)
+        end
       end
     end
   end

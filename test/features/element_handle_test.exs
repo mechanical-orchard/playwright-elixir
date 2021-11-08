@@ -16,8 +16,6 @@ defmodule Test.Features.ElementHandleTest do
       assert inner.preview == ~s|JSHandle@<div id="inner">Text,↵more text</div>|
       assert check.preview == ~s|JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>|
       # assert child == "JSHandle@#text=Text,↵more text"
-
-      Page.close(page)
     end
   end
 
