@@ -212,21 +212,21 @@ defmodule Playwright.Runner.Config do
   end
 
   @doc false
-  @spec connect_options(boolean()) :: Types.connect_options()
+  @spec connect_options(boolean()) :: Types.ConnectOptions
   def connect_options(camelcase \\ false) do
     config_for(ConnectOptions, %Types.ConnectOptions{}, camelcase) || %{}
     # |> clean()
   end
 
   @doc false
-  @spec launch_options(boolean()) :: Types.launch_options()
+  @spec launch_options(boolean()) :: Types.LaunchOptions
   def launch_options(camelcase \\ false) do
     config_for(LaunchOptions, %Types.LaunchOptions{}, camelcase) || %{}
     # |> clean()
   end
 
   @doc false
-  @spec playwright_test(boolean()) :: Types.playwright_test()
+  @spec playwright_test(boolean()) :: Types.PlaywrightTest
   def playwright_test(camelcase \\ false) do
     config_for(PlaywrightTest, %Types.PlaywrightTest{}, camelcase)
     # |> Map.from_struct()

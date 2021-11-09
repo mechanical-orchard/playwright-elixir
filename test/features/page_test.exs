@@ -69,6 +69,8 @@ defmodule Test.Features.PageTest do
     test ".click/2", %{assets: assets, page: page} do
       page
       |> Playwright.Page.goto(assets.prefix <> "/input/button.html")
+
+      page
       |> Playwright.Page.click("css=button")
 
       result = Playwright.Page.evaluate(page, "function () { return window['result']; }")
@@ -83,6 +85,8 @@ defmodule Test.Features.PageTest do
     test ".fill/3", %{assets: assets, page: page} do
       page
       |> Playwright.Page.goto(assets.prefix <> "/input/textarea.html")
+
+      page
       |> Playwright.Page.fill("textarea", "some value")
 
       value = Playwright.Page.evaluate(page, "function () { return window['result']; }")
@@ -109,6 +113,8 @@ defmodule Test.Features.PageTest do
     test ".press/2", %{assets: assets, page: page} do
       page
       |> Playwright.Page.goto(assets.prefix <> "/input/textarea.html")
+
+      page
       |> Playwright.Page.press("textarea", "A")
 
       value = Playwright.Page.evaluate(page, "function () { return document.querySelector('textarea').value; }")

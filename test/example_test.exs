@@ -8,14 +8,9 @@ defmodule Test.ExampleTest do
 
   describe "An example test against playwright.dev" do
     test "using `browser` from test context", %{browser: browser} do
-      page =
-        browser
-        |> Playwright.Browser.new_page()
-
-      text =
-        page
-        |> Playwright.Page.goto("https://playwright.dev")
-        |> Playwright.Page.text_content(".navbar__title")
+      page = browser |> Playwright.Browser.new_page()
+      page |> Playwright.Page.goto("https://playwright.dev")
+      text = page |> Playwright.Page.text_content(".navbar__title")
 
       assert text == "Playwright"
 
@@ -23,10 +18,8 @@ defmodule Test.ExampleTest do
     end
 
     test "using `page` from test context", %{page: page} do
-      text =
-        page
-        |> Playwright.Page.goto("https://playwright.dev")
-        |> Playwright.Page.text_content(".navbar__title")
+      page |> Playwright.Page.goto("https://playwright.dev")
+      text = page |> Playwright.Page.text_content(".navbar__title")
 
       assert text == "Playwright"
     end

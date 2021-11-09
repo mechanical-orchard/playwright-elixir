@@ -114,7 +114,6 @@ defmodule Playwright.Page do
   def goto(subject, url) do
     if Playwright.Extra.URI.absolute?(url) do
       frame(subject) |> Channel.send("goto", %{url: url, waitUntil: "load"})
-      subject
     else
       raise "Expected an absolute URL, got: #{inspect(url)}"
     end

@@ -75,14 +75,17 @@ defmodule Test.Features.ElementHandleTest do
   # ----------------------------------------------------------------------------
 
   defp visit_button_fixture(%{assets: assets, page: page}) do
-    [page: Playwright.Page.goto(page, assets.prefix <> "/input/button.html")]
+    Playwright.Page.goto(page, assets.prefix <> "/input/button.html")
+    [page: page]
   end
 
   defp visit_dom_fixture(%{assets: assets, page: page}) do
-    [page: Playwright.Page.goto(page, assets.prefix <> "/dom.html")]
+    Playwright.Page.goto(page, assets.prefix <> "/dom.html")
+    [page: page]
   end
 
   defp visit_playground_fixture(%{assets: assets, page: page}) do
-    [page: Playwright.Page.goto(page, assets.prefix <> "/playground.html")]
+    Playwright.Page.goto(page, assets.prefix <> "/playground.html")
+    [page: page]
   end
 end
