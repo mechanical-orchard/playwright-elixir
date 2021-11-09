@@ -61,9 +61,10 @@ defmodule Playwright.Runner.ChannelOwner do
       end
 
       defp camelcase({key, value} = field) when is_tuple(field) do
-        camelkey = Extra.Atom.to_string(key)
-        |> Recase.to_camel()
-        |> Extra.Atom.from_string()
+        camelkey =
+          Extra.Atom.to_string(key)
+          |> Recase.to_camel()
+          |> Extra.Atom.from_string()
 
         {camelkey, value}
       end

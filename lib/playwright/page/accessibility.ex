@@ -27,10 +27,12 @@ defmodule Playwright.Page.Accessibility do
   - `:interesting_only` - Prune uninteresting nodes from the tree (default: true)
   - `:root` - The root DOM element for the snapshot (default: page)
   """
-  @type options() :: %{} | %{
-    interesting_only: boolean(),
-    root: Playwright.ElementHandle.t()
-  }
+  @type options() ::
+          %{}
+          | %{
+              interesting_only: boolean(),
+              root: Playwright.ElementHandle.t()
+            }
 
   @typedoc """
   Snapshot result returned from `snapshot/2`
@@ -63,33 +65,33 @@ defmodule Playwright.Page.Accessibility do
   - `:valuetext` - A description of the current value, if applicable
   """
   @type snapshot() :: %{
-    name: String.t(),
-    description: String.t(),
-    role: String.t(),
-    value: String.t() | number(),
-    children: list(),
-    autocomplete: String.t(),
-    checked: boolean() | String.t(),
-    disabled: boolean(),
-    expanded: boolean(),
-    focused: boolean(),
-    haspopup: String.t(),
-    invalid: String.t(),
-    keyshortcuts: String.t(),
-    level: number(),
-    modal: boolean(),
-    multiline: boolean(),
-    multiselectable: boolean(),
-    orientation: String.t(),
-    pressed: boolean() | String.t(),
-    readonly: boolean(),
-    required: boolean(),
-    roledescription: String.t(),
-    selected: boolean(),
-    valuemax: number(),
-    valuemin: number(),
-    valuetext: String.t(),
-  }
+          name: String.t(),
+          description: String.t(),
+          role: String.t(),
+          value: String.t() | number(),
+          children: list(),
+          autocomplete: String.t(),
+          checked: boolean() | String.t(),
+          disabled: boolean(),
+          expanded: boolean(),
+          focused: boolean(),
+          haspopup: String.t(),
+          invalid: String.t(),
+          keyshortcuts: String.t(),
+          level: number(),
+          modal: boolean(),
+          multiline: boolean(),
+          multiselectable: boolean(),
+          orientation: String.t(),
+          pressed: boolean() | String.t(),
+          readonly: boolean(),
+          required: boolean(),
+          roledescription: String.t(),
+          selected: boolean(),
+          valuemax: number(),
+          valuemin: number(),
+          valuetext: String.t()
+        }
 
   @doc """
   Captures the current state of the accessibility tree.

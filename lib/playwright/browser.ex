@@ -30,13 +30,18 @@ defmodule Playwright.Browser do
   equivalent to an "incognito" browser "window".
   """
   def new_context(%Playwright.Browser{connection: connection} = subject, options \\ %{}) do
-    params = prepare(Map.merge(%{
-      no_default_viewport: false,
-      sdk_language: "elixir"
-    }, options))
+    params =
+      prepare(
+        Map.merge(
+          %{
+            no_default_viewport: false,
+            sdk_language: "elixir"
+          },
+          options
+        )
+      )
 
-    context =
-      Channel.send(subject, "newContext", params)
+    context = Channel.send(subject, "newContext", params)
 
     case context do
       %Playwright.BrowserContext{} ->
@@ -83,9 +88,12 @@ defmodule Playwright.Browser do
   end
 
   defp prepare(%{extra_http_headers: headers}) do
-    %{extraHTTPHeaders: Enum.reduce(headers, [], fn {k, v}, acc ->
-      [%{name: k, value: v} | acc]
-    end)}
+    %{
+      extraHTTPHeaders:
+        Enum.reduce(headers, [], fn {k, v}, acc ->
+          [%{name: k, value: v} | acc]
+        end)
+    }
   end
 
   defp prepare(opts) when is_map(opts) do

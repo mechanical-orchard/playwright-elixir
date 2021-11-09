@@ -103,14 +103,15 @@ defmodule Playwright.Runner.Channel.Event do
       request = Catalog.get(catalog, params.request.guid)
       route = Catalog.get(catalog, params.route.guid)
 
-      remaining = Enum.reduce(handlers, [], fn (handler, acc) ->
-        if Helpers.RouteHandler.matches(handler, request.url) do
-          Helpers.RouteHandler.handle(handler, route, request)
-          acc
-        else
-          [handler | acc]
-        end
-      end)
+      remaining =
+        Enum.reduce(handlers, [], fn handler, acc ->
+          if Helpers.RouteHandler.matches(handler, request.url) do
+            Helpers.RouteHandler.handle(handler, route, request)
+            acc
+          else
+            [handler | acc]
+          end
+        end)
 
       Catalog.put(catalog, %{resource | listeners: Map.put(listeners, event_type, remaining)})
     else

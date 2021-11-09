@@ -8,7 +8,7 @@ defmodule Test.Page.RouteTest do
     test "intercepts requests", %{assets: assets, page: page} do
       this = self()
 
-      Page.route(page, "**/empty.html", fn (route, request) ->
+      Page.route(page, "**/empty.html", fn route, request ->
         assert route.request.guid == request.guid
         assert String.contains?(request.url, "empty.html")
         assert request.method == "GET"

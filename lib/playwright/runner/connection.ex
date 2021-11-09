@@ -99,8 +99,10 @@ defmodule Playwright.Runner.Connection do
       guid: "",
       method: "initialize",
       params: %{sdkLanguage: "elixir"},
-      metadata: %{} # NOTE: things blow up without the presence of this `metadata`.
+      # NOTE: things blow up without the presence of this `metadata`.
+      metadata: %{}
     }
+
     Transport.post(transport, Jason.encode!(message))
 
     {:noreply, state}

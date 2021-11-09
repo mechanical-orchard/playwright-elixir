@@ -8,21 +8,22 @@ defmodule Test.Page.Accessibility.SnapshotTest do
     test "snapshots", %{page: page} do
       page
       |> Page.set_content("""
-        <head>
-          <title>Accessibility Test</title>
-        </head>
-        <body>
-          <h1>Inputs</h1>
-          <input placeholder="Empty input" autofocus />
-          <input placeholder="readonly input" readonly />
-          <input placeholder="disabled input" disabled />
-          <input aria-label="Input with whitespace" value="  " />
-          <input value="value only" />
-          <input aria-placeholder="placeholder" value="and a value" />
-          <div aria-hidden="true" id="desc">This is a description!</div>
-          <input aria-placeholder="placeholder" value="and a value" aria-describedby="desc" />
-        </body>
-        """)
+      <head>
+        <title>Accessibility Test</title>
+      </head>
+      <body>
+        <h1>Inputs</h1>
+        <input placeholder="Empty input" autofocus />
+        <input placeholder="readonly input" readonly />
+        <input placeholder="disabled input" disabled />
+        <input aria-label="Input with whitespace" value="  " />
+        <input value="value only" />
+        <input aria-placeholder="placeholder" value="and a value" />
+        <div aria-hidden="true" id="desc">This is a description!</div>
+        <input aria-placeholder="placeholder" value="and a value" aria-describedby="desc" />
+      </body>
+      """)
+
       # |> Page.wait_for_function("document.activeElement.hasAttribute('autofocus')")
       # |> IO.inspect()
 
@@ -30,19 +31,19 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       # Page.wait_for_function(page, "document.activeElement.hasAttribute('autofocus')")
 
       assert Page.Accessibility.snapshot(page) == %{
-        role: "WebArea",
-        name: "Accessibility Test",
-        children: [
-          %{role: "heading", name: "Inputs", level: 1},
-          %{role: "textbox", name: "Empty input", focused: true},
-          %{role: "textbox", name: "readonly input", readonly: true},
-          %{role: "textbox", name: "disabled input", disabled: true},
-          %{role: "textbox", name: "Input with whitespace", value: "  "},
-          %{role: "textbox", name: "", value: "value only"},
-          %{role: "textbox", name: "placeholder", value: "and a value"},
-          %{role: "textbox", name: "placeholder", value: "and a value", description: "This is a description!"},
-        ]
-      }
+               role: "WebArea",
+               name: "Accessibility Test",
+               children: [
+                 %{role: "heading", name: "Inputs", level: 1},
+                 %{role: "textbox", name: "Empty input", focused: true},
+                 %{role: "textbox", name: "readonly input", readonly: true},
+                 %{role: "textbox", name: "disabled input", disabled: true},
+                 %{role: "textbox", name: "Input with whitespace", value: "  "},
+                 %{role: "textbox", name: "", value: "value only"},
+                 %{role: "textbox", name: "placeholder", value: "and a value"},
+                 %{role: "textbox", name: "placeholder", value: "and a value", description: "This is a description!"}
+               ]
+             }
     end
 
     test "with regular text", %{page: page} do
@@ -111,13 +112,13 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       assert Page.Accessibility.snapshot(page) == %{
-        role: "WebArea",
-        name: "",
-        children: [
-          %{role: "tab", name: "Tab1", selected: true},
-          %{role: "tab", name: "Tab2"}
-        ]
-      }
+               role: "WebArea",
+               name: "",
+               children: [
+                 %{role: "tab", name: "Tab1", selected: true},
+                 %{role: "tab", name: "Tab2"}
+               ]
+             }
     end
 
     test "retains rich text editable fields", %{page: page} do
@@ -128,15 +129,16 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "generic",
-        name: "",
-        value: "Edit this image: ",
-        children: [
-          %{role: "text", name: "Edit this image:"},
-          %{role: "img", name: "my fake image"}
-        ]
-      }
+               role: "generic",
+               name: "",
+               value: "Edit this image: ",
+               children: [
+                 %{role: "text", name: "Edit this image:"},
+                 %{role: "img", name: "my fake image"}
+               ]
+             }
     end
 
     test "retains rich text editable fields with role", %{page: page} do
@@ -147,16 +149,17 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "textbox",
-        name: "",
-        multiline: true,
-        value: "Edit this image: ",
-        children: [
-          %{role: "text", name: "Edit this image:"},
-          %{role: "img", name: "my fake image"}
-        ]
-      }
+               role: "textbox",
+               name: "",
+               multiline: true,
+               value: "Edit this image: ",
+               children: [
+                 %{role: "text", name: "Edit this image:"},
+                 %{role: "img", name: "my fake image"}
+               ]
+             }
     end
 
     test "excludes children from plain text editable fields with role", %{page: page} do
@@ -165,12 +168,13 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "textbox",
-        name: "",
-        multiline: true,
-        value: "Edit this image: "
-      }
+               role: "textbox",
+               name: "",
+               multiline: true,
+               value: "Edit this image: "
+             }
     end
 
     test "excludes content from plain text editable fields without role", %{page: page} do
@@ -179,11 +183,12 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "generic",
-        name: "",
-        value: "Edit this image: "
-      }
+               role: "generic",
+               name: "",
+               value: "Edit this image: "
+             }
     end
 
     test "excludes content from plain text editable fields with tabindex and without role", %{page: page} do
@@ -192,11 +197,12 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "generic",
-        name: "",
-        value: "Edit this image: "
-      }
+               role: "generic",
+               name: "",
+               value: "Edit this image: "
+             }
     end
 
     test "excludes children from non-editable textbox with role, tabindex and label", %{page: page} do
@@ -208,11 +214,12 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "textbox",
-        name: "my favorite textbox",
-        value: "this is the inner content "
-      }
+               role: "textbox",
+               name: "my favorite textbox",
+               value: "this is the inner content "
+             }
     end
 
     test "excludes children from a checkbox with tabindex and label", %{page: page} do
@@ -224,11 +231,12 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "checkbox",
-        name: "my favorite checkbox",
-        checked: true
-      }
+               role: "checkbox",
+               name: "my favorite checkbox",
+               checked: true
+             }
     end
 
     test "excludes children from a checkbox without a label", %{page: page} do
@@ -240,11 +248,12 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
+
       assert element == %{
-        role: "checkbox",
-        name: "this is the inner content yo",
-        checked: true
-      }
+               role: "checkbox",
+               name: "this is the inner content yo",
+               checked: true
+             }
     end
   end
 
@@ -253,21 +262,23 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       Page.set_content(page, "<button>My Button</button>")
 
       element = Page.query_selector!(page, "button")
+
       assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-        role: "button",
-        name: "My Button"
-      }
+               role: "button",
+               name: "My Button"
+             }
     end
 
     test "with an input", %{page: page} do
       Page.set_content(page, "<input title='My Input' value='My Value'>")
 
       element = Page.query_selector!(page, "input")
+
       assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-        role: "textbox",
-        name: "My Input",
-        value: "My Value"
-      }
+               role: "textbox",
+               name: "My Input",
+               value: "My Value"
+             }
     end
 
     test "with a menu", %{page: page} do
@@ -280,15 +291,16 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       """)
 
       element = Page.query_selector!(page, "div[role='menu']")
+
       assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-        role: "menu",
-        name: "My Menu",
-        children: [
-          %{role: "menuitem", name: "First Item"},
-          %{role: "menuitem", name: "Second Item"},
-          %{role: "menuitem", name: "Third Item"}
-        ]
-      }
+               role: "menu",
+               name: "My Menu",
+               children: [
+                 %{role: "menuitem", name: "First Item"},
+                 %{role: "menuitem", name: "Second Item"},
+                 %{role: "menuitem", name: "Third Item"}
+               ]
+             }
     end
 
     # Skipped: we're not yet correctly handling multi-RECV Responses.
