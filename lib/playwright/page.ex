@@ -37,6 +37,7 @@ defmodule Playwright.Page do
   alias Playwright.Extra
   alias Playwright.Page
   alias Playwright.Runner.Channel
+  alias Playwright.Runner.Helpers
 
   def new(parent, args) do
     channel_owner(parent, args)
@@ -154,6 +155,19 @@ defmodule Playwright.Page do
     |> hydrate()
   end
 
+  def route(%{connection: _connection} = subject, url_pattern, callback, _options \\ %{}) do
+    matcher = Helpers.URLMatcher.new(url_pattern)
+    handler = Helpers.RouteHandler.new(matcher, callback)
+    listeners = subject.listeners["route"]
+
+    if listeners == nil || Enum.empty?(listeners) do
+      Channel.send(subject, "setNetworkInterceptionEnabled", %{enabled: true})
+    end
+
+    Channel.on(subject.connection, {"route", subject}, handler)
+    subject
+  end
+
   def screenshot(subject, params) do
     case Map.pop(params, "path", nil) do
       {nil, params} ->
@@ -208,7 +222,7 @@ defmodule Playwright.Page do
 
   @doc false
   def channel__on(subject, other)
-      when other in ["console"] do
+      when other in ["console", "route"] do
     subject
   end
 

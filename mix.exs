@@ -54,7 +54,8 @@ defmodule Playwright.MixProject do
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
       {:plug_cowboy, "~> 2.5", only: [:dev, :test]},
       {:plug, "~> 1.12", only: [:dev, :test]},
-      {:recase, "~> 0.7"}
+      {:recase, "~> 0.7"},
+      {:uuid, "~> 1.1"}
     ]
   end
 

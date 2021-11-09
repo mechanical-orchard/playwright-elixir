@@ -1,13 +1,16 @@
 defmodule Playwright.Request do
   @moduledoc false
-  use Playwright.Runner.ChannelOwner
+  use Playwright.Runner.ChannelOwner,
+    fields: [:frame, :headers, :is_navigation_request, :method, :post_data, :resource_type, :url]
+
+  alias Playwright.Runner.Connection
 
   def new(parent, args) do
     channel_owner(parent, args)
   end
 
   def for_response(response) do
-    Playwright.Runner.Connection.get(response.connection, response.initializer.request)
+    Connection.get(response.connection, response.initializer.request)
     |> List.first()
   end
 

@@ -26,6 +26,7 @@ defmodule Playwright.Runner.ChannelOwner do
 
       defstruct unquote(fields)
 
+      # NOTE: need to define (on @base and :fields) the types.
       @type t() :: %__MODULE__{}
 
       @doc false
@@ -53,10 +54,18 @@ defmodule Playwright.Runner.ChannelOwner do
       # private
       # ------------------------------------------------------------------------
 
-      defp camelcase(atom) do
-        Extra.Atom.to_string(atom)
+      defp camelcase(field) when is_atom(field) do
+        Extra.Atom.to_string(field)
         |> Recase.to_camel()
         |> Extra.Atom.from_string()
+      end
+
+      defp camelcase({key, value} = field) when is_tuple(field) do
+        camelkey = Extra.Atom.to_string(key)
+        |> Recase.to_camel()
+        |> Extra.Atom.from_string()
+
+        {camelkey, value}
       end
     end
   end

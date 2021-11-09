@@ -49,4 +49,9 @@ defmodule Playwright.BrowserContext do
   def channel__on(subject, "close") do
     subject
   end
+
+  @doc false
+  def channel__on(subject, "request") do
+    subject
+  end
 end

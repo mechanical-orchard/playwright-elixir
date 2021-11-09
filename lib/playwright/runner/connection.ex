@@ -64,6 +64,11 @@ defmodule Playwright.Runner.Connection do
     GenServer.call(connection, {:post, {:cmd, command}})
   end
 
+  @spec post(pid(), atom(), Channel.Command.t()) :: term()
+  def post(connection, :noreply, command) do
+    GenServer.cast(connection, {:post, {:cmd, command}})
+  end
+
   # Transport-bound.
   # - Is the one "API function" that receives from the Transport.
   # - ...therefore, all `reply`, `handler`, etc. "clearing" MUST originate here.
@@ -140,6 +145,13 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
+  def handle_cast({:post, {:cmd, message}}, %{transport: transport} = state) do
+    Transport.post(transport, Jason.encode!(message))
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
   def handle_cast({:recv, {:text, json}}, state) do
     recv_payload(json, state)
   end
@@ -159,21 +171,27 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
-    {callback, updated} = Map.pop!(callbacks, message_id)
-    Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
+    # Logger.warn("recv_payload A: #{inspect(message)}")
+    case Map.pop(callbacks, message_id) do
+      {nil, _callbacks} ->
+        state
 
-    %{state | callbacks: updated}
+      {callback, callbacks} ->
+        Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
+        %{state | callbacks: callbacks}
+    end
   end
 
-  defp recv_payload(%{method: _method} = event, %{catalog: catalog} = state) do
-    Channel.Event.handle(event, catalog)
+  defp recv_payload(%{method: _method} = message, %{catalog: catalog} = state) do
+    # Logger.warn("recv_payload B: #{inspect(message)}")
+    Channel.Event.handle(message, catalog)
     state
   end
 
-  # %{playwright: %{guid: "Playwright"}}
-  defp recv_payload(%{result: _result}, %{catalog: _catalog} = state) do
-    # Logger.warn("Connection.recv_payload w/ non-identified result: #{inspect(result)}")
-    # Logger.info("  ...catalog includes: #{inspect(Catalog.keys(catalog))}")
+  # - %{playwright: %{guid: "Playwright"}}
+  # - errors
+  defp recv_payload(%{result: _result} = _message, %{catalog: _catalog} = state) do
+    # Logger.warn("recv_payload C: #{inspect(message)}")
     state
   end
 end

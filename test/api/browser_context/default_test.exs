@@ -6,8 +6,6 @@ defmodule Test.BrowserContext.DefaultTest do
   alias Playwright.Page
   alias Playwright.Request
 
-  require Logger
-
   describe "supported options" do
     @tag exclude: [:page]
     test "extraHTTPHeaders", %{assets: assets, browser: browser} do
