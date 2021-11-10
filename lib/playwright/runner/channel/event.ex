@@ -46,27 +46,19 @@ defmodule Playwright.Runner.Channel.Event do
 
   # ---
 
-  defp handle(type, %{guid: guid, params: params}, catalog)
-      when type in ["navigated"] do
-    resource = Catalog.get(catalog, guid)
-    handlers = resource.listeners[type] || []
-    payload = {Extra.Atom.from_string(type), params}
-
-    Enum.each(handlers, fn handler ->
-      handler.(resource, payload)
-    end)
-
-    catalog
-  end
-
-  defp handle(type, %{guid: guid} = _message, catalog)
-    when type in ["close"] do
+  defp handle(type, %{guid: guid, params: params} = _message, catalog)
+    when type in ["close", "navigated"] do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 
-    {:ok, resource} = m.on_event(r, new(type))
+    {:ok, resource} = m.on_event(r, new(type, params))
 
     Catalog.put(catalog, resource)
+  end
+
+  defp handle(type, %{guid: _} = message, catalog)
+    when type in ["close"] do
+    handle(type, Map.merge(message, %{params: %{}}), catalog)
   end
 
   # ---
