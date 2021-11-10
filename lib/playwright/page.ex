@@ -49,6 +49,11 @@ defmodule Playwright.Page do
     {:ok, Map.put(subject, :closed, true)}
   end
 
+  @impl ChannelOwner
+  def before_event(subject, %Channel.Event{type: :console}) do
+    {:ok, subject}
+  end
+
   # delegated to main frame
   # ---------------------------------------------------------------------------
 

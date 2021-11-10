@@ -56,82 +56,45 @@ defmodule Playwright.Runner.Channel.Event do
     Catalog.put(catalog, resource)
   end
 
+  defp handle(type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog)
+    when type in ["console"] do
+    r = Catalog.get(catalog, guid)
+    m = module_for(r)
+
+    message = Catalog.get(catalog, message_guid)
+    payload = %{text: message.message_text, type: message.message_type}
+    {:ok, resource} = m.on_event(r, new(type, payload))
+
+    Catalog.put(catalog, resource)
+  end
+
   defp handle(type, %{guid: _} = message, catalog)
     when type in ["close"] do
     handle(type, Map.merge(message, %{params: %{}}), catalog)
   end
 
-  # ---
+  defp handle(type, %{guid: guid, params: %{request: %{guid: request_guid}}}, catalog)
+    when type in ["request", "requestFinished"] do
+    r = Catalog.get(catalog, guid)
+    m = module_for(r)
 
-  defp handle("console" = event_type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog) do
-    resource = Catalog.get(catalog, guid)
-    # resource = module(resource).channel__on(resource, event_type)
-    handlers = resource.listeners[event_type]
-
-    if handlers do
-      message = Catalog.get(catalog, message_guid)
-      event = {:on, Extra.Atom.from_string(event_type), message}
-
-      Enum.each(handlers, fn handler ->
-        handler.(event)
-      end)
-    end
+    request = Catalog.get(catalog, request_guid)
+    payload = %{request: request}
+    {:ok, resource} = m.on_event(r, new(type, payload))
 
     Catalog.put(catalog, resource)
   end
 
-  defp handle("page", _event, catalog) do
-    # Logger.warn("WIP: Event.handle/3 for 'page': event data: #{inspect(event)}")
-    catalog
-  end
+  defp handle(type, %{guid: guid, params: %{response: %{guid: response_guid}}}, catalog)
+    when type in ["response"] do
+    r = Catalog.get(catalog, guid)
+    m = module_for(r)
 
-  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
-    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
+    response = Catalog.get(catalog, response_guid)
+    payload = %{response: response}
+    {:ok, resource} = m.on_event(r, new(type, payload))
+
     Catalog.put(catalog, resource)
-  end
-
-  defp handle(event_type, %{guid: guid, params: params} = event, catalog)
-       when event_type in ["request", "requestFinished"] do
-    Logger.debug("WIP: Event.handle/3 for #{inspect(event_type)}, etc.: event: #{inspect(event)}")
-    resource = Catalog.get(catalog, guid)
-    # resource = module(resource).channel__on(resource, event_type)
-    handlers = resource.listeners[event_type]
-
-    # IO.inspect(%{listeners: resource.listeners, resource: resource}, label: "SO FAR")
-
-    type = Extra.Atom.from_string(event_type)
-
-    if handlers do
-      request = Catalog.get(catalog, params[:request].guid)
-      event = {:on, type, request}
-
-      Enum.each(handlers, fn handler ->
-        handler.(event)
-      end)
-    end
-
-    catalog
-  end
-
-  defp handle(event_type, %{guid: guid, params: params} = _event, catalog)
-       when event_type in ["response"] do
-    # Logger.error("WIP: Event.handle/3 for 'response', etc.: event params: #{inspect(params)}")
-    resource = Catalog.get(catalog, guid)
-    # resource = module(resource).channel__on(resource, event_type)
-    handlers = resource.listeners[event_type]
-
-    type = Extra.Atom.from_string(event_type)
-
-    if handlers do
-      response = Catalog.get(catalog, params[:response].guid)
-      event = {:on, type, response}
-
-      Enum.each(handlers, fn handler ->
-        handler.(event)
-      end)
-    end
-
-    catalog
   end
 
   defp handle("route" = event_type, %{guid: guid, params: params} = _event, catalog) do
@@ -157,6 +120,18 @@ defmodule Playwright.Runner.Channel.Event do
     else
       catalog
     end
+  end
+
+  # ---
+
+  defp handle("page", _event, catalog) do
+    # Logger.warn("WIP: Event.handle/3 for 'page': event data: #{inspect(event)}")
+    catalog
+  end
+
+  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
+    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
+    Catalog.put(catalog, resource)
   end
 
   defp handle(method, event, catalog) do

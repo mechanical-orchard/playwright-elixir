@@ -42,15 +42,15 @@ defmodule Test.Features.Page.OnEventTest do
     test "on 'console'", %{page: page} do
       test_pid = self()
 
-      Page.on(page, "console", fn event ->
+      Page.on(page, "console", fn (_, event) ->
         send(test_pid, event)
       end)
 
       Page.evaluate(page, "function () { console.info('lala!'); }")
       Page.evaluate(page, "console.error('lulu!')")
 
-      assert_received({:on, :console, %Playwright.ConsoleMessage{initializer: %{text: "lala!", type: "info"}}})
-      assert_received({:on, :console, %Playwright.ConsoleMessage{initializer: %{text: "lulu!", type: "error"}}})
+      assert_received(%Channel.Event{params: %{text: "lala!", type: "info"}, type: :console})
+      assert_received(%Channel.Event{params: %{text: "lulu!", type: "error"}, type: :console})
     end
   end
 end
