@@ -10,6 +10,6 @@ defmodule Playwright.Route do
 
   def continue(subject) do
     subject
-    |> Channel.send_noreply("continue", %{interceptResponse: false})
+    |> Channel.send("continue", %{interceptResponse: false})
   end
 end

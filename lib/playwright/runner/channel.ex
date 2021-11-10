@@ -23,9 +23,4 @@ defmodule Playwright.Runner.Channel do
     command = Channel.Command.new(subject.guid, method, params)
     Connection.post(subject.connection, command)
   end
-
-  def send_noreply(subject, method, params \\ %{}) do
-    command = Channel.Command.new(subject.guid, method, params)
-    Connection.post(subject.connection, :noreply, command)
-  end
 end

@@ -64,11 +64,6 @@ defmodule Playwright.Runner.Connection do
     GenServer.call(connection, {:post, {:cmd, command}})
   end
 
-  @spec post(pid(), atom(), Channel.Command.t()) :: term()
-  def post(connection, :noreply, command) do
-    GenServer.cast(connection, {:post, {:cmd, command}})
-  end
-
   # Transport-bound.
   # - Is the one "API function" that receives from the Transport.
   # - ...therefore, all `reply`, `handler`, etc. "clearing" MUST originate here.
@@ -147,13 +142,6 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
-  def handle_cast({:post, {:cmd, message}}, %{transport: transport} = state) do
-    Transport.post(transport, Jason.encode!(message))
-
-    {:noreply, state}
-  end
-
-  @impl GenServer
   def handle_cast({:recv, {:text, json}}, state) do
     recv_payload(json, state)
   end
@@ -174,14 +162,9 @@ defmodule Playwright.Runner.Connection do
 
   defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
     # Logger.warn("recv_payload A: #{inspect(message)}")
-    case Map.pop(callbacks, message_id) do
-      {nil, _callbacks} ->
-        state
-
-      {callback, callbacks} ->
-        Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
-        %{state | callbacks: callbacks}
-    end
+    {callback, updated} = Map.pop!(callbacks, message_id)
+    Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
+    %{state | callbacks: updated}
   end
 
   defp recv_payload(%{method: _method} = message, %{catalog: catalog} = state) do

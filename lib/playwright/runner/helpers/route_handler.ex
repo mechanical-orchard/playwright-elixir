@@ -15,7 +15,9 @@ defmodule Playwright.Runner.Helpers.RouteHandler do
   # ---
 
   def handle(%__MODULE__{handler: handler} = _instance, route, request) do
-    handler.(route, request)
+    Task.start_link(fn ->
+      handler.(route, request)
+    end)
   end
 
   def matches(%__MODULE__{} = instance, request_url) do
