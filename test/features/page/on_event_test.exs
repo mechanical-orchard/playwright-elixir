@@ -1,6 +1,9 @@
 defmodule Test.Features.Page.OnEventTest do
   use Playwright.TestCase, async: true
 
+  alias Playwright.Page
+  alias Playwright.Runner.Channel
+
   describe "Page.on/3" do
     @tag exclude: [:page]
     test "on 'close'", %{browser: browser} do
@@ -8,12 +11,16 @@ defmodule Test.Features.Page.OnEventTest do
       this = self()
       guid = page.guid
 
-      Playwright.Page.on(page, "close", fn event ->
-        send(this, event)
+      Page.on(page, "close", fn p, event ->
+        send(this, {p, event})
       end)
 
-      Playwright.Page.close(page)
-      assert_received({:on, :close, %Playwright.Page{guid: ^guid, initializer: %{isClosed: true}}})
+      Page.close(page)
+
+      assert_received({
+        %Page{guid: ^guid, closed: true},
+        %Channel.Event{params: %{}, type: :close}
+      })
     end
 
     # NOTE: this is really about *any* `on` event handling
@@ -23,12 +30,12 @@ defmodule Test.Features.Page.OnEventTest do
       %{guid: guid_one} = page_one = Playwright.Browser.new_page(browser)
       %{guid: guid_two} = page_two = Playwright.Browser.new_page(browser)
 
-      Playwright.Page.on(page_one, "close", fn {:on, :close, page} ->
-        send(this, page.guid)
+      Page.on(page_one, "close", fn p, _event ->
+        send(this, p.guid)
       end)
 
-      Playwright.Page.close(page_one)
-      Playwright.Page.close(page_two)
+      Page.close(page_one)
+      Page.close(page_two)
 
       assert_received(^guid_one)
       refute_received(^guid_two)
@@ -37,15 +44,15 @@ defmodule Test.Features.Page.OnEventTest do
     test "on 'console'", %{page: page} do
       test_pid = self()
 
-      Playwright.Page.on(page, "console", fn event ->
+      Page.on(page, "console", fn _, event ->
         send(test_pid, event)
       end)
 
-      Playwright.Page.evaluate(page, "function () { console.info('lala!'); }")
-      Playwright.Page.evaluate(page, "console.error('lulu!')")
+      Page.evaluate(page, "function () { console.info('lala!'); }")
+      Page.evaluate(page, "console.error('lulu!')")
 
-      assert_received({:on, :console, %Playwright.ConsoleMessage{initializer: %{text: "lala!", type: "info"}}})
-      assert_received({:on, :console, %Playwright.ConsoleMessage{initializer: %{text: "lulu!", type: "error"}}})
+      assert_received(%Channel.Event{params: %{text: "lala!", type: "info"}, type: :console})
+      assert_received(%Channel.Event{params: %{text: "lulu!", type: "error"}, type: :console})
     end
   end
 end

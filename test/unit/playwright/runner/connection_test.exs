@@ -26,7 +26,12 @@ defmodule Playwright.Runner.ConnectionTest do
 
       Catalog.put(catalog, %{guid: "browser@1", parent: %{guid: "Root"}, type: "Browser"})
       Catalog.put(catalog, %{guid: "context@1", parent: %{guid: "browser@1"}, type: "BrowserContext"})
-      Catalog.put(catalog, %{guid: "page@1", parent: %{guid: "context@1"}, type: "Page"})
+
+      Catalog.put(catalog, %{
+        guid: "page@1",
+        parent: %{guid: "context@1", initializer: %{isClosed: false}},
+        type: "Page"
+      })
 
       :sys.replace_state(connection, fn state -> %{state | catalog: catalog} end)
 
@@ -63,7 +68,7 @@ defmodule Playwright.Runner.ConnectionTest do
           method: "__create__",
           params: %{
             guid: "page@1",
-            initializer: %{},
+            initializer: %{isClosed: false},
             type: "Page"
           }
         })

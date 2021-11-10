@@ -30,24 +30,33 @@ defmodule Playwright.Page do
   [online](https://playwright.dev/docs/selectors).
   """
   use Playwright.Runner.ChannelOwner,
-    fields: [:frames, :main_frame, :owned_context]
+    fields: [:closed, :frames, :main_frame, :owned_context]
 
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle
   alias Playwright.Extra
   alias Playwright.Page
   alias Playwright.Runner.Channel
+  alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Helpers
 
-  def new(parent, args) do
-    channel_owner(parent, args)
+  def new(%{connection: _connection} = parent, args) do
+    Map.merge(channel_owner(parent, args), %{closed: args.initializer.isClosed})
+  end
+
+  @impl ChannelOwner
+  def before_event(subject, %Channel.Event{type: :close}) do
+    {:ok, Map.put(subject, :closed, true)}
+  end
+
+  @impl ChannelOwner
+  def before_event(subject, %Channel.Event{type: :console}) do
+    {:ok, subject}
   end
 
   # delegated to main frame
   # ---------------------------------------------------------------------------
-  # url(): string {
-  #   return this._mainFrame.url();
-  # }
+
   def url(subject) do
     Playwright.Frame.url(frame(subject))
   end
@@ -145,6 +154,8 @@ defmodule Playwright.Page do
     subject
   end
 
+  require Logger
+
   def on(subject, event, handler) do
     Channel.on(subject.connection, {event, subject}, handler)
     subject
@@ -239,20 +250,6 @@ defmodule Playwright.Page do
 
   def wait_for_selector(subject, selector, options \\ %{}) do
     frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
-  end
-
-  # .channel__on (things that might want to move to Channel)
-  # ----------------------------------------------------------------------------
-
-  @doc false
-  def channel__on(subject, "close") do
-    %{subject | initializer: Map.put(subject.initializer, :isClosed, true)}
-  end
-
-  @doc false
-  def channel__on(subject, other)
-      when other in ["console", "route"] do
-    subject
   end
 
   # private

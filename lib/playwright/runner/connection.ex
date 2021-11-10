@@ -117,8 +117,24 @@ defmodule Playwright.Runner.Connection do
   # NOTE: this should move to be part of `Catalog.put`
   @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
-    subject = Map.merge(Catalog.get(catalog, guid), data)
-    Catalog.put(catalog, subject)
+    # Logger.warn("Connection patching #{inspect(subject)} for guid: #{inspect(guid)}")
+
+    # NOTE: It's possible that the resource has been removed from the Catalog
+    # (e.g., on `Page.close`). It may be that there's a more sensible way to
+    # handle such scenarios, but this will do for now.
+    subject =
+      case Catalog.get(catalog, guid) do
+        nil ->
+          nil
+
+        subject ->
+          Map.merge(subject, data)
+      end
+
+    if subject do
+      Catalog.put(catalog, subject)
+    end
+
     {:reply, subject, state}
   end
 

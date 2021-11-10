@@ -13,7 +13,7 @@ defmodule Test.BrowserContext.NetworkEventTest do
       context = Browser.new_context(browser)
       page = BrowserContext.new_page(context)
 
-      BrowserContext.on(context, "request", fn {:on, :request, request} ->
+      BrowserContext.on(context, "request", fn _, %{params: %{request: request}} ->
         send(this, request.url)
       end)
 
