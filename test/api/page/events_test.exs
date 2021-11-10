@@ -32,7 +32,7 @@ defmodule Playwright.Page.EventsTest do
       this = self()
       expected_url = assets.prefix <> "/empty.html"
 
-      Page.on(page, "request", fn {:on, :request, request} ->
+      Page.on(page, "request", fn (_, %{params: %{request: request}}) ->
         send(this, request.url)
       end)
 

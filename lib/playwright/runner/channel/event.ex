@@ -97,9 +97,10 @@ defmodule Playwright.Runner.Channel.Event do
     Catalog.put(catalog, resource)
   end
 
+  # ---
+
   defp handle("route" = event_type, %{guid: guid, params: params} = _event, catalog) do
     resource = Catalog.get(catalog, guid)
-    # resource = module(resource).channel__on(resource, event_type)
     {handlers, listeners} = Map.pop(resource.listeners, event_type)
 
     if handlers do
