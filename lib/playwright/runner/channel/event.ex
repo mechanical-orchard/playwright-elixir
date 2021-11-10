@@ -9,6 +9,7 @@ defmodule Playwright.Runner.Channel.Event do
   alias Playwright.Runner.Helpers
 
   def handle(%{method: method} = event, catalog) do
+    # IO.inspect(event, label: "Event.handle")
     handle(method, event, catalog)
   end
 
@@ -32,6 +33,22 @@ defmodule Playwright.Runner.Channel.Event do
   defp handle("__dispose__", %{guid: guid} = _event, catalog) do
     Catalog.rm_r(catalog, guid)
   end
+
+  # ---
+
+  defp handle(type, %{guid: guid, params: params}, catalog) when type in ["navigated"] do
+    resource = Catalog.get(catalog, guid)
+    handlers = resource.listeners[type] || []
+    payload = {Extra.Atom.from_string(type), params}
+
+    Enum.each(handlers, fn handler ->
+      handler.(resource, payload)
+    end)
+
+    Catalog.put(catalog, resource)
+  end
+
+  # ---
 
   defp handle("close" = event_type, %{guid: guid}, catalog) do
     resource = Catalog.get(catalog, guid)
@@ -66,25 +83,51 @@ defmodule Playwright.Runner.Channel.Event do
     Catalog.put(catalog, resource)
   end
 
-  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
-    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
-    Catalog.put(catalog, resource)
-  end
-
   defp handle("page", _event, catalog) do
     # Logger.warn("WIP: Event.handle/3 for 'page': event data: #{inspect(event)}")
     catalog
   end
 
-  defp handle("request" = event_type, %{guid: guid, params: params} = _event, catalog) do
-    # Logger.error("WIP: Event.handle/3 for 'request': event data: #{inspect(event)}")
+  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
+    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
+    Catalog.put(catalog, resource)
+  end
+
+  defp handle(event_type, %{guid: guid, params: params} = event, catalog)
+       when event_type in ["request", "requestFinished"] do
+    Logger.debug("WIP: Event.handle/3 for #{inspect(event_type)}, etc.: event: #{inspect(event)}")
     resource = Catalog.get(catalog, guid)
     resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
+    # IO.inspect(%{listeners: resource.listeners, resource: resource}, label: "SO FAR")
+
+    type = Extra.Atom.from_string(event_type)
+
     if handlers do
-      request = Catalog.get(catalog, params.request.guid)
-      event = {:on, Extra.Atom.from_string(event_type), request}
+      request = Catalog.get(catalog, params[:request].guid)
+      event = {:on, type, request}
+
+      Enum.each(handlers, fn handler ->
+        handler.(event)
+      end)
+    end
+
+    catalog
+  end
+
+  defp handle(event_type, %{guid: guid, params: params} = _event, catalog)
+       when event_type in ["response"] do
+    # Logger.error("WIP: Event.handle/3 for 'response', etc.: event params: #{inspect(params)}")
+    resource = Catalog.get(catalog, guid)
+    resource = module(resource).channel__on(resource, event_type)
+    handlers = resource.listeners[event_type]
+
+    type = Extra.Atom.from_string(event_type)
+
+    if handlers do
+      response = Catalog.get(catalog, params[:response].guid)
+      event = {:on, type, response}
 
       Enum.each(handlers, fn handler ->
         handler.(event)

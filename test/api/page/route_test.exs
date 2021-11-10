@@ -1,7 +1,9 @@
-defmodule Test.Page.RouteTest do
+# defmodule Test.Page.RouteTest do
+defmodule Playwright.Page.RouteTest do
   use Playwright.TestCase, async: true
 
   alias Playwright.Page
+  alias Playwright.Response
   alias Playwright.Route
 
   describe "Page.route/3" do
@@ -25,7 +27,7 @@ defmodule Test.Page.RouteTest do
       end)
 
       response = Page.goto(page, assets.prefix <> "/empty.html")
-      assert response.ok
+      assert Response.ok(response)
 
       assert_received(:intercepted)
     end

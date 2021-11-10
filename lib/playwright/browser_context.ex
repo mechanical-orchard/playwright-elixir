@@ -42,16 +42,23 @@ defmodule Playwright.BrowserContext do
     subject
   end
 
+  @doc """
+  Register a handler for various event types.
+  """
+  def on(subject, event, handler) do
+    Channel.on(subject.connection, {event, subject}, handler)
+    subject
+  end
+
+  # def wait_for_event(subject, "page" = event) do
+  #   event_info = expect_event(subject, event)
+  # end
+
   # .channel__on (things that might want to move to Channel)
   # ----------------------------------------------------------------------------
 
   @doc false
-  def channel__on(subject, "close") do
-    subject
-  end
-
-  @doc false
-  def channel__on(subject, "request") do
+  def channel__on(subject, event) when event in ["close", "request", "requestFinished", "response"] do
     subject
   end
 end

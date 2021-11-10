@@ -1,6 +1,7 @@
 defmodule Playwright.Runner.Channel.Callback do
   @moduledoc false
   require Logger
+  alias Playwright.Runner.Channel.Error
   alias Playwright.Runner.Channel.Response
 
   defstruct [:listener, :message]
@@ -10,6 +11,10 @@ defmodule Playwright.Runner.Channel.Callback do
       listener: listener,
       message: message
     }
+  end
+
+  def resolve(%{listener: listener}, %Error{} = error) do
+    GenServer.reply(listener, error)
   end
 
   def resolve(%{listener: listener}, %Response{} = response) do

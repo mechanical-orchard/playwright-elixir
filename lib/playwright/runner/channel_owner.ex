@@ -51,6 +51,16 @@ defmodule Playwright.Runner.ChannelOwner do
         )
       end
 
+      def patch(subject, data) do
+        Task.start_link(fn ->
+          Connection.patch(subject.connection, {:guid, subject.guid}, data)
+        end)
+      end
+
+      # def patch(connection, guid, data) do
+      #   Connection.patch(connection, {:guid, guid}, data)
+      # end
+
       # private
       # ------------------------------------------------------------------------
 

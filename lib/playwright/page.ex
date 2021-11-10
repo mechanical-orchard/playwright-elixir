@@ -43,6 +43,15 @@ defmodule Playwright.Page do
     channel_owner(parent, args)
   end
 
+  # delegated to main frame
+  # ---------------------------------------------------------------------------
+  # url(): string {
+  #   return this._mainFrame.url();
+  # }
+  def url(subject) do
+    Playwright.Frame.url(frame(subject))
+  end
+
   # ----------------------------------------------------------------------------
 
   def context(subject) do
@@ -112,12 +121,28 @@ defmodule Playwright.Page do
     |> ElementHandle.get_attribute(name)
   end
 
-  def goto(subject, url) do
-    if Playwright.Extra.URI.absolute?(url) do
-      frame(subject) |> Channel.send("goto", %{url: url, waitUntil: "load"})
-    else
-      raise "Expected an absolute URL, got: #{inspect(url)}"
+  def goto(subject, "about:blank" = url) do
+    frame(subject) |> Channel.send("goto", %{url: url, waitUntil: "load"})
+  end
+
+  def goto(subject, url, _params \\ %{}) do
+    case frame(subject) |> Channel.send("goto", %{url: url, waitUntil: "load"}) do
+      %Channel.Error{} = error ->
+        raise RuntimeError, message: error.message
+
+      response ->
+        response
     end
+  end
+
+  def on(subject, event, handler)
+      when event in ["request", "response", "requestFinished"] do
+    # NOTE: the event/method will be recv'd from Playwright server with
+    # the parent BrowserContext as the context/bound :guid. So, we need to
+    # add our handlers there, on that (BrowserContext) parent.
+    parent = Channel.get(subject.connection, {:guid, subject.parent.guid})
+    Channel.on(subject.connection, {event, parent}, handler)
+    subject
   end
 
   def on(subject, event, handler) do
@@ -206,6 +231,10 @@ defmodule Playwright.Page do
 
   def title(subject) do
     frame(subject) |> Channel.send("title")
+  end
+
+  def wait_for_load_state(_subject, _options \\ %{}) do
+    # frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
   end
 
   def wait_for_selector(subject, selector, options \\ %{}) do

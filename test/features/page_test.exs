@@ -104,12 +104,6 @@ defmodule Test.Features.PageTest do
       end
     end
 
-    test "goto/2 fails if the url is a relative URL", %{page: page} do
-      assert_raise RuntimeError, ~s|Expected an absolute URL, got: "/relative/path"|, fn ->
-        Playwright.Page.goto(page, "/relative/path")
-      end
-    end
-
     test ".press/2", %{assets: assets, page: page} do
       page
       |> Playwright.Page.goto(assets.prefix <> "/input/textarea.html")

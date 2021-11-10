@@ -135,7 +135,7 @@ defmodule Playwright.Runner.Connection do
   @impl GenServer
   def handle_cast({:on, {event, subject}, handler}, %{catalog: catalog} = state) do
     listeners = [handler | subject.listeners[event] || []]
-    subject = %{subject | listeners: %{event => listeners}}
+    subject = %{subject | listeners: Map.put(subject.listeners, event, listeners)}
 
     Catalog.put(catalog, subject)
     {:noreply, state}
@@ -160,8 +160,17 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
+  defp recv_payload(%{error: error, id: message_id}, %{callbacks: callbacks, catalog: catalog} = state) do
+    # Logger.warn("recv_payload E: #{inspect(error)}")
+
+    {callback, updated} = Map.pop!(callbacks, message_id)
+    Channel.Callback.resolve(callback, Channel.Error.new(error, catalog))
+    %{state | callbacks: updated}
+  end
+
   defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
     # Logger.warn("recv_payload A: #{inspect(message)}")
+
     {callback, updated} = Map.pop!(callbacks, message_id)
     Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
     %{state | callbacks: updated}
@@ -169,14 +178,14 @@ defmodule Playwright.Runner.Connection do
 
   defp recv_payload(%{method: _method} = message, %{catalog: catalog} = state) do
     # Logger.warn("recv_payload B: #{inspect(message)}")
+
     Channel.Event.handle(message, catalog)
     state
   end
 
   # - %{playwright: %{guid: "Playwright"}}
-  # - errors
-  defp recv_payload(%{result: _result} = _message, %{catalog: _catalog} = state) do
-    # Logger.warn("recv_payload C: #{inspect(message)}")
+  defp recv_payload(%{result: _result} = message, %{catalog: _catalog} = state) do
+    Logger.debug("recv_payload C: #{inspect(message)}")
     state
   end
 end
