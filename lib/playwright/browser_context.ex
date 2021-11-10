@@ -17,10 +17,6 @@ defmodule Playwright.BrowserContext do
     channel_owner(parent, args)
   end
 
-  def before_event(_, %Channel.Event{type: :close}) do
-    nil
-  end
-
   @doc """
   Create a new `Playwright.Page` in the browser context. If the context is
   "owned" by a `Playwright.Page` (i.e., was created as a side effect of

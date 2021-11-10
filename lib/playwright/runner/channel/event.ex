@@ -61,43 +61,15 @@ defmodule Playwright.Runner.Channel.Event do
 
   defp handle(type, %{guid: guid} = _message, catalog)
     when type in ["close"] do
-    resource = Catalog.get(catalog, guid)
-    handlers = resource.listeners[type] || []
-    payload = new(type)
+    r = Catalog.get(catalog, guid)
+    m = module_for(r)
 
-    m = module_for(resource)
-    changes = m.before_event(resource, payload)
+    {:ok, resource} = m.on_event(r, new(type))
 
-    if changes do
-      Catalog.put(catalog, Map.merge(resource, changes))
-    end
-    resource = Catalog.get(catalog, guid)
-
-    Enum.each(handlers, fn handler ->
-      handler.(resource, payload)
-    end)
-
-    catalog
+    Catalog.put(catalog, resource)
   end
 
-
   # ---
-
-  # defp handle("close" = event_type, %{guid: guid}, catalog) do
-  #   resource = Catalog.get(catalog, guid)
-  #   # resource = module(resource).channel__on(resource, event_type)
-  #   handlers = resource.listeners[event_type]
-
-  #   if handlers do
-  #     event = {:on, Extra.Atom.from_string(event_type), resource}
-
-  #     Enum.each(handlers, fn handler ->
-  #       handler.(event)
-  #     end)
-  #   end
-
-  #   Catalog.put(catalog, resource)
-  # end
 
   defp handle("console" = event_type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog) do
     resource = Catalog.get(catalog, guid)

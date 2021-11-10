@@ -3,6 +3,11 @@ defmodule Playwright.Runner.ChannelOwner do
   @base [:connection, :guid, :initializer, :parent, :type, :listeners]
 
   require Logger
+  alias Playwright.Runner.Channel
+  alias Playwright.Runner.ChannelOwner
+
+  @callback before_event(term(), %Channel.Event{}) :: {:ok, term}
+  @optional_callbacks before_event: 2
 
   defmacro __using__(config \\ []) do
     extra =
@@ -17,6 +22,8 @@ defmodule Playwright.Runner.ChannelOwner do
     fields = extra ++ @base
 
     quote do
+      @behaviour ChannelOwner
+
       @derive {Jason.Encoder, only: [:guid]}
       @derive {Inspect, only: [:guid, :initializer] ++ unquote(extra)}
 
@@ -56,6 +63,25 @@ defmodule Playwright.Runner.ChannelOwner do
           Connection.patch(subject.connection, {:guid, subject.guid}, data)
         end)
       end
+
+      @doc false
+      def on_event(owner, %Playwright.Runner.Channel.Event{} = event) do
+        {:ok, owner} = before_event(owner, event)
+
+        handlers = (owner.listeners[Atom.to_string(event.type)] || [])
+        Enum.each(handlers, fn handler ->
+          handler.(owner, event)
+        end)
+
+        {:ok, owner}
+      end
+
+      @doc false
+      def before_event(owner, %Playwright.Runner.Channel.Event{}) do
+        {:ok, owner}
+      end
+
+      defoverridable(before_event: 2)
 
       # private
       # ------------------------------------------------------------------------

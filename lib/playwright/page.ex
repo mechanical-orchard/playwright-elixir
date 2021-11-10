@@ -37,14 +37,16 @@ defmodule Playwright.Page do
   alias Playwright.Extra
   alias Playwright.Page
   alias Playwright.Runner.Channel
+  alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Helpers
 
   def new(%{connection: _connection} = parent, args) do
     Map.merge(channel_owner(parent, args), %{closed: args.initializer.isClosed})
   end
 
-  def before_event(_, %Channel.Event{type: :close}) do
-    %{closed: true}
+  @impl ChannelOwner
+  def before_event(subject, %Channel.Event{type: :close}) do
+    {:ok, Map.put(subject, :closed, true)}
   end
 
   # delegated to main frame
