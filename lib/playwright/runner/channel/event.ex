@@ -8,6 +8,16 @@ defmodule Playwright.Runner.Channel.Event do
   alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Helpers
 
+  @enforce_keys [:type, :params]
+  defstruct [:type, :params]
+
+  def new(type, params \\ %{}) do
+    %__MODULE__{
+      type: Extra.Atom.from_string(type),
+      params: params
+    }
+  end
+
   def handle(%{method: method} = event, catalog) do
     # IO.inspect(event, label: "Event.handle")
     handle(method, event, catalog)
@@ -36,7 +46,8 @@ defmodule Playwright.Runner.Channel.Event do
 
   # ---
 
-  defp handle(type, %{guid: guid, params: params}, catalog) when type in ["navigated"] do
+  defp handle(type, %{guid: guid, params: params}, catalog)
+      when type in ["navigated"] do
     resource = Catalog.get(catalog, guid)
     handlers = resource.listeners[type] || []
     payload = {Extra.Atom.from_string(type), params}
@@ -45,30 +56,52 @@ defmodule Playwright.Runner.Channel.Event do
       handler.(resource, payload)
     end)
 
-    Catalog.put(catalog, resource)
+    catalog
   end
+
+  defp handle(type, %{guid: guid} = _message, catalog)
+    when type in ["close"] do
+    resource = Catalog.get(catalog, guid)
+    handlers = resource.listeners[type] || []
+    payload = new(type)
+
+    m = module_for(resource)
+    changes = m.before_event(resource, payload)
+
+    if changes do
+      Catalog.put(catalog, Map.merge(resource, changes))
+    end
+    resource = Catalog.get(catalog, guid)
+
+    Enum.each(handlers, fn handler ->
+      handler.(resource, payload)
+    end)
+
+    catalog
+  end
+
 
   # ---
 
-  defp handle("close" = event_type, %{guid: guid}, catalog) do
-    resource = Catalog.get(catalog, guid)
-    resource = module(resource).channel__on(resource, event_type)
-    handlers = resource.listeners[event_type]
+  # defp handle("close" = event_type, %{guid: guid}, catalog) do
+  #   resource = Catalog.get(catalog, guid)
+  #   # resource = module(resource).channel__on(resource, event_type)
+  #   handlers = resource.listeners[event_type]
 
-    if handlers do
-      event = {:on, Extra.Atom.from_string(event_type), resource}
+  #   if handlers do
+  #     event = {:on, Extra.Atom.from_string(event_type), resource}
 
-      Enum.each(handlers, fn handler ->
-        handler.(event)
-      end)
-    end
+  #     Enum.each(handlers, fn handler ->
+  #       handler.(event)
+  #     end)
+  #   end
 
-    Catalog.put(catalog, resource)
-  end
+  #   Catalog.put(catalog, resource)
+  # end
 
   defp handle("console" = event_type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog) do
     resource = Catalog.get(catalog, guid)
-    resource = module(resource).channel__on(resource, event_type)
+    # resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
     if handlers do
@@ -97,7 +130,7 @@ defmodule Playwright.Runner.Channel.Event do
        when event_type in ["request", "requestFinished"] do
     Logger.debug("WIP: Event.handle/3 for #{inspect(event_type)}, etc.: event: #{inspect(event)}")
     resource = Catalog.get(catalog, guid)
-    resource = module(resource).channel__on(resource, event_type)
+    # resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
     # IO.inspect(%{listeners: resource.listeners, resource: resource}, label: "SO FAR")
@@ -120,7 +153,7 @@ defmodule Playwright.Runner.Channel.Event do
        when event_type in ["response"] do
     # Logger.error("WIP: Event.handle/3 for 'response', etc.: event params: #{inspect(params)}")
     resource = Catalog.get(catalog, guid)
-    resource = module(resource).channel__on(resource, event_type)
+    # resource = module(resource).channel__on(resource, event_type)
     handlers = resource.listeners[event_type]
 
     type = Extra.Atom.from_string(event_type)
@@ -139,7 +172,7 @@ defmodule Playwright.Runner.Channel.Event do
 
   defp handle("route" = event_type, %{guid: guid, params: params} = _event, catalog) do
     resource = Catalog.get(catalog, guid)
-    resource = module(resource).channel__on(resource, event_type)
+    # resource = module(resource).channel__on(resource, event_type)
     {handlers, listeners} = Map.pop(resource.listeners, event_type)
 
     if handlers do
@@ -167,7 +200,7 @@ defmodule Playwright.Runner.Channel.Event do
     catalog
   end
 
-  defp module(resource) do
+  defp module_for(resource) do
     String.to_existing_atom("Elixir.Playwright.#{resource.type}")
   end
 end

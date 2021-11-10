@@ -57,10 +57,6 @@ defmodule Playwright.Runner.ChannelOwner do
         end)
       end
 
-      # def patch(connection, guid, data) do
-      #   Connection.patch(connection, {:guid, guid}, data)
-      # end
-
       # private
       # ------------------------------------------------------------------------
 

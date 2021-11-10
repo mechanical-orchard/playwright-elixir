@@ -22,6 +22,7 @@ defmodule Playwright.Page.EventsTest do
 
       Page.goto(page, expected_url)
 
+      # NOTE: these checks are not in fact enforcing order.
       assert_received({:request, ^expected_url})
       assert_received({:response, ^expected_url})
       assert_received({:finished, ^expected_url})

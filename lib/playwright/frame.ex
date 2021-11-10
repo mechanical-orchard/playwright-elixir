@@ -5,7 +5,6 @@ defmodule Playwright.Frame do
 
   def new(%{connection: connection} = parent, args) do
     instance = channel_owner(parent, args)
-
     Channel.on(connection, {"navigated", instance}, &handle_event/2)
     instance
   end
