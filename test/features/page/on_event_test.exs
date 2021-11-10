@@ -11,14 +11,16 @@ defmodule Test.Features.Page.OnEventTest do
       this = self()
       guid = page.guid
 
-      Page.on(page, "close", fn (p, event) ->
+      Page.on(page, "close", fn p, event ->
         send(this, {p, event})
       end)
 
       Page.close(page)
+
       assert_received({
         %Page{guid: ^guid, closed: true},
-        %Channel.Event{params: %{}, type: :close}})
+        %Channel.Event{params: %{}, type: :close}
+      })
     end
 
     # NOTE: this is really about *any* `on` event handling
@@ -28,7 +30,7 @@ defmodule Test.Features.Page.OnEventTest do
       %{guid: guid_one} = page_one = Playwright.Browser.new_page(browser)
       %{guid: guid_two} = page_two = Playwright.Browser.new_page(browser)
 
-      Page.on(page_one, "close", fn (p, _event) ->
+      Page.on(page_one, "close", fn p, _event ->
         send(this, p.guid)
       end)
 
@@ -42,7 +44,7 @@ defmodule Test.Features.Page.OnEventTest do
     test "on 'console'", %{page: page} do
       test_pid = self()
 
-      Page.on(page, "console", fn (_, event) ->
+      Page.on(page, "console", fn _, event ->
         send(test_pid, event)
       end)
 

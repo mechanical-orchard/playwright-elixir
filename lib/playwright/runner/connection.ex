@@ -122,13 +122,14 @@ defmodule Playwright.Runner.Connection do
     # NOTE: It's possible that the resource has been removed from the Catalog
     # (e.g., on `Page.close`). It may be that there's a more sensible way to
     # handle such scenarios, but this will do for now.
-    subject = case Catalog.get(catalog, guid) do
-      nil ->
-        nil
+    subject =
+      case Catalog.get(catalog, guid) do
+        nil ->
+          nil
 
-      subject ->
-        Map.merge(subject, data)
-    end
+        subject ->
+          Map.merge(subject, data)
+      end
 
     if subject do
       Catalog.put(catalog, subject)

@@ -68,7 +68,8 @@ defmodule Playwright.Runner.ChannelOwner do
       def on_event(owner, %Playwright.Runner.Channel.Event{} = event) do
         {:ok, owner} = before_event(owner, event)
 
-        handlers = (owner.listeners[Atom.to_string(event.type)] || [])
+        handlers = owner.listeners[Atom.to_string(event.type)] || []
+
         Enum.each(handlers, fn handler ->
           handler.(owner, event)
         end)

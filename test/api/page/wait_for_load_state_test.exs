@@ -16,7 +16,6 @@ defmodule Test.Page.WaitForLoadStateTest do
   #     await page.wait_for_load_state("load", timeout=1)
   # assert "Timeout 1ms exceeded." in exc_info.value.message
 
-
   # it('should pick up ongoing navigation', async ({ page, server }) => {
   #   let response = null;
   #   server.setRoute('/one-style.css', (req, res) => response = res);
@@ -36,7 +35,6 @@ defmodule Test.Page.WaitForLoadStateTest do
     #     # ...
     #   end)
     # end
-
 
     # test "respects timeout", %{assets: assets, page: page} do
     #   this = self()

@@ -47,7 +47,7 @@ defmodule Playwright.Runner.Channel.Event do
   # ---
 
   defp handle(type, %{guid: guid, params: params} = _message, catalog)
-    when type in ["close", "navigated"] do
+       when type in ["close", "navigated"] do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 
@@ -57,7 +57,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle(type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog)
-    when type in ["console"] do
+       when type in ["console"] do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 
@@ -69,12 +69,12 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle(type, %{guid: _} = message, catalog)
-    when type in ["close"] do
+       when type in ["close"] do
     handle(type, Map.merge(message, %{params: %{}}), catalog)
   end
 
   defp handle(type, %{guid: guid, params: %{request: %{guid: request_guid}}}, catalog)
-    when type in ["request", "requestFinished"] do
+       when type in ["request", "requestFinished"] do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 
@@ -86,7 +86,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle(type, %{guid: guid, params: %{response: %{guid: response_guid}}}, catalog)
-    when type in ["response"] do
+       when type in ["response"] do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 

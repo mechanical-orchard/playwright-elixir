@@ -17,7 +17,6 @@ defmodule Playwright.NetworkTest do
   #     response = Page.goto(page, assets.prefix <> "/dom.html")
   #     assert Response.ok(response)
 
-
   #     assert_received(:intercepted)
   #   end
   # end
@@ -28,7 +27,6 @@ defmodule Playwright.NetworkTest do
     [url: url]
   end
 end
-
 
 # it('...Response.body', async () => {
 #   const page = await browser.newPage();
