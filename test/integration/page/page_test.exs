@@ -156,7 +156,7 @@ defmodule Test.Features.PageTest do
 
     test ".cookies/1", %{assets: assets, page: page} do
       page
-      |> Playwright.Page.goto(assets.prefix <> "/cookiesapi.html")
+      |> Playwright.Page.goto(assets.extras <> "/cookiesapi.html")
 
       cookies = page |> Playwright.Page.cookies()
 
