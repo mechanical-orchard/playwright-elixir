@@ -15,7 +15,7 @@ defmodule Playwright.TestCase do
   setup %{transport: transport} do
     prefix =
       case transport do
-        :driver -> "http://localhost:3004"
+        :driver -> "http://localhost:3002"
         :websocket -> "http://playwright-assets:3002"
       end
 

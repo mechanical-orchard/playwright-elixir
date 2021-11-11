@@ -13,7 +13,8 @@ defmodule Test.Page.WaitForLoadStateTest do
     #   this = self()
     # end
 
-    @tag :skip # not yet actually implemented (though the test passes)
+    # not yet actually implemented (though the test passes)
+    @tag :skip
     test "resolves immediately if loaded", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/one-style.html")
       Page.wait_for_load_state(page)

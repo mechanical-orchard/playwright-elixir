@@ -12,21 +12,8 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       MIX_ENV: test
-      PLAYWRIGHT_ENDPOINT: ws://localhost:3000/chromium
-      PLAYWRIGHT_TRANSPORT: websocket
-      PLAYWRIGHT_RUN_ASSET_SERVER: false
-    services:
-      playwright-assets:
-        image: docker.io/geometer/playwright-assets:latest
-        ports:
-          - 3002:3002
-        options: "-it --ipc=host"
-      playwright-server:
-        image: docker.io/geometer/playwright-proxy:latest
-        ports:
-          - 3000:3000
-          - 8080:8080
-        options: "-it --ipc=host"
+      PLAYWRIGHT_TRANSPORT: driver
+      PLAYWRIGHT_RUN_ASSET_SERVER: true
     steps:
     - uses: actions/checkout@v2
     - name: Set up Elixir
