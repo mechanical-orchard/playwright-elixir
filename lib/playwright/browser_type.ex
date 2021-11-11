@@ -18,16 +18,10 @@ defmodule Playwright.BrowserType do
   """
   use Playwright.Runner.ChannelOwner
 
-  require Logger
-
   alias Playwright.BrowserType
   alias Playwright.Runner.Config
   alias Playwright.Runner.Connection
   alias Playwright.Runner.Transport
-
-  def new(parent, args) do
-    channel_owner(parent, args)
-  end
 
   @doc """
   Connect to a running playwright server.
@@ -56,15 +50,13 @@ defmodule Playwright.BrowserType do
   # private
   # ----------------------------------------------------------------------------
 
-  defp launch(%BrowserType{} = subject) do
-    browser = Channel.send(subject, "launch", Config.launch_options(true))
+  defp browser(%BrowserType{} = subject) do
+    case Channel.send(subject, "launch", Config.launch_options(true)) do
+      %Playwright.Browser{} = result ->
+        result
 
-    case browser do
-      %Playwright.Browser{} ->
-        browser
-
-      _other ->
-        raise("expected launch to return a  Playwright.Browser, received: #{inspect(browser)}")
+      other ->
+        raise("expected launch to return a  Playwright.Browser, received: #{inspect(other)}")
     end
   end
 
@@ -72,13 +64,13 @@ defmodule Playwright.BrowserType do
     playwright = Channel.get(connection, {:guid, "Playwright"})
 
     case playwright do
-      %Playwright.Playwright{} ->
+      %Playwright{} ->
         %{guid: guid} = playwright.initializer.chromium
 
-        Channel.get(connection, {:guid, guid}) |> launch()
+        Channel.get(connection, {:guid, guid}) |> browser()
 
       _other ->
-        raise("expected chromium to return a  Playwright.Playwright, received: #{inspect(playwright)}")
+        raise("expected chromium to return a  `Playwright`, received: #{inspect(playwright)}")
     end
   end
 

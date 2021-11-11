@@ -25,7 +25,7 @@ defmodule Playwright.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      mod: {Playwright, []},
+      mod: {Playwright.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -79,11 +79,12 @@ defmodule Playwright.MixProject do
           Playwright.BrowserType,
           Playwright.ElementHandle,
           Playwright.Page,
-          Playwright.Playwright,
+          Playwright.Page.Accessibility,
           Playwright.RemoteBrowser
         ],
         Helpers: [
-          PlaywrightTest.Case
+          PlaywrightTest.Case,
+          PlaywrightTest.Page
         ]
       ]
     ]

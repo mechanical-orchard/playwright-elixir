@@ -5,10 +5,6 @@ defmodule Playwright.Request do
 
   alias Playwright.Runner.Connection
 
-  def new(parent, args) do
-    channel_owner(parent, args)
-  end
-
   def for_response(response) do
     Connection.get(response.connection, response.initializer.request)
     |> List.first()

@@ -40,8 +40,9 @@ defmodule Playwright.Page do
   alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Helpers
 
+  @impl ChannelOwner
   def new(%{connection: _connection} = parent, args) do
-    Map.merge(channel_owner(parent, args), %{closed: args.initializer.isClosed})
+    Map.merge(init(parent, args), %{closed: args.initializer.isClosed})
   end
 
   @impl ChannelOwner

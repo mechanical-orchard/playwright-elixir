@@ -4,8 +4,9 @@ defmodule Playwright.Frame do
   alias Playwright.Runner.Channel
   alias Playwright.Runner.ChannelOwner
 
+  @impl ChannelOwner
   def new(%{connection: _connection} = parent, args) do
-    channel_owner(parent, args)
+    init(parent, args)
   end
 
   # callbacks

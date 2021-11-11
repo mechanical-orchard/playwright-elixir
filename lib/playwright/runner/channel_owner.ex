@@ -6,8 +6,10 @@ defmodule Playwright.Runner.ChannelOwner do
   alias Playwright.Runner.Channel
   alias Playwright.Runner.ChannelOwner
 
-  @callback before_event(term(), %Channel.Event{}) :: {:ok, term}
-  @optional_callbacks before_event: 2
+  @callback new(term(), map()) :: term()
+  @callback before_event(term(), %Channel.Event{}) :: {:ok, term()}
+
+  @optional_callbacks new: 2, before_event: 2
 
   defmacro __using__(config \\ []) do
     extra =
@@ -37,7 +39,14 @@ defmodule Playwright.Runner.ChannelOwner do
       @type t() :: %__MODULE__{}
 
       @doc false
-      def channel_owner(
+      def new(parent, args) do
+        init(parent, args)
+      end
+
+      defoverridable(new: 2)
+
+      @doc false
+      def init(
             parent,
             %{guid: guid, initializer: initializer, type: type} = args
           ) do
@@ -58,6 +67,8 @@ defmodule Playwright.Runner.ChannelOwner do
         )
       end
 
+      # NOTE: probably remove this
+      @doc false
       def patch(subject, data) do
         Task.start_link(fn ->
           Connection.patch(subject.connection, {:guid, subject.guid}, data)
@@ -106,11 +117,16 @@ defmodule Playwright.Runner.ChannelOwner do
 
   @doc false
   def from(params, parent) do
+    # IO.inspect(params, label: "ChannelOwner.from/2")
     apply(module(params), :new, [parent, params])
   end
 
   # private
   # ------------------------------------------------------------------------
+
+  defp module(%{type: "Playwright"}) do
+    Playwright
+  end
 
   defp module(%{type: type}) do
     String.to_existing_atom("Elixir.Playwright.#{type}")
