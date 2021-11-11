@@ -22,6 +22,7 @@ defmodule Playwright.TestCase do
     [
       assets: %{
         blank: "about:blank",
+        extras: prefix <> "/extras",
         prefix: prefix,
         empty: prefix <> "/empty.html"
       }
