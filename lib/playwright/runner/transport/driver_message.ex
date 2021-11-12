@@ -36,7 +36,7 @@ defmodule Playwright.Runner.Transport.DriverMessage do
           frames: list(),
           remaining: number()
         }
-  def parse(<<head::utf32-little>>, 0, "", accumulated) do
+  def parse(<<head::little-integer-size(32)>>, 0, "", accumulated) do
     %{
       buffer: "",
       frames: accumulated,
@@ -44,7 +44,7 @@ defmodule Playwright.Runner.Transport.DriverMessage do
     }
   end
 
-  def parse(<<head::utf32-little, data::binary>>, 0, "", accumulated) do
+  def parse(<<head::little-integer-size(32), data::binary>>, 0, "", accumulated) do
     parse(data, head, "", accumulated)
   end
 
