@@ -73,13 +73,21 @@ defmodule Playwright.Runner.Channel.Event do
     handle(type, Map.merge(message, %{params: %{}}), catalog)
   end
 
-  defp handle(type, %{guid: guid, params: %{request: %{guid: request_guid}}}, catalog)
+  defp handle(type, %{guid: guid, params: %{request: %{guid: request_guid}}  = params}, catalog)
        when type in ["request", "requestFinished"] do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 
     request = Catalog.get(catalog, request_guid)
-    payload = %{request: request}
+
+    # Check is has response too, requestFinished has responses
+    payload = case Map.has_key?(params, :response) do
+      true ->
+        response = Catalog.get(catalog, params.response.guid)
+        %{request: request, response: response}
+
+      false -> %{request: request}
+    end
     {:ok, resource} = m.on_event(r, new(type, payload))
 
     Catalog.put(catalog, resource)
@@ -93,6 +101,16 @@ defmodule Playwright.Runner.Channel.Event do
     response = Catalog.get(catalog, response_guid)
     payload = %{response: response}
     {:ok, resource} = m.on_event(r, new(type, payload))
+
+    Catalog.put(catalog, resource)
+  end
+
+  defp handle(type, %{guid: guid, params: params}, catalog)
+       when type in ["loadstate"] do
+    r = Catalog.get(catalog, guid)
+    m = module_for(r)
+
+    {:ok, resource} = m.on_event(r, new(type, params))
 
     Catalog.put(catalog, resource)
   end
@@ -134,6 +152,7 @@ defmodule Playwright.Runner.Channel.Event do
     resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
     Catalog.put(catalog, resource)
   end
+
 
   defp handle(method, event, catalog) do
     Logger.debug("Event.handle/3 for unhandled method: #{inspect(method)}; event data: #{inspect(event)}")

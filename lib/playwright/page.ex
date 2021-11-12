@@ -155,6 +155,16 @@ defmodule Playwright.Page do
     subject
   end
 
+  def on(subject, event, handler)
+      when event in ["loadstate"] do
+    # NOTE: the event/method will be recv'd from Playwright server with
+    # the Frame as the context/bound :guid. So, we need to
+    # add our handlers there, on that (BrowserContext) parent.
+    parent = Channel.get(subject.connection, {:guid, frame(subject).guid})
+    Channel.on(subject.connection, {event, parent}, handler)
+    subject
+  end
+
   require Logger
 
   def on(subject, event, handler) do
