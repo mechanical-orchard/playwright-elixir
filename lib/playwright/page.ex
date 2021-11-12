@@ -253,6 +253,14 @@ defmodule Playwright.Page do
     frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
   end
 
+  def cookies(subject, urls \\ []) do
+    subject.owned_context |> Channel.send("cookies", %{ urls: urls })
+  end
+
+  def add_cookies(subject, cookies) do
+    subject.owned_context |> Channel.send("addCookies", %{ cookies: cookies })
+  end
+
   # private
   # ---------------------------------------------------------------------------
 

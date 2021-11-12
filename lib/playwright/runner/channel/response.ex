@@ -48,6 +48,10 @@ defmodule Playwright.Runner.Channel.Response do
     value
   end
 
+  defp parse([{:cookies, cookies}], _catalog) do
+    cookies
+  end
+
   defp parse([], _catalog) do
     nil
   end
