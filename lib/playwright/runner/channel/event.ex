@@ -8,7 +8,7 @@ defmodule Playwright.Runner.Channel.Event do
   alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Helpers
 
-  @enforce_keys [:type, :params]
+  @enforce_keys [:type]
   defstruct [:type, :params]
 
   def new(type, params \\ %{}) do

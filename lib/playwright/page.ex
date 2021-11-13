@@ -86,36 +86,30 @@ defmodule Playwright.Page do
   end
 
   def evaluate(subject, expression, arg \\ nil) do
-    function? = String.starts_with?(expression, "function")
-
     frame(subject)
     |> Channel.send("evaluateExpression", %{
       expression: expression,
-      isFunction: function?,
+      isFunction: Helpers.Expression.function?(expression),
       arg: serialize(arg)
     })
     |> deserialize()
   end
 
   def evaluate_handle(subject, expression, arg \\ nil) do
-    function? = String.starts_with?(expression, "function")
-
     frame(subject)
     |> Channel.send("evaluateExpressionHandle", %{
       expression: expression,
-      isFunction: function?,
+      isFunction: Helpers.Expression.function?(expression),
       arg: serialize(arg)
     })
   end
 
   def eval_on_selector(subject, selector, expression, arg \\ nil, _options \\ %{}) do
-    function? = String.starts_with?(expression, "function")
-
     frame(subject)
     |> Channel.send("evalOnSelector", %{
       selector: selector,
       expression: expression,
-      isFunction: function?,
+      isFunction: Helpers.Expression.function?(expression),
       arg: serialize(arg)
     })
   end
@@ -243,10 +237,6 @@ defmodule Playwright.Page do
 
   def title(subject) do
     frame(subject) |> Channel.send("title")
-  end
-
-  def wait_for_load_state(_subject, _options \\ %{}) do
-    # frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
   end
 
   def wait_for_selector(subject, selector, options \\ %{}) do
