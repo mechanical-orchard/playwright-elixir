@@ -28,6 +28,13 @@ defmodule Playwright.Request do
 
   alias Playwright.Runner.Connection
 
+  # ---
+
+  # def all_headers(request) do
+  # end
+
+  # ---
+
   # NOTE: it might be better to use `Response.request/1`
   @doc false
   def for_response(response) do

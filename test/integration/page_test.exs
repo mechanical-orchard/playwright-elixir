@@ -1,4 +1,4 @@
-defmodule Test.Features.PageTest do
+defmodule Playwright.PageTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, ElementHandle, Page}
   alias Playwright.Runner.Connection

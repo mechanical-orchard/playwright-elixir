@@ -74,13 +74,53 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp handle(type, %{guid: guid, params: %{request: %{guid: request_guid}}}, catalog)
-       when type in ["request", "requestFinished"] do
+       when type in ["request"] do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 
     request = Catalog.get(catalog, request_guid)
     payload = %{request: request}
     {:ok, resource} = m.on_event(r, new(type, payload))
+
+    Catalog.put(catalog, resource)
+  end
+
+  defp handle(type, %{guid: guid, params: %{request: %{guid: _request_guid}} = params}, catalog)
+       when type in ["requestFinished"] do
+    r = Catalog.get(catalog, guid)
+    m = module_for(r)
+
+    Logger.warn("Event.handle for 'requestFinished' on module: #{inspect(m)}")
+    Logger.warn("  --> params: #{inspect(params)}")
+
+    # request = Catalog.get(catalog, request_guid)
+    # payload = %{request: request}
+    # {:ok, resource} = m.on_event(r, new(type, payload))
+
+    # %{
+    #   page: %{guid: "page@0b4c35ea52a2965080a4f678ffbc9d5e"},
+    #   request: %{guid: "request@0cc7ee56cc54e29c245929f2de32bc8e"},
+    #   response: %{guid: "response@1ed228f031a58d4268a854bd43f6297e"},
+    #   responseEndTiming: 24.875
+    # }
+
+    payload = Map.merge(params, %{
+      page: Catalog.get(catalog, params.page.guid),
+      request: Catalog.get(catalog, params.request.guid),
+      response: Catalog.get(catalog, params.response.guid)
+    })
+    {:ok, resource} = m.on_event(r, new(type, payload))
+
+    # %{
+    #   "requestFinished" => [#Function<1.1724238/2 in Playwright.Runner.Connection.handle_call/3>]
+    # }
+    callbacks = (r.waiters[type] || [])
+    # |> IO.inspect(label: "FOUND these waiters.........")
+    Enum.each(callbacks, fn callback ->
+      callback.(resource, payload)
+    end)
+
+    resource = %{resource | waiters: Map.put(r.waiters, type, [])}
 
     Catalog.put(catalog, resource)
   end

@@ -47,6 +47,7 @@ defmodule Playwright.Runner.Transport.Driver do
     length = String.length(message)
     padding = <<length::utf32-little>>
 
+    # Logger.warn("SEND --> (Transport.post) message: #{inspect(Jason.decode!(message))}")
     Port.command(port, padding)
     Port.command(port, message)
 
@@ -79,6 +80,7 @@ defmodule Playwright.Runner.Transport.Driver do
   # ----------------------------------------------------------------------------
 
   defp recv(connection, json) do
+    # Logger.warn("<--- RECV (Transport.recv) message: #{inspect(Jason.decode!(json))}")
     Connection.recv(connection, {:text, json})
   end
 end

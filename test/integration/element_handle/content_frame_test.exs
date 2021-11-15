@@ -16,3 +16,23 @@ defmodule Playwright.ElementHandle.ContentFrameTest do
     end
   end
 end
+
+# def test_content_frame_for_non_iframes(
+#     page: Page, server: Server, utils: Utils
+# ) -> None:
+#     page.goto(server.EMPTY_PAGE)
+#     utils.attach_frame(page, "frame1", server.EMPTY_PAGE)
+#     frame = page.frames[1]
+#     element_handle = frame.evaluate_handle("document.body").as_element()
+#     assert element_handle
+#     assert element_handle.content_frame() is None
+
+# def test_content_frame_for_document_element(
+#     page: Page, server: Server, utils: Utils
+# ) -> None:
+#     page.goto(server.EMPTY_PAGE)
+#     utils.attach_frame(page, "frame1", server.EMPTY_PAGE)
+#     frame = page.frames[1]
+#     element_handle = frame.evaluate_handle("document.documentElement").as_element()
+#     assert element_handle
+#     assert element_handle.content_frame() is None

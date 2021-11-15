@@ -19,8 +19,24 @@ defmodule Playwright.Runner.Channel do
     Connection.patch(connection, {:guid, guid}, data)
   end
 
-  def send(subject, method, params \\ %{}) do
+  require Logger
+  def send(subject, method, params \\ %{})
+
+  def send(subject, method, params) do
+    # Logger.error("Channel.send --- A")
     command = Channel.Command.new(subject.guid, method, params)
     Connection.post(subject.connection, command)
+  end
+
+  def send(subject, method, params, :noreply) do
+    # Logger.error("Channel.send --- B")
+    command = Channel.Command.new(subject.guid, method, params)
+    Logger.error("Channel.send w/ message: #{inspect(command)}")
+    Connection.post(subject.connection, command)
+  end
+
+  def wait_for(subject, event, fun) do
+    # fun.(subject)
+    Connection.wait_for(subject.connection, {event, subject, fun})
   end
 end

@@ -1,6 +1,6 @@
 defmodule Playwright.Runner.ChannelOwner do
   @moduledoc false
-  @base [:connection, :guid, :initializer, :parent, :type, :listeners]
+  @base [:connection, :guid, :initializer, :parent, :type, :listeners, :waiters]
 
   require Logger
   alias Playwright.Runner.Channel
@@ -56,7 +56,8 @@ defmodule Playwright.Runner.ChannelOwner do
           initializer: initializer,
           parent: parent,
           type: type,
-          listeners: %{}
+          listeners: %{},
+          waiters: %{},
         }
 
         struct(

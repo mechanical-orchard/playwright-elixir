@@ -70,19 +70,20 @@ defmodule Playwright.MixProject do
         "guides/getting-started.md": [title: "Getting started"]
       ],
       groups_for_modules: [
-        Configuration: [
-          Playwright.Runner.Config
-        ],
-        Features: [
+        Capabilities: [
           Playwright.Browser,
           Playwright.BrowserContext,
           Playwright.BrowserType,
           Playwright.ElementHandle,
           Playwright.Page,
           Playwright.Page.Accessibility,
-          Playwright.RemoteBrowser
+          Playwright.RemoteBrowser,
+          Playwright.Request
         ],
-        Helpers: [
+        Runner: [
+          Playwright.Runner.Config
+        ],
+        "Test Helpers": [
           PlaywrightTest.Case,
           PlaywrightTest.Page
         ]

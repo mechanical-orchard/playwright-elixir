@@ -71,6 +71,10 @@ defmodule Playwright.Runner.Connection do
     GenServer.cast(connection, {:recv, message})
   end
 
+  def wait_for(connection, {event, subject, fun}) do
+    GenServer.call(connection, {:wait_for, {event, subject, fun}})
+  end
+
   # @impl
   # ----------------------------------------------------------------------------
 
@@ -146,6 +150,45 @@ defmodule Playwright.Runner.Connection do
       :noreply,
       %{state | callbacks: Map.put(callbacks, message.id, Channel.Callback.new(from, message))}
     }
+  end
+
+  # def on(connection, {event, subject}, handler) do
+  #   GenServer.cast(connection, {:on, {event, subject}, handler})
+  # end
+  # def post(connection, command) do
+  #   GenServer.call(connection, {:post, {:cmd, command}})
+  # end
+  # def wait_for(connection, {event, subject}) do
+  #   GenServer.call(connection, {:wait_for, {event, subject}})
+  # end
+  @impl GenServer
+  def handle_call({:wait_for, {event, subject, fun}}, from, %{catalog: catalog} = state) do
+    # {:noreply, %{state | callbacks: Map.put(callbacks, message)}}
+    callback = fn (_r, e) ->
+      # Logger.error("REPLYing!!!!!!!! w/ #{inspect(Map.keys(e))}")
+      # [:__struct__, :params, :type]
+      # [:page, :request, :response, :responseEndTiming]
+      case Map.keys(e) do
+        [:type, :params] ->
+          Logger.info("ignored")
+
+        _desired ->
+          GenServer.reply(from, e)
+      end
+    end
+
+    # listeners = [callback | subject.listeners[event] || []]
+    waiters = [callback | subject.waiters[event] || []]
+    subject = %{subject | waiters: Map.put(subject.waiters, event, waiters)}
+    # Logger.error("wait_for... adding to waiters on #{inspect(subject)}")
+
+    Task.start_link(fn ->
+     fun.(subject)
+    end)
+    # Logger.error("wait_for... executed fun")
+
+    Catalog.put(catalog, subject)
+    {:noreply, state}
   end
 
   @impl GenServer

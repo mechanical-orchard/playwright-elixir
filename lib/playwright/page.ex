@@ -1,3 +1,4 @@
+# THIS(+1)
 defmodule Playwright.Page do
   @moduledoc """
   `Playwright.Page` represents a web page loaded in the Playwright browser
@@ -113,6 +114,103 @@ defmodule Playwright.Page do
       arg: serialize(arg)
     })
   end
+
+  # # default timeout: 30s
+  # def expect_event(subject, event, fun, _predicate \\ nil) do
+  #   # do pre-send stuff (maybe modifying `subject`)
+  #   timeout = 30000
+  #   helper = Channel.WaitHelper.new(subject, event, fun)
+  #   # Channel.WaitHelper.reject_on_timeout(helper, timeout, "Timeout while waiting for event #{inspect(event)}")
+
+  #   # if event != "crash" do
+  #   #   Channel.WaitHelper.reject_on_event(helper, "crash", "Page crashed while waiting for event #{inspect(event)}")
+  #   # end
+  #   # if event != "close" do
+  #   #   Channel.WaitHelper.reject_on_event(helper, "close", "Page closed while waiting for event #{inspect(event)}")
+  #   # end
+
+  #   # # fun.(subject)
+  #   Channel.WaitHelper.wait_for_event(helper)
+  #   # |> Channel.WaitHelper.result()
+  # end
+
+  require Logger
+
+  def expect_event(subject, event, fun) when event in ["requestFinished"] do
+    parent = Channel.get(subject.connection, {:guid, subject.parent.guid})
+    # Logger.info("waiting.............................................")
+    result = Channel.wait_for(parent, event, fun)
+    # Logger.info("COMPLETED waiting w/ #{inspect(result)}")
+    result
+  end
+  def expect_event(subject, event, fun) do
+    Channel.wait_for(subject, event, fun)
+  end
+  defdelegate wait_for_event(subject, event, fun), to: __MODULE__, as: :expect_event
+
+  # def on(subject, event, handler)
+  #     when event in ["request", "response", "requestFinished"] do
+  #   # NOTE: the event/method will be recv'd from Playwright server with
+  #   # the parent BrowserContext as the context/bound :guid. So, we need to
+  #   # add our handlers there, on that (BrowserContext) parent.
+  #   parent = Channel.get(subject.connection, {:guid, subject.parent.guid})
+  #   Channel.on(subject.connection, {event, parent}, handler)
+  #   subject
+  # end
+
+  #   def expect_event(
+#     self,
+#     event: str,
+#     predicate: Callable = None,
+#     timeout: float = None,
+# ) -> EventContextManagerImpl:
+#     return self._expect_event(
+#         event, predicate, timeout, f'waiting for event "{event}"'
+#     )
+
+# def _expect_event(
+#     self,
+#     event: str,
+#     predicate: Callable = None,
+#     timeout: float = None,
+#     log_line: str = None,
+# ) -> EventContextManagerImpl:
+#     if timeout is None:
+#         timeout = self._timeout_settings.timeout()
+#     wait_helper = WaitHelper(self, f"page.expect_event({event})")
+#     wait_helper.reject_on_timeout(
+#         timeout, f'Timeout while waiting for event "{event}"'
+#     )
+#     if log_line:
+#         wait_helper.log(log_line)
+#     if event != Page.Events.Crash:
+#         wait_helper.reject_on_event(self, Page.Events.Crash, Error("Page crashed"))
+#     if event != Page.Events.Close:
+#         wait_helper.reject_on_event(self, Page.Events.Close, Error("Page closed"))
+#     wait_helper.wait_for_event(self, event, predicate)
+#     return EventContextManagerImpl(wait_helper.result())
+
+# async waitForEvent(event: string, optionsOrPredicate: WaitForEventOptions = {}): Promise<any> {
+#   return this._wrapApiCall(async channel => {
+#     return this._waitForEvent(channel, event, optionsOrPredicate, `waiting for event "${event}"`);
+#   });
+# }
+
+# private async _waitForEvent(channel: channels.EventTargetChannel, event: string, optionsOrPredicate: WaitForEventOptions, logLine?: string): Promise<any> {
+#   const timeout = this._timeoutSettings.timeout(typeof optionsOrPredicate === 'function' ? {} : optionsOrPredicate);
+#   const predicate = typeof optionsOrPredicate === 'function' ? optionsOrPredicate : optionsOrPredicate.predicate;
+#   const waiter = Waiter.createForEvent(channel, event);
+#   if (logLine)
+#     waiter.log(logLine);
+#   waiter.rejectOnTimeout(timeout, `Timeout while waiting for event "${event}"`);
+#   if (event !== Events.Page.Crash)
+#     waiter.rejectOnEvent(this, Events.Page.Crash, new Error('Page crashed'));
+#   if (event !== Events.Page.Close)
+#     waiter.rejectOnEvent(this, Events.Page.Close, new Error('Page closed'));
+#   const result = await waiter.waitForEvent(this, event, predicate as any);
+#   waiter.dispose();
+#   return result;
+# }
 
   def fill(subject, selector, value) do
     frame(subject) |> Channel.send("fill", %{selector: selector, value: value})
