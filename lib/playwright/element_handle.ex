@@ -39,4 +39,9 @@ defmodule Playwright.ElementHandle do
   def text_content(subject) do
     subject |> Channel.send("textContent")
   end
+
+  @spec is_visible(ElementHandle.t()) :: binary() | nil
+  def is_visible(subject) do
+    subject |> Channel.send("isVisible")
+  end
 end

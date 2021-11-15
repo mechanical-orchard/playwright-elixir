@@ -201,7 +201,7 @@ defmodule Playwright.Runner.Connection do
 
   # - %{playwright: %{guid: "Playwright"}}
   defp recv_payload(%{result: _result} = message, %{catalog: _catalog} = state) do
-    Logger.debug("recv_payload C: #{inspect(message)}")
+    # Logger.debug("recv_payload C: #{inspect(message)}")
     state
   end
 end
