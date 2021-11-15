@@ -202,7 +202,7 @@ defmodule Playwright.Runner.Config do
 
     defmodule LaunchOptions do
       @moduledoc false
-      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless]
+      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless, :executable_path]
     end
 
     defmodule PlaywrightTest do
