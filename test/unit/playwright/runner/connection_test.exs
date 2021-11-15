@@ -144,7 +144,7 @@ defmodule Playwright.Runner.ConnectionTest do
       {_, state} = Connection.handle_call({:get, {:guid, "Playwright"}}, from, state)
       Connection.handle_cast({:recv, {:text, json}}, state)
 
-      assert_received({:tag, %Playwright.Playwright{}})
+      assert_received({:tag, %Playwright{}})
     end
   end
 

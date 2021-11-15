@@ -28,7 +28,7 @@ defmodule Test.Support.AssetsServer do
         scheme: :http,
         plug: AssetsServer.Router,
         options: [
-          port: 3004,
+          port: 3002,
           ip: {0, 0, 0, 0}
         ]
       )

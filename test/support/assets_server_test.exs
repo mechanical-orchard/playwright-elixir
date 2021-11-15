@@ -1,14 +1,22 @@
 defmodule Test.Support.AssetsServerTest do
   use Playwright.TestCase, async: true
+  alias Playwright.{Page, Response}
 
-  describe "Local test assets derver" do
-    test "works", %{assets: assets, page: page} do
-      page
-      |> Playwright.Page.goto(assets.prefix <> "/dom.html")
+  describe "Embedded test assets server" do
+    test "using the 'canonical' assets", %{assets: assets, page: page} do
+      assert page
+             |> Page.goto(assets.prefix <> "/dom.html")
+             |> Response.ok()
 
       page
-      |> Playwright.Page.query_selector("css=div#outer")
+      |> Page.query_selector("css=div#outer")
       |> assert()
+    end
+
+    test "using 'extra' assets", %{assets: assets, page: page} do
+      assert page
+             |> Page.goto(assets.extras <> "/example.html")
+             |> Response.ok()
     end
   end
 end

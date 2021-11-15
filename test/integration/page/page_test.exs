@@ -153,5 +153,53 @@ defmodule Test.Features.PageTest do
       Playwright.Page.wait_for_selector(page, "span.inner", %{state: "attached"})
       assert Playwright.Page.text_content(page, "span.inner") == "target"
     end
+
+    test ".cookies/1", %{assets: assets, page: page} do
+      page
+      |> Playwright.Page.goto(assets.extras <> "/cookiesapi.html")
+
+      cookies = page |> Playwright.Page.cookies()
+
+      assert cookies == [%{
+        name: "testcookie",
+        value: "crunchcrunch",
+        domain: "localhost",
+        expires: -1,
+        httpOnly: false,
+        path: "/",
+        sameSite: "Lax",
+        secure: false
+      }]
+    end
+
+    test ".add_cookies/2", %{assets: assets, page: page} do
+      page
+      |> Playwright.Page.add_cookies([%{
+        name: "testcookie",
+        value: "crunchcrunch",
+        domain: "localhost",
+        expires: -1,
+        httpOnly: false,
+        path: "/",
+        sameSite: "Lax",
+        secure: false
+      }])
+
+      page
+      |> Playwright.Page.goto(assets.prefix <> "/empty.html")
+
+      cookies = page |> Playwright.Page.cookies()
+
+      assert cookies == [%{
+        name: "testcookie",
+        value: "crunchcrunch",
+        domain: "localhost",
+        expires: -1,
+        httpOnly: false,
+        path: "/",
+        sameSite: "Lax",
+        secure: false
+      }]
+    end
   end
 end

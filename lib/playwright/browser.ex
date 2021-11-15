@@ -10,11 +10,12 @@ defmodule Playwright.Browser do
   """
   use Playwright.Runner.ChannelOwner, fields: [:name, :version]
   alias Playwright.Runner.Channel
+  alias Playwright.Runner.ChannelOwner
 
-  @doc false
+  @impl ChannelOwner
   def new(parent, %{initializer: %{version: version} = initializer} = args) do
     args = %{args | initializer: Map.put(initializer, :version, cut_version(version))}
-    channel_owner(parent, args)
+    init(parent, args)
   end
 
   @doc false

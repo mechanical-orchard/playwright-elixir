@@ -40,8 +40,9 @@ defmodule Playwright.Page do
   alias Playwright.Runner.ChannelOwner
   alias Playwright.Runner.Helpers
 
+  @impl ChannelOwner
   def new(%{connection: _connection} = parent, args) do
-    Map.merge(channel_owner(parent, args), %{closed: args.initializer.isClosed})
+    Map.merge(init(parent, args), %{closed: args.initializer.isClosed})
   end
 
   @impl ChannelOwner
@@ -250,6 +251,14 @@ defmodule Playwright.Page do
 
   def wait_for_selector(subject, selector, options \\ %{}) do
     frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
+  end
+
+  def cookies(subject, urls \\ []) do
+    subject.owned_context |> Channel.send("cookies", %{ urls: urls })
+  end
+
+  def add_cookies(subject, cookies) do
+    subject.owned_context |> Channel.send("addCookies", %{ cookies: cookies })
   end
 
   # private

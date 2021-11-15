@@ -2,12 +2,6 @@ defmodule Playwright.Response do
   @moduledoc false
   use Playwright.Runner.ChannelOwner, fields: [:status, :url]
 
-  require Logger
-
-  def new(parent, args) do
-    channel_owner(parent, args)
-  end
-
   # derived from :initializer
   # ---------------------------------------------------------------------------
 

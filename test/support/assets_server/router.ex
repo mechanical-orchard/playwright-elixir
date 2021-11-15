@@ -2,6 +2,7 @@ defmodule Test.Support.AssetsServer.Router do
   use Plug.Router
 
   plug(Plug.Static, at: "/", from: "#{__DIR__}/assets")
+  plug(Plug.Static, at: "/extras", from: "#{__DIR__}/extras")
 
   plug(:match)
   plug(:dispatch)

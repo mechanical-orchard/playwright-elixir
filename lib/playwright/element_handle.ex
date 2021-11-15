@@ -7,11 +7,6 @@ defmodule Playwright.ElementHandle do
   alias Playwright.ElementHandle
   alias Playwright.Runner.Channel
 
-  @doc false
-  def new(parent, args) do
-    channel_owner(parent, args)
-  end
-
   @doc """
   Clicks on the given element.
   """

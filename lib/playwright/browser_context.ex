@@ -12,11 +12,6 @@ defmodule Playwright.BrowserContext do
   use Playwright.Runner.ChannelOwner, fields: [:browser, :owner_page]
   alias Playwright.Runner.Channel
 
-  @doc false
-  def new(parent, args) do
-    channel_owner(parent, args)
-  end
-
   @doc """
   Create a new `Playwright.Page` in the browser context. If the context is
   "owned" by a `Playwright.Page` (i.e., was created as a side effect of
