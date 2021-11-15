@@ -1,3 +1,12 @@
+#
+#
+#
+# MAKE THIS MATCH
+#
+#
+#
+# ... send, recv, on
+#
 defmodule Playwright.Runner.Channel do
   @moduledoc false
   alias Playwright.Runner.Channel
@@ -15,6 +24,7 @@ defmodule Playwright.Runner.Channel do
     Connection.on(connection, {event, subject}, handler)
   end
 
+  # !!!
   def patch(connection, guid, data) do
     Connection.patch(connection, {:guid, guid}, data)
   end
@@ -35,6 +45,7 @@ defmodule Playwright.Runner.Channel do
     Connection.post(subject.connection, command)
   end
 
+  # !!! move to ChannelOwner ???
   def wait_for(subject, event, fun) do
     # fun.(subject)
     Connection.wait_for(subject.connection, {event, subject, fun})

@@ -29,6 +29,7 @@ defmodule Test.Page.Accessibility.SnapshotTest do
 
       # > Autofocus happens after a delay in chrome.
       # Page.wait_for_function(page, "document.activeElement.hasAttribute('autofocus')")
+      Page.expect_function(page, "document.activeElement.hasAttribute('autofocus')")
 
       assert Page.Accessibility.snapshot(page) == %{
                role: "WebArea",

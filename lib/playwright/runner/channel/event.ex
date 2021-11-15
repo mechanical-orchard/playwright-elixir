@@ -90,8 +90,8 @@ defmodule Playwright.Runner.Channel.Event do
     r = Catalog.get(catalog, guid)
     m = module_for(r)
 
-    Logger.warn("Event.handle for 'requestFinished' on module: #{inspect(m)}")
-    Logger.warn("  --> params: #{inspect(params)}")
+    # Logger.warn("Event.handle for 'requestFinished' on module: #{inspect(m)}")
+    # Logger.warn("  --> params: #{inspect(params)}")
 
     # request = Catalog.get(catalog, request_guid)
     # payload = %{request: request}

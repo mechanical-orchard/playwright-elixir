@@ -1,6 +1,6 @@
 defmodule Playwright.Page.ExpectTest do
   use Playwright.TestCase, async: true
-  alias Playwright.Page
+  # alias Playwright.Page
 
   describe "Page.expect_event/2" do
   #   test "events are fired in the proper order", %{assets: assets, page: page} do

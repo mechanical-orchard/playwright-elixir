@@ -161,6 +161,14 @@ defmodule Playwright.Runner.Connection do
   # def wait_for(connection, {event, subject}) do
   #   GenServer.call(connection, {:wait_for, {event, subject}})
   # end
+  #
+  #
+  # !!!!!!!
+  # Connection needs to lighten up a bit
+  # !!!!!!!
+  #
+  #
+  # ... Connection and Channel are the focus
   @impl GenServer
   def handle_call({:wait_for, {event, subject, fun}}, from, %{catalog: catalog} = state) do
     # {:noreply, %{state | callbacks: Map.put(callbacks, message)}}

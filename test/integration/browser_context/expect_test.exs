@@ -1,6 +1,6 @@
 defmodule Playwright.BrowserContext.ExpectTest do
   use Playwright.TestCase, async: true
-  alias Playwright.BrowserContext
+  # alias Playwright.BrowserContext
 
   describe "BrowserContext.expect_event/2" do
 
