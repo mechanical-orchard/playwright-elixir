@@ -25,6 +25,23 @@ defmodule Playwright.Page.NetworkTest do
       assert_next_receive({:finished, ^url})
     end
 
+    test "request/response event info includes :page", %{assets: assets, page: page} do
+      pid = self()
+      url = assets.empty
+
+      Page.on(page, "request", fn %{params: %{page: page}} ->
+        send(pid, {:request, page})
+      end)
+
+      Page.on(page, "response", fn %{params: %{page: page}} ->
+        send(pid, {:response, page})
+      end)
+
+      Page.goto(page, url)
+      assert_next_receive({:request, %Page{}})
+      assert_next_receive({:response, %Page{}})
+    end
+
     test "request finished event", %{assets: assets, page: page} do
       url = assets.empty
 

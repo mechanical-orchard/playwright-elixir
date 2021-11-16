@@ -82,22 +82,23 @@ defmodule Playwright.Runner.ChannelOwner do
         {:ok, owner} = before_event(owner, info)
 
         event_key = Atom.to_string(info.type)
-
         listeners = Map.get(owner.listeners, event_key, [])
-
-        {waiters, remaining} = Map.pop(owner.waiters, event_key, [])
-        owner = %{owner | waiters: remaining}
-
         info = %{info | target: owner}
 
         Enum.each(listeners, fn callback ->
           callback.(info)
         end)
 
-        Enum.each(waiters, fn callback ->
-          callback.(info)
-        end)
+        new_waiters =
+          Map.get(owner.waiters, event_key, [])
+          |> Enum.reduce([], fn callback, acc ->
+            case callback.(info) do
+              :ok -> acc
+              :cont -> [callback | acc]
+            end
+          end)
 
+        owner = %{owner | waiters: Map.put(owner.waiters, event_key, new_waiters)}
         {:ok, owner}
       end
 

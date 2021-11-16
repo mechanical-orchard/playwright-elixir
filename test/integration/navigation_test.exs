@@ -1,6 +1,6 @@
 defmodule Playwright.NavigationTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Page, Response}
+  alias Playwright.{Browser, BrowserContext, Page, Response, Runner}
 
   describe "Page.goto/2" do
     test "works (and updates the page's URL)", %{assets: assets, page: page} do
@@ -60,6 +60,31 @@ defmodule Playwright.NavigationTest do
     test "works when navigating to valid URL", %{assets: assets, page: page} do
       response = Page.goto(page, assets.empty)
       assert Response.ok(response)
+    end
+  end
+
+  describe "Page.wait_for_load_state/3" do
+    @tag exclude: [:page]
+    test "waits for load state of new page", %{browser: browser} do
+      context = Browser.new_context(browser)
+
+      %Runner.EventInfo{params: %{page: page}} =
+        BrowserContext.expect_page(context, fn ->
+          BrowserContext.new_page(context)
+        end)
+
+      Page.wait_for_load_state(page)
+      assert Page.evaluate(page, "document.readyState") == "complete"
+    end
+
+    test "on 'networkidle'", %{assets: assets, page: page} do
+      wait =
+        Task.async(fn ->
+          Page.wait_for_load_state(page, "networkidle")
+        end)
+
+      Page.goto(page, assets.prefix <> "/networkidle.html")
+      Task.await(wait)
     end
   end
 end

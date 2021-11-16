@@ -37,6 +37,7 @@ defmodule Playwright.Page do
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle
   alias Playwright.Extra
+  alias Playwright.Frame
   alias Playwright.Page
   alias Playwright.Runner.Channel
   alias Playwright.Runner.ChannelOwner
@@ -117,21 +118,26 @@ defmodule Playwright.Page do
     })
   end
 
-  def expect_event(subject, event, fun) when event in ["requestFinished"] do
+  def expect_event(subject, event, action) when event in ["requestFinished"] do
     parent = Channel.get(subject.connection, {:guid, subject.parent.guid})
-    result = Channel.wait_for(parent, event, fun)
+    result = Channel.wait_for(parent, event, action)
     result
   end
 
-  def expect_event(subject, event, fun) do
-    Channel.wait_for(subject, event, fun)
+  def expect_event(subject, event, action) do
+    Channel.wait_for(subject, event, action)
   end
 
-  defdelegate wait_for_event(subject, event, fun), to: __MODULE__, as: :expect_event
+  defdelegate wait_for_event(subject, event, action), to: __MODULE__, as: :expect_event
 
   def fill(subject, selector, value) do
     frame(subject) |> Channel.send("fill", %{selector: selector, value: value})
     subject
+  end
+
+  @spec frame(Page.t()) :: Frame.t()
+  def frame(subject) do
+    Channel.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
   end
 
   def get_attribute(subject, selector, name) do
@@ -252,6 +258,18 @@ defmodule Playwright.Page do
     frame(subject) |> Channel.send("title")
   end
 
+  @spec wait_for_load_state(Page.t(), map()) :: Page.t()
+  def wait_for_load_state(subject, state \\ "load", options \\ %{})
+
+  def wait_for_load_state(subject, state, options) when is_binary(state) do
+    frame(subject) |> Frame.wait_for_load_state(state, options)
+    subject
+  end
+
+  def wait_for_load_state(subject, options, _) when is_map(options) do
+    wait_for_load_state(subject, "load", options)
+  end
+
   def wait_for_selector(subject, selector, options \\ %{}) do
     frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
   end
@@ -291,10 +309,6 @@ defmodule Playwright.Page do
       %{v: "undefined"} ->
         nil
     end
-  end
-
-  def frame(subject) do
-    Channel.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
   end
 
   defp hydrate(nil) do

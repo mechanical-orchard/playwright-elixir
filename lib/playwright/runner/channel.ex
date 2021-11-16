@@ -2,6 +2,7 @@ defmodule Playwright.Runner.Channel do
   @moduledoc false
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Connection
+  alias Playwright.Runner.EventInfo
 
   def all(connection, filter, default \\ []) do
     Connection.get(connection, filter, default)
@@ -26,7 +27,13 @@ defmodule Playwright.Runner.Channel do
     Connection.post(subject.connection, command)
   end
 
-  def wait_for(subject, event, fun) do
-    Connection.wait_for(subject.connection, {event, subject, fun})
+  @spec wait_for(struct(), binary(), (-> any())) :: EventInfo.t()
+  def wait_for(subject, event, action) do
+    Connection.wait_for(subject.connection, {event, subject, action})
+  end
+
+  @spec wait_for_match(struct(), binary(), (EventInfo.t() -> boolean())) :: EventInfo.t()
+  def wait_for_match(subject, event, predicate) do
+    Connection.wait_for_match(subject.connection, {event, subject, predicate})
   end
 end

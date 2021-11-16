@@ -7,6 +7,7 @@ defmodule Playwright.Runner.Connection do
   alias Playwright.Extra
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.Channel
+  alias Playwright.Runner.EventInfo
   alias Playwright.Runner.Transport
 
   @type transport_module :: module()
@@ -71,8 +72,14 @@ defmodule Playwright.Runner.Connection do
     GenServer.cast(connection, {:recv, message})
   end
 
-  def wait_for(connection, {event, subject, fun}) do
-    GenServer.call(connection, {:wait_for, {event, subject, fun}})
+  @spec wait_for(pid(), {binary(), struct(), (() -> any())}) :: EventInfo.t()
+  def wait_for(connection, {event, subject, action}) do
+    GenServer.call(connection, {:wait_for, {event, subject, action}})
+  end
+
+  @spec wait_for_match(pid(), {binary(), struct(), (EventInfo.t() -> boolean())}) :: EventInfo.t()
+  def wait_for_match(connection, {event, subject, predicate}) do
+    GenServer.call(connection, {:wait_for_match, {event, subject, predicate}})
   end
 
   # @impl
@@ -151,17 +158,36 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
-  def handle_call({:wait_for, {event, subject, fun}}, from, %{catalog: catalog} = state) do
+  def handle_call({:wait_for, {event, subject, action}}, from, %{catalog: catalog} = state) do
     callback = fn event_info ->
       GenServer.reply(from, event_info)
+      :ok
     end
 
     waiters = [callback | subject.waiters[event] || []]
     subject = %{subject | waiters: Map.put(subject.waiters, event, waiters)}
 
     Task.start_link(fn ->
-      fun.()
+      action.()
     end)
+
+    Catalog.put(catalog, subject)
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_call({:wait_for_match, {event, subject, predicate}}, from, %{catalog: catalog} = state) do
+    callback = fn event_info ->
+      if predicate.(event_info) do
+        GenServer.reply(from, event_info)
+        :ok
+      else
+        :cont
+      end
+    end
+
+    waiters = [callback | subject.waiters[event] || []]
+    subject = %{subject | waiters: Map.put(subject.waiters, event, waiters)}
 
     Catalog.put(catalog, subject)
     {:noreply, state}
@@ -196,7 +222,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{error: error, id: message_id}, %{callbacks: callbacks, catalog: catalog} = state) do
-    Logger.debug("recv_payload E: #{inspect(error)}")
+    # Logger.debug("recv_payload E: #{inspect(error)}")
 
     {callback, updated} = Map.pop!(callbacks, message_id)
     Channel.Callback.resolve(callback, Channel.Error.new(error, catalog))
@@ -204,7 +230,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
-    Logger.debug("recv_payload A: #{inspect(message)}")
+    # Logger.debug("recv_payload A: #{inspect(message)}")
 
     {callback, updated} = Map.pop!(callbacks, message_id)
     Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
@@ -212,7 +238,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{method: _method} = message, %{catalog: catalog} = state) do
-    Logger.debug("recv_payload B: #{inspect(message)}")
+    # Logger.debug("recv_payload B: #{inspect(message)}")
 
     Channel.Event.handle(message, catalog)
     state

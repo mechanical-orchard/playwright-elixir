@@ -70,7 +70,7 @@ defmodule Playwright.Runner.Channel.Event do
   # ---------------------------------------------------------------------------
 
   defp handle(type, %{guid: guid, params: params}, catalog)
-       when type in ["close", "console", "navigated", "request", "requestFinished", "response"] do
+       when type in ["close", "console", "loadstate", "navigated", "page", "request", "requestFinished", "response"] do
     target = Catalog.get(catalog, guid)
     module = module_for(target)
 
@@ -85,14 +85,7 @@ defmodule Playwright.Runner.Channel.Event do
     handle(type, Map.merge(message, %{params: %{}}), catalog)
   end
 
-  # to do
-  # ---------------------------------------------------------------------------
-
-  defp handle("page", _event, catalog) do
-    # Logger.warn("WIP: Event.handle/3 for 'page': event data: #{inspect(event)}")
-    catalog
-  end
-
+  # to do...
   defp handle(method, event, catalog) do
     Logger.debug("Event.handle/3 for unhandled method: #{inspect(method)}; event data: #{inspect(event)}")
     catalog
@@ -102,16 +95,24 @@ defmodule Playwright.Runner.Channel.Event do
     String.to_existing_atom("Elixir.Playwright.#{resource.type}")
   end
 
-  # NOTE: all of these `prepare` implementations should be generalized to simply
-  # "hydrate" the things that have `guid`.
-  defp prepare(params, type, _catalog) when type in ["close"] do
-    params
+  defp hydrate(list, catalog) when is_list(list) do
+    Enum.into(list, %{}) |> hydrate(catalog)
   end
 
-  defp prepare(params, type, catalog) when type in ["console"] do
-    Map.merge(params, %{
-      message: Catalog.get(catalog, params.message.guid)
-    })
+  defp hydrate(map, catalog) when is_map(map) do
+    Map.new(map, fn
+      {k, %{guid: guid}} ->
+        {k, Catalog.get(catalog, guid)}
+
+      {k, v} when is_map(v) ->
+        {k, hydrate(v, catalog)}
+
+      {k, l} when is_list(l) ->
+        {k, Enum.map(l, fn v -> hydrate(v, catalog) end)}
+
+      {k, v} ->
+        {k, v}
+    end)
   end
 
   defp prepare(%{newDocument: %{request: request}} = params, type, catalog) when type in ["navigated"] do
@@ -119,30 +120,19 @@ defmodule Playwright.Runner.Channel.Event do
     Map.put(params, :newDocument, document)
   end
 
-  defp prepare(params, type, catalog) when type in ["request"] do
+  defp prepare(params, type, catalog) when type in ["page"] do
+    page = Catalog.get(catalog, params.page.guid)
+    frame = Catalog.get(catalog, page.main_frame.guid)
+
     Map.merge(params, %{
-      page: Catalog.get(catalog, params.page.guid),
-      request: Catalog.get(catalog, params.request.guid)
+      page: page,
+      url: frame.url
     })
   end
 
-  defp prepare(params, type, catalog) when type in ["requestFinished"] do
-    Map.merge(params, %{
-      page: Catalog.get(catalog, params.page.guid),
-      request: Catalog.get(catalog, params.request.guid),
-      response: Catalog.get(catalog, params.response.guid)
-    })
-  end
-
-  defp prepare(params, type, catalog) when type in ["response"] do
-    Map.merge(params, %{
-      page: Catalog.get(catalog, params.page.guid),
-      response: Catalog.get(catalog, params.response.guid)
-    })
-  end
-
-  defp prepare(params, type, _catalog) when type in ["navigated"] do
-    params
+  defp prepare(params, type, catalog)
+       when type in ["close", "console", "loadstate", "request", "navigated", "requestFinished", "response"] do
+    hydrate(params, catalog)
   end
 
   defp prepare(params, type, _catalog) do
