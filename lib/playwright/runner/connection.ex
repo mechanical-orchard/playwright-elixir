@@ -71,6 +71,10 @@ defmodule Playwright.Runner.Connection do
     GenServer.cast(connection, {:recv, message})
   end
 
+  def wait_for(connection, {event, subject, fun}) do
+    GenServer.call(connection, {:wait_for, {event, subject, fun}})
+  end
+
   # @impl
   # ----------------------------------------------------------------------------
 
@@ -117,8 +121,6 @@ defmodule Playwright.Runner.Connection do
   # NOTE: this should move to be part of `Catalog.put`
   @impl GenServer
   def handle_call({:patch, {:guid, guid}, data}, _from, %{catalog: catalog} = state) do
-    # Logger.warn("Connection patching #{inspect(subject)} for guid: #{inspect(guid)}")
-
     # NOTE: It's possible that the resource has been removed from the Catalog
     # (e.g., on `Page.close`). It may be that there's a more sensible way to
     # handle such scenarios, but this will do for now.
@@ -146,6 +148,23 @@ defmodule Playwright.Runner.Connection do
       :noreply,
       %{state | callbacks: Map.put(callbacks, message.id, Channel.Callback.new(from, message))}
     }
+  end
+
+  @impl GenServer
+  def handle_call({:wait_for, {event, subject, fun}}, from, %{catalog: catalog} = state) do
+    callback = fn event_info ->
+      GenServer.reply(from, event_info)
+    end
+
+    waiters = [callback | subject.waiters[event] || []]
+    subject = %{subject | waiters: Map.put(subject.waiters, event, waiters)}
+
+    Task.start_link(fn ->
+      fun.()
+    end)
+
+    Catalog.put(catalog, subject)
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -177,7 +196,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{error: error, id: message_id}, %{callbacks: callbacks, catalog: catalog} = state) do
-    # Logger.warn("recv_payload E: #{inspect(error)}")
+    Logger.debug("recv_payload E: #{inspect(error)}")
 
     {callback, updated} = Map.pop!(callbacks, message_id)
     Channel.Callback.resolve(callback, Channel.Error.new(error, catalog))
@@ -185,7 +204,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
-    # Logger.warn("recv_payload A: #{inspect(message)}")
+    Logger.debug("recv_payload A: #{inspect(message)}")
 
     {callback, updated} = Map.pop!(callbacks, message_id)
     Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
@@ -193,7 +212,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{method: _method} = message, %{catalog: catalog} = state) do
-    # Logger.warn("recv_payload B: #{inspect(message)}")
+    Logger.debug("recv_payload B: #{inspect(message)}")
 
     Channel.Event.handle(message, catalog)
     state

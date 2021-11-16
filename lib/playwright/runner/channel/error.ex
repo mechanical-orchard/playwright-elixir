@@ -8,6 +8,8 @@ defmodule Playwright.Runner.Channel.Error do
   defstruct [:message]
 
   def new(%{error: error}, _catalog) do
+    # message = String.split(error.message, "\n") |> List.first()
+    # raise message
     %Error{message: String.split(error.message, "\n") |> List.first()}
   end
 end

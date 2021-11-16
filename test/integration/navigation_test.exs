@@ -1,8 +1,6 @@
 defmodule Playwright.NavigationTest do
   use Playwright.TestCase, async: true
-
-  alias Playwright.Page
-  alias Playwright.Response
+  alias Playwright.{Page, Response}
 
   describe "Page.goto/2" do
     test "works (and updates the page's URL)", %{assets: assets, page: page} do
@@ -52,6 +50,7 @@ defmodule Playwright.NavigationTest do
       assert response.status == 200
     end
 
+    @tag :skip
     test "fails when navigating to bad URL", %{page: page} do
       assert_raise(RuntimeError, "Protocol error (Page.navigate): Cannot navigate to invalid URL", fn ->
         Page.goto(page, "asdfasdf")

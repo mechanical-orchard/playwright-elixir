@@ -4,7 +4,7 @@ defmodule Test.ExampleTest do
   alias Playwright.{Browser, Page, Response}
 
   describe "Playwright.launch/0" do
-    test "returns the default browser" do
+    test "launches and returns an instance of the default Browser" do
       assert Playwright.launch()
              |> Browser.new_page()
              |> Page.goto("http://example.com")
@@ -13,7 +13,7 @@ defmodule Test.ExampleTest do
   end
 
   describe "Playwright.launch/1" do
-    test "returns the requested browser" do
+    test "launches and returns an instance of the requested Browser" do
       assert Playwright.launch(:chromium)
              |> Browser.new_page()
              |> Page.goto("http://example.com")

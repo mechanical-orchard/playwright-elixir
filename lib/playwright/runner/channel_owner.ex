@@ -1,13 +1,13 @@
 defmodule Playwright.Runner.ChannelOwner do
   @moduledoc false
-  @base [:connection, :guid, :initializer, :parent, :type, :listeners]
+  @base [:connection, :guid, :initializer, :parent, :type, :listeners, :waiters]
 
   require Logger
-  alias Playwright.Runner.Channel
   alias Playwright.Runner.ChannelOwner
+  alias Playwright.Runner.EventInfo
 
   @callback new(term(), map()) :: term()
-  @callback before_event(term(), %Channel.Event{}) :: {:ok, term()}
+  @callback before_event(term(), %EventInfo{}) :: {:ok, term()}
 
   @optional_callbacks new: 2, before_event: 2
 
@@ -56,7 +56,8 @@ defmodule Playwright.Runner.ChannelOwner do
           initializer: initializer,
           parent: parent,
           type: type,
-          listeners: %{}
+          listeners: %{},
+          waiters: %{}
         }
 
         struct(
@@ -68,6 +69,7 @@ defmodule Playwright.Runner.ChannelOwner do
       end
 
       # NOTE: probably remove this
+      # !!!
       @doc false
       def patch(subject, data) do
         Task.start_link(fn ->
@@ -76,20 +78,31 @@ defmodule Playwright.Runner.ChannelOwner do
       end
 
       @doc false
-      def on_event(owner, %Playwright.Runner.Channel.Event{} = event) do
-        {:ok, owner} = before_event(owner, event)
+      def on_event(owner, %EventInfo{} = info) do
+        {:ok, owner} = before_event(owner, info)
 
-        handlers = owner.listeners[Atom.to_string(event.type)] || []
+        event_key = Atom.to_string(info.type)
 
-        Enum.each(handlers, fn handler ->
-          handler.(owner, event)
+        listeners = Map.get(owner.listeners, event_key, [])
+
+        {waiters, remaining} = Map.pop(owner.waiters, event_key, [])
+        owner = %{owner | waiters: remaining}
+
+        info = %{info | target: owner}
+
+        Enum.each(listeners, fn callback ->
+          callback.(info)
+        end)
+
+        Enum.each(waiters, fn callback ->
+          callback.(info)
         end)
 
         {:ok, owner}
       end
 
       @doc false
-      def before_event(owner, %Playwright.Runner.Channel.Event{}) do
+      def before_event(owner, %EventInfo{}) do
         {:ok, owner}
       end
 

@@ -19,8 +19,14 @@ defmodule Playwright.Runner.Channel do
     Connection.patch(connection, {:guid, guid}, data)
   end
 
-  def send(subject, method, params \\ %{}) do
+  def send(subject, method, params \\ %{})
+
+  def send(subject, method, params) do
     command = Channel.Command.new(subject.guid, method, params)
     Connection.post(subject.connection, command)
+  end
+
+  def wait_for(subject, event, fun) do
+    Connection.wait_for(subject.connection, {event, subject, fun})
   end
 end

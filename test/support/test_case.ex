@@ -9,6 +9,37 @@ defmodule Playwright.TestCase do
   using(options) do
     quote do
       use PlaywrightTest.Case, unquote(options)
+
+      # https://stackoverflow.com/a/41543671
+      defmacro assert_next_receive(pattern, timeout \\ 100) do
+        quote do
+          receive do
+            message ->
+              assert unquote(pattern) = message
+          after
+            unquote(timeout) ->
+              raise "Timeout waiting for 'next receive'"
+          end
+        end
+      end
+
+      defp attach_frame(%Playwright.Page{} = page, frame_id, url) do
+        Playwright.Page.evaluate_handle(
+          page,
+          """
+          async () => {
+            const frame = document.createElement('iframe');
+                  frame.src = "#{url}";
+                  frame.id = "#{frame_id}";
+            document.body.appendChild(frame);
+            await new Promise(x => frame.onload = x);
+            return frame;
+          }
+          """
+        )
+        |> Playwright.JSHandle.as_element()
+        |> Playwright.ElementHandle.content_frame()
+      end
     end
   end
 

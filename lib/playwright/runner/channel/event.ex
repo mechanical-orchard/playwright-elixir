@@ -3,20 +3,10 @@ defmodule Playwright.Runner.Channel.Event do
   # `Event` represents a message received from the Playwright server of some
   # action taken related to a resource.
   require Logger
-  alias Playwright.Extra
   alias Playwright.Runner.Catalog
   alias Playwright.Runner.ChannelOwner
+  alias Playwright.Runner.EventInfo
   alias Playwright.Runner.Helpers
-
-  @enforce_keys [:type, :params]
-  defstruct [:type, :params]
-
-  def new(type, params \\ %{}) do
-    %__MODULE__{
-      type: Extra.Atom.from_string(type),
-      params: params
-    }
-  end
 
   def handle(%{method: method} = event, catalog) do
     # IO.inspect(event, label: "Event.handle")
@@ -44,60 +34,8 @@ defmodule Playwright.Runner.Channel.Event do
     Catalog.rm_r(catalog, guid)
   end
 
-  # ---
-
-  defp handle(type, %{guid: guid, params: params} = _message, catalog)
-       when type in ["close", "navigated"] do
-    r = Catalog.get(catalog, guid)
-    m = module_for(r)
-
-    {:ok, resource} = m.on_event(r, new(type, params))
-
-    Catalog.put(catalog, resource)
-  end
-
-  defp handle(type, %{guid: guid, params: %{message: %{guid: message_guid}}}, catalog)
-       when type in ["console"] do
-    r = Catalog.get(catalog, guid)
-    m = module_for(r)
-
-    message = Catalog.get(catalog, message_guid)
-    payload = %{text: message.message_text, type: message.message_type}
-    {:ok, resource} = m.on_event(r, new(type, payload))
-
-    Catalog.put(catalog, resource)
-  end
-
-  defp handle(type, %{guid: _} = message, catalog)
-       when type in ["close"] do
-    handle(type, Map.merge(message, %{params: %{}}), catalog)
-  end
-
-  defp handle(type, %{guid: guid, params: %{request: %{guid: request_guid}}}, catalog)
-       when type in ["request", "requestFinished"] do
-    r = Catalog.get(catalog, guid)
-    m = module_for(r)
-
-    request = Catalog.get(catalog, request_guid)
-    payload = %{request: request}
-    {:ok, resource} = m.on_event(r, new(type, payload))
-
-    Catalog.put(catalog, resource)
-  end
-
-  defp handle(type, %{guid: guid, params: %{response: %{guid: response_guid}}}, catalog)
-       when type in ["response"] do
-    r = Catalog.get(catalog, guid)
-    m = module_for(r)
-
-    response = Catalog.get(catalog, response_guid)
-    payload = %{response: response}
-    {:ok, resource} = m.on_event(r, new(type, payload))
-
-    Catalog.put(catalog, resource)
-  end
-
-  # ---
+  # handle: special cases
+  # ---------------------------------------------------------------------------
 
   defp handle("route" = event_type, %{guid: guid, params: params} = _event, catalog) do
     resource = Catalog.get(catalog, guid)
@@ -123,16 +61,36 @@ defmodule Playwright.Runner.Channel.Event do
     end
   end
 
-  # ---
+  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
+    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
+    Catalog.put(catalog, resource)
+  end
+
+  # handle: general cases
+  # ---------------------------------------------------------------------------
+
+  defp handle(type, %{guid: guid, params: params}, catalog)
+       when type in ["close", "console", "navigated", "request", "requestFinished", "response"] do
+    target = Catalog.get(catalog, guid)
+    module = module_for(target)
+
+    event_info = EventInfo.new(target, type, prepare(params, type, catalog))
+
+    {:ok, target} = module.on_event(target, event_info)
+    Catalog.put(catalog, target)
+  end
+
+  defp handle(type, %{guid: _guid} = message, catalog)
+       when type in ["close"] do
+    handle(type, Map.merge(message, %{params: %{}}), catalog)
+  end
+
+  # to do
+  # ---------------------------------------------------------------------------
 
   defp handle("page", _event, catalog) do
     # Logger.warn("WIP: Event.handle/3 for 'page': event data: #{inspect(event)}")
     catalog
-  end
-
-  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
-    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
-    Catalog.put(catalog, resource)
   end
 
   defp handle(method, event, catalog) do
@@ -142,5 +100,53 @@ defmodule Playwright.Runner.Channel.Event do
 
   defp module_for(resource) do
     String.to_existing_atom("Elixir.Playwright.#{resource.type}")
+  end
+
+  # NOTE: all of these `prepare` implementations should be generalized to simply
+  # "hydrate" the things that have `guid`.
+  defp prepare(params, type, _catalog) when type in ["close"] do
+    params
+  end
+
+  defp prepare(params, type, catalog) when type in ["console"] do
+    Map.merge(params, %{
+      message: Catalog.get(catalog, params.message.guid)
+    })
+  end
+
+  defp prepare(%{newDocument: %{request: request}} = params, type, catalog) when type in ["navigated"] do
+    document = %{request: Catalog.get(catalog, request.guid)}
+    Map.put(params, :newDocument, document)
+  end
+
+  defp prepare(params, type, catalog) when type in ["request"] do
+    Map.merge(params, %{
+      page: Catalog.get(catalog, params.page.guid),
+      request: Catalog.get(catalog, params.request.guid)
+    })
+  end
+
+  defp prepare(params, type, catalog) when type in ["requestFinished"] do
+    Map.merge(params, %{
+      page: Catalog.get(catalog, params.page.guid),
+      request: Catalog.get(catalog, params.request.guid),
+      response: Catalog.get(catalog, params.response.guid)
+    })
+  end
+
+  defp prepare(params, type, catalog) when type in ["response"] do
+    Map.merge(params, %{
+      page: Catalog.get(catalog, params.page.guid),
+      response: Catalog.get(catalog, params.response.guid)
+    })
+  end
+
+  defp prepare(params, type, _catalog) when type in ["navigated"] do
+    params
+  end
+
+  defp prepare(params, type, _catalog) do
+    Logger.warn("prepare/3 not implemented for type: #{inspect(type)} w/ params: #{inspect(params)}")
+    params
   end
 end

@@ -32,12 +32,15 @@ defmodule Playwright.Page do
   use Playwright.Runner.ChannelOwner,
     fields: [:closed, :frames, :main_frame, :owned_context]
 
+  require Logger
+
   alias Playwright.BrowserContext
   alias Playwright.ElementHandle
   alias Playwright.Extra
   alias Playwright.Page
   alias Playwright.Runner.Channel
   alias Playwright.Runner.ChannelOwner
+  alias Playwright.Runner.EventInfo
   alias Playwright.Runner.Helpers
 
   @impl ChannelOwner
@@ -46,12 +49,12 @@ defmodule Playwright.Page do
   end
 
   @impl ChannelOwner
-  def before_event(subject, %Channel.Event{type: :close}) do
+  def before_event(subject, %EventInfo{type: :close}) do
     {:ok, Map.put(subject, :closed, true)}
   end
 
   @impl ChannelOwner
-  def before_event(subject, %Channel.Event{type: :console}) do
+  def before_event(subject, %EventInfo{type: :console}) do
     {:ok, subject}
   end
 
@@ -86,39 +89,45 @@ defmodule Playwright.Page do
   end
 
   def evaluate(subject, expression, arg \\ nil) do
-    function? = String.starts_with?(expression, "function")
-
     frame(subject)
     |> Channel.send("evaluateExpression", %{
       expression: expression,
-      isFunction: function?,
+      isFunction: Helpers.Expression.function?(expression),
       arg: serialize(arg)
     })
     |> deserialize()
   end
 
   def evaluate_handle(subject, expression, arg \\ nil) do
-    function? = String.starts_with?(expression, "function")
-
     frame(subject)
     |> Channel.send("evaluateExpressionHandle", %{
       expression: expression,
-      isFunction: function?,
+      isFunction: Helpers.Expression.function?(expression),
       arg: serialize(arg)
     })
   end
 
   def eval_on_selector(subject, selector, expression, arg \\ nil, _options \\ %{}) do
-    function? = String.starts_with?(expression, "function")
-
     frame(subject)
     |> Channel.send("evalOnSelector", %{
       selector: selector,
       expression: expression,
-      isFunction: function?,
+      isFunction: Helpers.Expression.function?(expression),
       arg: serialize(arg)
     })
   end
+
+  def expect_event(subject, event, fun) when event in ["requestFinished"] do
+    parent = Channel.get(subject.connection, {:guid, subject.parent.guid})
+    result = Channel.wait_for(parent, event, fun)
+    result
+  end
+
+  def expect_event(subject, event, fun) do
+    Channel.wait_for(subject, event, fun)
+  end
+
+  defdelegate wait_for_event(subject, event, fun), to: __MODULE__, as: :expect_event
 
   def fill(subject, selector, value) do
     frame(subject) |> Channel.send("fill", %{selector: selector, value: value})
@@ -154,8 +163,6 @@ defmodule Playwright.Page do
     Channel.on(subject.connection, {event, parent}, handler)
     subject
   end
-
-  require Logger
 
   def on(subject, event, handler) do
     Channel.on(subject.connection, {event, subject}, handler)
@@ -245,20 +252,16 @@ defmodule Playwright.Page do
     frame(subject) |> Channel.send("title")
   end
 
-  def wait_for_load_state(_subject, _options \\ %{}) do
-    # frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
-  end
-
   def wait_for_selector(subject, selector, options \\ %{}) do
     frame(subject) |> Channel.send("waitForSelector", Map.merge(%{selector: selector}, options))
   end
 
   def cookies(subject, urls \\ []) do
-    subject.owned_context |> Channel.send("cookies", %{ urls: urls })
+    subject.owned_context |> Channel.send("cookies", %{urls: urls})
   end
 
   def add_cookies(subject, cookies) do
-    subject.owned_context |> Channel.send("addCookies", %{ cookies: cookies })
+    subject.owned_context |> Channel.send("addCookies", %{cookies: cookies})
   end
 
   # private
@@ -290,11 +293,9 @@ defmodule Playwright.Page do
     end
   end
 
-  defp frame(subject) do
+  def frame(subject) do
     Channel.get(subject.connection, {:guid, subject.initializer.mainFrame.guid})
   end
-
-  require Logger
 
   defp hydrate(nil) do
     nil
@@ -314,8 +315,6 @@ defmodule Playwright.Page do
   defp hydrate(handles) when is_list(handles) do
     Enum.map(handles, &hydrate/1)
   end
-
-  require Logger
 
   defp serialize(arg) do
     {value, handles} = serialize(arg, [], 0)

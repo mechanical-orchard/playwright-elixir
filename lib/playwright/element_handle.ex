@@ -16,6 +16,10 @@ defmodule Playwright.ElementHandle do
     subject |> Channel.send("click")
   end
 
+  def content_frame(handle) do
+    handle |> Channel.send("contentFrame")
+  end
+
   @doc """
   Returns the value of an elements attribute, or `nil`.
   """
