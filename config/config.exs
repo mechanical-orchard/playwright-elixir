@@ -9,5 +9,5 @@ config :playwright, LaunchOptions,
 config :playwright, PlaywrightTest, transport: String.to_atom(System.get_env("PLAYWRIGHT_TRANSPORT", "driver"))
 
 if config_env() == :test do
-  config :logger, level: :info
+  config :logger, level: :debug
 end
