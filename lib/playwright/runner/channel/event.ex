@@ -61,9 +61,15 @@ defmodule Playwright.Runner.Channel.Event do
     end
   end
 
-  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
-    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
-    Catalog.put(catalog, resource)
+  defp handle("previewUpdated" = type, %{guid: guid, params: params} = _event, catalog) do
+    target = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
+    module = module_for(target)
+
+    # event_info = EventInfo.new(target, type, prepare(params, type, catalog))
+    event_info = EventInfo.new(target, type, params)
+
+    {:ok, target} = module.on_event(target, event_info)
+    Catalog.put(catalog, target)
   end
 
   # handle: general cases
@@ -87,7 +93,7 @@ defmodule Playwright.Runner.Channel.Event do
 
   # to do...
   defp handle(method, event, catalog) do
-    Logger.debug("Event.handle/3 for unhandled method: #{inspect(method)}; event data: #{inspect(event)}")
+    Logger.warn("Event.handle/3 for unhandled method: #{inspect(method)}; event data: #{inspect(event)}")
     catalog
   end
 

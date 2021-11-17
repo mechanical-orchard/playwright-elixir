@@ -149,12 +149,13 @@ defmodule Playwright.Page do
   def goto(subject, url, params \\ %{}) do
     load_state = Map.get(params, :wait_until, "load")
 
-    case frame(subject) |> Channel.send("goto", %{url: url}) do
+    case frame(subject) |> Channel.send("goto", %{url: url, waitUntil: load_state}) do
       %Channel.Error{} = error ->
         raise RuntimeError, message: error.message
 
       response ->
-        Page.wait_for_load_state(subject, load_state)
+        # Review: we think that this is *not* done in the official implementations
+        # Page.wait_for_load_state(subject, load_state)
         response
     end
   end
@@ -201,7 +202,9 @@ defmodule Playwright.Page do
   def query_selector_all(subject, selector) do
     frame(subject)
     |> Channel.send("querySelectorAll", %{selector: selector})
+    |> IO.inspect(label: "hydrating from $$")
     |> hydrate()
+    |> IO.inspect(label: "hydrated from $$")
   end
 
   def route(%{connection: _connection} = subject, url_pattern, callback, _options \\ %{}) do
@@ -319,10 +322,21 @@ defmodule Playwright.Page do
       "JSHandle@node" ->
         :timer.sleep(5)
         hydrate(Channel.get(handle.connection, {:guid, handle.guid}))
+        # Channel.wait_for_match(handle, "previewUpdated", fn event_info ->
+        #   Logger.warn("checking previewUpdated with info: #{inspect(event_info)}")
+        #   event_info.params.preview != "JSHandle@node"
+        # end)
+        # Channel.get(handle.connection, {:guid, handle.guid})
 
       _hydrated ->
+        Logger.warn("handle is hydrated: #{inspect(handle)}")
         handle
     end
+  end
+
+  defp hydrate(%Playwright.Runner.Channel.Error{} = error) do
+    Logger.error("tried to hydrate on Error: #{inspect(error)}")
+    error
   end
 
   defp hydrate(handles) when is_list(handles) do

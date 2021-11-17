@@ -28,6 +28,11 @@ defmodule Playwright.PageTest do
     test ".query_selector_all/2", %{assets: assets, connection: connection, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
+      require Logger
+      Page.on(page, "console", fn event_info ->
+        Logger.error("event info #{inspect(event_info)}")
+      end)
+
       [outer, inner] = Page.query_selector_all(page, "css=div")
 
       assert %ElementHandle{
