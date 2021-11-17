@@ -146,16 +146,15 @@ defmodule Playwright.Page do
     |> ElementHandle.get_attribute(name)
   end
 
-  def goto(subject, "about:blank" = url) do
-    frame(subject) |> Channel.send("goto", %{url: url, waitUntil: "load"})
-  end
+  def goto(subject, url, params \\ %{}) do
+    load_state = Map.get(params, :wait_until, "load")
 
-  def goto(subject, url, _params \\ %{}) do
-    case frame(subject) |> Channel.send("goto", %{url: url, waitUntil: "load"}) do
+    case frame(subject) |> Channel.send("goto", %{url: url}) do
       %Channel.Error{} = error ->
         raise RuntimeError, message: error.message
 
       response ->
+        Page.wait_for_load_state(subject, load_state)
         response
     end
   end
