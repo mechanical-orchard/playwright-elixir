@@ -333,6 +333,13 @@ defmodule Playwright.Page do
         handle
     end
   end
+  # 17:04:31.189 [warn]  hydrating handle: #Playwright.ElementHandle<guid: "handle@f0184cc6a1d220d7b9461de767a2f35a", initializer: %{preview: "JSHandle@node"}, preview: "JSHandle@node", ...>
+  # 17:04:31.192 [info]  <--- RECV (Transport.recv) message: %{"guid" => "handle@f0184cc6a1d220d7b9461de767a2f35a", "method" => "previewUpdated", "params" => %{"preview" => "JSHandle@<div id=\"outer\" name=\"value\">…</div>"}}
+  # 17:04:31.193 [info]  <--- RECV (Transport.recv) message: %{"guid" => "handle@398e90fb0dbcb835195dad96455bbd56", "method" => "previewUpdated", "params" => %{"preview" => "JSHandle@<div id=\"inner\">Text,↵more text</div>"}}
+  # 17:04:31.194 [warn]  handle is hydrated: #Playwright.ElementHandle<guid: "handle@f0184cc6a1d220d7b9461de767a2f35a", initializer: %{preview: "JSHandle@node"}, preview: "JSHandle@<div id=\"outer\" name=\"value\">…</div>", ...>
+  # 17:04:31.195 [warn]  hydrating handle: #Playwright.ElementHandle<guid: "handle@398e90fb0dbcb835195dad96455bbd56", initializer: %{preview: "JSHandle@node"}, preview: "JSHandle@node", ...>
+  # 17:04:31.201 [warn]  handle is hydrated: #Playwright.ElementHandle<guid: "handle@398e90fb0dbcb835195dad96455bbd56", initializer: %{preview: "JSHandle@node"}, preview: "JSHandle@<div id=\"inner\">Text,↵more text</div>", ...>
+
 
   defp hydrate(%Playwright.Runner.Channel.Error{} = error) do
     Logger.error("tried to hydrate on Error: #{inspect(error)}")

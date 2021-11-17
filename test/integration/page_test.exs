@@ -27,12 +27,6 @@ defmodule Playwright.PageTest do
 
     test ".query_selector_all/2", %{assets: assets, connection: connection, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
-
-      require Logger
-      Page.on(page, "console", fn event_info ->
-        Logger.error("event info #{inspect(event_info)}")
-      end)
-
       [outer, inner] = Page.query_selector_all(page, "css=div")
 
       assert %ElementHandle{
@@ -58,6 +52,33 @@ defmodule Playwright.PageTest do
       elements = Page.query_selector_all(page, "css=non-existent")
       assert elements == []
     end
+
+    # it('should have a nice preview', async ({ page, server }) => {
+    #   await page.goto(`${server.PREFIX}/dom.html`);
+    #   const outer = await page.$('#outer');
+    #   const inner = await page.$('#inner');
+    #   const check = await page.$('#check');
+    #   const text = await inner.evaluateHandle(e => e.firstChild);
+    #   await page.evaluate(() => 1);  // Give them a chance to calculate the preview.
+    #   expect(String(outer)).toBe('JSHandle@<div id="outer" name="value">…</div>');
+    #   expect(String(inner)).toBe('JSHandle@<div id="inner">Text,↵more text</div>');
+    #   expect(String(text)).toBe('JSHandle@#text=Text,↵more text');
+    #   expect(String(check)).toBe('JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>');
+    # });
+
+    # async def test_a_nice_preview(page, server):
+    #     await page.goto(f"{server.PREFIX}/dom.html")
+    #     outer = await page.query_selector("#outer")
+    #     inner = await page.query_selector("#inner")
+    #     check = await page.query_selector("#check")
+    #     text = await inner.evaluate_handle("e => e.firstChild")
+    #     await page.evaluate("1")  # Give them a chance to calculate the preview.
+    #     assert str(outer) == 'JSHandle@<div id="outer" name="value">…</div>'
+    #     assert str(inner) == 'JSHandle@<div id="inner">Text,↵more text</div>'
+    #     assert str(text) == "JSHandle@#text=Text,↵more text"
+    #     assert (
+    #         str(check) == 'JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>'
+    #     )
 
     @tag without: [:page]
     test ".close/1", %{browser: browser, connection: connection} do

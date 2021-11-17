@@ -35,8 +35,7 @@ defmodule Playwright.Browser do
       prepare(
         Map.merge(
           %{
-            no_default_viewport: false,
-            sdk_language: "elixir"
+            no_default_viewport: false
           },
           options
         )

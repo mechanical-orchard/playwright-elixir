@@ -8,6 +8,10 @@ defmodule Playwright.Runner.Channel.Event do
   alias Playwright.Runner.EventInfo
   alias Playwright.Runner.Helpers
 
+  # 17:39:40.105 [info]  <--- RECV (Transport.recv) message: %{"guid" => "browser-context@5fb0da6a2cb2c6807d1b681b79c761ca", "method" => "__create__", "params" => %{"guid" => "page@bad9b77fb81d31dc9d0c8a06def7ae38", "initializer" => %{"isClosed" => false, "mainFrame" => %{"guid" => "frame@d5131f21d84e43deb247c750fc4829d4"}, "viewportSize" => %{"height" => 720, "width" => 1280}}, "type" => "Page"}}
+  # 17:39:40.105 [info]  <--- RECV (Transport.recv) message: %{"guid" => "browser-context@5fb0da6a2cb2c6807d1b681b79c761ca", "method" => "page", "params" => %{"page" => %{"guid" => "page@bad9b77fb81d31dc9d0c8a06def7ae38"}}}
+  # 17:39:40.105 [info]  <--- RECV (Transport.recv) message: %{"id" => 3, "result" => %{"page" => %{"guid" => "page@bad9b77fb81d31dc9d0c8a06def7ae38"}}}
+
   def handle(%{method: method} = event, catalog) do
     # IO.inspect(event, label: "Event.handle")
     handle(method, event, catalog)

@@ -221,6 +221,22 @@ defmodule Playwright.Runner.Connection do
     end
   end
 
+  # _onMessage(object) {
+  #   if (object.id && this._callbacks.has(object.id)) {
+  #     const callback = this._callbacks.get(object.id);
+
+  #     this._callbacks.delete(object.id);
+
+  #     if (object.error) callback.reject(createProtocolError(callback.error, callback.method, object.error));else callback.resolve(object.result);
+  #   } else {
+  #     (0, _utils.assert)(!object.id);
+  #     Promise.resolve().then(() => {
+  #       if (this._eventListener) this._eventListener(object.method, object.params);
+  #       this.emit(object.method, object.params);
+  #     });
+  #   }
+  # }
+
   defp recv_payload(%{error: error, id: message_id}, %{callbacks: callbacks, catalog: catalog} = state) do
     # Logger.debug("recv_payload E: #{inspect(error)}")
 

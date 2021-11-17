@@ -1,13 +1,23 @@
 defmodule Playwright.WIPTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Page}
-
   require Logger
 
   describe "WIP" do
+    test "on .query_selector_all/2", %{assets: assets, page: page} do
+      # Playwright.Page.on(page, "console", fn info ->
+      #   Logger.warn("console: #{inspect(info.params)}")
+      # end)
+      Playwright.Page.goto(page, assets.prefix <> "/dom.html")
+      Playwright.Page.query_selector_all(page, "css=div")
+    end
+
+    # ---
+
     @tag exclude: [:page]
-    test "BrowserType.launch", %{browser: browser} do
-      assert browser
+    test "startup readiness", %{assets: assets, browser: browser} do
+      # assert Playwright.Browser.new_context(browser)
+      page = Playwright.Browser.new_page(browser)
+      Playwright.Page.goto(page, assets.empty)
     end
 
     @tag :skip

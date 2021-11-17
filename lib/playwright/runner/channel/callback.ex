@@ -18,6 +18,7 @@ defmodule Playwright.Runner.Channel.Callback do
   end
 
   def resolve(%{listener: listener}, %Response{} = response) do
+    Logger.debug("Callback.resolve w/ response: #{inspect(response)}")
     GenServer.reply(listener, response.parsed)
   end
 end

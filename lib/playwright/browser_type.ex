@@ -51,7 +51,8 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp browser(%BrowserType{} = subject) do
-    case Channel.send(subject, "launch", Config.launch_options(true)) do
+    options = Map.merge(Config.launch_options(true), %{ignoreAllDefaultArgs: false})
+    case Channel.send(subject, "launch", options) do
       %Playwright.Browser{} = result ->
         result
 
