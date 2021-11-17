@@ -63,8 +63,8 @@ defmodule Playwright.Browser do
   the context goes with it.
   """
   @spec new_page(Playwright.Browser.t()) :: Playwright.Page.t()
-  def new_page(%{connection: connection} = subject) do
-    context = new_context(subject)
+  def new_page(%{connection: connection} = subject, opts \\ %{}) do
+    context = new_context(subject, opts)
     page = Playwright.BrowserContext.new_page(context)
 
     Channel.patch(connection, context.guid, %{owner_page: page})
