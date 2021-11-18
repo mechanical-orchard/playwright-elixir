@@ -1,6 +1,6 @@
 defmodule Playwright.Page.NetworkTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Page}
+  alias Playwright.Page
 
   describe "Page network events" do
     test "events are fired in the proper order", %{assets: assets, page: page} do

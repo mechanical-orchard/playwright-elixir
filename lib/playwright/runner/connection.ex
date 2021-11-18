@@ -234,7 +234,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{error: error, id: message_id}, %{callbacks: callbacks, catalog: catalog} = state) do
-    # Logger.debug("recv_payload E: #{inspect(error)}")
+    Logger.debug("recv_payload E: #{inspect(error)}")
 
     {callback, updated} = Map.pop!(callbacks, message_id)
     Channel.Callback.resolve(callback, Channel.Error.new(error, catalog))
@@ -242,7 +242,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{id: message_id} = message, %{callbacks: callbacks, catalog: catalog} = state) do
-    # Logger.debug("recv_payload A: #{inspect(message)}")
+    Logger.debug("recv_payload A: #{inspect(message)}")
 
     {callback, updated} = Map.pop!(callbacks, message_id)
     Channel.Callback.resolve(callback, Channel.Response.new(message, catalog))
@@ -250,7 +250,7 @@ defmodule Playwright.Runner.Connection do
   end
 
   defp recv_payload(%{method: _method} = message, %{catalog: catalog} = state) do
-    # Logger.debug("recv_payload B: #{inspect(message)}")
+    Logger.debug("recv_payload B: #{inspect(message)}")
 
     Channel.Event.handle(message, catalog)
     state

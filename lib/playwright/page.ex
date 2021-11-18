@@ -227,6 +227,7 @@ defmodule Playwright.Page do
     subject
   end
 
+  @spec screenshot(Page.t(), map()) :: binary()
   def screenshot(subject, params) do
     case Map.pop(params, "path", nil) do
       {nil, params} ->

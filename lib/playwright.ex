@@ -27,7 +27,7 @@ defmodule Playwright do
   @doc """
   Launch an instance of `Playwright.Browser` of the default client type (:chromium).
   """
-  def launch() do
+  def launch do
     launch(:chromium)
   end
 

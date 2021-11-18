@@ -3,10 +3,10 @@ defmodule Playwright.Runner.EventInfo do
   alias Playwright.Extra
 
   @type t() :: %__MODULE__{
-    target: struct(),
-    type: atom(),
-    params: map()
-  }
+          target: struct(),
+          type: atom(),
+          params: map()
+        }
 
   @enforce_keys [:target, :type, :params]
   defstruct [:target, :type, :params]

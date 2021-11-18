@@ -27,7 +27,7 @@ defmodule Playwright.Runner.Channel do
     Connection.post(subject.connection, command)
   end
 
-  @spec wait_for(struct(), binary(), (-> any())) :: EventInfo.t()
+  @spec wait_for(struct(), binary(), (() -> any())) :: EventInfo.t()
   def wait_for(subject, event, action) do
     Connection.wait_for(subject.connection, {event, subject, action})
   end

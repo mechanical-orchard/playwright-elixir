@@ -4,7 +4,7 @@ defmodule PlaywrightTest.Page do
 
   This is useful, for example, in making `doctest` examples more concise.
   """
-  def setup() do
+  def setup do
     {_, browser} = Playwright.BrowserType.launch()
     Playwright.Browser.new_page(browser)
   end
