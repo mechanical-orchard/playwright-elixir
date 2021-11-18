@@ -60,7 +60,7 @@ defmodule Playwright.BrowserType do
     end
   end
 
-  defp chromium(connection) do
+  def chromium(connection) do
     playwright = Channel.get(connection, {:guid, "Playwright"})
 
     case playwright do

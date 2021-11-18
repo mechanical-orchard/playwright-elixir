@@ -44,7 +44,7 @@ defmodule PlaywrightTest.Case do
   """
 
   defmacro __using__(options \\ %{}) do
-    quote do
+    quote location: :keep do
       alias Playwright.Runner.Config
 
       setup_all(context) do
@@ -55,25 +55,32 @@ defmodule PlaywrightTest.Case do
         Application.put_env(:playwright, LaunchOptions, launch_options)
         {:ok, _} = Application.ensure_all_started(:playwright)
 
-        {connection, browser} = setup_browser(runner_options)
-        [browser: browser, connection: connection, transport: runner_options.transport]
+        browser_pool = PlaywrightTest.Pool.start_link()
+
+        # {connection, browser} = setup_browser(runner_options)
+        # [browser: browser, connection: connection, transport: runner_options.transport]
+        [browser_pool: browser_pool, transport: runner_options.transport]
       end
 
       setup(context) do
         tagged_exclude = Map.get(context, :exclude, [])
 
+        connection = :poolboy.checkout(:playwright)
+        browser = Playwright.BrowserType.chromium(connection)
+
         case Enum.member?(tagged_exclude, :page) do
           true ->
-            context
+            [browser: browser, connection: connection]
 
           false ->
-            page = Playwright.Browser.new_page(context.browser)
+            page = Playwright.Browser.new_page(browser)
 
             on_exit(:ok, fn ->
               Playwright.Page.close(page)
             end)
 
             Map.put(context, :page, page)
+            [page: page, browser: browser, connection: connection]
         end
       end
 
