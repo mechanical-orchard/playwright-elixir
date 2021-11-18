@@ -148,13 +148,14 @@ defmodule Playwright.Page do
 
   def goto(subject, url, params \\ %{}) do
     load_state = Map.get(params, :wait_until, "load")
+    timeout = Map.get(params, :timeout, 30_000)
+    playwright_params = %{"url" => url, "waitUntil" => load_state, "timeout" => timeout}
 
-    case frame(subject) |> Channel.send("goto", %{url: url}) do
+    case frame(subject) |> Channel.send("goto", playwright_params) do
       %Channel.Error{} = error ->
         raise RuntimeError, message: error.message
 
       response ->
-        Page.wait_for_load_state(subject, load_state)
         response
     end
   end
