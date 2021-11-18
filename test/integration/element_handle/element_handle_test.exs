@@ -7,9 +7,9 @@ defmodule Test.Features.ElementHandleTest do
     test "...(also found in 'convenience test' in TS)", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      outer = Page.q(page, "#outer")
-      inner = Page.q(page, "#inner")
-      check = Page.q(page, "#check")
+      {:ok, outer} = Page.q(page, "#outer")
+      {:ok, inner} = Page.q(page, "#inner")
+      {:ok, check} = Page.q(page, "#check")
       # child = ElementHandle.evaluate_handle(inner, "e => e.firstChild")
 
       assert outer.preview == ~s|JSHandle@<div id="outer" name="value">…</div>|
@@ -23,7 +23,7 @@ defmodule Test.Features.ElementHandleTest do
     setup :visit_button_fixture
 
     test "click/1", %{page: page} do
-      element = page |> Playwright.Page.query_selector("button")
+      {:ok, element} = page |> Playwright.Page.query_selector("button")
       assert element |> Playwright.ElementHandle.click()
 
       result = Playwright.Page.evaluate(page, "function () { return window['result']; }")
@@ -35,7 +35,7 @@ defmodule Test.Features.ElementHandleTest do
     setup :visit_dom_fixture
 
     test "get_attribute/2", %{page: page} do
-      element = page |> Playwright.Page.query_selector("#outer")
+      {:ok, element} = page |> Playwright.Page.query_selector("#outer")
       assert element |> Playwright.ElementHandle.get_attribute("name") == "value"
       assert element |> Playwright.ElementHandle.get_attribute("foo") == nil
     end
@@ -53,9 +53,9 @@ defmodule Test.Features.ElementHandleTest do
       page
       |> Playwright.Page.set_content(~S[<html><body><div class="second"><div class="inner">A</div></div></body></html>])
 
-      html = page |> Playwright.Page.query_selector("html")
-      second = html |> Playwright.ElementHandle.query_selector(".second")
-      inner = second |> Playwright.ElementHandle.query_selector(".inner")
+      {:ok, html} = page |> Playwright.Page.query_selector("html")
+      {:ok, second} = html |> Playwright.ElementHandle.query_selector(".second")
+      {:ok, inner} = second |> Playwright.ElementHandle.query_selector(".inner")
 
       assert inner |> Playwright.ElementHandle.text_content() == "A"
     end
@@ -65,9 +65,8 @@ defmodule Test.Features.ElementHandleTest do
     setup :visit_dom_fixture
 
     test "text_content/1", %{page: page} do
-      assert page
-             |> Playwright.Page.query_selector("css=#inner")
-             |> Playwright.ElementHandle.text_content() == "Text,\nmore text"
+      {:ok, element} = page |> Playwright.Page.query_selector("css=#inner")
+      assert element |> Playwright.ElementHandle.text_content() == "Text,\nmore text"
     end
   end
 

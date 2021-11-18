@@ -8,11 +8,12 @@ defmodule Playwright.ElementHandle.ContentFrameTest do
       url = assets.empty
       Page.goto(page, url)
 
-      frame = attach_frame(page, "frame1", url)
+      assert %Playwright.Frame{} = frame = attach_frame(page, "frame1", url)
       assert frame.type == "Frame"
 
-      handle = Page.query_selector(page, "#frame1")
-      assert ElementHandle.content_frame(handle) == frame
+      {:ok, handle} = Page.query_selector(page, "#frame1")
+      assert %Playwright.Frame{} = content_frame = ElementHandle.content_frame(handle)
+      assert content_frame.guid == frame.guid
     end
   end
 end

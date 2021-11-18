@@ -7,14 +7,12 @@ defmodule Playwright.PageTest do
     test ".query_selector/2", %{assets: assets, connection: connection, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: guid} =
+      assert {:ok, %ElementHandle{type: "ElementHandle", connection: ^connection, guid: guid}} =
                page |> Page.query_selector("css=#outer")
 
       assert guid != nil
 
-      page
-      |> Page.query_selector("css=#non-existent")
-      |> refute()
+      assert {:ok, nil} = page |> Page.query_selector("css=#non-existent")
     end
 
     test "query_selector!/2", %{assets: assets, page: page} do
@@ -26,9 +24,9 @@ defmodule Playwright.PageTest do
     end
 
     test ".query_selector_all/2", %{assets: assets, connection: connection, page: page} do
-      Page.goto(page, assets.prefix <> "/dom.html")
+      Page.goto(page, assets.prefix <> "/dom.html", %{timeout: 5_000, wait_until: "domcontentloaded"})
 
-      [outer, inner] = Page.query_selector_all(page, "css=div")
+      assert {:ok, [outer, inner]} = Page.query_selector_all(page, "css=div")
 
       assert %ElementHandle{
                type: "ElementHandle",
@@ -50,8 +48,7 @@ defmodule Playwright.PageTest do
       assert inner_preview != "JSHandle@node"
       assert ElementHandle.text_content(outer) == "Text,\nmore text"
 
-      elements = Page.query_selector_all(page, "css=non-existent")
-      assert elements == []
+      assert {:ok, []} = Page.query_selector_all(page, "css=non-existent")
     end
 
     @tag without: [:page]

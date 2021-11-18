@@ -186,23 +186,32 @@ defmodule Playwright.Page do
   # def q!(subject, selector), do: query_selector!(subject, selector)
   # def q?(subject, selector), do: query_selector?(subject, selector)
 
+  @spec query_selector(Page.t(), binary()) :: {:ok, ElementHandle.t() | nil} | {:error, :timeout}
   def query_selector(subject, selector) do
     frame(subject)
     |> Channel.send("querySelector", %{selector: selector})
     |> hydrate()
   end
 
+  @spec query_selector!(Page.t(), binary()) :: ElementHandle.t() | no_return()
   def query_selector!(subject, selector) do
     case query_selector(subject, selector) do
-      nil -> raise "No element found for selector: #{selector}"
-      element -> element
+      {:ok, nil} -> raise "No element found for selector: #{selector}"
+      {:ok, element} -> element
     end
   end
 
+  @spec query_selector_all(Page.t(), binary()) :: {:ok, [ElementHandle.t() | nil]} | {:error, :timeout}
   def query_selector_all(subject, selector) do
     frame(subject)
     |> Channel.send("querySelectorAll", %{selector: selector})
     |> hydrate()
+  end
+
+  @spec query_selector_all!(Page.t(), binary()) :: [ElementHandle.t()] | no_return()
+  def query_selector_all!(subject, selector) do
+    {:ok, handles} = query_selector_all(subject, selector)
+    handles
   end
 
   def route(%{connection: _connection} = subject, url_pattern, callback, _options \\ %{}) do
@@ -311,23 +320,37 @@ defmodule Playwright.Page do
     end
   end
 
-  defp hydrate(nil) do
-    nil
+  defp hydrate(handle, timeout \\ DateTime.utc_now() |> DateTime.add(30, :second))
+
+  defp hydrate(nil, _timeout) do
+    {:ok, nil}
   end
 
-  defp hydrate(%Playwright.ElementHandle{} = handle) do
-    case handle.preview do
-      "JSHandle@node" ->
-        :timer.sleep(5)
-        hydrate(Channel.get(handle.connection, {:guid, handle.guid}))
+  defp hydrate(%Playwright.ElementHandle{} = handle, timeout) do
+    if DateTime.compare(DateTime.utc_now(), timeout) == :gt do
+      {:error, :timeout}
+    else
+      case handle.preview do
+        "JSHandle@node" ->
+          :timer.sleep(5)
+          hydrate(Channel.get(handle.connection, {:guid, handle.guid}), timeout)
 
-      _hydrated ->
-        handle
+        _hydrated ->
+          {:ok, handle}
+      end
     end
   end
 
-  defp hydrate(handles) when is_list(handles) do
-    Enum.map(handles, &hydrate/1)
+  defp hydrate(handles, timeout) when is_list(handles) do
+    handles
+    |> Enum.map(&hydrate(&1, timeout))
+    |> Enum.reduce_while({:ok, []}, fn
+      {:ok, handle}, {:ok, acc} ->
+        {:cont, {:ok, acc ++ [handle]}}
+
+      {:error, _reason} = error, _acc ->
+        {:halt, error}
+    end)
   end
 
   defp serialize(arg) do

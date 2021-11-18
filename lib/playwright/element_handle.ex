@@ -31,9 +31,9 @@ defmodule Playwright.ElementHandle do
   @doc """
   Searches within an element for a DOM element matching the given selector.
   """
-  @spec query_selector(ElementHandle.t(), binary()) :: ElementHandle.t() | nil
+  @spec query_selector(ElementHandle.t(), binary()) :: {:ok, ElementHandle.t() | nil}
   def query_selector(subject, selector) do
-    subject |> Channel.send("querySelector", %{selector: selector})
+    {:ok, subject |> Channel.send("querySelector", %{selector: selector})}
   end
 
   @doc """
