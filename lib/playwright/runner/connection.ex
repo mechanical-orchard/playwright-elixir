@@ -19,6 +19,18 @@ defmodule Playwright.Runner.Connection do
     transport: nil
   )
 
+  def child_spec(transport_config) do
+    %{
+      id: {__MODULE__, Playwright.ConnectionID.next()},
+      start: {
+        __MODULE__,
+        :start_link,
+        [transport_config]
+      },
+      restart: :transient
+    }
+  end
+
   @spec start_link(transport_config) :: GenServer.on_start()
   def start_link(config) do
     GenServer.start_link(__MODULE__, config)
