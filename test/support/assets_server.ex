@@ -28,8 +28,12 @@ defmodule Test.Support.AssetsServer do
         scheme: :http,
         plug: AssetsServer.Router,
         options: [
+          ip: {0, 0, 0, 0},
           port: 3002,
-          ip: {0, 0, 0, 0}
+          protocol_options: [
+            idle_timeout: 1000,
+            request_timeout: 1000
+          ]
         ]
       )
     ]
