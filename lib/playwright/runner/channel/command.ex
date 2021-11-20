@@ -3,6 +3,7 @@ defmodule Playwright.Runner.Channel.Command do
   # `Command` represents an imperative sent to the Playwright server.
   # The `id` is used to match reponses and reply to the caller with a `Response`.
 
+  import Playwright.Extra.Map
   alias Playwright.Runner.Channel.Command
 
   @enforce_keys [:guid, :id, :method, :params]
@@ -31,9 +32,20 @@ defmodule Playwright.Runner.Channel.Command do
     %Command{
       guid: guid,
       id: System.unique_integer([:monotonic, :positive]),
-      method: method,
-      params: params,
+      method: camelize(method),
+      params: deep_camelize_keys(params),
       metadata: %{}
     }
+  end
+
+  # private
+  # ----------------------------------------------------------------------------
+
+  defp camelize(key) when is_binary(key) do
+    Recase.to_camel(key)
+  end
+
+  defp camelize(key) when is_atom(key) do
+    Atom.to_string(key) |> Recase.to_camel()
   end
 end

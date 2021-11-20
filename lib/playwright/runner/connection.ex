@@ -1,19 +1,16 @@
 defmodule Playwright.Runner.Connection do
   @moduledoc false
-
   use GenServer
-  require Logger
-
   alias Playwright.Extra
-  alias Playwright.Runner.Catalog
-  alias Playwright.Runner.Channel
-  alias Playwright.Runner.EventInfo
-  alias Playwright.Runner.Transport
+  alias Playwright.Runner.{Catalog, Channel, EventInfo, Transport}
+
+  require Logger
 
   @type transport_module :: module()
   @type transport_config :: {transport_module, [term()]}
 
   defstruct(
+    awaiting: %{},
     callbacks: %{},
     catalog: nil,
     transport: nil
@@ -36,6 +33,16 @@ defmodule Playwright.Runner.Connection do
     GenServer.start_link(__MODULE__, config)
   end
 
+  # ---
+
+  @spec bind(pid(), {atom(), struct()}, function()) :: term()
+  def bind(connection, {event, subject}, callback) do
+    # event = Atom.to_string(event)
+    GenServer.cast(connection, {:bind, {event, subject}, callback})
+  end
+
+  # ---
+
   # Catalog or callback(`GenServer.reply`).
   # - Like `find` (now another `get`, below), does not send/post.
   # - Unlike `find` (`get`, below), will register a "from" to receive a reply, if not already in the catalog.
@@ -57,8 +64,9 @@ defmodule Playwright.Runner.Connection do
   # - Does not yet have any handling of `once`, `off`, etc.
   # - Could perhaps move to Channel. That would more closely match other implementations
   #   and is feasible given that ChannelOwner/subject structs have `connection`.
-  def on(connection, {event, subject}, handler) do
-    GenServer.cast(connection, {:on, {event, subject}, handler})
+  @spec on(pid(), {binary(), struct()}, function()) :: term()
+  def on(connection, {event, owner}, callback) do
+    GenServer.cast(connection, {:on, {event, owner}, callback})
   end
 
   # Catalog-only.
@@ -72,7 +80,7 @@ defmodule Playwright.Runner.Connection do
   # - Is the one "API function" that sends to/over the Transport.
   # - Registers a "from" to receive the reply (knowing it will NOT be in the Catalog).
   # - ...in fact, any related Catalog changes are side-effects, likely delivered via an Event.
-  @spec post(pid(), Channel.Command.t()) :: term()
+  @spec post(pid(), Channel.Command.t()) :: {:ok, term()} | {:error, term()}
   def post(connection, command) do
     GenServer.call(connection, {:post, {:cmd, command}})
   end
@@ -84,14 +92,9 @@ defmodule Playwright.Runner.Connection do
     GenServer.cast(connection, {:recv, message})
   end
 
-  @spec wait_for(pid(), {binary(), struct(), (() -> any())}) :: EventInfo.t()
-  def wait_for(connection, {event, subject, action}) do
-    GenServer.call(connection, {:wait_for, {event, subject, action}})
-  end
-
-  @spec wait_for_match(pid(), {binary(), struct(), (EventInfo.t() -> boolean())}) :: EventInfo.t()
-  def wait_for_match(connection, {event, subject, predicate}) do
-    GenServer.call(connection, {:wait_for_match, {event, subject, predicate}})
+  @spec wait_for(pid(), {atom(), struct()}, (() -> any())) :: {:ok, EventInfo.t()}
+  def wait_for(connection, {event, owner}, action) do
+    GenServer.call(connection, {:wait_for, {event, owner}, action})
   end
 
   # @impl
@@ -127,10 +130,18 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
+  def handle_info(msg, state) do
+    Logger.error("Connection.handle_info/2 with msg: #{inspect(msg)}")
+    state
+  end
+
+  @impl GenServer
   def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
     Catalog.get(catalog, guid, subscriber)
     {:noreply, state}
   end
+
+  # these 2 ^v :get handlers are not really alike... redefine them, please
 
   @impl GenServer
   def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
@@ -169,48 +180,47 @@ defmodule Playwright.Runner.Connection do
     }
   end
 
+  # GenServer.call(connection, {:add_wait, {event, owner}})
+  # GenServer.call(connection, {:wait_for, {event, owner}, action})
+
   @impl GenServer
-  def handle_call({:wait_for, {event, subject, action}}, from, %{catalog: catalog} = state) do
+  def handle_call({:wait_for, {event, owner}, trigger}, from, %{awaiting: awaiting} = state) do
     callback = fn event_info ->
       GenServer.reply(from, event_info)
-      :ok
     end
 
-    waiters = [callback | subject.waiters[event] || []]
-    subject = %{subject | waiters: Map.put(subject.waiters, event, waiters)}
+    key = {event, owner.guid}
+    updated = Map.get(awaiting, key, []) ++ [callback]
 
-    Task.start_link(fn ->
-      action.()
-    end)
+    # race?
+    Task.start_link(trigger)
+    {:noreply, %{state | awaiting: Map.put(awaiting, key, updated)}}
+  end
 
-    Catalog.put(catalog, subject)
+  @impl GenServer
+  def handle_cast({:bind, {event, owner}, callback}, %{catalog: catalog} = state) do
+    # NOTE: need to be sure we're using the latest, in case of multiple calls
+    # to `Channel.bind` within a given `ChannelOwner.init`, for example.
+    owner = Catalog.get(catalog, owner.guid)
+
+    # NOTE: order is important (must append) because we need the
+    # `ChannelOwner.init` bindings to execute before any others
+    # (e.g., for state changes).
+    listeners = (owner.listeners[event] || []) ++ [callback]
+    listeners = Map.put(owner.listeners, event, listeners)
+
+    Catalog.put(catalog, %{owner | listeners: listeners})
     {:noreply, state}
   end
 
   @impl GenServer
-  def handle_call({:wait_for_match, {event, subject, predicate}}, from, %{catalog: catalog} = state) do
-    callback = fn event_info ->
-      if predicate.(event_info) do
-        GenServer.reply(from, event_info)
-        :ok
-      else
-        :cont
-      end
-    end
+  def handle_cast({:on, {event, owner}, callback}, %{catalog: catalog} = state) do
+    listeners = [callback | owner.listeners[event] || []]
+    listeners = Map.put(owner.listeners, event, listeners)
 
-    waiters = [callback | subject.waiters[event] || []]
-    subject = %{subject | waiters: Map.put(subject.waiters, event, waiters)}
+    owner = %{owner | listeners: listeners}
 
-    Catalog.put(catalog, subject)
-    {:noreply, state}
-  end
-
-  @impl GenServer
-  def handle_cast({:on, {event, subject}, handler}, %{catalog: catalog} = state) do
-    listeners = [handler | subject.listeners[event] || []]
-    subject = %{subject | listeners: Map.put(subject.listeners, event, listeners)}
-
-    Catalog.put(catalog, subject)
+    Catalog.put(catalog, owner)
     {:noreply, state}
   end
 
@@ -249,16 +259,19 @@ defmodule Playwright.Runner.Connection do
     %{state | callbacks: updated}
   end
 
-  defp recv_payload(%{method: _method} = message, %{catalog: catalog} = state) do
+  defp recv_payload(%{guid: guid, method: method} = message, %{awaiting: awaiting, catalog: catalog} = state) do
     Logger.debug("recv_payload B: #{inspect(message)}")
 
-    Channel.Event.handle(message, catalog)
+    awaiting_key = {Extra.Atom.snakecased(method), guid}
+    callbacks = Map.get(awaiting, awaiting_key, [])
+
+    :ok = Channel.Event.handle(message, catalog, callbacks)
     state
   end
 
   # - %{playwright: %{guid: "Playwright"}}
-  defp recv_payload(%{result: _result} = message, %{catalog: _catalog} = state) do
-    Logger.debug("recv_payload C: #{inspect(message)}")
+  defp recv_payload(%{result: _result} = _message, %{catalog: _catalog} = state) do
+    # Logger.debug("recv_payload C: #{inspect(message)}")
     state
   end
 end

@@ -67,7 +67,7 @@ defmodule PlaywrightTest.Case do
             context
 
           false ->
-            page = Playwright.Browser.new_page(context.browser)
+            {:ok, page} = Playwright.Browser.new_page(context.browser)
 
             on_exit(:ok, fn ->
               Playwright.Page.close(page)

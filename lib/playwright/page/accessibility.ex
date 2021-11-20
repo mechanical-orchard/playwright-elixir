@@ -18,7 +18,7 @@ defmodule Playwright.Page.Accessibility do
   [2]: https://en.wikipedia.org/wiki/Switch_access
   """
 
-  alias Playwright.Extra
+  alias Playwright.{ElementHandle, Extra, Page}
   alias Playwright.Runner.Channel
 
   @typedoc """
@@ -31,7 +31,7 @@ defmodule Playwright.Page.Accessibility do
           %{}
           | %{
               interesting_only: boolean(),
-              root: Playwright.ElementHandle.t()
+              root: ElementHandle.t()
             }
 
   @typedoc """
@@ -104,8 +104,8 @@ defmodule Playwright.Page.Accessibility do
 
       iex> page = PlaywrightTest.Page.setup()
       iex> page
-      ...>   |> Playwright.Page.set_content("<p>Hello!</p>")
-      ...>   |> Playwright.Page.Accessibility.snapshot()
+      ...>   |> Page.set_content("<p>Hello!</p>")
+      ...>   |> Page.Accessibility.snapshot()
       %{children: [%{name: "Hello!", role: "text"}], name: "", role: "WebArea"}
 
   Retrieving the name of a focused node:
@@ -113,20 +113,30 @@ defmodule Playwright.Page.Accessibility do
       iex> page = PlaywrightTest.Page.setup()
       iex> body = "<input placeholder='pick me' readonly /><input placeholder='not me' />"
       iex> page
-      ...>   |> Playwright.Page.set_content(body)
-      ...>   |> Playwright.Page.Accessibility.snapshot()
+      ...>   |> Page.set_content(body)
+      ...>   |> Page.Accessibility.snapshot()
       ...>   |> (&(Enum.find(&1.children, fn e -> e.readonly end))).()
       %{name: "pick me", readonly: true, role: "textbox"}
   """
-  @spec snapshot(Playwright.Page.t(), options) :: snapshot
-  def snapshot(page, options \\ %{}) do
-    page
-    |> Channel.send("accessibilitySnapshot", prepare(options))
-    |> ax_node_from_protocol()
+  @spec snapshot(Page.t(), options) :: snapshot
+  def snapshot(page, options \\ %{})
+
+  def snapshot(%Page{} = page, options) do
+    {:ok, result} = Channel.post(page, :accessibility_snapshot, prepare(options))
+    result |> ax_node_from_protocol()
+  end
+
+  @doc false
+  def snapshot({:ok, owner}, options) do
+    snapshot(owner, options)
   end
 
   # private
   # ---------------------------------------------------------------------------
+
+  defp ax_node_from_protocol(nil) do
+    nil
+  end
 
   defp ax_node_from_protocol(%{role: role} = input)
        when role in ["text"] do

@@ -1,4 +1,4 @@
 defmodule Playwright.WebSocket do
   @moduledoc false
-  use Playwright.Runner.ChannelOwner
+  use Playwright.ChannelOwner
 end

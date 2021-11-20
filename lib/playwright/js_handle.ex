@@ -1,14 +1,24 @@
 defmodule Playwright.JSHandle do
   @moduledoc false
-  use Playwright.Runner.ChannelOwner, fields: [:preview]
+  use Playwright.ChannelOwner, fields: [:preview]
+  alias Playwright.{ElementHandle, JSHandle}
 
-  def as_element(subject) do
-    case subject do
-      %Playwright.ElementHandle{} = handle ->
-        handle
+  @doc """
+  Returns either `nil` or the object handle itself, if the object handle is an instance of `Playwright.ElementHandle`.
+  """
+  @spec as_element(struct()) :: ElementHandle.t() | nil
+  def as_element(handle)
 
-      %Playwright.JSHandle{} ->
-        nil
-    end
+  def as_element(%ElementHandle{} = handle) do
+    handle
+  end
+
+  def as_element(%JSHandle{} = _handle) do
+    nil
+  end
+
+  @doc false
+  def as_element({:ok, handle}) do
+    as_element(handle)
   end
 end

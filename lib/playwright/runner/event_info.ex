@@ -14,8 +14,19 @@ defmodule Playwright.Runner.EventInfo do
   def new(target, type, params \\ %{}) do
     %__MODULE__{
       target: target,
-      type: Extra.Atom.from_string(type),
+      type: as_atom(type),
       params: params
     }
+  end
+
+  # private
+  # ---------------------------------------------------------------------------
+
+  defp as_atom(value) when is_atom(value) do
+    value
+  end
+
+  defp as_atom(value) when is_binary(value) do
+    Extra.Atom.snakecased(value)
   end
 end

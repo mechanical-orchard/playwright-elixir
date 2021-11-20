@@ -16,7 +16,7 @@ defmodule Playwright.BrowserType do
       {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
 
   """
-  use Playwright.Runner.ChannelOwner
+  use Playwright.ChannelOwner
 
   alias Playwright.BrowserType
   alias Playwright.Runner.Config
@@ -51,8 +51,8 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp browser(%BrowserType{} = subject) do
-    case Channel.send(subject, "launch", Config.launch_options(true)) do
-      %Playwright.Browser{} = result ->
+    case Channel.post(subject, :launch, Config.launch_options(true)) do
+      {:ok, %Playwright.Browser{} = result} ->
         result
 
       other ->
@@ -65,7 +65,7 @@ defmodule Playwright.BrowserType do
 
     case playwright do
       %Playwright{} ->
-        %{guid: guid} = playwright.initializer.chromium
+        %{guid: guid} = playwright.chromium
 
         Channel.get(connection, {:guid, guid}) |> browser()
 

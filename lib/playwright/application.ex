@@ -2,7 +2,6 @@ defmodule Playwright.Application do
   @moduledoc false
   use Application
 
-  @doc false
   @impl Application
   def start(_type, _args) do
     children = [

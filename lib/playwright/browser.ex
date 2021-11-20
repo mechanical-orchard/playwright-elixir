@@ -8,14 +8,20 @@ defmodule Playwright.Browser do
   - `Playwright.BrowserType.launch/0`, when using the "driver" transport.
   - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
   """
-  use Playwright.Runner.ChannelOwner, fields: [:name, :version]
+  use Playwright.ChannelOwner, fields: [:name, :version]
+  alias Playwright.{Browser, BrowserContext, ChannelOwner, Extra, Page}
   alias Playwright.Runner.Channel
-  alias Playwright.Runner.ChannelOwner
+
+  # callbacks
+  # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def new(parent, %{initializer: %{version: version} = initializer} = args) do
-    args = %{args | initializer: Map.put(initializer, :version, cut_version(version))}
-    init(parent, args)
+  def init(owner, _initializer) do
+    # Channel.bind(owner, :close, fn event ->
+    #   {:patch, }
+    # end)
+
+    {:ok, %{owner | version: cut_version(owner.version)}}
   end
 
   @doc false
@@ -26,31 +32,15 @@ defmodule Playwright.Browser do
     })
   end
 
+  require Logger
+
   @doc """
   Create a new BrowserContext for this Browser. A BrowserContext is somewhat
   equivalent to an "incognito" browser "window".
   """
-  def new_context(%Playwright.Browser{connection: connection} = subject, options \\ %{}) do
-    params =
-      prepare(
-        Map.merge(
-          %{
-            no_default_viewport: false,
-            sdk_language: "elixir"
-          },
-          options
-        )
-      )
-
-    context = Channel.send(subject, "newContext", params)
-
-    case context do
-      %Playwright.BrowserContext{} ->
-        Channel.patch(connection, context.guid, %{browser: subject})
-
-      _other ->
-        raise("expected new_context to return a  Playwright.BrowserContext, received: #{inspect(context)}")
-    end
+  def new_context(%Browser{} = owner, options \\ %{}) do
+    params = Map.merge(%{no_default_viewport: false, sdk_language: "elixir"}, options)
+    Channel.post(owner, :new_context, prepare(params))
   end
 
   @doc """
@@ -62,20 +52,13 @@ defmodule Playwright.Browser do
   *parent* the `Page`, and *owned by* the `Page`. When the `Page` closes,
   the context goes with it.
   """
-  @spec new_page(Playwright.Browser.t()) :: Playwright.Page.t()
-  def new_page(%{connection: connection} = subject) do
-    context = new_context(subject)
-    page = Playwright.BrowserContext.new_page(context)
+  @spec new_page(Browser.t()) :: {:ok, Page.t()}
+  def new_page(%Browser{connection: connection} = subject) do
+    {:ok, context} = new_context(subject)
+    {:ok, page} = BrowserContext.new_page(context)
 
-    Channel.patch(connection, context.guid, %{owner_page: page})
-
-    case page do
-      %Playwright.Page{} ->
-        Channel.patch(connection, page.guid, %{owned_context: context})
-
-      _other ->
-        raise("expected new_page to return a  Playwright.Page, received: #{inspect(page)}")
-    end
+    {:ok, _} = Channel.patch(connection, context.guid, %{owner_page: page})
+    {:ok, _} = Channel.patch(connection, page.guid, %{owned_context: context})
   end
 
   # private

@@ -2,97 +2,89 @@ defmodule Playwright.Runner.Channel.Event do
   @moduledoc false
   # `Event` represents a message received from the Playwright server of some
   # action taken related to a resource.
+  alias Playwright.ChannelOwner
+  alias Playwright.Runner.{Catalog, EventInfo}
   require Logger
-  alias Playwright.Runner.Catalog
-  alias Playwright.Runner.ChannelOwner
-  alias Playwright.Runner.EventInfo
-  alias Playwright.Runner.Helpers
 
-  def handle(%{method: method} = event, catalog) do
-    # IO.inspect(event, label: "Event.handle")
-    handle(method, event, catalog)
+  def handle(%{method: method} = event, catalog, callbacks) when is_list(callbacks) do
+    resolve(method, event, catalog, callbacks)
   end
 
   # private
   # ---------------------------------------------------------------------------
 
+  defp resolve(type, event, catalog, callbacks) do
+    case resolve(type, event, catalog) do
+      {:ok, %EventInfo{} = event_info} ->
+        if length(callbacks) > 0 do
+          Enum.each(callbacks, fn callback ->
+            callback.(event_info)
+          end)
+        end
+
+        :ok
+
+      _ ->
+        :ok
+    end
+  end
+
   # The Playwright server sends back empty string: "" as the parent "guid"
   # for top-level resources. "Root" is nicer, and is how the Root resource
   # is keyed in the Catalog.
-  defp handle("__create__", %{guid: ""} = event, catalog) do
-    handle("__create__", %{event | guid: "Root"}, catalog)
+  defp resolve("__create__", %{guid: ""} = event, catalog) do
+    resolve("__create__", %{event | guid: "Root"}, catalog)
   end
 
-  # NOTE: there are other `Catalog.put` calls worth considering.
-  defp handle("__create__", %{guid: parent, params: params} = _event, catalog) do
-    resource = ChannelOwner.from(params, Catalog.get(catalog, parent))
+  defp resolve("__create__", %{guid: parent, params: params} = _event, catalog) do
+    {:ok, resource} = ChannelOwner.from(params, Catalog.get(catalog, parent))
     Catalog.put(catalog, resource)
   end
 
   # NOTE: assuming that every `Catalog.put`, or similar, has a matching `:guid`, this is complete.
-  defp handle("__dispose__", %{guid: guid} = _event, catalog) do
+  defp resolve("__dispose__", %{guid: guid} = _event, catalog) do
     Catalog.rm_r(catalog, guid)
   end
 
-  # handle: special cases
+  # resolve: general cases
   # ---------------------------------------------------------------------------
 
-  defp handle("route" = event_type, %{guid: guid, params: params} = _event, catalog) do
-    resource = Catalog.get(catalog, guid)
-    {handlers, listeners} = Map.pop(resource.listeners, event_type)
-
-    if handlers do
-      request = Catalog.get(catalog, params.request.guid)
-      route = Catalog.get(catalog, params.route.guid)
-
-      remaining =
-        Enum.reduce(handlers, [], fn handler, acc ->
-          if Helpers.RouteHandler.matches(handler, request.url) do
-            Helpers.RouteHandler.handle(handler, route, request)
-            acc
-          else
-            [handler | acc]
-          end
-        end)
-
-      Catalog.put(catalog, %{resource | listeners: Map.put(listeners, event_type, remaining)})
-    else
-      catalog
-    end
-  end
-
-  defp handle("previewUpdated", %{guid: guid, params: params} = _event, catalog) do
-    resource = %Playwright.ElementHandle{Catalog.get(catalog, guid) | preview: params.preview}
-    Catalog.put(catalog, resource)
-  end
-
-  # handle: general cases
-  # ---------------------------------------------------------------------------
-
-  defp handle(type, %{guid: guid, params: params}, catalog)
-       when type in ["close", "console", "loadstate", "navigated", "page", "request", "requestFinished", "response"] do
+  defp resolve(type, %{guid: guid, params: params}, catalog)
+       when type in [
+              "close",
+              "console",
+              "loadstate",
+              "navigated",
+              "page",
+              "previewUpdated",
+              "request",
+              "requestFinished",
+              "response",
+              "route"
+            ] do
     target = Catalog.get(catalog, guid)
     module = module_for(target)
-
     event_info = EventInfo.new(target, type, prepare(params, type, catalog))
 
     {:ok, target} = module.on_event(target, event_info)
+
     Catalog.put(catalog, target)
+    {:ok, event_info}
   end
 
-  defp handle(type, %{guid: _guid} = message, catalog)
+  defp resolve(type, %{guid: _guid} = message, catalog)
        when type in ["close"] do
-    handle(type, Map.merge(message, %{params: %{}}), catalog)
+    resolve(type, Map.merge(message, %{params: %{}}), catalog)
   end
 
   # to do...
-  defp handle(method, event, catalog) do
+  defp resolve(method, event, catalog) do
     Logger.debug("Event.handle/3 for unhandled method: #{inspect(method)}; event data: #{inspect(event)}")
     catalog
   end
 
-  defp module_for(resource) do
-    String.to_existing_atom("Elixir.Playwright.#{resource.type}")
+  defp module_for(%{__struct__: module}) do
+    module
   end
 
   defp hydrate(list, catalog) when is_list(list) do
@@ -131,12 +123,22 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp prepare(params, type, catalog)
-       when type in ["close", "console", "loadstate", "request", "navigated", "requestFinished", "response"] do
+       when type in [
+              "close",
+              "console",
+              "loadstate",
+              "navigated",
+              "previewUpdated",
+              "request",
+              "requestFinished",
+              "response",
+              "route"
+            ] do
     hydrate(params, catalog)
   end
 
   defp prepare(params, type, _catalog) do
-    Logger.warn("prepare/3 not implemented for type: #{inspect(type)} w/ params: #{inspect(params)}")
+    Logger.warn("Event.prepare/3 not implemented for type: #{inspect(type)} w/ params: #{inspect(params)}")
     params
   end
 end

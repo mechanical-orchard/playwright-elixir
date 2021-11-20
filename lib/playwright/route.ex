@@ -1,9 +1,9 @@
 defmodule Playwright.Route do
   @moduledoc false
-  use Playwright.Runner.ChannelOwner, fields: [:request]
+  use Playwright.ChannelOwner, fields: [:request]
 
   def continue(subject) do
     subject
-    |> Channel.send("continue", %{interceptResponse: false})
+    |> Channel.post(:continue, %{intercept_response: false})
   end
 end

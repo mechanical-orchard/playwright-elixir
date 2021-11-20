@@ -1,4 +1,4 @@
-defmodule Playwright.JSHandle.AsElementTest do
+defmodule Playwright.JSHandleTest do
   use Playwright.TestCase, async: true
   alias Playwright.{ElementHandle, JSHandle, Page}
 
@@ -29,7 +29,7 @@ defmodule Playwright.JSHandle.AsElementTest do
       assert is_struct(result, ElementHandle)
 
       result = Page.evaluate(page, "function(e) { return e.nodeType === Node.TEXT_NODE; }", result)
-      assert result === true
+      assert result === {:ok, true}
     end
   end
 end

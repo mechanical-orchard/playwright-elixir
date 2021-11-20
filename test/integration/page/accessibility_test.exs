@@ -1,10 +1,12 @@
-defmodule Test.Page.Accessibility.SnapshotTest do
+defmodule Playwright.Page.AccessibilityTest do
   use Playwright.TestCase, async: true
-  doctest Playwright.Page.Accessibility
+  # doctest Playwright.Page.Accessibility
 
   alias Playwright.Page
 
-  describe "snapshot/1" do
+  describe "Accessibility.snapshot/1" do
+    # until Page.wait_for_function is implemented
+    @tag :skip
     test "snapshots", %{page: page} do
       page
       |> Page.set_content("""
@@ -27,7 +29,6 @@ defmodule Test.Page.Accessibility.SnapshotTest do
       # > Autofocus happens after a delay in chrome.
       # Page.wait_for_function(page, "document.activeElement.hasAttribute('autofocus')")
       # Page.expect_function(page, "document.activeElement.hasAttribute('autofocus')")
-
       assert Page.Accessibility.snapshot(page) == %{
                role: "WebArea",
                name: "Accessibility Test",
@@ -301,32 +302,7 @@ defmodule Test.Page.Accessibility.SnapshotTest do
              }
     end
 
-    # Skipped: we're not yet correctly handling multi-RECV Responses.
-    # This single test will likely drive important improvements.
-    # e.g.,
-    #
-    #     ----> SEND {
-    #       id: 6,
-    #       guid: 'frame@cb66d1fc440a2b552cad9b5b9e2e6f9a',
-    #       method: 'evalOnSelector',
-    #       params: {
-    #         selector: 'button',
-    #         expression: 'function (button) { return button.remove(); }',
-    #         isFunction: true,
-    #         arg: { value: [Object], handles: [] }
-    #       }
-    #     }
-    #
-    #     <---- RECV {
-    #       guid: 'handle@501495de56b7c2a39951a767f7edd9d1',
-    #       method: 'previewUpdated',
-    #       params: { preview: 'JSHandle@<button>My Button</button>' }
-    #     }
-    #
-    #     <---- RECV { id: 6, result: { value: { v: 'undefined' } } }
-    #
-    @tag :skip
-    test "when the DOM node is removed, returns null", %{page: page} do
+    test "when the DOM node is removed, returns nil", %{page: page} do
       Page.set_content(page, "<button>My Button</button>")
 
       element = Page.query_selector!(page, "button")
@@ -351,7 +327,6 @@ defmodule Test.Page.Accessibility.SnapshotTest do
 
       element = Page.query_selector!(page, "#root")
       snapshot = Page.Accessibility.snapshot(page, %{root: element, interesting_only: false})
-
       assert snapshot.role == "textbox"
       assert String.contains?(snapshot.value, "hello")
       assert String.contains?(snapshot.value, "world")

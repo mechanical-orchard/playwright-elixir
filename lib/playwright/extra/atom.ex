@@ -7,4 +7,6 @@ defmodule Playwright.Extra.Atom do
   def to_string(nil), do: raise(ArgumentError, message: "Unable to convert nil into a string")
   def to_string(a) when is_atom(a), do: Atom.to_string(a)
   def to_string(s) when is_binary(s), do: s
+
+  def snakecased(s) when is_binary(s), do: Recase.to_snake(s) |> from_string()
 end

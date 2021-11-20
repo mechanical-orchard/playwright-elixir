@@ -120,7 +120,7 @@ defmodule Playwright.Runner.ConnectionTest do
       {_, %{callbacks: callbacks}} = Connection.handle_cast({:recv, {:text, Jason.encode!(%{id: cid})}}, state)
 
       assert callbacks == %{}
-      assert_received({:tag, %{id: ^cid}})
+      assert_received({:tag, {:ok, %{id: ^cid}}})
     end
   end
 
@@ -135,7 +135,7 @@ defmodule Playwright.Runner.ConnectionTest do
           params: %{
             guid: "Playwright",
             type: "Playwright",
-            initializer: "definition"
+            initializer: %{}
           }
         })
 

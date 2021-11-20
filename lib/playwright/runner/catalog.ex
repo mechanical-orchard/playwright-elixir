@@ -47,7 +47,7 @@ defmodule Playwright.Runner.Catalog do
   # Adds an entry to the `Catalog` storage. Curently, the creation of the entry
   # to add is left to the caller. At some future point, that responsibility
   # might move here.
-  def put(pid, item) do
+  def put(pid, %{guid: _} = item) do
     GenServer.call(pid, {:put, item})
   end
 
@@ -56,7 +56,7 @@ defmodule Playwright.Runner.Catalog do
     GenServer.call(pid, {:rm, guid})
   end
 
-  # Recursively removal: given a "parent" entry, removes that and all
+  # Recursive removal: given a "parent" entry, removes that and all
   # descendants.
   def rm_r(pid, guid) do
     children = filter(pid, %{parent: get(pid, guid)}, [])

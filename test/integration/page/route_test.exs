@@ -1,16 +1,13 @@
-# defmodule Test.Page.RouteTest do
 defmodule Playwright.Page.RouteTest do
   use Playwright.TestCase, async: true
-
-  alias Playwright.Page
-  alias Playwright.Response
-  alias Playwright.Route
+  alias Playwright.{Page, Response, Route}
 
   describe "Page.route/3" do
     test "intercepts requests", %{assets: assets, page: page} do
       this = self()
 
       Page.route(page, "**/empty.html", fn route, request ->
+        require Logger
         assert route.request.guid == request.guid
         assert String.contains?(request.url, "empty.html")
         assert request.method == "GET"

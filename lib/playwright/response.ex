@@ -1,20 +1,32 @@
 defmodule Playwright.Response do
   @moduledoc false
-  use Playwright.Runner.ChannelOwner, fields: [:status, :url]
+  use Playwright.ChannelOwner, fields: [:status, :url]
+  alias Playwright.Response
 
   # derived from :initializer
   # ---------------------------------------------------------------------------
 
-  def ok(response) do
+  @spec ok(Response.t()) :: boolean()
+  def ok(%Response{} = response) do
     response.status === 0 || (response.status >= 200 && response.status <= 299)
+  end
+
+  @doc false
+  def ok({:ok, response}) do
+    ok(response)
   end
 
   # API call
   # ---------------------------------------------------------------------------
 
-  def body(response) do
-    response
-    |> Channel.send("body")
-    |> Base.decode64!()
+  @spec body(Response.t()) :: {:ok, binary()}
+  def body(%Response{} = response) do
+    {:ok, result} = Channel.post(response, :body)
+    Base.decode64(result)
+  end
+
+  @doc false
+  def body({:ok, response}) do
+    body(response)
   end
 end

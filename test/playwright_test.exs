@@ -1,4 +1,4 @@
-defmodule Test.ExampleTest do
+defmodule Playwright.PlaywrightTest do
   use ExUnit.Case, async: true
   use PlaywrightTest.Case
   alias Playwright.{Browser, Page, Response}

@@ -1,5 +1,6 @@
-defmodule Test.Features.Playwright.Page.ScreenshotTest do
+defmodule Page.ScreenshotTest do
   use Playwright.TestCase, async: true
+  alias Playwright.Page
 
   # NOTE: in addition to the explicit assertions made by these tests, we're also
   # demonstrating a couple other capabilities/quirks:
@@ -13,31 +14,27 @@ defmodule Test.Features.Playwright.Page.ScreenshotTest do
   #   is a good idea is left to the imagination of the consumer.
   describe "screenshot/2" do
     test "caputures a screenshot, returning the base64 encoded binary", %{page: page} do
-      Playwright.Page.goto(page, "https://playwright.dev")
-
-      raw =
-        Playwright.Page.screenshot(page, %{
-          "fullPage" => true,
-          "type" => "png"
-        })
+      Page.goto(page, "https://playwright.dev")
 
       max_frame_size = 32_768
+      {:ok, raw} = Page.screenshot(page, %{full_page: true, type: "png"})
+
       assert byte_size(raw) > max_frame_size
     end
 
     test "caputures a screenshot, optionally writing the result to local disk", %{page: page} do
-      # uh, "slug"... :p
       slug = DateTime.utc_now() |> DateTime.to_unix()
       path = "screenshot-#{slug}.png"
 
       refute(File.exists?(path))
 
-      Playwright.Page.goto(page, "https://playwright.dev")
+      Page.goto(page, "https://playwright.dev")
 
-      Playwright.Page.screenshot(page, %{
-        "fullPage" => true,
-        "path" => path
-      })
+      {:ok, _} =
+        Page.screenshot(page, %{
+          full_page: true,
+          path: path
+        })
 
       assert(File.exists?(path))
       File.rm!(path)

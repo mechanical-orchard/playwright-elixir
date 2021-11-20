@@ -22,7 +22,7 @@ defmodule Playwright.Runner.Channel.CommandTest do
       has_params = Command.new("guid", "method", %{key: "value"})
 
       assert is_default.params == %{}
-      assert has_params.params == %{key: "value"}
+      assert has_params.params == %{"key" => "value"}
     end
   end
 end
