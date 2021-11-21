@@ -1,4 +1,4 @@
 defmodule Playwright.Worker do
-  @moduledoc false
+  @moduledoc "..."
   use Playwright.ChannelOwner
 end

@@ -1,7 +1,5 @@
 defmodule Playwright.ChannelOwner do
-  @moduledoc """
-  `Playwright.ChannelOwner` ...
-  """
+  @moduledoc false
   @base [:connection, :guid, :listeners, :parent, :type]
 
   @callback init(struct(), map()) :: {atom(), struct()}
@@ -26,6 +24,9 @@ defmodule Playwright.ChannelOwner do
       alias Playwright.Runner.{Channel, EventInfo}
 
       defstruct unquote(fields)
+      @typedoc """
+      %#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}{}
+      """
       @type t() :: %__MODULE__{}
 
       @doc false
