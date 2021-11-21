@@ -91,4 +91,9 @@ defmodule Playwright.ElementHandle do
   def text_content({:ok, handle}) do
     text_content(handle)
   end
+
+  @spec is_visible(ElementHandle.t()) :: {:ok, boolean() | nil}
+  def is_visible(%ElementHandle{} = handle) do
+    handle |> Channel.post(:is_visible)
+  end
 end
