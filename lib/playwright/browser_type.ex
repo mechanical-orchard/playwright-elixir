@@ -41,7 +41,7 @@ defmodule Playwright.BrowserType do
   @doc """
   Launch a new local browser.
   """
-  @spec launch(any) :: {pid, Playwright.Browser.t()}
+  @spec launch(any) :: {pid(), Playwright.Browser.t()}
   def launch(cli_path \\ nil) do
     {:ok, connection} = new_session(Transport.Driver, [cli_path || "assets/node_modules/playwright/cli.js"])
     {connection, chromium(connection)}
