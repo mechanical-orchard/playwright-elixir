@@ -140,22 +140,22 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
-  # TODO: move this to `JSHandle` and delegate
-  def evaluate_handle(handle, expression, arg \\ nil)
+  # TODO: move this to `JSHandle`, matching the official API.
+  @doc false
+  def evaluate_handle(owner, expression, arg \\ nil)
 
-  def evaluate_handle(%ElementHandle{} = handle, expression, arg) do
+  def evaluate_handle(%ElementHandle{} = owner, expression, arg) do
     params = %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
     }
 
-    Channel.post(handle, :evaluate_expression_handle, params)
+    Channel.post(owner, :evaluate_expression_handle, params)
   end
 
-  @doc false
-  def evaluate_handle({:ok, handle}, expression, arg) do
-    evaluate_handle(handle, expression, arg)
+  def evaluate_handle({:ok, owner}, expression, arg) do
+    evaluate_handle(owner, expression, arg)
   end
 
   # ---
@@ -171,9 +171,15 @@ defmodule Playwright.ElementHandle do
   @doc """
   Returns the value of an element's attribute.
   """
-  @spec get_attribute(ElementHandle.t(), binary()) :: {:ok, binary() | nil}
-  def get_attribute(owner, name) do
+  @spec get_attribute(t() | {:ok, t()}, binary()) :: {:ok, binary() | nil}
+  def get_attribute(owner, name)
+
+  def get_attribute(%ElementHandle{} = owner, name) do
     Channel.post(owner, :get_attribute, %{name: name})
+  end
+
+  def get_attribute({:ok, owner}, name) do
+    get_attribute(owner, name)
   end
 
   # ---
@@ -221,7 +227,9 @@ defmodule Playwright.ElementHandle do
 
   If no elements match the selector, returns `nil`.
   """
-  @spec query_selector(ElementHandle.t(), binary()) :: {:ok, ElementHandle.t() | nil}
+  @spec query_selector(t() | {:ok, t()}, binary()) :: {:ok, ElementHandle.t() | nil}
+  def query_selector(owner, selector)
+
   def query_selector(%ElementHandle{} = owner, selector) do
     owner |> Channel.post(:query_selector, %{selector: selector})
   end
@@ -264,7 +272,9 @@ defmodule Playwright.ElementHandle do
   @doc """
   Returns the `node.textContent` (all text within the element).
   """
-  @spec text_content(ElementHandle.t()) :: {:ok, binary() | nil}
+  @spec text_content(t() | {:ok, t()}) :: {:ok, binary() | nil}
+  def text_content(owner)
+
   def text_content(%ElementHandle{} = owner) do
     owner |> Channel.post(:text_content)
   end
