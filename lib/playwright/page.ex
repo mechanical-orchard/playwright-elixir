@@ -42,7 +42,7 @@ defmodule Playwright.Page do
   use Playwright.ChannelOwner,
     fields: [:is_closed, :main_frame, :owned_context, :viewport_size]
 
-  alias Playwright.{BrowserContext, ElementHandle, Frame, Page}
+  alias Playwright.{BrowserContext, Frame, Page}
   alias Playwright.ChannelOwner
   alias Playwright.Runner.Helpers
 
@@ -182,8 +182,7 @@ defmodule Playwright.Page do
     # NOTE: this *might* prefer to be done on `__dispose__`
     # ...OR, `.on(_, "close", _)`
     if owner.owned_context do
-      {:ok, ctx} = context(owner)
-      BrowserContext.close(ctx)
+      context(owner) |> BrowserContext.close()
     end
 
     :ok
@@ -246,8 +245,7 @@ defmodule Playwright.Page do
   # add our handlers there, on that (BrowserContext) parent.
   def on(%Page{} = owner, event, callback)
       when event in [:request, :response, :request_finished, "request", "response", "requestFinished"] do
-    {:ok, ctx} = context(owner)
-    Channel.bind(ctx, event, callback)
+    context(owner) |> Channel.bind(event, callback)
   end
 
   def on(%Page{} = owner, event, callback) do

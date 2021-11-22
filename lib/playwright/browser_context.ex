@@ -337,8 +337,7 @@ defmodule Playwright.BrowserContext do
   end
 
   def expect_event(%Page{} = owner, event, trigger, predicate, options) do
-    {:ok, context} = Page.context(owner)
-    expect_event(context, event, trigger, predicate, options)
+    Page.context(owner) |> expect_event(event, trigger, predicate, options)
   end
 
   # def expect_event({:ok, owner}, event, trigger, predicate, options) do
