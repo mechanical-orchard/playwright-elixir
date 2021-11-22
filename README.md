@@ -33,17 +33,12 @@ defmodule Test.ExampleTest do
 
   describe "Navigating to playwright.dev" do
     test "works", %{browser: browser} do
-      page =
-        browser
-        |> Playwright.Browser.new_page()
+      {:ok, page} = Playwright.Browser.new_page(browser)
 
-      text =
-        page
-        |> Playwright.Page.goto("https://playwright.dev")
-        |> Playwright.Page.text_content(".navbar__title")
+      {:ok, _} = Playwright.Page.goto(page, "https://playwright.dev")
+      {:ok, text} = Playwright.Page.text_content(page, ".navbar__title")
 
       assert text == "Playwright"
-
       Playwright.Page.close(page)
     end
   end
