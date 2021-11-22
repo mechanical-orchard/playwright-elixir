@@ -310,6 +310,7 @@ defmodule Playwright.Frame do
   # ---------------------------------------------------------------------------
 
   defp from(%Page{} = page) do
-    Channel.item(page, page.main_frame)
+    {:ok, frame} = Channel.find(page, page.main_frame)
+    frame
   end
 end

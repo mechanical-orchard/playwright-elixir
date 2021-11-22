@@ -1,23 +1,23 @@
 defmodule Playwright.BrowserTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Browser, Page}
+  alias Playwright.{Browser, BrowserContext, Page}
 
   describe "Browser.new_page/1" do
     @tag exclude: [:page]
     test "builds a new Page, incl. context", %{browser: browser} do
-      assert Enum.empty?(Browser.contexts(browser))
+      assert {:ok, []} = Browser.contexts(browser)
 
       page1 = Browser.new_page(browser)
-      assert length(Browser.contexts(browser)) == 1
+      assert {:ok, [%BrowserContext{}]} = Browser.contexts(browser)
 
       page2 = Browser.new_page(browser)
-      assert length(Browser.contexts(browser)) == 2
+      assert {:ok, [%BrowserContext{}, %BrowserContext{}]} = Browser.contexts(browser)
 
       Page.close(page1)
-      assert length(Browser.contexts(browser)) == 1
+      assert {:ok, [%BrowserContext{}]} = Browser.contexts(browser)
 
       Page.close(page2)
-      assert Enum.empty?(Browser.contexts(browser))
+      assert {:ok, []} = Browser.contexts(browser)
     end
 
     test "raises an exception upon additional call to `new_page`", %{page: page} do

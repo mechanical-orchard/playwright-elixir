@@ -271,6 +271,11 @@ defmodule Playwright.BrowserContext do
     :ok
   end
 
+  @doc false
+  def close({:ok, owner}) do
+    close(owner)
+  end
+
   @doc """
   Returns cookies for the `Playwright.BrowserContext`.
 
@@ -333,8 +338,14 @@ defmodule Playwright.BrowserContext do
   end
 
   def expect_event(%Page{} = owner, event, trigger, predicate, options) do
-    expect_event(Page.context(owner), event, trigger, predicate, options)
+    {:ok, context} = Page.context(owner)
+    expect_event(context, event, trigger, predicate, options)
   end
+
+  # @doc false
+  # def expect_event({:ok, owner}, event, trigger, predicate, options) do
+  #   expect_event(owner, event, trigger, predicate, options)
+  # end
 
   defdelegate wait_for_event(owner, event, trigger, predicate \\ nil, options \\ %{}),
     to: __MODULE__, as: :expect_event
@@ -410,6 +421,11 @@ defmodule Playwright.BrowserContext do
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")
     end
+  end
+
+  @doc false
+  def new_page({:ok, owner}) do
+    new_page(owner)
   end
 
   # ---

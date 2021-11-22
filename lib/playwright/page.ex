@@ -110,9 +110,9 @@ defmodule Playwright.Page do
     close(owner)
   end
 
-  @spec context(struct()) :: BrowserContext.t()
+  @spec context(struct()) :: {:ok, BrowserContext.t()}
   def context(%Page{} = owner) do
-    Channel.item(owner, owner.parent)
+    Channel.find(owner, owner.parent)
   end
 
   @spec eval_on_selector(Page.t(), binary(), binary(), term(), map()) :: term()
@@ -133,7 +133,8 @@ defmodule Playwright.Page do
   # add our handlers there, on that (BrowserContext) parent.
   def on(%Page{} = owner, event, callback)
       when event in [:request, :response, :request_finished, "request", "response", "requestFinished"] do
-    Channel.bind(context(owner), event, callback)
+    {:ok, ctx} = context(owner)
+    Channel.bind(ctx, event, callback)
   end
 
   def on(%Page{} = owner, event, callback) do
@@ -203,7 +204,6 @@ defmodule Playwright.Page do
     {:ok, _} =
       main_frame(owner)
       |> Frame.wait_for_load_state(state)
-      |> IO.inspect(label: "Page.wait_for_load_state result")
 
     {:ok, owner}
   end
@@ -220,6 +220,7 @@ defmodule Playwright.Page do
   # ---------------------------------------------------------------------------
 
   defp main_frame(owner) do
-    Channel.item(owner, owner.main_frame)
+    {:ok, frame} = Channel.find(owner, owner.main_frame)
+    frame
   end
 end

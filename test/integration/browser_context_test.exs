@@ -5,14 +5,14 @@ defmodule Playwright.BrowserContextTest do
   describe "BrowserContext.new_context/1" do
     @tag exclude: [:page]
     test "creates and binds a new context", %{browser: browser} do
-      assert Browser.contexts(browser) == []
+      assert Browser.contexts(browser) == {:ok, []}
 
       {:ok, context} = Browser.new_context(browser)
-      assert Browser.contexts(browser) == [context]
+      assert Browser.contexts(browser) == {:ok, [context]}
       assert context.browser == browser
 
       BrowserContext.close(context)
-      assert Browser.contexts(browser) == []
+      assert Browser.contexts(browser) == {:ok, []}
     end
   end
 

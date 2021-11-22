@@ -15,7 +15,7 @@ defmodule Playwright.BrowserType do
 
       Browser.close(browser)
 
-  ## Examples
+  ## Example
 
   Open a new chromium via the CLI driver:
 
@@ -90,7 +90,7 @@ defmodule Playwright.BrowserType do
   @doc """
   Launches a new browser instance via the Playwright driver CLI.
 
-  ## Examples
+  ## Example
 
       # Use `:ignore_default_args` option to filter out `--mute-audio` from
       # default arguments:
@@ -157,8 +157,8 @@ defmodule Playwright.BrowserType do
   # private
   # ----------------------------------------------------------------------------
 
-  defp browser(%BrowserType{} = subject) do
-    case Channel.post(subject, :launch, Config.launch_options(true)) do
+  defp browser(%BrowserType{} = owner) do
+    case Channel.post(owner, :launch, Config.launch_options(true)) do
       {:ok, %Playwright.Browser{} = result} ->
         result
 

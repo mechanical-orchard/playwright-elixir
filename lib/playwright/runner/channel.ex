@@ -4,10 +4,10 @@ defmodule Playwright.Runner.Channel do
   alias Playwright.Runner.{Channel, Connection, EventInfo}
   require Logger
 
-  # def bind... (instead of on)
-  # def item... (???)
-  # def post... (call)
-  # def send... (cast)
+  # def bind...      (instead of on)
+  # def find/item... (???)
+  # def post...      (call)
+  # def send...      (cast)
   # def wait...
 
   @spec bind(struct(), atom() | binary(), (... -> any)) :: {:ok, struct()}
@@ -16,14 +16,14 @@ defmodule Playwright.Runner.Channel do
     {:ok, owner}
   end
 
-  @spec item(struct()) :: struct()
-  def item(%{connection: _connection} = owner) do
-    item(owner, owner)
+  @spec find(struct()) :: {:ok, struct()}
+  def find(%{connection: _} = owner) do
+    {:ok, item(owner)}
   end
 
-  @spec item(struct(), struct()) :: struct()
-  def item(%{connection: connection} = _owner, %{guid: guid}) do
-    get(connection, {:guid, guid})
+  @spec find(struct(), struct()) :: {:ok, struct()}
+  def find(%{connection: _} = proxy, %{guid: _} = owner) do
+    {:ok, item(proxy, owner)}
   end
 
   # @spec on(struct(), atom(), function()) :: struct()
@@ -81,5 +81,13 @@ defmodule Playwright.Runner.Channel do
 
   defp as_atom(value) when is_binary(value) do
     Extra.Atom.snakecased(value)
+  end
+
+  defp item(%{connection: _connection} = owner) do
+    item(owner, owner)
+  end
+
+  defp item(%{connection: connection} = _owner, %{guid: guid}) do
+    get(connection, {:guid, guid})
   end
 end
