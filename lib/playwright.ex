@@ -19,9 +19,7 @@ defmodule Playwright do
 
   use Playwright.ChannelOwner, fields: [:chromium]
 
-  @typedoc """
-  The web client type used for `launch` and `connect` functions.
-  """
+  @typedoc "The web client type used for `launch` and `connect` functions."
   @type client :: :chromium | :firefox | :webkit
 
   @doc """

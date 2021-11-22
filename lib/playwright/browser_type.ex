@@ -1,9 +1,19 @@
 defmodule Playwright.BrowserType do
   @moduledoc """
-  The `Playwright.BrowserType` module exposes functions that either:
+  `Playwright.BrowserType` provides functions to launch a specific browser
+  instance or connect to an existing one.
 
-  - launch a new browser instance via a `Port`
-  - connect to a running playwright websocket
+  The following is a typical example of using Playwright to drive automation:
+
+      alias Playwright.{Browser, BrowserType, Page}
+
+      {connection, browser} = BrowserType.launch(:chromium)
+      {:ok, page} = Browser.new_page(browser)
+
+      Page.goto(page, "https://example.com")
+      # other actions...
+
+      Browser.close(browser)
 
   ## Examples
 
@@ -13,21 +23,50 @@ defmodule Playwright.BrowserType do
 
   Connect to a running playwright instances:
 
-      {connection, browser} = Playwright.BrowserType.connect("ws://localhost:3000/playwright")
-
+      {connection, browser} =
+        Playwright.BrowserType.connect("ws://localhost:3000/playwright")
   """
-  use Playwright.ChannelOwner
 
+  use Playwright.ChannelOwner
   alias Playwright.BrowserType
-  alias Playwright.Runner.Config
-  alias Playwright.Runner.Connection
-  alias Playwright.Runner.Transport
+  alias Playwright.Runner.{Config,Connection,Transport}
+
+  @typedoc "The web client type used for `launch/1` and `connect/2` functions."
+  @type client :: :chromium | :firefox | :webkit
+
+  @typedoc "Options for `connect/2`"
+  @type connect_options :: map()
+
+  @typedoc "A map/struct providing call options"
+  @type options :: map()
+
+  @typedoc "A string URL"
+  @type url :: String.t()
+
+  @typedoc "A websocket endpoint (URL)"
+  @type ws_endpoint :: url()
 
   @doc """
-  Connect to a running playwright server.
+  Attaches Playwright to an existing browser instance over a websocket.
+
+  ## Returns
+
+    - `{connection, %Playwright.Browser{}}`
+
+  ## Arguments
+
+  | key / name    | type   |                             | description |
+  | ------------- | ------ | --------------------------- | ----------- |
+  | `ws_endpoint` | param  | `BrowserType.ws_endpoint()` | A browser websocket endpoint to connect to. |
+  | `:headers`    | option | `map()`                     | Additional HTTP headers to be sent with websocket connect request |
+  | `:slow_mow`   | option | `integer()`                 | Slows down Playwright operations by the specified amount of milliseconds. Useful so that you can see what is going on. `(default: 0)` |
+  | `:logger`     | option |                             | Logger sink for Playwright logging |
+  | `:timeout`    | option | `integer()`                 | Maximum time in milliseconds to wait for the connection to be established. Pass `0` to disable timeout. `(default: 30_000 (30 seconds))` |
   """
-  @spec connect(binary()) :: {pid(), Playwright.Browser.t()}
-  def connect(ws_endpoint) do
+  @spec connect(ws_endpoint(), connect_options()) :: {pid(), Playwright.Browser.t()}
+  def connect(ws_endpoint, options \\ %{})
+
+  def connect(ws_endpoint, _options) do
     with {:ok, connection} <- new_session(Transport.WebSocket, [ws_endpoint]),
          launched <- launched_browser(connection),
          browser <- Channel.get(connection, {:guid, launched}) do
@@ -38,14 +77,82 @@ defmodule Playwright.BrowserType do
     end
   end
 
+  # ---
+
+  # @spec connect_over_cdp(BrowserType.t(), url(), options()) :: {:ok, Playwright.Browser.t()}
+  # def connect_over_cdp(owner, endpoint_url, options \\ %{})
+
+  # @spec executable_path(BrowserType.t()) :: String.t()
+  # def executable_path(owner)
+
+  # ---
+
   @doc """
-  Launch a new local browser.
+  Launches a new browser instance via the Playwright driver CLI.
+
+  ## Examples
+
+      # Use `:ignore_default_args` option to filter out `--mute-audio` from
+      # default arguments:
+      browser =
+        Playwright.launch(:chromium, %{ignore_default_args = ["--mute-audio"]})
+
+  ## Returns
+
+    - `{connection, %Playwright.Browser{}}`
+
+  ## Arguments
+
+  ... (many)
+
+  ## NOTE
+
+  > **Chromium-only** Playwright can also be used to control the Google Chrome
+  > or Microsoft Edge browsers, but it works best with the version of Chromium
+  > it is bundled with. There is no guarantee it will work with any other
+  > version. Use `:executable_path` option with extreme caution.
+  >
+  > If Google Chrome (rather than Chromium) is preferred, a
+  > [Chrome Canary](https://www.google.com/chrome/browser/canary.html) or
+  > [Dev Channel](https://www.chromium.org/getting-involved/dev-channel) build
+  > is suggested.
+  >
+  > Stock browsers like Google Chrome and Microsoft Edge are suitable for tests
+  > that require proprietary media codecs for video playback.
+  > See [this article](https://www.howtogeek.com/202825/what%E2%80%99s-the-difference-between-chromium-and-chrome/)
+  > for other differences between Chromium and Chrome.
+  > [This article](https://chromium.googlesource.com/chromium/src/+/lkgr/docs/chromium_browser_vs_google_chrome.md)
+  > describes some differences for Linux users.
   """
-  @spec launch() :: {pid(), Playwright.Browser.t()}
-  def launch do
+  @spec launch(client() | nil) :: {pid(), Playwright.Browser.t()}
+  def launch(client \\ nil)
+
+  def launch(nil) do
+    launch(:chromium)
+  end
+
+  def launch(client) when client in [:chromium] do
     {:ok, connection} = new_session(Transport.Driver, ["assets/node_modules/playwright/cli.js"])
     {connection, chromium(connection)}
+
   end
+
+  def launch(client) when client in [:firefox, :webkit] do
+    raise RuntimeError, message: "not yet implemented"
+  end
+
+  # ---
+
+  # @spec launch_persistent_context(BrowserType.t(), String.t(), options()) :: {:ok, Playwright.BrowserContext.t()}
+  # def launch_persistent_context(owner, user_data_dir, options \\ %{})
+
+  # @spec launch_server(BrowserType.t(), options()) :: {:ok, Playwright.BrowserServer.t()}
+  # def launch_server(owner, options \\ %{})
+
+  # @spec name(BrowserType.t()) :: client()
+  # def name(owner)
+
+  # ---
 
   # private
   # ----------------------------------------------------------------------------
