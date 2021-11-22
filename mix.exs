@@ -59,6 +59,7 @@ defmodule Playwright.MixProject do
     ]
   end
 
+  # :nest_modules_by_prefix
   defp docs do
     [
       name: "Playwright",
@@ -70,15 +71,19 @@ defmodule Playwright.MixProject do
         "guides/getting-started.md": [title: "Getting started"]
       ],
       groups_for_modules: [
-        Capabilities: [
+        "Capabilities (API)": [
+          Playwright,
           Playwright.Browser,
           Playwright.BrowserContext,
           Playwright.BrowserType,
+          Playwright.ConsoleMessage,
           Playwright.ElementHandle,
+          Playwright.Frame,
           Playwright.Page,
           Playwright.Page.Accessibility,
           Playwright.RemoteBrowser,
-          Playwright.Request
+          Playwright.Request,
+          Playwright.Worker
         ],
         Runner: [
           Playwright.Runner.Config
