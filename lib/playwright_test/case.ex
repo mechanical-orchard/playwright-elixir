@@ -82,7 +82,8 @@ defmodule PlaywrightTest.Case do
       defp setup_browser(runner_options) do
         case runner_options.transport do
           :driver ->
-            Playwright.BrowserType.launch()
+            options = Config.connect_options()
+            Playwright.BrowserType.launch(Map.get(options, :playwright_cli_path))
 
           :websocket ->
             options = Config.connect_options()

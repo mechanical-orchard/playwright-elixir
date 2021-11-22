@@ -147,6 +147,23 @@ defmodule Playwright.Runner.Config do
       config :playwright, LaunchOptions,
         executable_path: "/Applications/..."
 
+  ### `playwright_cli_path` (optional)
+
+  A filesystem path to the playwright cli.js file to use instead of the default
+  assets path.
+
+  **Chromium-only**
+
+  This can be helpful for packaged releases or systems where the node_module may
+  be located elsewhere on the filesystem.
+
+  **Use `playwright_cli_path` option with extreme caution.**
+
+  e.g.,
+
+      config :playwright, ConnectOptions,
+        playwright_cli_path: "/Cache/.../playwright/cli.js"
+
   ## Details for `PlaywrightTest`
 
   Configuration for usage of `PlaywrightTest.Case`.
@@ -172,7 +189,8 @@ defmodule Playwright.Runner.Config do
 
   @typedoc false
   @type connect_options :: %{
-          ws_endpoint: String.t()
+          ws_endpoint: String.t(),
+          playwright_cli_path: String.t(),
         }
 
   @typedoc false
@@ -197,12 +215,12 @@ defmodule Playwright.Runner.Config do
 
     defmodule ConnectOptions do
       @moduledoc false
-      defstruct [:ws_endpoint]
+      defstruct [:ws_endpoint, :playwright_cli_path]
     end
 
     defmodule LaunchOptions do
       @moduledoc false
-      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless]
+      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless, :executable_path]
     end
 
     defmodule PlaywrightTest do
@@ -212,10 +230,9 @@ defmodule Playwright.Runner.Config do
   end
 
   @doc false
-  @spec connect_options(boolean()) :: Types.ConnectOptions
+  @spec connect_options(boolean()) :: connect_options
   def connect_options(camelcase \\ false) do
     config_for(ConnectOptions, %Types.ConnectOptions{}, camelcase) || %{}
-    # |> clean()
   end
 
   @doc false

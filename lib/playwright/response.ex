@@ -1,6 +1,6 @@
 defmodule Playwright.Response do
   @moduledoc false
-  use Playwright.ChannelOwner, fields: [:status, :url]
+  use Playwright.ChannelOwner, fields: [:status, :url, :headers]
   alias Playwright.Response
 
   # derived from :initializer

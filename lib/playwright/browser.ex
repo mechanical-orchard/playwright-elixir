@@ -51,10 +51,13 @@ defmodule Playwright.Browser do
   `Playwright.BrowserContext`. That `BrowserContext` becomes, both, the
   *parent* the `Page`, and *owned by* the `Page`. When the `Page` closes,
   the context goes with it.
+
+  Note that `Playwright.Browser.new_page/2` will create a new
+  `Playwright.BrowserContext` with options passed to the context.
   """
   @spec new_page(Browser.t()) :: {:ok, Page.t()}
-  def new_page(%Browser{connection: connection} = subject) do
-    {:ok, context} = new_context(subject)
+  def new_page(%Browser{connection: connection} = subject, opts \\ %{}) do
+    {:ok, context} = new_context(subject, opts)
     {:ok, page} = BrowserContext.new_page(context)
 
     {:ok, _} = Channel.patch(connection, context.guid, %{owner_page: page})
