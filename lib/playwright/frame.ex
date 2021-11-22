@@ -149,8 +149,6 @@ defmodule Playwright.Frame do
     subject
   end
 
-  defdelegate q(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector
-
   @spec press(Frame.t() | Page.t(), binary(), binary(), map()) :: :ok
   def press(owner, selector, key, options \\ %{})
 
@@ -180,7 +178,7 @@ defmodule Playwright.Frame do
     query_selector(owner, selector, options)
   end
 
-  defdelegate q!(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector!
+  defdelegate q(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector
 
   @spec query_selector!(struct(), binary(), map()) :: struct()
   def query_selector!(owner, selector, options \\ %{})
@@ -201,7 +199,7 @@ defmodule Playwright.Frame do
     query_selector!(owner, selector, options)
   end
 
-  defdelegate qq(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
+  defdelegate q!(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector!
 
   @spec query_selector_all(Frame.t() | Page.t(), binary(), map()) :: {atom(), [ElementHandle.t()]}
   def query_selector_all(owner, selector, options \\ %{})
@@ -219,6 +217,8 @@ defmodule Playwright.Frame do
   def query_selector_all({:ok, owner}, selector, options) do
     query_selector_all(owner, selector, options)
   end
+
+  defdelegate qq(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
 
   @spec set_content(struct(), binary(), map()) :: :ok
   def set_content(owner, html, options \\ %{})
