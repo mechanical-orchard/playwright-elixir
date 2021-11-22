@@ -248,16 +248,6 @@ defmodule Playwright.Page do
     context(owner) |> Channel.bind(event, callback)
   end
 
-  # NOTE: these events will be recv'd from Playwright server with
-  # the a Frame as the context/bound :guid. So, we need to
-  # add our handlers there, on that Frame.
-  def on(%Page{} = owner, event, callback)
-      when event in [:load_state, "loadState"] do
-    require Logger
-    Logger.warn("binding on:load_state")
-    main_frame(owner) |> Channel.bind(event, callback)
-  end
-
   def on(%Page{} = owner, event, callback) do
     Channel.bind(owner, event, callback)
   end
