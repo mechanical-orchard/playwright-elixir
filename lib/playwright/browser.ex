@@ -145,15 +145,6 @@ defmodule Playwright.Browser do
     new_page(owner, options)
   end
 
-  # Note t
-
-  # Note that `Playwright.Browser.new_page/2` will create a new
-  # `Playwright.BrowserContext` with options passed to the context.
-  # """
-  # @spec new_page(Browser.t()) :: {:ok, Page.t()}
-  # def new_page(%Browser{connection: connection} = subject, opts \\ %{}) do
-  #   {:ok, context} = new_context(subject, opts)
-
   # ---
 
   # @spec on(Browser.t(), event(), function()) :: {:ok, Browser.t()}

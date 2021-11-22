@@ -217,7 +217,8 @@ defmodule Playwright.ElementHandle do
   def is_visible(owner)
 
   def is_visible(%ElementHandle{} = owner) do
-    true == (owner |> Channel.post(:is_visible))
+    {:ok, result} = Channel.post(owner, :is_visible)
+    {:ok, result == true}
   end
 
   def is_visible({:ok, owner}) do

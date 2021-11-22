@@ -43,6 +43,20 @@ defmodule Playwright.ElementHandleTest do
     end
   end
 
+  describe "ElementHandle.is_visible/1" do
+    test "...", %{page: page} do
+      :ok = Page.set_content(page, "<div>Hi</div><span></span>")
+
+      {:ok, div} = Page.q(page, "div")
+      assert div
+      assert {:ok, true} = ElementHandle.is_visible(div)
+
+      {:ok, span} = Page.q(page, "span")
+      assert span
+      assert {:ok, false} = ElementHandle.is_visible(span)
+    end
+  end
+
   describe "ElementHandle.query_selector/2" do
     setup :visit_playground_fixture
 

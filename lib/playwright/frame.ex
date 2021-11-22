@@ -480,9 +480,6 @@ defmodule Playwright.Frame do
   # @spec set_checked(Frame.t(), boolean(), options()) :: :ok
   # def set_checked(owner, checked, options \\ %{})
 
-  # @spec set_content(Frame.t(), binary(), options()) :: :ok
-  # def set_content(owner, html, options \\ %{})
-
   # ---
 
   @doc """
