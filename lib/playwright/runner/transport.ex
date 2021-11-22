@@ -3,10 +3,10 @@ defmodule Playwright.Runner.Transport do
 
   defstruct [:mod, :pid]
 
-  def connect(module, config) do
+  def connect(module, arg) do
     %__MODULE__{
       mod: module,
-      pid: module.start_link!(config)
+      pid: module.start_link!(arg)
     }
   end
 

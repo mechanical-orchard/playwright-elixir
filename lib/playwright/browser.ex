@@ -118,7 +118,10 @@ defmodule Playwright.Browser do
   Create a new `Playwright.Page` for this Browser, within a new "owned"
   `Playwright.BrowserContext`.
 
-  Closing this page will close the context as well.
+  That is, `Playwright.Browser.new_page/2` will also create a new
+  `Playwright.BrowserContext`. That `BrowserContext` becomes, both, the
+  *parent* of the `Page`, and *owned by* the `Page`. When the `Page` closes,
+  the context goes with it.
 
   This is a convenience API function that should only be used for single-page
   scenarios and short snippets. Production code and testing frameworks should
@@ -126,15 +129,30 @@ defmodule Playwright.Browser do
   `Playwright.BrowserContext.new_page/2`, given the new context, to manage
   resource lifecycles.
   """
-  @spec new_page(Browser.t()) :: {:ok, Page.t()}
-  def new_page(%Browser{connection: connection} = owner) do
-    {:ok, context} = new_context(owner)
+  @spec new_page(t() | {:ok, t()}, options()) :: {:ok, Page.t()}
+  def new_page(owner, options \\ %{})
+
+  def new_page(%Browser{connection: connection} = owner, options) do
+    {:ok, context} = new_context(owner, options)
     {:ok, page} = BrowserContext.new_page(context)
 
     # establish co-dependency
     {:ok, _} = Channel.patch(connection, context.guid, %{owner_page: page})
     {:ok, _} = Channel.patch(connection, page.guid, %{owned_context: context})
   end
+
+  def new_page({:ok, owner}, options) do
+    new_page(owner, options)
+  end
+
+  # Note t
+
+  # Note that `Playwright.Browser.new_page/2` will create a new
+  # `Playwright.BrowserContext` with options passed to the context.
+  # """
+  # @spec new_page(Browser.t()) :: {:ok, Page.t()}
+  # def new_page(%Browser{connection: connection} = subject, opts \\ %{}) do
+  #   {:ok, context} = new_context(subject, opts)
 
   # ---
 

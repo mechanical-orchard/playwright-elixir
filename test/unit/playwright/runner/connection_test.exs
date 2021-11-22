@@ -7,7 +7,7 @@ defmodule Playwright.Runner.ConnectionTest do
 
   setup do
     %{
-      connection: start_supervised!({Connection, {TestTransport, ["param"]}})
+      connection: start_supervised!({Connection, {TestTransport, %{param: "value"}}})
     }
   end
 
@@ -154,12 +154,12 @@ defmodule Playwright.Runner.ConnectionTest do
   defmodule TestTransport do
     use GenServer
 
-    def start_link(config) do
-      GenServer.start_link(__MODULE__, config)
+    def start_link(arg) do
+      GenServer.start_link(__MODULE__, arg)
     end
 
-    def start_link!(config) do
-      {:ok, pid} = start_link(config)
+    def start_link!(arg) do
+      {:ok, pid} = start_link(arg)
       pid
     end
 
@@ -173,12 +173,12 @@ defmodule Playwright.Runner.ConnectionTest do
 
     # ---
 
-    def init([connection | args]) do
+    def init({connection, config}) do
       {
         :ok,
         %{
           connection: connection,
-          args: args,
+          config: config,
           posted: []
         }
       }

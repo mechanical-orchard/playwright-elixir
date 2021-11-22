@@ -8,12 +8,13 @@ defmodule Playwright.Runner.Transport.Driver do
   alias Playwright.Runner.Connection
   alias Playwright.Runner.Transport.DriverMessage
 
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args)
+  def start_link(arg) do
+    # Logger.warn("Driver.start_link with args: #{inspect(arg)}")
+    GenServer.start_link(__MODULE__, arg)
   end
 
-  def start_link!(args) do
-    {:ok, pid} = start_link(args)
+  def start_link!({_connection, _config} = arg) do
+    {:ok, pid} = start_link(arg)
     pid
   end
 
@@ -25,8 +26,9 @@ defmodule Playwright.Runner.Transport.Driver do
   # ----------------------------------------------------------------------------
 
   @impl GenServer
-  def init([connection, driver_path]) do
-    cli = driver_path
+  def init({connection, config}) do
+    # Logger.warn("Driver.init with connection: #{inspect(connection)} and config: #{inspect(config)}")
+    cli = config.executable_path
     cmd = "run-driver"
 
     port = Port.open({:spawn, "#{cli} #{cmd}"}, [:binary, :exit_status])

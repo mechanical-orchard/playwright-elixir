@@ -124,21 +124,33 @@ defmodule Playwright.BrowserType do
   > [This article](https://chromium.googlesource.com/chromium/src/+/lkgr/docs/chromium_browser_vs_google_chrome.md)
   > describes some differences for Linux users.
   """
-  @spec launch(client() | nil) :: {pid(), Playwright.Browser.t()}
-  def launch(client \\ nil)
+  @spec launch(client() | nil, options()) :: {pid(), Playwright.Browser.t()}
+  def launch(client \\ nil, options \\ %{})
 
-  def launch(nil) do
-    launch(:chromium)
+  def launch(nil, options) do
+    launch(:chromium, options)
   end
 
-  def launch(client) when client in [:chromium] do
-    {:ok, connection} = new_session(Transport.Driver, ["assets/node_modules/playwright/cli.js"])
+  def launch(client, options)
+      when is_atom(client)
+      when client in [:chromium] do
+    opts = Map.merge(%{
+      executable_path: "assets/node_modules/playwright/cli.js"
+    }, options)
+    # |> IO.inspect(label: "launch options")
+
+    {:ok, connection} = new_session(Transport.Driver, opts)
     {connection, chromium(connection)}
-
   end
 
-  def launch(client) when client in [:firefox, :webkit] do
+  def launch(client, _options)
+      when is_atom(client)
+      when client in [:firefox, :webkit] do
     raise RuntimeError, message: "not yet implemented"
+  end
+
+  def launch(options, _) do
+    launch(nil, options)
   end
 
   # ---

@@ -211,8 +211,20 @@ defmodule Playwright.ElementHandle do
   # @spec is_hidden(ElementHandle.t()) :: {:ok, boolean()}
   # def is_hidden(owner)
 
-  # @spec is_visible(ElementHandle.t()) :: {:ok, boolean()}
-  # def is_visible(owner)
+  # ---
+
+  @spec is_visible(t() | {:ok, t()}) :: {:ok, boolean()}
+  def is_visible(owner)
+
+  def is_visible(%ElementHandle{} = owner) do
+    true == (owner |> Channel.post(:is_visible))
+  end
+
+  def is_visible({:ok, owner}) do
+    is_visible(owner)
+  end
+
+  # ---
 
   # @spec press(ElementHandle.t(), binary(), options()) :: :ok
   # def press(owner, key, options \\ %{})

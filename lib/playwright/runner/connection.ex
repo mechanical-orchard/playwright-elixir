@@ -2,7 +2,7 @@ defmodule Playwright.Runner.Connection do
   @moduledoc false
   use GenServer
   alias Playwright.Extra
-  alias Playwright.Runner.{Catalog, Channel, EventInfo, Transport}
+  alias Playwright.Runner.{Catalog, Channel, ConnectionID, EventInfo, Transport}
 
   require Logger
 
@@ -18,7 +18,7 @@ defmodule Playwright.Runner.Connection do
 
   def child_spec(transport_config) do
     %{
-      id: {__MODULE__, Playwright.Runner.ConnectionID.next()},
+      id: {__MODULE__, ConnectionID.next()},
       start: {
         __MODULE__,
         :start_link,
@@ -102,13 +102,14 @@ defmodule Playwright.Runner.Connection do
 
   @impl GenServer
   def init({transport_module, config}) do
-    Logger.debug("Starting up Playwright with config: #{inspect(config)}")
+    # Logger.warn("Starting up Playwright with config: #{inspect(config)}")
+    # Logger.warn("  --> will connect w/ #{inspect([self()] ++ config)}")
 
     {:ok, catalog} = Catalog.start_link(Channel.Root.new(self()))
 
     state = %__MODULE__{
       catalog: catalog,
-      transport: Transport.connect(transport_module, [self()] ++ config)
+      transport: Transport.connect(transport_module, {self(), config})
     }
 
     {:ok, state, {:continue, :initialize}}
