@@ -1,14 +1,48 @@
-# A thought:
-# Would it be useful to have "getter" functions that match the fields in these
-# `ChannelOwner` implementations, and pull from the `Catatlog`?
 defmodule Playwright.Page do
   @moduledoc """
-  ...
+  `Page` provides methods to interact with a single tab in a
+  `Playwright.Browser`, or an [extension background page](https://developer.chrome.com/extensions/background_pages)
+  in Chromium.
+
+  One `Playwright.Browser` instance might have multiple `Page` instances.
+
+  ## Example
+
+  Create a page, navigate it to a URL, and save a screenshot:
+
+      {:ok, page} = Browser.new_page(browser)
+      {:ok, resp} = Page.goto(page, "https://example.com")
+
+      {:ok _} = Page.screenshot(page, %{path: "screenshot.png"})
+
+      :ok = Page.close(page)
+
+  The Page module is capable of hanlding various emitted events (described below).
+
+  ## Example
+
+  Log a message for a single page load event (WIP: `once` is not yet implemented):
+
+      Page.once(page, :load, fn e ->
+        IO.puts("page loaded!")
+      end)
+
+  Unsubscribe from events with the `remove_lstener` function (WIP: `remove_listener` is not yet implemented):
+
+      def log_request(request) do
+        IO.inspect(label: "A request was made")
+      end
+
+      Page.on(page, :request, fn e ->
+        log_request(e.pages.request)
+      end)
+
+      Page.remove_listener(page, log_request)
   """
   use Playwright.ChannelOwner,
     fields: [:is_closed, :main_frame, :owned_context, :viewport_size]
 
-  alias Playwright.{BrowserContext, Page, Frame}
+  alias Playwright.{BrowserContext, ElementHandle, Frame, Page}
   alias Playwright.ChannelOwner
   alias Playwright.Runner.Helpers
 
@@ -32,9 +66,6 @@ defmodule Playwright.Page do
   # delegates
   # ---------------------------------------------------------------------------
 
-  defdelegate expect_event(owner, event, trigger),
-    to: Playwright.BrowserContext
-
   defdelegate click(page, selector, options \\ %{}),
     to: Playwright.Frame
 
@@ -43,6 +74,9 @@ defmodule Playwright.Page do
 
   defdelegate evaluate_handle(page, expression, arg \\ nil),
     to: Playwright.Frame
+
+  defdelegate expect_event(owner, event, trigger),
+    to: Playwright.BrowserContext
 
   defdelegate fill(page, selector, value),
     to: Playwright.Frame
@@ -92,27 +126,108 @@ defmodule Playwright.Page do
   # API
   # ---------------------------------------------------------------------------
 
-  @spec close(struct()) :: :ok
-  def close(%Page{} = owner) do
-    Channel.post(owner, :close)
+  # ---
+
+  # @spec add_init_script(Page.t(), binary(), options()) :: :ok
+  # def add_init_script(owner, script, options \\ %{})
+
+  # @spec add_script_tag(Page.t(), options()) :: {:ok, ElementHandle.t()}
+  # def add_script_tag(owner, options \\ %{})
+
+  # @spec add_style_tag(Page.t(), options()) :: {:ok, ElementHandle.t()}
+  # def add_style_tag(owner, options \\ %{})
+
+  # @spec bring_to_front(Page.t()) :: :ok
+  # def bring_to_front(owner)
+
+  # @spec check(Page.t(), binary(), options()) :: :ok
+  # def check(owner, selector, options \\ %{})
+
+  # ---
+
+  @doc """
+  Closes the `Page`.
+
+  If the `Page` has an "owned context" (1-to-1 co-dependency with a
+  `Playwright.BrowserContext`), that context is closed as well.
+
+  If `option: run_before_unload` is false, does not run any unload handlers and
+  waits for the page to be closed. If `option: run_before_unload` is `true`
+  the function will run unload handlers, but will not wait for the page to
+  close. By default, `Playwright.Page.close/1` does not run `:beforeunload`
+  handlers.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name          | type   |             | description |
+  | ------------------- | ------ | ----------- | ----------- |
+  | `run_before_unload` | option | `boolean()` | Whether to run the before unload page handlers. `(default: false)` |
+
+  ## NOTE
+
+  > if `option: run_before_unload` is passed as `true`, a `:beforeunload`
+  > dialog might be summoned and should be handled manually via
+  > `Playwright.Page.on/3`.
+  """
+  @spec close(t() | {:ok, t()}, options()) :: :ok
+  def close(owner, options \\ %{})
+
+  def close(%Page{} = owner, options) do
+    Channel.post(owner, :close, options)
 
     # NOTE: this *might* prefer to be done on `__dispose__`
     # ...OR, `.on(_, "close", _)`
     if owner.owned_context do
-      context(owner) |> BrowserContext.close()
+      {:ok, ctx} = context(owner)
+      BrowserContext.close(ctx)
     end
 
     :ok
   end
 
-  def close({:ok, owner}) do
-    close(owner)
+  def close({:ok, owner}, options) do
+    close(owner, options)
   end
 
-  @spec context(struct()) :: {:ok, BrowserContext.t()}
-  def context(%Page{} = owner) do
-    Channel.find(owner, owner.parent)
+  @doc """
+  Get the full HTML contents of the page, including the doctype.
+  """
+  @spec content(t() | {:ok, t()}) :: {:ok, binary()}
+  def content(owner)
+
+  def content(%Page{} = owner) do
+    Channel.post(owner, :content)
   end
+
+  def content({:ok, owner}) do
+    content(owner)
+  end
+
+  @doc """
+  Get the `Playwright.BrowserContext` that the page belongs to.
+  """
+  @spec context(t() | {:ok, t()}) :: BrowserContext.t()
+  def context(owner)
+
+  def context(%Page{} = owner) do
+    {:ok, ctx} = Channel.find(owner, owner.parent)
+    ctx
+  end
+
+  def context({:ok, owner}) do
+    context(owner)
+  end
+
+  # ---
+
+  # @spec add_init_script(Page.t(), binary(), options()) :: :ok
+  # def add_init_script(owner, script, options \\ %{})
+
+  # ---
 
   @spec eval_on_selector(Page.t(), binary(), binary(), term(), map()) :: term()
   def eval_on_selector(owner, selector, expression, arg \\ nil, options \\ %{})

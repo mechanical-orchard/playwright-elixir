@@ -1,3 +1,6 @@
+# A thought:
+# Would it be useful to have "getter" functions that match the fields in these
+# `ChannelOwner` implementations, and pull from the `Catatlog`?
 defmodule Playwright.ChannelOwner do
   @moduledoc false
   @base [:connection, :guid, :listeners, :parent, :type]

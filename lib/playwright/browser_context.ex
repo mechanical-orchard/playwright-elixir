@@ -241,7 +241,7 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec add_init_script(BrowserContext.t(), String.t(), options()) :: :ok
+  # @spec add_init_script(BrowserContext.t(), binary(), options()) :: :ok
   # def add_init_script(owner, script, options \\ %{})
 
   # @spec background_pages(BrowserContext.t()) :: {:ok, [Playwright.Page.t()]}

@@ -16,7 +16,8 @@ defmodule Playwright.Request do
   If the request fails at some point, instead of a "requestFinished" event (and possibly "response" as well),
   the `Playwright.Page.on/3` for "requestFailed" is emitted.
 
-  > NOTE
+  ## NOTE
+
   > HTTP error responses, such as 404 or 503, are still successful responses from an HTTP stanpoint. So, such requests
   > will complete with a "requestFinished" event.
 

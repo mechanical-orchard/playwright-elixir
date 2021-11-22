@@ -22,8 +22,8 @@ defmodule Playwright.ElementHandle do
   An `ElementHandle` instance can be used as an argument in
   `Playwright.Page.eval_on_selector/5` and `Playwright.Page.evaluate/3`.
 
-  > NOTE
-  >
+  ## NOTE
+
   > In most cases, you would want to use `Playwright.Locator` instead. You
   > should only use `ElementHandle` if you want to retain a handle to a
   > particular DOM node that you intend to pass into
