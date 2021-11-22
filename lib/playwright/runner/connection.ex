@@ -18,7 +18,7 @@ defmodule Playwright.Runner.Connection do
 
   def child_spec(transport_config) do
     %{
-      id: {__MODULE__, Playwright.ConnectionID.next()},
+      id: {__MODULE__, Playwright.Runner.ConnectionID.next()},
       start: {
         __MODULE__,
         :start_link,

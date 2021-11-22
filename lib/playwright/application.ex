@@ -5,7 +5,7 @@ defmodule Playwright.Application do
   @impl Application
   def start(_type, _args) do
     children = [
-      Playwright.ConnectionID,
+      Playwright.Runner.ConnectionID,
       {DynamicSupervisor, strategy: :one_for_one, name: Playwright.BrowserType.Supervisor}
     ]
 

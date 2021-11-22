@@ -1,4 +1,4 @@
-defmodule Playwright.ConnectionID do
+defmodule Playwright.Runner.ConnectionID do
   @moduledoc false
 
   use Agent
