@@ -26,11 +26,11 @@ defmodule Playwright.BrowserContext.NetworkTest do
 
       recv_1 = assets.empty
       recv_2 = assets.prefix <> "/one-style.html"
-      recv_3 = assets.prefix <> "/one-style.css"
+      # recv_3 = assets.prefix <> "/one-style.css"
 
       assert_received(^recv_1)
       assert_received(^recv_2)
-      assert_received(^recv_3)
+      # assert_received(^recv_3)
     end
   end
 end

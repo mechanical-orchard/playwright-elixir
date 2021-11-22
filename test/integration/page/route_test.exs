@@ -7,7 +7,6 @@ defmodule Playwright.Page.RouteTest do
       this = self()
 
       Page.route(page, "**/empty.html", fn route, request ->
-        require Logger
         assert route.request.guid == request.guid
         assert String.contains?(request.url, "empty.html")
         assert request.method == "GET"

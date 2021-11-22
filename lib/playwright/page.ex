@@ -240,12 +240,22 @@ defmodule Playwright.Page do
     eval_on_selector(owner, selector, expression, arg, options)
   end
 
-  # NOTE: the event/method will be recv'd from Playwright server with
+  # NOTE: these events will be recv'd from Playwright server with
   # the parent BrowserContext as the context/bound :guid. So, we need to
   # add our handlers there, on that (BrowserContext) parent.
   def on(%Page{} = owner, event, callback)
       when event in [:request, :response, :request_finished, "request", "response", "requestFinished"] do
     context(owner) |> Channel.bind(event, callback)
+  end
+
+  # NOTE: these events will be recv'd from Playwright server with
+  # the a Frame as the context/bound :guid. So, we need to
+  # add our handlers there, on that Frame.
+  def on(%Page{} = owner, event, callback)
+      when event in [:load_state, "loadState"] do
+    require Logger
+    Logger.warn("binding on:load_state")
+    main_frame(owner) |> Channel.bind(event, callback)
   end
 
   def on(%Page{} = owner, event, callback) do
@@ -308,7 +318,7 @@ defmodule Playwright.Page do
   def wait_for_load_state(%Page{} = owner, state, _options)
       when is_binary(state)
       when state in ["load", "domcontentloaded", "networkidle", "commit"] do
-    Logger.warn("Page.wait_for_load_state")
+    Logger.warn("Page.wait_for_load_state (not fully implemented)")
 
     {:ok, _} =
       main_frame(owner)

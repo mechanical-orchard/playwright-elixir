@@ -53,7 +53,7 @@ defmodule Playwright.Runner.Channel.Event do
        when type in [
               "close",
               "console",
-              "loadstate",
+              "loadState",
               "navigated",
               "page",
               "previewUpdated",
@@ -126,7 +126,7 @@ defmodule Playwright.Runner.Channel.Event do
        when type in [
               "close",
               "console",
-              "loadstate",
+              "loadState",
               "navigated",
               "previewUpdated",
               "request",
