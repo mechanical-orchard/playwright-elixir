@@ -44,7 +44,6 @@ defmodule Playwright.ChannelOwner do
         init(struct(base, initializer), initializer)
       end
 
-      @doc false
       @spec init(struct(), map()) :: {atom(), struct()}
       def init(owner, _initializer) do
         {:ok, owner}

@@ -126,7 +126,6 @@ defmodule Playwright.Page.Accessibility do
     result |> ax_node_from_protocol()
   end
 
-  @doc false
   def snapshot({:ok, owner}, options) do
     snapshot(owner, options)
   end

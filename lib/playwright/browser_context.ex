@@ -271,7 +271,6 @@ defmodule Playwright.BrowserContext do
     :ok
   end
 
-  @doc false
   def close({:ok, owner}) do
     close(owner)
   end
@@ -342,7 +341,6 @@ defmodule Playwright.BrowserContext do
     expect_event(context, event, trigger, predicate, options)
   end
 
-  # @doc false
   # def expect_event({:ok, owner}, event, trigger, predicate, options) do
   #   expect_event(owner, event, trigger, predicate, options)
   # end
@@ -423,7 +421,6 @@ defmodule Playwright.BrowserContext do
     end
   end
 
-  @doc false
   def new_page({:ok, owner}) do
     new_page(owner)
   end

@@ -105,7 +105,6 @@ defmodule Playwright.Page do
     :ok
   end
 
-  @doc false
   def close({:ok, owner}) do
     close(owner)
   end
@@ -123,7 +122,6 @@ defmodule Playwright.Page do
     |> Frame.eval_on_selector(selector, expression, arg, options)
   end
 
-  @doc false
   def eval_on_selector({:ok, owner}, selector, expression, arg, options) do
     eval_on_selector(owner, selector, expression, arg, options)
   end
@@ -166,7 +164,6 @@ defmodule Playwright.Page do
     Channel.bind(owner, :route, handler)
   end
 
-  @doc false
   def route({:ok, owner}, pattern, callback, options) do
     route(owner, pattern, callback, options)
   end
@@ -188,7 +185,6 @@ defmodule Playwright.Page do
     end
   end
 
-  @doc false
   def screenshot({:ok, owner}, options) do
     screenshot(owner, options)
   end

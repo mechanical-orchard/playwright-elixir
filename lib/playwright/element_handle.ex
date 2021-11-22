@@ -6,6 +6,7 @@ defmodule Playwright.ElementHandle do
   function, and similar.
 
   > ⚠️ DISCOURAGED
+  >
   > The use of `Playwright.ElementHandle` is discouraged; use
   > `Playwright.Locator` instances and web-first assertions instead.
 
@@ -22,6 +23,7 @@ defmodule Playwright.ElementHandle do
   `Playwright.Page.eval_on_selector/5` and `Playwright.Page.evaluate/3`.
 
   > NOTE
+  >
   > In most cases, you would want to use `Playwright.Locator` instead. You
   > should only use `ElementHandle` if you want to retain a handle to a
   > particular DOM node that you intend to pass into
@@ -101,7 +103,7 @@ defmodule Playwright.ElementHandle do
   this function raises a `TimeoutError`. Passing zero (`0`) for timeout
   disables this.
   """
-  @spec click(ElementHandle.t(), options()) :: :ok
+  @spec click(t() | {:ok, t()}, options()) :: :ok
   def click(owner, _options \\ %{})
 
   def click(%ElementHandle{} = owner, _options) do
@@ -109,7 +111,6 @@ defmodule Playwright.ElementHandle do
     :ok
   end
 
-  @doc false
   def click({:ok, owner}, options) do
     click(owner, options)
   end
@@ -118,14 +119,13 @@ defmodule Playwright.ElementHandle do
   Returns the `Playwright.Frame` for element handles referencing iframe nodes,
   or `nil otherwise.
   """
-  @spec content_frame(ElementHandle.t()) :: {:ok, Frame.t() | nil}
+  @spec content_frame(t() | {:ok, t()}) :: {:ok, Frame.t() | nil}
   def content_frame(owner)
 
   def content_frame(%ElementHandle{} = owner) do
     Channel.post(owner, :content_frame)
   end
 
-  @doc false
   def content_frame({:ok, owner}) do
     content_frame(owner)
   end
@@ -226,7 +226,6 @@ defmodule Playwright.ElementHandle do
     owner |> Channel.post(:query_selector, %{selector: selector})
   end
 
-  @doc false
   def query_selector({:ok, owner}, selector) do
     query_selector(owner, selector)
   end
@@ -270,7 +269,6 @@ defmodule Playwright.ElementHandle do
     owner |> Channel.post(:text_content)
   end
 
-  @doc false
   def text_content({:ok, owner}) do
     text_content(owner)
   end
