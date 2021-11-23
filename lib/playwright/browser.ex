@@ -25,7 +25,7 @@ defmodule Playwright.Browser do
   alias Playwright.Runner.Channel
 
   @property :name
-  @property :version
+  @property(:version, %{doc: "Returns the browser version"})
 
   @typedoc "Supported events"
   @type event :: :disconnected

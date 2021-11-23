@@ -99,10 +99,13 @@ defmodule Playwright.ChannelOwner do
       end
     end
 
-    defmacro @{:property, _meta, [arg]} do
-      Module.put_attribute(__CALLER__.module, :properties, arg)
+    def do_at(module, arg, options \\ []) do
+      Module.put_attribute(module, :properties, arg)
+      doc = Keyword.get(options, :doc, false)
 
       quote do
+        @doc unquote(doc)
+        @spec unquote(arg)(t()) :: term()
         def unquote(arg)(owner) do
           property = Map.get(owner, unquote(arg))
 
@@ -114,6 +117,15 @@ defmodule Playwright.ChannelOwner do
           end
         end
       end
+    end
+
+    defmacro @{:property, _meta, [arg]} do
+      do_at(__CALLER__.module, arg)
+    end
+
+    defmacro @{:property, _meta, [arg, arg2]} do
+      {:%{}, _, actual} = arg2
+      do_at(__CALLER__.module, arg, actual)
     end
 
     defmacro @expr do
