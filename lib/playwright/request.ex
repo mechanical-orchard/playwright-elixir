@@ -24,10 +24,16 @@ defmodule Playwright.Request do
   If a request gets a "redirect" response, the request is successfully finished with the "requestFinished" event, and a
   new request is issued to the target redirected URL.
   """
-  use Playwright.ChannelOwner,
-    fields: [:frame, :headers, :is_navigation_request, :method, :post_data, :resource_type, :url]
-
+  use Playwright.ChannelOwner
   alias Playwright.Runner.Connection
+
+  @property :frame
+  @property :headers
+  @property :is_navigation_request
+  @property :method
+  @property :post_data
+  @property :resource_type
+  @property :url
 
   # ---
 

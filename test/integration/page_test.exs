@@ -25,6 +25,7 @@ defmodule Playwright.PageTest do
       guid = page.guid
 
       Page.on(page, "close", fn event ->
+        assert Page.is_closed(event.target)
         send(this, event)
       end)
 

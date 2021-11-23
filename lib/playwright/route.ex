@@ -1,6 +1,8 @@
 defmodule Playwright.Route do
   @moduledoc false
-  use Playwright.ChannelOwner, fields: [:request]
+  use Playwright.ChannelOwner
+
+  @property :request
 
   def continue(subject) do
     subject

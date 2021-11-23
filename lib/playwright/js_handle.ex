@@ -1,7 +1,9 @@
 defmodule Playwright.JSHandle do
   @moduledoc false
-  use Playwright.ChannelOwner, fields: [:preview]
+  use Playwright.ChannelOwner
   alias Playwright.{ElementHandle, JSHandle}
+
+  @property :preview
 
   @doc """
   Returns either `nil` or the object handle itself, if the object handle is an instance of `Playwright.ElementHandle`.

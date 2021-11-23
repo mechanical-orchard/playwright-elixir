@@ -22,6 +22,7 @@ defmodule Playwright.BrowserContext.NetworkTest do
       BrowserContext.expect_event(context, "page", fn ->
         page |> Page.click("a")
       end)
+
       Page.wait_for_load_state(page)
 
       recv_1 = assets.empty
