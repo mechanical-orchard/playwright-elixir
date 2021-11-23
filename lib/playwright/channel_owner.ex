@@ -90,6 +90,8 @@ defmodule Playwright.ChannelOwner do
   # ---------------------------------------------------------------------------
 
   defmodule Macros do
+    @moduledoc false
+
     defmacro __using__(_args) do
       Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
 
