@@ -3,7 +3,7 @@ defmodule Playwright.Page.LocatorTest do
   alias Playwright.Page
 
   describe "Page.Locator" do
-    test "delegates to Frame.Locator (using .click/2 as an example", %{assets: assets, page: page} do
+    test "delegates to Locator (using .click/2 as an example", %{assets: assets, page: page} do
       options = %{timeout: 1_000}
 
       page |> Page.goto(assets.prefix <> "/empty.html")

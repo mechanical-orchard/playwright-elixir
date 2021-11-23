@@ -66,7 +66,7 @@ defmodule Playwright.JSHandle do
   ## Arguments
 
   | key / name    | type   |            | description |
-  | ------------- | ------ | -----------| ----------- |
+  | ------------- | ------ | ---------- | ----------- |
   | `expression`  | param  | `binary()` | Function to be evaluated in the page context. |
   | `arg`         | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   """

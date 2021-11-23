@@ -64,7 +64,7 @@ defmodule Playwright.ChannelOwner do
       ## Arguments
 
       | key / name    | type   |            | description |
-      | ------------- | ------ | -----------| ----------- |
+      | ------------- | ------ | ---------- | ----------- |
       | `owner`       | param  | `struct()` | The newly created channel owner (resource). |
       | `initializer` | param  | `struct()` | The initializer received from with the channel owner instance was derived. |
       """

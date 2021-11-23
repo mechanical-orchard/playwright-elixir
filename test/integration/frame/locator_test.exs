@@ -1,7 +1,7 @@
-defmodule Playwright.Frame.LocatorTest do
+defmodule Playwright.LocatorTest do
   use Playwright.TestCase, async: true
 
-  alias Playwright.{Frame, Page}
+  alias Playwright.{Locator, Page}
   alias Playwright.Runner.Channel.Error
 
   describe "Locator.check/2" do
@@ -17,15 +17,15 @@ defmodule Playwright.Frame.LocatorTest do
     test "returns :ok on a successful 'check'", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Frame.Locator.new(frame, "input#exists")
-      assert :ok = Frame.Locator.check(locator, options)
+      locator = Locator.new(frame, "input#exists")
+      assert :ok = Locator.check(locator, options)
     end
 
     test "returns a timeout error when unable to 'check'", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Frame.Locator.new(frame, "input#bogus")
-      assert {:error, %Error{message: "Timeout 1000ms exceeded."}} = Frame.Locator.check(locator, options)
+      locator = Locator.new(frame, "input#bogus")
+      assert {:error, %Error{message: "Timeout 1000ms exceeded."}} = Locator.check(locator, options)
     end
   end
 
@@ -42,15 +42,15 @@ defmodule Playwright.Frame.LocatorTest do
     test "returns :ok on a successful click", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Frame.Locator.new(frame, "a#exists")
-      assert :ok = Frame.Locator.click(locator, options)
+      locator = Locator.new(frame, "a#exists")
+      assert :ok = Locator.click(locator, options)
     end
 
     test "returns a timeout error when unable to click", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Frame.Locator.new(frame, "a#bogus")
-      assert {:error, %Error{message: "Timeout 1000ms exceeded."}} = Frame.Locator.click(locator, options)
+      locator = Locator.new(frame, "a#bogus")
+      assert {:error, %Error{message: "Timeout 1000ms exceeded."}} = Locator.click(locator, options)
     end
   end
 
@@ -66,11 +66,11 @@ defmodule Playwright.Frame.LocatorTest do
     test "waiting for 'attached'", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Frame.Locator.new(frame, "a#exists")
+      locator = Locator.new(frame, "a#exists")
 
       task =
         Task.async(fn ->
-          assert :ok = Frame.Locator.wait_for(locator, Map.put(options, :state, "attached"))
+          assert :ok = Locator.wait_for(locator, Map.put(options, :state, "attached"))
         end)
 
       page |> Page.set_content("<a id='exists' target=_blank rel=noopener href='/one-style.html'>yo</a>")

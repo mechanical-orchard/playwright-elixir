@@ -1,9 +1,9 @@
 defmodule Playwright.Page.Locator do
   @moduledoc """
-  `Playwright.Page.Locator` wraps `Playwright.Frame.Locator`, using the main
+  `Playwright.Page.Locator` wraps `Playwright.Locator`, using the main
   frame of the page.
   """
-  alias Playwright.{Frame, Page}
+  alias Playwright.{Locator, Page}
 
   @doc """
   Returns an element locator that can be used to perform actions on the page.
@@ -12,8 +12,8 @@ defmodule Playwright.Page.Locator do
   elements, as may happen when the DOM structure changes between actions.
   """
   def new(page, selector) do
-    Frame.Locator.new(Page.main_frame(page), selector)
+    Locator.new(Page.main_frame(page), selector)
   end
 
-  defdelegate click(locator, options \\ %{}), to: Frame.Locator
+  defdelegate click(locator, options \\ %{}), to: Locator
 end

@@ -79,7 +79,7 @@ defmodule Playwright.MixProject do
           Playwright.ConsoleMessage,
           Playwright.ElementHandle,
           Playwright.Frame,
-          Playwright.Frame.Locator,
+          Playwright.Locator,
           Playwright.Page,
           Playwright.JSHandle,
           Playwright.Page.Accessibility,
