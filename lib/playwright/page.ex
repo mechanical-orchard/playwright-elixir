@@ -46,6 +46,38 @@ defmodule Playwright.Page do
   alias Playwright.ChannelOwner
   alias Playwright.Runner.Helpers
 
+  @typedoc """
+  Events that may be bound using `Page.on/3`. Events may be atoms or the string
+  representation of a valid atom.
+  """
+  @type page_event() ::
+          :close
+          | :console
+          | :crash
+          | :dialog
+          | :domcontentloaded
+          | :download
+          | :filechooser
+          | :frameattached
+          | :framenavigated
+          | :load
+          | :pageerror
+          | :popup
+          | :websocket
+          | :worker
+          | String.t()
+
+  @typedoc """
+  Events that may be bound using `Page.on/3`. Events may be atoms or the string
+  representation of a valid atom.
+  """
+  @type browser_event() ::
+          :request
+          | :request_failed
+          | :request_finished
+          | :response
+          | String.t()
+
   @type function_or_options :: fun() | options() | nil
   @type options :: map()
 
@@ -243,6 +275,8 @@ defmodule Playwright.Page do
   # NOTE: these events will be recv'd from Playwright server with
   # the parent BrowserContext as the context/bound :guid. So, we need to
   # add our handlers there, on that (BrowserContext) parent.
+  @spec on(Page.t() | {:ok, Page.t()}, page_event() | browser_event(), (() -> term())) ::
+          {:ok, Page.t()} | {:ok, BrowserContext.t()}
   def on(%Page{} = owner, event, callback)
       when event in [:request, :response, :request_finished, "request", "response", "requestFinished"] do
     context(owner) |> Channel.bind(event, callback)
