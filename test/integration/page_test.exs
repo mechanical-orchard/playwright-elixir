@@ -274,6 +274,23 @@ defmodule Playwright.PageTest do
         )
       end)
 
+      Page.wait_for_selector(page, "span.inner")
+      assert Page.text_content(page, "span.inner") == {:ok, "target"}
+    end
+
+    test ".wait_for_selector/3", %{page: page} do
+      page
+      |> Page.set_content("<div id='outer'></div>")
+
+      Task.start(fn ->
+        :timer.sleep(100)
+
+        Page.evaluate(
+          page,
+          "function () { var div = document.querySelector('div#outer'); div.innerHTML = '<span class=\"inner\">target</span>'; }"
+        )
+      end)
+
       Page.wait_for_selector(page, "span.inner", %{state: "attached"})
       assert Page.text_content(page, "span.inner") == {:ok, "target"}
     end

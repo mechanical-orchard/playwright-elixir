@@ -120,7 +120,7 @@ defmodule Playwright.Page do
   defdelegate title(page),
     to: Playwright.Frame
 
-  defdelegate wait_for_selector(page, selector, options),
+  defdelegate wait_for_selector(page, selector, options \\ %{}),
     to: Playwright.Frame
 
   # API
