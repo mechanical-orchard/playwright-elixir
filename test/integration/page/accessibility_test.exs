@@ -260,12 +260,16 @@ defmodule Playwright.Page.AccessibilityTest do
     test "with a button", %{page: page} do
       Page.set_content(page, "<button>My Button</button>")
 
-      element = Page.query_selector!(page, "button")
+      case Page.query_selector(page, "button") do
+        {:ok, element} ->
+          assert Page.Accessibility.snapshot(page, %{root: element}) == %{
+                   role: "button",
+                   name: "My Button"
+                 }
 
-      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-               role: "button",
-               name: "My Button"
-             }
+        {:error, :timeout} ->
+          log_element_handle_error()
+      end
     end
 
     test "with an input", %{page: page} do

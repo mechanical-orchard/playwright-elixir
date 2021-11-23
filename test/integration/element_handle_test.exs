@@ -26,13 +26,19 @@ defmodule Playwright.ElementHandleTest do
     setup :visit_button_fixture
 
     test "...", %{page: page} do
-      page
-      |> Page.query_selector("button")
-      |> ElementHandle.click()
-      |> assert
+      case page
+           |> Page.query_selector("button") do
+        {:ok, button} ->
+          button
+          |> ElementHandle.click()
+          |> assert
 
-      result = Page.evaluate(page, "function () { return window['result']; }")
-      assert result == {:ok, "Clicked"}
+          result = Page.evaluate(page, "function () { return window['result']; }")
+          assert result == {:ok, "Clicked"}
+
+        {:error, :timeout} ->
+          log_element_handle_error()
+      end
     end
   end
 
