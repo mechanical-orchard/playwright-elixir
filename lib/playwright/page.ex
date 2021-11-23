@@ -262,19 +262,11 @@ defmodule Playwright.Page do
   def route(%Page{} = owner, pattern, callback, _options) do
     matcher = Helpers.URLMatcher.new(pattern)
 
-    handler = fn %{params: %{request: request, route: route}} ->
-      if Helpers.URLMatcher.matches(matcher, request.url) do
-        Task.start_link(fn ->
-          callback.(route, request)
-        end)
-      end
-    end
-
     if Enum.empty?(owner.listeners["route"] || []) do
       Channel.post(owner, :set_network_interception_enabled, %{enabled: true})
     end
 
-    Channel.bind(owner, :route, handler)
+    Channel.bind(owner, :route, &Page.exec_callback_on_route(&1, matcher, callback))
   end
 
   def route({:ok, owner}, pattern, callback, options) do
@@ -328,8 +320,18 @@ defmodule Playwright.Page do
   # private
   # ---------------------------------------------------------------------------
 
+  @doc false
   def main_frame(owner) do
     {:ok, frame} = Channel.find(owner, owner.main_frame)
     frame
+  end
+
+  @doc false
+  def exec_callback_on_route(%{params: %{request: request, route: route}}, matcher, callback) do
+    if Helpers.URLMatcher.matches(matcher, request.url) do
+      Task.start_link(fn ->
+        callback.(route, request)
+      end)
+    end
   end
 end
