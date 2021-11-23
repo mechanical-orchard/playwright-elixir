@@ -1,37 +1,3 @@
-defmodule Playwright.ChannelMacros do
-  defmacro __using__(_args) do
-    Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
-
-    quote do
-      import Kernel, except: [@: 1]
-      import unquote(__MODULE__), only: [@: 1]
-    end
-  end
-
-  defmacro @{:property, _meta, [arg]} do
-    Module.put_attribute(__CALLER__.module, :properties, arg)
-
-    quote do
-      def unquote(arg)(owner) do
-        property = Map.get(owner, unquote(arg))
-
-        if is_map(property) && Map.has_key?(property, :guid) do
-          {:ok, result} = Playwright.Runner.Channel.find(owner, property)
-          result
-        else
-          property
-        end
-      end
-    end
-  end
-
-  defmacro @expr do
-    quote do
-      Kernel.@(unquote(expr))
-    end
-  end
-end
-
 defmodule Playwright.ChannelOwner do
   @moduledoc false
   @callback init(struct(), map()) :: {atom(), struct()}
@@ -39,7 +5,7 @@ defmodule Playwright.ChannelOwner do
 
   defmacro __using__(_) do
     quote do
-      use Playwright.ChannelMacros
+      use Playwright.ChannelOwner.Macros
       @behaviour Playwright.ChannelOwner
 
       @derive {Jason.Encoder, only: [:guid]}
@@ -118,5 +84,42 @@ defmodule Playwright.ChannelOwner do
     ArgumentError ->
       message = "ChannelOwner of type #{inspect(type)} is not yet defined"
       exit(message)
+  end
+
+  # ChannelOwner macros
+  # ---------------------------------------------------------------------------
+
+  defmodule Macros do
+    defmacro __using__(_args) do
+      Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
+
+      quote do
+        import Kernel, except: [@: 1]
+        import unquote(__MODULE__), only: [@: 1]
+      end
+    end
+
+    defmacro @{:property, _meta, [arg]} do
+      Module.put_attribute(__CALLER__.module, :properties, arg)
+
+      quote do
+        def unquote(arg)(owner) do
+          property = Map.get(owner, unquote(arg))
+
+          if is_map(property) && Map.has_key?(property, :guid) do
+            {:ok, result} = Playwright.Runner.Channel.find(owner, property)
+            result
+          else
+            property
+          end
+        end
+      end
+    end
+
+    defmacro @expr do
+      quote do
+        Kernel.@(unquote(expr))
+      end
+    end
   end
 end
