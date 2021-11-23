@@ -9,7 +9,7 @@ defmodule Playwright.ChannelOwner do
       @behaviour Playwright.ChannelOwner
 
       @derive {Jason.Encoder, only: [:guid]}
-      @derive {Inspect, only: [:guid] ++ @properties}
+      # @derive {Inspect, only: [:guid] ++ @properties}
 
       import Playwright.Extra.Map
       alias Playwright.Runner.{Channel, EventInfo}
