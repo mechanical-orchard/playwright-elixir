@@ -40,6 +40,15 @@ defmodule Playwright.TestCase do
         |> Playwright.JSHandle.as_element()
         |> Playwright.ElementHandle.content_frame()
       end
+
+      require Logger
+
+      def log_element_handle_error do
+        Logger.warn("""
+        The use of ElementHandle is discouraged in favor of Locator.
+        Timeouts indicate an issue within Playwright.
+        """)
+      end
     end
   end
 

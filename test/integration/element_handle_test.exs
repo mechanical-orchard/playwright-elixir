@@ -2,20 +2,23 @@ defmodule Playwright.ElementHandleTest do
   use Playwright.TestCase, async: true
 
   alias Playwright.{ElementHandle, Frame, Page}
+  require Logger
 
   describe "ElementHandle fields" do
     test ":preview", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      {:ok, outer} = Page.q(page, "#outer")
-      {:ok, inner} = Page.q(page, "#inner")
-      {:ok, check} = Page.q(page, "#check")
-      {:ok, child} = ElementHandle.evaluate_handle(inner, "e => e.firstChild")
-
-      assert outer.preview == ~s|JSHandle@<div id="outer" name="value">…</div>|
-      assert inner.preview == ~s|JSHandle@<div id="inner">Text,↵more text</div>|
-      assert check.preview == ~s|JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>|
-      assert child.preview == "JSHandle@#text=Text,↵more text"
+      with {:ok, outer} <- Page.q(page, "#outer"),
+           {:ok, inner} <- Page.q(page, "#inner"),
+           {:ok, check} <- Page.q(page, "#check"),
+           {:ok, child} <- ElementHandle.evaluate_handle(inner, "e => e.firstChild") do
+        assert outer.preview == ~s|JSHandle@<div id="outer" name="value">…</div>|
+        assert inner.preview == ~s|JSHandle@<div id="inner">Text,↵more text</div>|
+        assert check.preview == ~s|JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>|
+        assert child.preview == "JSHandle@#text=Text,↵more text"
+      else
+        {:error, :timeout} -> log_element_handle_error()
+      end
     end
   end
 
@@ -37,9 +40,14 @@ defmodule Playwright.ElementHandleTest do
     setup :visit_dom_fixture
 
     test "...", %{page: page} do
-      {:ok, element} = Page.query_selector(page, "#outer")
-      assert element |> ElementHandle.get_attribute("name") == {:ok, "value"}
-      assert element |> ElementHandle.get_attribute("foo") == {:ok, nil}
+      case Page.query_selector(page, "#outer") do
+        {:ok, element} ->
+          assert element |> ElementHandle.get_attribute("name") == {:ok, "value"}
+          assert element |> ElementHandle.get_attribute("foo") == {:ok, nil}
+
+        {:error, :timeout} ->
+          log_element_handle_error()
+      end
     end
   end
 
@@ -47,13 +55,16 @@ defmodule Playwright.ElementHandleTest do
     test "...", %{page: page} do
       :ok = Page.set_content(page, "<div>Hi</div><span></span>")
 
-      {:ok, div} = Page.q(page, "div")
-      assert div
-      assert {:ok, true} = ElementHandle.is_visible(div)
+      with {:ok, div} <- Page.q(page, "div"),
+           {:ok, span} <- Page.q(page, "span") do
+        assert div
+        assert {:ok, true} = ElementHandle.is_visible(div)
 
-      {:ok, span} = Page.q(page, "span")
-      assert span
-      assert {:ok, false} = ElementHandle.is_visible(span)
+        assert span
+        assert {:ok, false} = ElementHandle.is_visible(span)
+      else
+        {:error, :timeout} -> log_element_handle_error()
+      end
     end
   end
 
@@ -71,13 +82,13 @@ defmodule Playwright.ElementHandleTest do
       </html>
       """)
 
-      inner_handle =
-        page
-        |> Page.query_selector("html")
-        |> ElementHandle.query_selector(".second")
-        |> ElementHandle.query_selector(".inner")
-
-      assert ElementHandle.text_content(inner_handle) == {:ok, "A"}
+      with {:ok, html} <- Page.query_selector(page, "html"),
+           {:ok, second} <- ElementHandle.query_selector(html, ".second"),
+           {:ok, inner_handle} <- ElementHandle.query_selector(second, ".inner") do
+        assert ElementHandle.text_content(inner_handle) == {:ok, "A"}
+      else
+        {:error, :timeout} -> log_element_handle_error()
+      end
     end
   end
 
@@ -85,9 +96,12 @@ defmodule Playwright.ElementHandleTest do
     setup :visit_dom_fixture
 
     test "...", %{page: page} do
-      assert page
-             |> Page.query_selector("css=#inner")
-             |> ElementHandle.text_content() == {:ok, "Text,\nmore text"}
+      with {:ok, handle} <- Page.q(page, "css=#inner"),
+           {:ok, text} <- ElementHandle.text_content(handle) do
+        assert text == "Text,\nmore text"
+      else
+        {:error, :timeout} -> log_element_handle_error()
+      end
     end
   end
 
@@ -98,8 +112,10 @@ defmodule Playwright.ElementHandleTest do
 
       {:ok, %Frame{} = frame} = attach_frame(page, "frame1", url)
 
-      {:ok, handle} = Page.query_selector(page, "#frame1")
-      assert ElementHandle.content_frame(handle) == {:ok, frame}
+      case Page.query_selector(page, "#frame1") do
+        {:ok, handle} -> assert ElementHandle.content_frame(handle) == {:ok, frame}
+        {:error, :timeout} -> log_element_handle_error()
+      end
     end
   end
 
