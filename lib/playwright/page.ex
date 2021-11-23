@@ -328,7 +328,7 @@ defmodule Playwright.Page do
   # private
   # ---------------------------------------------------------------------------
 
-  defp main_frame(owner) do
+  def main_frame(owner) do
     {:ok, frame} = Channel.find(owner, owner.main_frame)
     frame
   end

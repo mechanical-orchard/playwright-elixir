@@ -79,8 +79,10 @@ defmodule Playwright.MixProject do
           Playwright.ConsoleMessage,
           Playwright.ElementHandle,
           Playwright.Frame,
+          Playwright.Frame.Locator,
           Playwright.Page,
           Playwright.Page.Accessibility,
+          Playwright.Page.Locator,
           Playwright.RemoteBrowser,
           Playwright.Request,
           Playwright.Worker

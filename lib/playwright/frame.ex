@@ -251,14 +251,14 @@ defmodule Playwright.Frame do
   @spec get_attribute(Frame.t() | Page.t(), binary(), binary(), map()) :: {:ok, binary() | nil}
   def get_attribute(owner, selector, name, options \\ %{})
 
-  def get_attribute(%Page{} = owner, selector, name, options) do
-    from(owner) |> get_attribute(selector, name, options)
-  end
-
   def get_attribute(%Frame{} = owner, selector, name, _options) do
     owner
     |> query_selector!(selector)
     |> ElementHandle.get_attribute(name)
+  end
+
+  def get_attribute(%Page{} = owner, selector, name, options) do
+    from(owner) |> get_attribute(selector, name, options)
   end
 
   @doc """
