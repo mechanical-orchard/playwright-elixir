@@ -33,8 +33,6 @@ defmodule Playwright.Runner.Connection do
     GenServer.start_link(__MODULE__, config)
   end
 
-  # ---
-
   @spec bind(pid(), {atom(), struct()}, function()) :: term()
   def bind(connection, {event, subject}, callback) do
     # event = Atom.to_string(event)

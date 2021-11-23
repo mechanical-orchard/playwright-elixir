@@ -20,11 +20,12 @@ defmodule Playwright.Browser do
     - `:name`
     - `:version`
   """
-  use Playwright.ChannelOwner,
-    fields: [:name, :version]
-
+  use Playwright.ChannelOwner
   alias Playwright.{Browser, BrowserContext, ChannelOwner, Extra, Page}
   alias Playwright.Runner.Channel
+
+  @property :name
+  @property :version
 
   @typedoc "Supported events"
   @type event :: :disconnected

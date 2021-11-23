@@ -1,32 +1,54 @@
-# A thought:
-# Would it be useful to have "getter" functions that match the fields in these
-# `ChannelOwner` implementations, and pull from the `Catatlog`?
+defmodule Playwright.ChannelMacros do
+  defmacro __using__(_args) do
+    Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
+
+    quote do
+      import Kernel, except: [@: 1]
+      import unquote(__MODULE__), only: [@: 1]
+    end
+  end
+
+  defmacro @{:property, _meta, [arg]} do
+    Module.put_attribute(__CALLER__.module, :properties, arg)
+
+    quote do
+      def unquote(arg)(owner) do
+        property = Map.get(owner, unquote(arg))
+
+        if is_map(property) && Map.has_key?(property, :guid) do
+          {:ok, result} = Playwright.Runner.Channel.find(owner, property)
+          result
+        else
+          property
+        end
+      end
+    end
+  end
+
+  defmacro @expr do
+    quote do
+      Kernel.@(unquote(expr))
+    end
+  end
+end
+
 defmodule Playwright.ChannelOwner do
   @moduledoc false
-  @base [:connection, :guid, :listeners, :parent, :type]
-
   @callback init(struct(), map()) :: {atom(), struct()}
   @optional_callbacks init: 2
 
-  defmacro __using__(options \\ []) do
-    additional =
-      case options do
-        [fields: fields] -> fields
-        _ -> []
-      end
-
-    fields = additional ++ @base
-
+  defmacro __using__(_) do
     quote do
+      use Playwright.ChannelMacros
       @behaviour Playwright.ChannelOwner
 
       @derive {Jason.Encoder, only: [:guid]}
-      # @derive {Inspect, only: [:guid] ++ unquote(additional)}
+      @derive {Inspect, only: [:guid] ++ @properties}
 
       import Playwright.Extra.Map
       alias Playwright.Runner.{Channel, EventInfo}
 
-      defstruct unquote(fields)
+      defstruct @properties ++ [:connection, :guid, :listeners, :parent, :type]
 
       @typedoc """
       %#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}{}

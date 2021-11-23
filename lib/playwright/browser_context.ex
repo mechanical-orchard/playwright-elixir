@@ -157,11 +157,12 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  use Playwright.ChannelOwner,
-    fields: [:browser, :owner_page]
-
+  use Playwright.ChannelOwner
   alias Playwright.{BrowserContext, ChannelOwner, Page}
   alias Playwright.Runner.Channel
+
+  @property :browser
+  @property :owner_page
 
   @typedoc "Recognized cookie fields"
   @type cookie :: %{

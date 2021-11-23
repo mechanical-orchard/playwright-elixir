@@ -39,12 +39,15 @@ defmodule Playwright.Page do
 
       Page.remove_listener(page, log_request)
   """
-  use Playwright.ChannelOwner,
-    fields: [:is_closed, :main_frame, :owned_context, :viewport_size]
+  use Playwright.ChannelOwner
 
   alias Playwright.{BrowserContext, Frame, Page}
   alias Playwright.ChannelOwner
   alias Playwright.Runner.Helpers
+
+  @property :is_closed
+  @property :main_frame
+  @property :owned_context
 
   @type function_or_options :: fun() | options() | nil
   @type options :: map()
@@ -115,9 +118,6 @@ defmodule Playwright.Page do
     to: Playwright.Frame
 
   defdelegate title(page),
-    to: Playwright.Frame
-
-  defdelegate url(page),
     to: Playwright.Frame
 
   defdelegate wait_for_selector(page, selector, options),
@@ -294,6 +294,10 @@ defmodule Playwright.Page do
     screenshot(owner, options)
   end
 
+  def url(page) do
+    main_frame(page) |> Frame.url()
+  end
+
   @spec wait_for_load_state(Page.t(), binary(), options()) :: {:ok, Page.t()}
   def wait_for_load_state(owner, state \\ "load", options \\ %{})
 
@@ -319,12 +323,6 @@ defmodule Playwright.Page do
 
   # private
   # ---------------------------------------------------------------------------
-
-  @doc false
-  def main_frame(owner) do
-    {:ok, frame} = Channel.find(owner, owner.main_frame)
-    frame
-  end
 
   @doc false
   def exec_callback_on_route(%{params: %{request: request, route: route}}, matcher, callback) do

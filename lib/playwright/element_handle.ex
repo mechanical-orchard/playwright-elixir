@@ -52,9 +52,11 @@ defmodule Playwright.ElementHandle do
 
   """
 
-  use Playwright.ChannelOwner, fields: [:preview]
+  use Playwright.ChannelOwner
   alias Playwright.{ChannelOwner, ElementHandle, Frame}
   alias Playwright.Runner.{Channel, Helpers}
+
+  @property :preview
 
   @typedoc "A map/struct providing call options"
   @type options :: map()

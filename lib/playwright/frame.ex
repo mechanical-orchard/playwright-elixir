@@ -14,9 +14,12 @@ defmodule Playwright.Frame do
     - `Page event: :frame_detached` - fired when the frame gets detached from
       the page.  A Frame can be detached from the page only once.
   """
-  use Playwright.ChannelOwner, fields: [:load_states, :url]
+  use Playwright.ChannelOwner
   alias Playwright.{ChannelOwner, ElementHandle, Frame, Page, Response}
   alias Playwright.Runner.{EventInfo, Helpers}
+
+  @property :load_states
+  @property :url
 
   @type expression :: binary()
   @type options :: map()
@@ -572,25 +575,6 @@ defmodule Playwright.Frame do
 
   # @spec uncheck(Frame.t(), binary(), options()) :: :ok
   # def uncheck(owner, selector, options \\ %{})
-
-  # ---
-
-  @spec url(Frame.t() | Page.t()) :: binary()
-  def url(owner)
-
-  def url(%Frame{} = owner) do
-    owner.url
-  end
-
-  def url(%Page{} = owner) do
-    from(owner) |> url()
-  end
-
-  def url({:ok, owner}) do
-    url(owner)
-  end
-
-  # ---
 
   # @spec wait_for_function(Frame.t(), expression(), any(), options()) :: {:ok, JSHandle.t()}
   # def wait_for_function(owner, expression, arg \\ nil, options \\ %{})

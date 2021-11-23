@@ -17,7 +17,9 @@ defmodule Playwright do
       Browser.close(browser)
   """
 
-  use Playwright.ChannelOwner, fields: [:chromium]
+  use Playwright.ChannelOwner
+
+  @property :chromium
 
   @typedoc "The web client type used for `launch` and `connect` functions."
   @type client :: :chromium | :firefox | :webkit

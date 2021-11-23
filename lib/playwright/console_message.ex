@@ -3,8 +3,13 @@ defmodule Playwright.ConsoleMessage do
   `Playwright.ConsoleMessage` instances are dispatched by page and handled via
   `Playwright.Page.on/3` for the `:console` event type.
   """
-  use Playwright.ChannelOwner, fields: [:message_text, :message_type]
+  use Playwright.ChannelOwner
   alias Playwright.ChannelOwner
+
+  @property :message_text
+  # ... from: :text
+  @property :message_type
+  # ..., from: :type
 
   # callbacks
   # ---------------------------------------------------------------------------
