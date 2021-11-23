@@ -29,7 +29,7 @@ defmodule Playwright.BrowserType do
 
   use Playwright.ChannelOwner
   alias Playwright.BrowserType
-  alias Playwright.Runner.{Config,Connection,Transport}
+  alias Playwright.Runner.{Config, Connection, Transport}
 
   @typedoc "The web client type used for `launch/1` and `connect/2` functions."
   @type client :: :chromium | :firefox | :webkit
@@ -134,9 +134,14 @@ defmodule Playwright.BrowserType do
   def launch(client, options)
       when is_atom(client)
       when client in [:chromium] do
-    opts = Map.merge(%{
-      executable_path: "assets/node_modules/playwright/cli.js"
-    }, options)
+    opts =
+      Map.merge(
+        %{
+          executable_path: "assets/node_modules/playwright/cli.js"
+        },
+        options
+      )
+
     # |> IO.inspect(label: "launch options")
 
     {:ok, connection} = new_session(Transport.Driver, opts)

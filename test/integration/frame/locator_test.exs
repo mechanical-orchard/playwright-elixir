@@ -68,9 +68,10 @@ defmodule Playwright.Frame.LocatorTest do
 
       locator = Frame.Locator.new(frame, "a#exists")
 
-      task = Task.async(fn ->
-        assert :ok = Frame.Locator.wait_for(locator, Map.put(options, :state, "attached"))
-      end)
+      task =
+        Task.async(fn ->
+          assert :ok = Frame.Locator.wait_for(locator, Map.put(options, :state, "attached"))
+        end)
 
       page |> Page.set_content("<a id='exists' target=_blank rel=noopener href='/one-style.html'>yo</a>")
 

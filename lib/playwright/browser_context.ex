@@ -344,8 +344,7 @@ defmodule Playwright.BrowserContext do
   #   expect_event(owner, event, trigger, predicate, options)
   # end
 
-  defdelegate wait_for_event(owner, event, trigger, predicate \\ nil, options \\ %{}),
-    to: __MODULE__, as: :expect_event
+  defdelegate wait_for_event(owner, event, trigger, predicate \\ nil, options \\ %{}), to: __MODULE__, as: :expect_event
 
   @doc """
   Executes `trigger` and waits for a new `Playwright.Page` to be created within
@@ -383,8 +382,7 @@ defmodule Playwright.BrowserContext do
     expect_page(owner, trigger, nil, options)
   end
 
-  defdelegate wait_for_page(owner, trigger, predicate \\ nil, options \\ %{}),
-    to: __MODULE__, as: :expect_page
+  defdelegate wait_for_page(owner, trigger, predicate \\ nil, options \\ %{}), to: __MODULE__, as: :expect_page
 
   # ---
 

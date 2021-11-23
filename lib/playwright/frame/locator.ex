@@ -42,9 +42,9 @@ defmodule Playwright.Frame.Locator do
   defstruct [:frame, :selector]
 
   @type t() :: %__MODULE__{
-    frame: Playwright.Frame.t(),
-    selector: selector()
-  }
+          frame: Playwright.Frame.t(),
+          selector: selector()
+        }
 
   @type options() :: %{optional(:timeout) => non_neg_integer()}
   @type selector() :: String.t()

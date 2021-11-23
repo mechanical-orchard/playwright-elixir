@@ -22,6 +22,7 @@ defmodule Playwright.Browser do
   """
   use Playwright.ChannelOwner,
     fields: [:name, :version]
+
   alias Playwright.{Browser, BrowserContext, ChannelOwner, Extra, Page}
   alias Playwright.Runner.Channel
 
@@ -65,10 +66,12 @@ defmodule Playwright.Browser do
   """
   @spec contexts(Browser.t()) :: {:ok, [BrowserContext.t()]}
   def contexts(%Browser{} = owner) do
-    result = Channel.all(owner.connection, %{
-      parent: owner,
-      type: "BrowserContext"
-    })
+    result =
+      Channel.all(owner.connection, %{
+        parent: owner,
+        type: "BrowserContext"
+      })
+
     {:ok, result}
   end
 

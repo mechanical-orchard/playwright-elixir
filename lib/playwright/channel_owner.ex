@@ -27,6 +27,7 @@ defmodule Playwright.ChannelOwner do
       alias Playwright.Runner.{Channel, EventInfo}
 
       defstruct unquote(fields)
+
       @typedoc """
       %#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}{}
       """

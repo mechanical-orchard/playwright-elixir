@@ -190,7 +190,7 @@ defmodule Playwright.Runner.Config do
   @typedoc false
   @type connect_options :: %{
           ws_endpoint: String.t(),
-          playwright_cli_path: String.t(),
+          playwright_cli_path: String.t()
         }
 
   @typedoc false
