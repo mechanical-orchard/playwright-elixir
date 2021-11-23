@@ -7,6 +7,8 @@ defmodule Playwright.Runner.Channel.Error do
   @enforce_keys [:message]
   defstruct [:message]
 
+  @type t() :: %__MODULE__{message: String.t()}
+
   def new(%{error: error}, _catalog) do
     %Error{message: String.split(error.message, "\n") |> List.first()}
   end

@@ -4,7 +4,7 @@ defmodule Playwright.ConsoleMessage do
   `Playwright.Page.on/3` for the `:console` event type.
   """
   use Playwright.ChannelOwner, fields: [:message_text, :message_type]
-  alias Playwright.{ChannelOwner}
+  alias Playwright.ChannelOwner
 
   # callbacks
   # ---------------------------------------------------------------------------

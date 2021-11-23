@@ -2,7 +2,7 @@ defmodule Playwright.Runner.Channel.Callback do
   @moduledoc false
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Channel.{Callback, Error, Response}
-  alias Playwright.{ElementHandle}
+  alias Playwright.ElementHandle
 
   defstruct [:listener, :message]
 
