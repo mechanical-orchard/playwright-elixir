@@ -53,8 +53,8 @@ defmodule Playwright.ElementHandle do
   """
 
   use Playwright.ChannelOwner
-  alias Playwright.{ChannelOwner, ElementHandle, Frame}
-  alias Playwright.Runner.{Channel, Helpers}
+  alias Playwright.{ChannelOwner, ElementHandle, Frame, JSHandle}
+  alias Playwright.Runner.Channel
 
   @property :preview
 
@@ -70,6 +70,11 @@ defmodule Playwright.ElementHandle do
       {:patch, %{event.target | preview: params.preview}}
     end)
   end
+
+  # delegates
+  # ---------------------------------------------------------------------------
+  defdelegate evaluate_handle(owner, expression, arg \\ nil),
+    to: JSHandle
 
   # API
   # ---------------------------------------------------------------------------
@@ -139,28 +144,6 @@ defmodule Playwright.ElementHandle do
 
   # @spec dispatch_event(ElementHandle.t(), event(), evaluation_argument()) :: :ok
   # def dispatch_event(owner, type, arg \\ nil)
-
-  # ---
-
-  # TODO: move this to `JSHandle`, matching the official API.
-  @doc false
-  def evaluate_handle(owner, expression, arg \\ nil)
-
-  def evaluate_handle(%ElementHandle{} = owner, expression, arg) do
-    params = %{
-      expression: expression,
-      is_function: Helpers.Expression.function?(expression),
-      arg: Helpers.Serialization.serialize(arg)
-    }
-
-    Channel.post(owner, :evaluate_expression_handle, params)
-  end
-
-  def evaluate_handle({:ok, owner}, expression, arg) do
-    evaluate_handle(owner, expression, arg)
-  end
-
-  # ---
 
   # @spec fill(ElementHandle.t(), binary(), options()) :: :ok
   # def fill(owner, value, options \\ %{})

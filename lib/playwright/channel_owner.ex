@@ -36,6 +36,38 @@ defmodule Playwright.ChannelOwner do
         init(struct(base, initializer), initializer)
       end
 
+      @doc """
+      Optional **callback** implementation for `Playwright.ChannelOwner.init/2`.
+
+      If implemented, the callback will receive:
+
+        1. The newly created "channel owner" struct.
+        2. The `:initializer` received from the Playwright browser server.
+
+      The implementation has the option of "patching" the struct as stored in
+      the catalog, and/or binding event handlers.
+
+      ## Example
+
+          def init(owner, _initializer) do
+            Channel.bind(owner, :close, fn event ->
+              Logger.warn("Closing \#{inspect(event.target)}")
+            end)
+
+            {:ok, %{owner | version: "1.2.3"}}
+          end
+
+      ## Returns
+
+        - `{:ok, %{}}`
+
+      ## Arguments
+
+      | key / name    | type   |            | description |
+      | ------------- | ------ | -----------| ----------- |
+      | `owner`       | param  | `struct()` | The newly created channel owner (resource). |
+      | `initializer` | param  | `struct()` | The initializer received from with the channel owner instance was derived. |
+      """
       @spec init(struct(), map()) :: {atom(), struct()}
       def init(owner, _initializer) do
         {:ok, owner}

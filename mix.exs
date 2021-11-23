@@ -81,6 +81,7 @@ defmodule Playwright.MixProject do
           Playwright.Frame,
           Playwright.Frame.Locator,
           Playwright.Page,
+          Playwright.JSHandle,
           Playwright.Page.Accessibility,
           Playwright.Page.Locator,
           Playwright.RemoteBrowser,

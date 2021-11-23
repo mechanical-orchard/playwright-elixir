@@ -1,7 +1,7 @@
 defmodule Playwright.ElementHandleTest do
   use Playwright.TestCase, async: true
 
-  alias Playwright.{ElementHandle, Frame, Page}
+  alias Playwright.{ElementHandle, Frame, JSHandle, Page}
   require Logger
 
   describe "ElementHandle fields" do
@@ -11,7 +11,7 @@ defmodule Playwright.ElementHandleTest do
       with {:ok, outer} <- Page.q(page, "#outer"),
            {:ok, inner} <- Page.q(page, "#inner"),
            {:ok, check} <- Page.q(page, "#check"),
-           {:ok, child} <- ElementHandle.evaluate_handle(inner, "e => e.firstChild") do
+           {:ok, child} <- JSHandle.evaluate_handle(inner, "e => e.firstChild") do
         assert outer.preview == ~s|JSHandle@<div id="outer" name="value">…</div>|
         assert inner.preview == ~s|JSHandle@<div id="inner">Text,↵more text</div>|
         assert check.preview == ~s|JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>|
