@@ -132,6 +132,16 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.inner_text/2" do
+    test "...", %{assets: assets, page: page} do
+      content = "Text, more text"
+      locator = Page.locator(page, "#inner")
+
+      Page.goto(page, assets.dom)
+      assert {:ok, ^content} = Locator.inner_text(locator)
+    end
+  end
+
   describe "Locator.input_value/2" do
     test "...", %{assets: assets, page: page} do
       locator = Page.locator(page, "#input")

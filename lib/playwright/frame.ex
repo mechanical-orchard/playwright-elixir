@@ -298,8 +298,11 @@ defmodule Playwright.Frame do
     Channel.post(frame, "innerHTML", params)
   end
 
-  # @spec inner_text(Frame.t(), binary(), options()) :: {:ok, binary()}
-  # def inner_text(owner, selector, options \\ %{})
+  @spec inner_text(Frame.t(), binary(), options()) :: {:ok, binary()}
+  def inner_text(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :inner_text, params)
+  end
 
   @spec input_value(Frame.t(), binary(), options()) :: {:ok, binary()}
   def input_value(frame, selector, options \\ %{}) do
