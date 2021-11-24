@@ -117,13 +117,17 @@ defmodule Playwright.Locator do
     }
   end
 
+  @spec all_inner_texts(Locator.t()) :: {:ok, [binary()]}
+  def all_inner_texts(locator) do
+    Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.innerText)")
+  end
+
+  @spec all_text_contents(Locator.t()) :: {:ok, [binary()]}
+  def all_text_contents(locator) do
+    Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.textContent || '')")
+  end
+
   # ---
-
-  # @spec all_inner_texts(Locator.t()) :: {:ok, [binary()]}
-  # def all_inner_texts(locator)
-
-  # @spec all_text_contents(Locator.t()) :: {:ok, [binary()]}
-  # def all_text_contents(locator)
 
   # @spec bounding_box(Locator.t(), options()) :: {:ok, map() | nil}
   # def bounding_box(locator, options \\ %{})

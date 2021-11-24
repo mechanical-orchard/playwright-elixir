@@ -4,6 +4,30 @@ defmodule Playwright.LocatorTest do
   alias Playwright.{ElementHandle, Locator, Page}
   alias Playwright.Runner.Channel.Error
 
+  describe "Locator.all_inner_texts/1" do
+    test "...", %{page: page} do
+      Page.set_content(page, "<div>A</div><div>B</div><div>C</div>")
+
+      texts =
+        Page.locator(page, "div")
+        |> Locator.all_inner_texts()
+
+      assert {:ok, ["A", "B", "C"]} = texts
+    end
+  end
+
+  describe "Locator.all_text_contents/1" do
+    test "...", %{page: page} do
+      Page.set_content(page, "<div>A</div><div>B</div><div>C</div>")
+
+      texts =
+        Page.locator(page, "div")
+        |> Locator.all_text_contents()
+
+      assert {:ok, ["A", "B", "C"]} = texts
+    end
+  end
+
   describe "Locator.check/2" do
     setup(%{assets: assets, page: page}) do
       options = %{timeout: 1_000}
@@ -150,6 +174,22 @@ defmodule Playwright.LocatorTest do
       Page.fill(page, "#input", "input value")
 
       assert {:ok, "input value"} = Locator.input_value(locator)
+    end
+  end
+
+  describe "Locator.is_checked/1" do
+    test "...", %{page: page} do
+      locator = Page.locator(page, "input")
+
+      Page.set_content(page, """
+        <input type='checkbox' checked>
+        <div>Not a checkbox</div>
+      """)
+
+      assert {:ok, true} = Locator.is_checked(locator)
+
+      Locator.evaluate(locator, "input => input.checked = false")
+      assert {:ok, false} = Locator.is_checked(locator)
     end
   end
 

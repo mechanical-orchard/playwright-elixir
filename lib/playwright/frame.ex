@@ -310,8 +310,11 @@ defmodule Playwright.Frame do
     Channel.post(frame, :input_value, params)
   end
 
-  # @spec is_checked(Frame.t(), binary(), options()) :: {:ok, boolean()}
-  # def is_checked(owner, selector, options \\ %{})
+  @spec is_checked(Frame.t(), binary(), options()) :: {:ok, boolean()}
+  def is_checked(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :is_checked, params)
+  end
 
   # @spec is_detached(Frame.t(), binary(), options()) :: {:ok, boolean()}
   # def is_detached(owner, selector, options \\ %{})
