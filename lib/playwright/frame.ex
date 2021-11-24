@@ -316,14 +316,20 @@ defmodule Playwright.Frame do
   # @spec is_detached(Frame.t(), binary(), options()) :: {:ok, boolean()}
   # def is_detached(owner, selector, options \\ %{})
 
-  # @spec is_disabled(Frame.t(), binary(), options()) :: {:ok, boolean()}
-  # def is_disabled(owner, selector, options \\ %{})
+  @spec is_disabled(Frame.t(), binary(), options()) :: {:ok, boolean()}
+  def is_disabled(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :is_disabled, params)
+  end
 
   # @spec is_editable(Frame.t(), binary(), options()) :: {:ok, boolean()}
   # def is_editable(owner, selector, options \\ %{})
 
-  # @spec is_enabled(Frame.t(), binary(), options()) :: {:ok, boolean()}
-  # def is_enabled(owner, selector, options \\ %{})
+  @spec is_enabled(Frame.t(), binary(), options()) :: {:ok, boolean()}
+  def is_enabled(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :is_enabled, params)
+  end
 
   @spec is_hidden(Frame.t(), binary(), options()) :: {:ok, boolean()}
   def is_hidden(frame, selector, options \\ %{}) do

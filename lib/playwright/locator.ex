@@ -336,14 +336,20 @@ defmodule Playwright.Locator do
 
   # ---
 
-  # @spec is_disabled(Locator.t(), options()) :: {:ok, boolean()}
-  # def is_disabled(locator, options \\ %{})
+  @spec is_disabled(Locator.t(), options()) :: {:ok, boolean()}
+  def is_disabled(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.is_disabled(locator.frame, locator.selector, options)
+  end
 
   # @spec is_editable(Locator.t(), options()) :: {:ok, boolean()}
   # def is_editable(locator, options \\ %{})
 
-  # @spec is_enabled(Locator.t(), options()) :: {:ok, boolean()}
-  # def is_enabled(locator, options \\ %{})
+  @spec is_enabled(Locator.t(), options()) :: {:ok, boolean()}
+  def is_enabled(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.is_enabled(locator.frame, locator.selector, options)
+  end
 
   @spec is_hidden(Locator.t(), options()) :: {:ok, boolean()}
   def is_hidden(locator, options \\ %{}) do

@@ -153,7 +153,29 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  describe "Locator.is_hidden/1 and is_visible/1" do
+  describe "Locator.is_enabled/1 and is_disabled/1" do
+    test "...", %{page: page} do
+      Page.set_content(page, """
+        <button disabled>button1</button>
+        <button>button2</button>
+        <div>div</div>
+      """)
+
+      locator = Page.locator(page, "div")
+      assert {:ok, true} = Locator.is_enabled(locator)
+      assert {:ok, false} = Locator.is_disabled(locator)
+
+      locator = Page.locator(page, ":text('button1')")
+      assert {:ok, false} = Locator.is_enabled(locator)
+      assert {:ok, true} = Locator.is_disabled(locator)
+
+      locator = Page.locator(page, ":text('button2')")
+      assert {:ok, true} = Locator.is_enabled(locator)
+      assert {:ok, false} = Locator.is_disabled(locator)
+    end
+  end
+
+  describe "Locator.is_visible/1 and is_hidden/1" do
     test "...", %{page: page} do
       Page.set_content(page, "<div>Hi</div><span></span>")
 
