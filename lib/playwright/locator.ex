@@ -390,8 +390,11 @@ defmodule Playwright.Locator do
   # @spec tap(Locator.t(), options()) :: :ok
   # def tap(locator, options \\ %{})
 
-  # @spec text_content(Locator.t(), options()) :: {:ok, binary() | nil}
-  # def text_content(locator, options \\ %{})
+  @spec text_content(Locator.t(), options()) :: {:ok, binary() | nil}
+  def text_content(locator, options \\ %{}) do
+    options = Map.merge(%{strict: true}, options)
+    Frame.text_content(locator.frame, locator.selector, options)
+  end
 
   # @spec type(Locator.t(), binary(), options()) :: :ok
   # def type(locator, text, options \\ %{})

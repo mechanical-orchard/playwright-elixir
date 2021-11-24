@@ -168,4 +168,13 @@ defmodule Playwright.LocatorTest do
       assert ElementHandle.string(text) == ~s|JSHandle@#text=Text,↵more text|
     end
   end
+
+  describe "Locator.text_content/2" do
+    test "...", %{assets: assets, page: page} do
+      locator = Page.locator(page, "#inner")
+
+      Page.goto(page, assets.dom)
+      assert {:ok, "Text,\nmore text"} = Locator.text_content(locator)
+    end
+  end
 end
