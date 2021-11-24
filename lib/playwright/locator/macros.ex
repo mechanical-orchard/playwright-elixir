@@ -9,7 +9,7 @@ defmodule Playwright.Locator.Macros do
               :ok | {:error, Playwright.Runner.Channel.Error.t()}
       def unquote(name)(locator, options \\ %{}) do
         case Playwright.Runner.Channel.post(
-               locator.owner,
+               locator.frame,
                unquote(method),
                Map.merge(options, %{selector: locator.selector})
              ) do
@@ -28,7 +28,7 @@ defmodule Playwright.Locator.Macros do
               :ok | {:error, Playwright.Runner.Channel.Error.t()}
       def unquote(name)(locator, options \\ %{}) do
         case Playwright.Runner.Channel.post(
-               locator.owner,
+               locator.frame,
                unquote(method),
                Map.merge(options, %{selector: locator.selector})
              ) do

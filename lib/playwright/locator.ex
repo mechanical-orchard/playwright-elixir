@@ -57,11 +57,11 @@ defmodule Playwright.Locator do
   alias Playwright.{ElementHandle, Frame, Locator, Page}
   alias Playwright.Runner.Channel
 
-  @enforce_keys [:owner, :selector]
-  defstruct [:owner, :selector]
+  @enforce_keys [:frame, :selector]
+  defstruct [:frame, :selector]
 
   @type t() :: %__MODULE__{
-          owner: Playwright.Frame.t(),
+          frame: Playwright.Frame.t(),
           selector: selector()
         }
 
@@ -97,22 +97,22 @@ defmodule Playwright.Locator do
 
   | key / name | type   |                        | description |
   | ---------- | ------ | ---------------------- | ----------- |
-  | `owner`    | param  | `Frame.t() | Page.t()` |  |
+  | `frame`    | param  | `Frame.t() | Page.t()` |  |
   | `selector` | param  | `binary()`             | A Playwright selector. |
   """
   @spec new(Frame.t() | Page.t(), selector()) :: Locator.t()
-  def new(owner, selector)
+  def new(frame, selector)
 
   def new(%Frame{} = frame, selector) do
     %__MODULE__{
-      owner: frame,
+      frame: frame,
       selector: selector
     }
   end
 
   def new(%Page{} = page, selector) do
     %__MODULE__{
-      owner: Page.main_frame(page),
+      frame: Page.main_frame(page),
       selector: selector
     }
   end
@@ -256,7 +256,7 @@ defmodule Playwright.Locator do
   def evaluate_all(locator, expression, arg \\ nil)
 
   def evaluate_all(%Locator{} = locator, expression, arg) do
-    Frame.eval_on_selector_all(locator.owner, locator.selector, expression, arg)
+    Frame.eval_on_selector_all(locator.frame, locator.selector, expression, arg)
   end
 
   @doc """
@@ -306,7 +306,7 @@ defmodule Playwright.Locator do
   @spec get_attribute(Locator.t(), binary(), options()) :: {:ok, binary() | nil}
   def get_attribute(locator, name, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
-    Frame.get_attribute(locator.owner, locator.selector, name, options)
+    Frame.get_attribute(locator.frame, locator.selector, name, options)
   end
 
   # @spec hover(Locator.t(), options()) :: :ok
@@ -315,19 +315,19 @@ defmodule Playwright.Locator do
   @spec inner_html(Locator.t(), options()) :: {:ok, binary()}
   def inner_html(locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
-    Frame.inner_html(locator.owner, locator.selector, options)
+    Frame.inner_html(locator.frame, locator.selector, options)
   end
 
   @spec inner_text(Locator.t(), options()) :: {:ok, binary()}
   def inner_text(locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
-    Frame.inner_text(locator.owner, locator.selector, options)
+    Frame.inner_text(locator.frame, locator.selector, options)
   end
 
   @spec input_value(Locator.t(), options()) :: {:ok, binary()}
   def input_value(locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
-    Frame.input_value(locator.owner, locator.selector, options)
+    Frame.input_value(locator.frame, locator.selector, options)
   end
 
   # ---
@@ -356,7 +356,7 @@ defmodule Playwright.Locator do
 
   @spec locator(Locator.t(), binary()) :: Locator.t()
   def locator(locator, selector) do
-    Locator.new(locator.owner, "#{locator.selector} >> #{selector}")
+    Locator.new(locator.frame, "#{locator.selector} >> #{selector}")
   end
 
   # @spec nth(Locator.t(), non_negative_integer()) :: Locator.t()
@@ -417,7 +417,7 @@ defmodule Playwright.Locator do
   # ---------------------------------------------------------------------------
 
   defp with_element(locator, options, task) do
-    case Channel.await(locator.owner, {:selector, locator.selector}, options) do
+    case Channel.await(locator.frame, {:selector, locator.selector}, options) do
       {:ok, handle} ->
         task.(handle)
 
