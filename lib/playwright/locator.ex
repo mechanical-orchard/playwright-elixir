@@ -312,8 +312,11 @@ defmodule Playwright.Locator do
   # @spec hover(Locator.t(), options()) :: :ok
   # def hover(locator, options \\ %{})
 
-  # @spec inner_html(Locator.t(), options()) :: {:ok, binary()}
-  # def inner_html(locator, options \\ %{})
+  @spec inner_html(Locator.t(), options()) :: {:ok, binary()}
+  def inner_html(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.inner_html(locator.owner, locator.selector, options)
+  end
 
   # @spec inner_text(Locator.t(), options()) :: {:ok, binary()}
   # def inner_text(locator, options \\ %{})

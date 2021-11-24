@@ -292,8 +292,11 @@ defmodule Playwright.Frame do
   # @spec hover(Frame.t(), binary(), options()) :: :ok
   # def hover(owner, selector, options \\ %{})
 
-  # @spec inner_html(Frame.t(), binary(), options()) :: {:ok, binary()}
-  # def inner_html(owner, selector, options \\ %{})
+  @spec inner_html(Frame.t(), binary(), options()) :: {:ok, binary()}
+  def inner_html(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, "innerHTML", params)
+  end
 
   # @spec inner_text(Frame.t(), binary(), options()) :: {:ok, binary()}
   # def inner_text(owner, selector, options \\ %{})

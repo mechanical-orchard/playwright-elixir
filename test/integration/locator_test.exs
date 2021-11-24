@@ -122,6 +122,27 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.inner_html/2" do
+    test "...", %{assets: assets, page: page} do
+      content = ~s|<div id="inner">Text,\nmore text</div>|
+      locator = Page.locator(page, "#outer")
+
+      Page.goto(page, assets.dom)
+      assert {:ok, ^content} = Locator.inner_html(locator)
+    end
+  end
+
+  describe "Locator.input_value/2" do
+    test "...", %{assets: assets, page: page} do
+      locator = Page.locator(page, "#input")
+
+      Page.goto(page, assets.dom)
+      Page.fill(page, "#input", "input value")
+
+      assert {:ok, "input value"} = Locator.input_value(locator)
+    end
+  end
+
   describe "Locator.locator/4" do
     test "returns values with previews", %{assets: assets, page: page} do
       Page.goto(page, assets.dom)
@@ -135,17 +156,6 @@ defmodule Playwright.LocatorTest do
       assert Locator.string(inner) == ~s|Locator@#outer >> #inner|
       assert Locator.string(check) == ~s|Locator@#check|
       assert ElementHandle.string(text) == ~s|JSHandle@#text=Text,↵more text|
-    end
-  end
-
-  describe "Locator.input_value/2" do
-    test "...", %{assets: assets, page: page} do
-      locator = Page.locator(page, "#input")
-
-      Page.goto(page, assets.dom)
-      Page.fill(page, "#input", "input value")
-
-      assert {:ok, "input value"} = Locator.input_value(locator)
     end
   end
 end

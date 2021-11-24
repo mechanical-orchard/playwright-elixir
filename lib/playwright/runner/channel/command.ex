@@ -42,7 +42,7 @@ defmodule Playwright.Runner.Channel.Command do
   # ----------------------------------------------------------------------------
 
   defp camelize(key) when is_binary(key) do
-    Recase.to_camel(key)
+    key
   end
 
   defp camelize(key) when is_atom(key) do
