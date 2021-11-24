@@ -337,46 +337,25 @@ defmodule Playwright.Locator do
   # ---
 
   def_locator(:is_checked, :is_checked)
+  def_locator(:is_disabled, :is_disabled)
+  def_locator(:is_editable, :is_editable)
+  def_locator(:is_enabled, :is_enabled)
+  def_locator(:is_hidden, :is_hidden)
+  def_locator(:is_visible, :is_visible)
 
   # ---
 
-  @spec is_disabled(Locator.t(), options()) :: {:ok, boolean()}
-  def is_disabled(locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
-    Frame.is_disabled(locator.frame, locator.selector, options)
-  end
-
-  @spec is_editable(Locator.t(), options()) :: {:ok, boolean()}
-  def is_editable(locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
-    Frame.is_editable(locator.frame, locator.selector, options)
-  end
-
-  @spec is_enabled(Locator.t(), options()) :: {:ok, boolean()}
-  def is_enabled(locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
-    Frame.is_enabled(locator.frame, locator.selector, options)
-  end
-
-  @spec is_hidden(Locator.t(), options()) :: {:ok, boolean()}
-  def is_hidden(locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
-    Frame.is_hidden(locator.frame, locator.selector, options)
-  end
-
-  @spec is_visible(Locator.t(), options()) :: {:ok, boolean()}
-  def is_visible(locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
-    Frame.is_visible(locator.frame, locator.selector, options)
-  end
-
   # @spec last(Locator.t()) :: Locator.t()
   # def last(locator)
+
+  # ---
 
   @spec locator(Locator.t(), binary()) :: Locator.t()
   def locator(locator, selector) do
     Locator.new(locator.frame, "#{locator.selector} >> #{selector}")
   end
+
+  # ---
 
   # @spec nth(Locator.t(), non_negative_integer()) :: Locator.t()
   # def nth(locator, index)
@@ -402,18 +381,22 @@ defmodule Playwright.Locator do
   # @spec set_input_files(Locator.t(), any(), options()) :: :ok
   # def set_input_files(locator, files, options \\ %{})
 
+  # ---
+
   def string(locator) do
     "Locator@#{locator.selector}"
   end
 
+  # ---
+
   # @spec tap(Locator.t(), options()) :: :ok
   # def tap(locator, options \\ %{})
 
-  @spec text_content(Locator.t(), options()) :: {:ok, binary() | nil}
-  def text_content(locator, options \\ %{}) do
-    options = Map.merge(%{strict: true}, options)
-    Frame.text_content(locator.frame, locator.selector, options)
-  end
+  # ---
+
+  def_locator(:text_content, :text_content)
+
+  # ---
 
   # @spec type(Locator.t(), binary(), options()) :: :ok
   # def type(locator, text, options \\ %{})
@@ -421,8 +404,7 @@ defmodule Playwright.Locator do
   # @spec uncheck(Locator.t(), options()) :: :ok
   # def uncheck(locator, options \\ %{})
 
-  # @spec wait_for(Locator.t(), options()) :: :ok
-  # def wait_for(locator, options \\ %{})
+  # ---
 
   @doc """
   Returns when element specified by locator satisfies `option: state`.
@@ -432,8 +414,6 @@ defmodule Playwright.Locator do
   the condition is met.
   """
   def_locator(:wait_for, :wait_for_selector)
-
-  # ---
 
   # private
   # ---------------------------------------------------------------------------
