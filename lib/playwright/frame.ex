@@ -349,6 +349,8 @@ defmodule Playwright.Frame do
     Channel.post(frame, :is_visible, params)
   end
 
+  # ---
+
   # @spec locator(Frame.t(), binary()) :: Playwright.Locator.t()
   # def locator(owner, selector)
 

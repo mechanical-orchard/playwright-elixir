@@ -69,8 +69,26 @@ defmodule Playwright.Page do
   # delegates
   # ---------------------------------------------------------------------------
 
+  # defdelegate add_script_tag(page, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate add_style_tag(page, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate check(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
   defdelegate click(page, selector, options \\ %{}),
     to: Playwright.Frame
+
+  # defdelegate dblclick(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate dispatch_event(page, selector, type, event_init \\ nil, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate drag_and_drop(page, source, target, options \\ %{}),
+  #   to: Playwright.Frame
 
   defdelegate evaluate(page, expression, arg \\ nil),
     to: Playwright.Frame
@@ -83,6 +101,9 @@ defmodule Playwright.Page do
 
   defdelegate fill(page, selector, value),
     to: Playwright.Frame
+
+  # defdelegate focus(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
 
   defdelegate get_attribute(page, selector, name, options \\ %{}),
     to: Playwright.Frame
@@ -131,17 +152,8 @@ defmodule Playwright.Page do
   # @spec add_init_script(Page.t(), binary(), options()) :: :ok
   # def add_init_script(owner, script, options \\ %{})
 
-  # @spec add_script_tag(Page.t(), options()) :: {:ok, ElementHandle.t()}
-  # def add_script_tag(owner, options \\ %{})
-
-  # @spec add_style_tag(Page.t(), options()) :: {:ok, ElementHandle.t()}
-  # def add_style_tag(owner, options \\ %{})
-
   # @spec bring_to_front(Page.t()) :: :ok
   # def bring_to_front(owner)
-
-  # @spec check(Page.t(), binary(), options()) :: :ok
-  # def check(owner, selector, options \\ %{})
 
   # ---
 
@@ -223,8 +235,8 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec add_init_script(Page.t(), binary(), options()) :: :ok
-  # def add_init_script(owner, script, options \\ %{})
+  # @spec emulate_media(Page.t(), options()) :: :ok
+  # def emulate_media(page, options \\ %{})
 
   # ---
 
@@ -239,6 +251,28 @@ defmodule Playwright.Page do
   def eval_on_selector({:ok, owner}, selector, expression, arg, options) do
     eval_on_selector(owner, selector, expression, arg, options)
   end
+
+  # ---
+
+  # @spec expose_binding(Page.t(), binary(), function(), options()) :: :ok
+  # def expose_binding(page, name, callback, options \\ %{})
+
+  # @spec expose_function(Page.t(), binary(), function()) :: :ok
+  # def expose_function(page, name, callback)
+
+  # @spec frame(Page.t(), binary()) :: Frame.t() | nil
+  # def frame(page, selector)
+
+  # @spec frames(Page.t()) :: [Frame.t()]
+  # def frames(page)
+
+  # @spec frame_locator(Page.t(), binary()) :: FrameLocator.t()
+  # def frame_locator(page, selector)
+
+  # @spec go_back(Page.t(), options()) :: {:ok, binary() | nil}
+  # def go_back(page, options \\ %{})
+
+  # ---
 
   @spec locator(t(), binary()) :: Playwright.Locator.t()
   def locator(%Page{} = page, selector) do

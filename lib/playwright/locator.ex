@@ -134,8 +134,6 @@ defmodule Playwright.Locator do
 
   # ---
 
-  # locator.boundingBox([options])
-
   @doc """
   Checks the (checkmark) element by performing the following steps:
 
