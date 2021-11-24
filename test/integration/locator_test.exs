@@ -126,4 +126,15 @@ defmodule Playwright.LocatorTest do
       assert ElementHandle.string(text) == ~s|JSHandle@#text=Text,↵more text|
     end
   end
+
+  describe "Locator.get_attribute/3" do
+    test "...", %{assets: assets, page: page} do
+      locator = Page.locator(page, "#outer")
+
+      Page.goto(page, assets.dom)
+
+      assert {:ok, "value"} = Locator.get_attribute(locator, "name")
+      assert {:ok, nil} = Locator.get_attribute(locator, "bogus")
+    end
+  end
 end

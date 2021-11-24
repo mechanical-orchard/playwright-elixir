@@ -303,8 +303,11 @@ defmodule Playwright.Locator do
   # @spec focus(Locator.t(), options()) :: :ok
   # def focus(locator, options \\ %{})
 
-  # @spec get_attibute(Locator.t(), binary(), options()) :: {:ok, binary() | nil}
-  # def get_attibute(locator, name, options \\ %{})
+  @spec get_attribute(Locator.t(), binary(), options()) :: {:ok, binary() | nil}
+  def get_attribute(locator, name, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.get_attribute(locator.owner, locator.selector, name, options)
+  end
 
   # @spec hover(Locator.t(), options()) :: :ok
   # def hover(locator, options \\ %{})
