@@ -325,11 +325,17 @@ defmodule Playwright.Frame do
   # @spec is_enabled(Frame.t(), binary(), options()) :: {:ok, boolean()}
   # def is_enabled(owner, selector, options \\ %{})
 
-  # @spec is_hidden(Frame.t(), binary(), options()) :: {:ok, boolean()}
-  # def is_hidden(owner, selector, options \\ %{})
+  @spec is_hidden(Frame.t(), binary(), options()) :: {:ok, boolean()}
+  def is_hidden(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :is_hidden, params)
+  end
 
-  # @spec is_visible(Frame.t(), binary(), options()) :: {:ok, boolean()}
-  # def is_visible(owner, selector, options \\ %{})
+  @spec is_visible(Frame.t(), binary(), options()) :: {:ok, boolean()}
+  def is_visible(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :is_visible, params)
+  end
 
   # @spec locator(Frame.t(), binary()) :: Playwright.Locator.t()
   # def locator(owner, selector)

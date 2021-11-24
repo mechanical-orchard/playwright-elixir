@@ -345,11 +345,17 @@ defmodule Playwright.Locator do
   # @spec is_enabled(Locator.t(), options()) :: {:ok, boolean()}
   # def is_enabled(locator, options \\ %{})
 
-  # @spec is_hidden(Locator.t(), options()) :: {:ok, boolean()}
-  # def is_hidden(locator, options \\ %{})
+  @spec is_hidden(Locator.t(), options()) :: {:ok, boolean()}
+  def is_hidden(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.is_hidden(locator.frame, locator.selector, options)
+  end
 
-  # @spec is_visible(Locator.t(), options()) :: {:ok, boolean()}
-  # def is_visible(locator, options \\ %{})
+  @spec is_visible(Locator.t(), options()) :: {:ok, boolean()}
+  def is_visible(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.is_visible(locator.frame, locator.selector, options)
+  end
 
   # @spec last(Locator.t()) :: Locator.t()
   # def last(locator)

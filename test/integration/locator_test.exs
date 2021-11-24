@@ -153,6 +153,20 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.is_hidden/1 and is_visible/1" do
+    test "...", %{page: page} do
+      Page.set_content(page, "<div>Hi</div><span></span>")
+
+      locator = Page.locator(page, "div")
+      assert {:ok, true} = Locator.is_visible(locator)
+      assert {:ok, false} = Locator.is_hidden(locator)
+
+      locator = Page.locator(page, "span")
+      assert {:ok, false} = Locator.is_visible(locator)
+      assert {:ok, true} = Locator.is_hidden(locator)
+    end
+  end
+
   describe "Locator.locator/4" do
     test "returns values with previews", %{assets: assets, page: page} do
       Page.goto(page, assets.dom)
