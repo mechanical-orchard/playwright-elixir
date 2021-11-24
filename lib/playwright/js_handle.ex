@@ -98,4 +98,12 @@ defmodule Playwright.JSHandle do
   def evaluate_handle({:ok, owner}, expression, arg) do
     evaluate_handle(owner, expression, arg)
   end
+
+  def string(%{} = handle) do
+    handle.preview
+  end
+
+  def string({:ok, handle}) do
+    string(handle)
+  end
 end

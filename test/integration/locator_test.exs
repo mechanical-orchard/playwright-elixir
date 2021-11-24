@@ -1,7 +1,7 @@
 defmodule Playwright.LocatorTest do
   use Playwright.TestCase, async: true
 
-  alias Playwright.{Locator, Page}
+  alias Playwright.{ElementHandle, Locator, Page}
   alias Playwright.Runner.Channel.Error
 
   describe "Locator.check/2" do
@@ -108,6 +108,22 @@ defmodule Playwright.LocatorTest do
 
       {:ok, checked} = Locator.is_checked(locator)
       refute checked
+    end
+  end
+
+  describe "Locator.locator/4" do
+    test "returns values with previews", %{assets: assets, page: page} do
+      Page.goto(page, assets.dom)
+
+      outer = Page.locator(page, "#outer")
+      inner = Locator.locator(outer, "#inner")
+      check = Page.locator(page, "#check")
+      text = Locator.evaluate_handle(inner, "e => e.firstChild")
+
+      assert Locator.string(outer) == ~s|Locator@#outer|
+      assert Locator.string(inner) == ~s|Locator@#outer >> #inner|
+      assert Locator.string(check) == ~s|Locator@#check|
+      assert ElementHandle.string(text) == ~s|JSHandle@#text=Text,↵more text|
     end
   end
 end

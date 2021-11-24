@@ -80,6 +80,9 @@ defmodule Playwright.ElementHandle do
   defdelegate evaluate_handle(handle, expression, arg \\ nil),
     to: JSHandle
 
+  defdelegate string(handle),
+    to: JSHandle
+
   # API
   # ---------------------------------------------------------------------------
 

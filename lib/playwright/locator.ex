@@ -220,51 +220,38 @@ defmodule Playwright.Locator do
 
   # ---
 
-  @doc """
-  Returns when element specified by locator satisfies the `:state` option.
-
-  If target element already satisfies the condition, the method returns
-  immediately. Otherwise, waits for up to `option: timeout` milliseconds until
-  the condition is met.
-  """
-  def_locator(:wait_for, :wait_for_selector)
-
   # NOTE: not really `| nil`... also Serializable or JSHandle
+  @doc """
+  ...
+  """
   @spec evaluate(Locator.t(), binary(), ElementHandle.t() | nil, options()) :: {:ok, serializable()}
   def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
+  # NOTE: need to do all of the map-like things before a plain `map()`,
+  # then do `map()`, then do anything else.
   def evaluate(%Locator{} = locator, expression, arg, options)
-      when is_struct(arg, Playwright.ElementHandle) do
-    with_element(
-      locator,
-      fn handle ->
-        ElementHandle.evaluate(handle, expression, arg)
-      end,
-      options
-    )
+      when is_struct(arg, ElementHandle) do
+    with_element(locator, options, fn handle ->
+      ElementHandle.evaluate(handle, expression, arg)
+    end)
   end
 
   def evaluate(%Locator{} = locator, expression, options, _)
       when is_map(options) do
-    with_element(
-      locator,
-      fn handle ->
-        ElementHandle.evaluate(handle, expression)
-      end,
-      options
-    )
+    with_element(locator, options, fn handle ->
+      ElementHandle.evaluate(handle, expression)
+    end)
   end
 
   def evaluate(%Locator{} = locator, expression, arg, options) do
-    with_element(
-      locator,
-      fn handle ->
-        ElementHandle.evaluate(handle, expression, arg)
-      end,
-      options
-    )
+    with_element(locator, options, fn handle ->
+      ElementHandle.evaluate(handle, expression, arg)
+    end)
   end
 
+  @doc """
+  ...
+  """
   @spec evaluate_all(Locator.t(), binary(), ElementHandle.t() | nil) :: {:ok, [serializable()]}
   def evaluate_all(locator, expression, arg \\ nil)
 
@@ -272,11 +259,41 @@ defmodule Playwright.Locator do
     Frame.eval_on_selector_all(locator.owner, locator.selector, expression, arg)
   end
 
+  @doc """
+  ...
+  """
+  @spec evaluate_handle(Locator.t(), binary(), any(), options()) :: {:ok, JSHandle.t()} | {:error, Channel.Error.t()}
+  def evaluate_handle(locator, expression, arg \\ nil, options \\ %{})
+
+  # NOTE: need to do all of the map-like things before a plain `map()`,
+  # then do `map()`, then do anything else.
+  def evaluate_handle(%Locator{} = locator, expression, arg, options)
+      when is_struct(arg, ElementHandle) do
+    options = Map.merge(%{strict: true, state: "attached"}, options)
+
+    with_element(locator, options, fn handle ->
+      ElementHandle.evaluate_handle(handle, expression, arg)
+    end)
+  end
+
+  def evaluate_handle(%Locator{} = locator, expression, options, _)
+      when is_map(options) do
+    options = Map.merge(%{strict: true, state: "attached"}, options)
+
+    with_element(locator, options, fn handle ->
+      ElementHandle.evaluate_handle(handle, expression)
+    end)
+  end
+
+  def evaluate_handle(%Locator{} = locator, expression, arg, options) do
+    options = Map.merge(%{strict: true, state: "attached"}, options)
+
+    with_element(locator, options, fn handle ->
+      ElementHandle.evaluate_handle(handle, expression, arg)
+    end)
+  end
+
   # ---
-
-  # @spec evaluate_handle(Locator.t(), binary(), any(), options()) :: {:ok, JSHandle.t()}
-  # def evaluate_handle(locator, expression, arg \\ nil, options \\ %{})
-
   # @spec fill(Locator.t(), binary(), options()) :: :ok
   # def fill(locator, value, options \\ %{})
 
@@ -325,8 +342,10 @@ defmodule Playwright.Locator do
   # @spec last(Locator.t()) :: Locator.t()
   # def last(locator)
 
-  # @spec last(Locator.t(), binary()) :: Locator.t()
-  # def last(locator, selector)
+  @spec locator(Locator.t(), binary()) :: Locator.t()
+  def locator(locator, selector) do
+    Locator.new(locator.owner, "#{locator.selector} >> #{selector}")
+  end
 
   # @spec nth(Locator.t(), non_negative_integer()) :: Locator.t()
   # def nth(locator, index)
@@ -352,6 +371,10 @@ defmodule Playwright.Locator do
   # @spec set_input_files(Locator.t(), any(), options()) :: :ok
   # def set_input_files(locator, files, options \\ %{})
 
+  def string(locator) do
+    "Locator@#{locator.selector}"
+  end
+
   # @spec tap(Locator.t(), options()) :: :ok
   # def tap(locator, options \\ %{})
 
@@ -367,12 +390,21 @@ defmodule Playwright.Locator do
   # @spec wait_for(Locator.t(), options()) :: :ok
   # def wait_for(locator, options \\ %{})
 
+  @doc """
+  Returns when element specified by locator satisfies `option: state`.
+
+  If target element already satisfies the condition, the method returns
+  immediately. Otherwise, waits for up to `option: timeout` milliseconds until
+  the condition is met.
+  """
+  def_locator(:wait_for, :wait_for_selector)
+
   # ---
 
   # private
   # ---------------------------------------------------------------------------
 
-  defp with_element(locator, task, options) do
+  defp with_element(locator, options, task) do
     case Channel.await(locator.owner, {:selector, locator.selector}, options) do
       {:ok, handle} ->
         task.(handle)
