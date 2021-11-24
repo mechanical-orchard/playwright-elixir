@@ -111,6 +111,17 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.get_attribute/3" do
+    test "...", %{assets: assets, page: page} do
+      locator = Page.locator(page, "#outer")
+
+      Page.goto(page, assets.dom)
+
+      assert {:ok, "value"} = Locator.get_attribute(locator, "name")
+      assert {:ok, nil} = Locator.get_attribute(locator, "bogus")
+    end
+  end
+
   describe "Locator.locator/4" do
     test "returns values with previews", %{assets: assets, page: page} do
       Page.goto(page, assets.dom)
@@ -127,14 +138,14 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  describe "Locator.get_attribute/3" do
+  describe "Locator.input_value/2" do
     test "...", %{assets: assets, page: page} do
-      locator = Page.locator(page, "#outer")
+      locator = Page.locator(page, "#input")
 
       Page.goto(page, assets.dom)
+      Page.fill(page, "#input", "input value")
 
-      assert {:ok, "value"} = Locator.get_attribute(locator, "name")
-      assert {:ok, nil} = Locator.get_attribute(locator, "bogus")
+      assert {:ok, "input value"} = Locator.input_value(locator)
     end
   end
 end

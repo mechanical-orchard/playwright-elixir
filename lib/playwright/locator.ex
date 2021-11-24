@@ -318,8 +318,11 @@ defmodule Playwright.Locator do
   # @spec inner_text(Locator.t(), options()) :: {:ok, binary()}
   # def inner_text(locator, options \\ %{})
 
-  # @spec input_value(Locator.t(), options()) :: {:ok, binary()}
-  # def input_value(locator, options \\ %{})
+  @spec input_value(Locator.t(), options()) :: {:ok, binary()}
+  def input_value(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.input_value(locator.owner, locator.selector, options)
+  end
 
   # ---
 

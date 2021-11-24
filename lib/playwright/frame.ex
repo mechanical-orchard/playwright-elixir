@@ -298,8 +298,11 @@ defmodule Playwright.Frame do
   # @spec inner_text(Frame.t(), binary(), options()) :: {:ok, binary()}
   # def inner_text(owner, selector, options \\ %{})
 
-  # @spec input_value(Frame.t(), binary(), options()) :: {:ok, binary()}
-  # def input_value(owner, selector, options \\ %{})
+  @spec input_value(Frame.t(), binary(), options()) :: {:ok, binary()}
+  def input_value(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :input_value, params)
+  end
 
   # @spec is_checked(Frame.t(), binary(), options()) :: {:ok, boolean()}
   # def is_checked(owner, selector, options \\ %{})
