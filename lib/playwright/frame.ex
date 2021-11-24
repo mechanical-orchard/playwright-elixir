@@ -152,6 +152,15 @@ defmodule Playwright.Frame do
     })
   end
 
+  def eval_on_selector_all(%Frame{} = frame, selector, expression, arg \\ nil) do
+    Channel.post(frame, :eval_on_selector_all, %{
+      selector: selector,
+      expression: expression,
+      arg: Helpers.Serialization.serialize(arg)
+    })
+    |> Helpers.Serialization.deserialize()
+  end
+
   @doc """
   Returns the return value of `expression`.
 

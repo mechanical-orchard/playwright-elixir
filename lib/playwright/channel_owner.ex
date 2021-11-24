@@ -9,12 +9,12 @@ defmodule Playwright.ChannelOwner do
       @behaviour Playwright.ChannelOwner
 
       @derive {Jason.Encoder, only: [:guid]}
-      # @derive {Inspect, only: [:guid] ++ @properties}
+      @derive {Inspect, only: [:guid] ++ @properties}
 
       import Playwright.Extra.Map
       alias Playwright.Runner.{Channel, EventInfo}
 
-      defstruct @properties ++ [:connection, :guid, :listeners, :parent, :type]
+      defstruct @properties ++ [:connection, :guid, :initializer, :listeners, :parent, :type]
 
       @typedoc """
       %#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}{}
@@ -27,6 +27,7 @@ defmodule Playwright.ChannelOwner do
         base = %__MODULE__{
           connection: parent.connection,
           guid: guid,
+          initializer: initializer,
           listeners: %{},
           parent: parent,
           type: type

@@ -240,6 +240,11 @@ defmodule Playwright.Page do
     eval_on_selector(owner, selector, expression, arg, options)
   end
 
+  @spec locator(t(), binary()) :: Playwright.Locator.t()
+  def locator(%Page{} = page, selector) do
+    Playwright.Locator.new(page, selector)
+  end
+
   # NOTE: these events will be recv'd from Playwright server with
   # the parent BrowserContext as the context/bound :guid. So, we need to
   # add our handlers there, on that (BrowserContext) parent.

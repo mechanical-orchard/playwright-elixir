@@ -57,6 +57,11 @@ defmodule Playwright.Runner.Channel do
     Connection.wait_for(owner.connection, {as_atom(event), owner}, action)
   end
 
+  # NOTE: intend to merge/redesign these various wait things
+  def await(owner, {:selector, selector}, options \\ %{}) do
+    post(owner, :wait_for_selector, Map.merge(options, %{selector: selector}))
+  end
+
   # ---------------------------------------------------------------------------
 
   def all(connection, filter, default \\ []) do

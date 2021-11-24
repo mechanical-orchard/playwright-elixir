@@ -78,4 +78,36 @@ defmodule Playwright.LocatorTest do
       Task.await(task)
     end
   end
+
+  describe "Locator.evaluate/4" do
+    test "called with expression", %{page: page} do
+      element = Locator.new(page, "input")
+      Page.set_content(page, "<input type='checkbox' checked><div>Not a checkbox</div>")
+
+      {:ok, checked} = Locator.is_checked(element)
+      assert checked
+
+      Locator.evaluate(element, "function (input) { return input.checked = false; }")
+
+      {:ok, checked} = Locator.is_checked(element)
+      refute checked
+    end
+
+    test "called with expression and an `ElementHandle` arg", %{page: page} do
+      selector = "input"
+      locator = Locator.new(page, selector)
+
+      Page.set_content(page, "<input type='checkbox' checked><div>Not a checkbox</div>")
+
+      {:ok, handle} = Page.wait_for_selector(page, selector)
+
+      {:ok, checked} = Locator.is_checked(locator)
+      assert checked
+
+      Locator.evaluate(locator, "function (input) { return input.checked = false; }", handle)
+
+      {:ok, checked} = Locator.is_checked(locator)
+      refute checked
+    end
+  end
 end

@@ -1,4 +1,4 @@
-defmodule Playwright.Runner.Helpers.Macros do
+defmodule Playwright.Locator.Macros do
   @moduledoc false
 
   # NOTE: need to DRY these once patterns emerge.
@@ -9,12 +9,13 @@ defmodule Playwright.Runner.Helpers.Macros do
               :ok | {:error, Playwright.Runner.Channel.Error.t()}
       def unquote(name)(locator, options \\ %{}) do
         case Playwright.Runner.Channel.post(
-               locator.frame,
+               locator.owner,
                unquote(method),
                Map.merge(options, %{selector: locator.selector})
              ) do
           {:ok, %{id: _id}} -> :ok
           {:ok, %{guid: _id}} -> :ok
+          {:ok, value} -> {:ok, value}
           {:error, error} -> {:error, error}
         end
       end
@@ -27,12 +28,13 @@ defmodule Playwright.Runner.Helpers.Macros do
               :ok | {:error, Playwright.Runner.Channel.Error.t()}
       def unquote(name)(locator, options \\ %{}) do
         case Playwright.Runner.Channel.post(
-               locator.frame,
+               locator.owner,
                unquote(method),
                Map.merge(options, %{selector: locator.selector})
              ) do
           {:ok, %{id: _id}} -> :ok
           {:ok, %{guid: _id}} -> :ok
+          {:ok, value} -> {:ok, value}
           {:error, error} -> {:error, error}
         end
       end

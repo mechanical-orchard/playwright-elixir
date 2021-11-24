@@ -43,6 +43,17 @@ defmodule Playwright.JSHandle do
     as_element(handle)
   end
 
+  def evaluate(handle, expression, arg \\ nil) do
+    params = %{
+      expression: expression,
+      is_function: Helpers.Expression.function?(expression),
+      arg: Helpers.Serialization.serialize(arg)
+    }
+
+    Channel.post(handle, :evaluate_expression, params)
+    |> Helpers.Serialization.deserialize()
+  end
+
   @doc """
   Returns the return value from executing `param: expression` in the browser as
   a `Playwright.JSHandle`.

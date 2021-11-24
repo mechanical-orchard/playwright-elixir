@@ -53,14 +53,15 @@ defmodule Playwright.Locator do
       Locator.count(locator)
   """
 
-  import Playwright.Runner.Helpers.Macros
-  alias Playwright.Locator
+  import Playwright.Locator.Macros
+  alias Playwright.{ElementHandle, Frame, Locator, Page}
+  alias Playwright.Runner.Channel
 
-  @enforce_keys [:frame, :selector]
-  defstruct [:frame, :selector]
+  @enforce_keys [:owner, :selector]
+  defstruct [:owner, :selector]
 
   @type t() :: %__MODULE__{
-          frame: Playwright.Frame.t(),
+          owner: Playwright.Frame.t(),
           selector: selector()
         }
 
@@ -87,6 +88,8 @@ defmodule Playwright.Locator do
 
   @type selector() :: String.t()
 
+  @type serializable :: any()
+
   @doc """
   Returns a `%Playwright.Locator{}`.
 
@@ -94,13 +97,22 @@ defmodule Playwright.Locator do
 
   | key / name | type   |                        | description |
   | ---------- | ------ | ---------------------- | ----------- |
-  | `frame`    | param  | `Playwright.Frame.t()` |  |
+  | `owner`    | param  | `Frame.t() | Page.t()` |  |
   | `selector` | param  | `binary()`             | A Playwright selector. |
   """
-  @spec new(Playwright.Frame.t(), selector()) :: Locator.t()
-  def new(frame, selector) do
+  @spec new(Frame.t() | Page.t(), selector()) :: Locator.t()
+  def new(owner, selector)
+
+  def new(%Frame{} = frame, selector) do
     %__MODULE__{
-      frame: frame,
+      owner: frame,
+      selector: selector
+    }
+  end
+
+  def new(%Page{} = page, selector) do
+    %__MODULE__{
+      owner: Page.main_frame(page),
       selector: selector
     }
   end
@@ -174,27 +186,6 @@ defmodule Playwright.Locator do
   """
   def_locator(:click, :click, options_click())
 
-  # ----> SEND {
-  #   id: 6,
-  #   guid: 'frame@08dddac500593477563b77a2a1317b15',
-  #   method: 'evalOnSelectorAll',
-  #   params: {
-  #     selector: 'id=exists',
-  #     expression: 'ee => ee.length',
-  #     isFunction: true,
-  #     arg: { value: {v: "undefined"}, handles: [] }
-  #   }
-  # }
-  # def_locator(:eval_on_selector_all, :eval_on_selector_all)
-
-  # def count(locator) do
-  #   eval_on_selector_all(locator, %{
-  #     expression: "ee => ee.length",
-  #     is_function: true,
-  #     # arg: %{ value: %{v: "undefined"}, handles: [] }
-  #   })
-  # end
-
   @doc """
   Returns when element specified by locator satisfies the `:state` option.
 
@@ -204,10 +195,51 @@ defmodule Playwright.Locator do
   """
   def_locator(:wait_for, :wait_for_selector)
 
-  # private
-  # ---------------------------------------------------------------------------
+  # NOTE: not really `| nil`... also Serializable or JSHandle
+  @spec evaluate(Locator.t(), binary(), ElementHandle.t() | nil, options()) :: {:ok, any()}
+  def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
-  # evaluate
+  def evaluate(%Locator{} = locator, expression, arg, options)
+      when is_struct(arg, Playwright.ElementHandle) do
+    with_element(
+      locator,
+      fn handle ->
+        ElementHandle.evaluate(handle, expression, arg)
+      end,
+      options
+    )
+  end
+
+  def evaluate(%Locator{} = locator, expression, options, _)
+      when is_map(options) do
+    with_element(
+      locator,
+      fn handle ->
+        ElementHandle.evaluate(handle, expression)
+      end,
+      options
+    )
+  end
+
+  def evaluate(%Locator{} = locator, expression, arg, options) do
+    with_element(
+      locator,
+      fn handle ->
+        ElementHandle.evaluate(handle, expression, arg)
+      end,
+      options
+    )
+  end
+
+  @spec evaluate_all(Locator.t(), binary(), ElementHandle.t() | nil) :: {:ok, [any()]}
+  def evaluate_all(locator, expression, arg \\ nil)
+
+  def evaluate_all(%Locator{} = locator, expression, arg) do
+    Frame.eval_on_selector_all(locator.owner, locator.selector, expression, arg)
+  end
+
+  def_locator(:is_checked, :is_checked)
+
   # fill
   # first
   # get_attribute
@@ -215,4 +247,17 @@ defmodule Playwright.Locator do
   # inner_text
   # last
   # text_content
+
+  # private
+  # ---------------------------------------------------------------------------
+
+  defp with_element(locator, task, options) do
+    case Channel.await(locator.owner, {:selector, locator.selector}, options) do
+      {:ok, handle} ->
+        task.(handle)
+
+      {:error, _} = error ->
+        error
+    end
+  end
 end

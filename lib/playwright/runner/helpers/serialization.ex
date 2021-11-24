@@ -8,6 +8,11 @@ defmodule Playwright.Runner.Helpers.Serialization do
 
   def deserialize(value) when is_map(value) do
     case value do
+      %{a: array} ->
+        Enum.map(array, fn item ->
+          deserialize(item)
+        end)
+
       %{b: boolean} ->
         boolean
 
@@ -41,6 +46,8 @@ defmodule Playwright.Runner.Helpers.Serialization do
     raise ArgumentError, message: "Maximum argument depth exceeded"
   end
 
+  # NOTE: we may want to send `undefined` instead of `null` here
+  # (or, incertain cases)
   def serialize(nil, handles, _depth) do
     {%{v: "null"}, handles}
   end
