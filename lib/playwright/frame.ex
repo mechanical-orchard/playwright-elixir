@@ -322,8 +322,11 @@ defmodule Playwright.Frame do
     Channel.post(frame, :is_disabled, params)
   end
 
-  # @spec is_editable(Frame.t(), binary(), options()) :: {:ok, boolean()}
-  # def is_editable(owner, selector, options \\ %{})
+  @spec is_editable(Frame.t(), binary(), options()) :: {:ok, boolean()}
+  def is_editable(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :is_editable, params)
+  end
 
   @spec is_enabled(Frame.t(), binary(), options()) :: {:ok, boolean()}
   def is_enabled(frame, selector, options \\ %{}) do

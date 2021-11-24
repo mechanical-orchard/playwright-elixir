@@ -153,6 +153,46 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.is_editable/1" do
+    test "...", %{page: page} do
+      Page.set_content(page, """
+        <input id=input1 disabled>
+        <textarea readonly></textarea>
+        <input id=input2>
+      """)
+
+      # ??? (why not just the attribute, as above?)
+      # Page.eval_on_selector(page, "textarea", "t => t.readOnly = true")
+
+      locator = Page.locator(page, "#input1")
+      assert {:ok, false} = Locator.is_editable(locator)
+
+      locator = Page.locator(page, "#input2")
+      assert {:ok, true} = Locator.is_editable(locator)
+
+      locator = Page.locator(page, "textarea")
+      assert {:ok, false} = Locator.is_editable(locator)
+    end
+  end
+
+  test "<aside>A more interesting version of the ... test above", %{page: page} do
+    # create all the Locators in advance
+    locatorA = Page.locator(page, "#input1")
+    locatorB = Page.locator(page, "#input2")
+    locatorC = Page.locator(page, "textarea")
+
+    Page.set_content(page, """
+      <input id=input1 disabled>
+      <textarea readonly></textarea>
+      <input id=input2>
+    """)
+
+    # make assertions, demonstrating that  the Locators matched dynamic content
+    assert {:ok, false} = Locator.is_editable(locatorA)
+    assert {:ok, true} = Locator.is_editable(locatorB)
+    assert {:ok, false} = Locator.is_editable(locatorC)
+  end
+
   describe "Locator.is_enabled/1 and is_disabled/1" do
     test "...", %{page: page} do
       Page.set_content(page, """

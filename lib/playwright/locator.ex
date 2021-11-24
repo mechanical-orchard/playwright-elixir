@@ -342,8 +342,11 @@ defmodule Playwright.Locator do
     Frame.is_disabled(locator.frame, locator.selector, options)
   end
 
-  # @spec is_editable(Locator.t(), options()) :: {:ok, boolean()}
-  # def is_editable(locator, options \\ %{})
+  @spec is_editable(Locator.t(), options()) :: {:ok, boolean()}
+  def is_editable(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.is_editable(locator.frame, locator.selector, options)
+  end
 
   @spec is_enabled(Locator.t(), options()) :: {:ok, boolean()}
   def is_enabled(locator, options \\ %{}) do
