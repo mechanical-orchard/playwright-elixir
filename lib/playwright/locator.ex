@@ -117,6 +117,21 @@ defmodule Playwright.Locator do
     }
   end
 
+  # ---
+
+  # @spec all_inner_texts(Locator.t()) :: {:ok, [binary()]}
+  # def all_inner_texts(locator)
+
+  # @spec all_text_contents(Locator.t()) :: {:ok, [binary()]}
+  # def all_text_contents(locator)
+
+  # @spec bounding_box(Locator.t(), options()) :: {:ok, map() | nil}
+  # def bounding_box(locator, options \\ %{})
+
+  # ---
+
+  # locator.boundingBox([options])
+
   @doc """
   Checks the (checkmark) element by performing the following steps:
 
@@ -186,6 +201,25 @@ defmodule Playwright.Locator do
   """
   def_locator(:click, :click, options_click())
 
+  # ---
+
+  # @spec count(Locator.t()) :: {:ok, non_neg_integer()}
+  # def count(locator)
+
+  # @spec dblclick(Locator.t(), options()) :: :ok
+  # def dblclick(locator, options \\ %{})
+
+  # @spec dispatch_event(Locator.t(), atom() | binary(), any(), options()) :: :ok
+  # def dispatch_event(locator, type, event_init \\ nil, options \\ %{})
+
+  # @spec element_handle(Locator.t(), options()) :: {:ok, ElementHandle.t()} | {:error, Channel.Error.t()}
+  # def element_handle(locator, options \\ %{})
+
+  # @spec element_handles(Locator.t()) :: {:ok, [ElementHandle.t()]}
+  # def element_handle(locator, options \\ %{})
+
+  # ---
+
   @doc """
   Returns when element specified by locator satisfies the `:state` option.
 
@@ -196,7 +230,7 @@ defmodule Playwright.Locator do
   def_locator(:wait_for, :wait_for_selector)
 
   # NOTE: not really `| nil`... also Serializable or JSHandle
-  @spec evaluate(Locator.t(), binary(), ElementHandle.t() | nil, options()) :: {:ok, any()}
+  @spec evaluate(Locator.t(), binary(), ElementHandle.t() | nil, options()) :: {:ok, serializable()}
   def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
   def evaluate(%Locator{} = locator, expression, arg, options)
@@ -231,22 +265,109 @@ defmodule Playwright.Locator do
     )
   end
 
-  @spec evaluate_all(Locator.t(), binary(), ElementHandle.t() | nil) :: {:ok, [any()]}
+  @spec evaluate_all(Locator.t(), binary(), ElementHandle.t() | nil) :: {:ok, [serializable()]}
   def evaluate_all(locator, expression, arg \\ nil)
 
   def evaluate_all(%Locator{} = locator, expression, arg) do
     Frame.eval_on_selector_all(locator.owner, locator.selector, expression, arg)
   end
 
+  # ---
+
+  # @spec evaluate_handle(Locator.t(), binary(), any(), options()) :: {:ok, JSHandle.t()}
+  # def evaluate_handle(locator, expression, arg \\ nil, options \\ %{})
+
+  # @spec fill(Locator.t(), binary(), options()) :: :ok
+  # def fill(locator, value, options \\ %{})
+
+  # @spec first(Locator.t()) :: Locator.t()
+  # def first(locator)
+
+  # @spec focus(Locator.t(), options()) :: :ok
+  # def focus(locator, options \\ %{})
+
+  # @spec get_attibute(Locator.t(), binary(), options()) :: {:ok, binary() | nil}
+  # def get_attibute(locator, name, options \\ %{})
+
+  # @spec hover(Locator.t(), options()) :: :ok
+  # def hover(locator, options \\ %{})
+
+  # @spec inner_html(Locator.t(), options()) :: {:ok, binary()}
+  # def inner_html(locator, options \\ %{})
+
+  # @spec inner_text(Locator.t(), options()) :: {:ok, binary()}
+  # def inner_text(locator, options \\ %{})
+
+  # @spec input_value(Locator.t(), options()) :: {:ok, binary()}
+  # def input_value(locator, options \\ %{})
+
+  # ---
+
   def_locator(:is_checked, :is_checked)
 
-  # fill
-  # first
-  # get_attribute
-  # inner_html
-  # inner_text
-  # last
-  # text_content
+  # ---
+
+  # @spec is_disabled(Locator.t(), options()) :: {:ok, boolean()}
+  # def is_disabled(locator, options \\ %{})
+
+  # @spec is_editable(Locator.t(), options()) :: {:ok, boolean()}
+  # def is_editable(locator, options \\ %{})
+
+  # @spec is_enabled(Locator.t(), options()) :: {:ok, boolean()}
+  # def is_enabled(locator, options \\ %{})
+
+  # @spec is_hidden(Locator.t(), options()) :: {:ok, boolean()}
+  # def is_hidden(locator, options \\ %{})
+
+  # @spec is_visible(Locator.t(), options()) :: {:ok, boolean()}
+  # def is_visible(locator, options \\ %{})
+
+  # @spec last(Locator.t()) :: Locator.t()
+  # def last(locator)
+
+  # @spec last(Locator.t(), binary()) :: Locator.t()
+  # def last(locator, selector)
+
+  # @spec nth(Locator.t(), non_negative_integer()) :: Locator.t()
+  # def nth(locator, index)
+
+  # @spec press_key(Locator.t(), options()) :: :ok
+  # def press_key(locator, options \\ %{})
+
+  # @spec screenshot(Locator.t(), options()) :: {:ok, binary()}
+  # def screenshot(locator, options \\ %{})
+
+  # @spec scroll_into_view_if_needed(Locator.t(), options()) :: :ok
+  # def scroll_into_view_if_needed(locator, options \\ %{})
+
+  # @spec select_option(Locator.t(), any(), options()) :: {:ok, [binary()]}
+  # def select_option(locator, values, options \\ %{})
+
+  # @spec select_text(Locator.t(), options()) :: :ok
+  # def select_text(locator, options \\ %{})
+
+  # @spec set_checked(Locator.t(), boolean(), options()) :: :ok
+  # def set_checked(locator, checked, options \\ %{})
+
+  # @spec set_input_files(Locator.t(), any(), options()) :: :ok
+  # def set_input_files(locator, files, options \\ %{})
+
+  # @spec tap(Locator.t(), options()) :: :ok
+  # def tap(locator, options \\ %{})
+
+  # @spec text_content(Locator.t(), options()) :: {:ok, binary() | nil}
+  # def text_content(locator, options \\ %{})
+
+  # @spec type(Locator.t(), binary(), options()) :: :ok
+  # def type(locator, text, options \\ %{})
+
+  # @spec uncheck(Locator.t(), options()) :: :ok
+  # def uncheck(locator, options \\ %{})
+
+  # @spec wait_for(Locator.t(), options()) :: :ok
+  # def wait_for(locator, options \\ %{})
+
+  # ---
 
   # private
   # ---------------------------------------------------------------------------
