@@ -66,7 +66,7 @@ defmodule Playwright.Page do
     {:ok, owner}
   end
 
-  # delegates
+  # delegates (should these be reworked as a Protocol?)
   # ---------------------------------------------------------------------------
 
   # defdelegate add_script_tag(page, options \\ %{}),
@@ -99,6 +99,10 @@ defmodule Playwright.Page do
   defdelegate expect_event(owner, event, trigger),
     to: Playwright.BrowserContext
 
+  # defdelegate expect_navigation(owner, event, trigger),
+  #   to: Playwright.Frame
+  # ... also wait_for_navigation
+
   defdelegate fill(page, selector, value),
     to: Playwright.Frame
 
@@ -110,6 +114,39 @@ defmodule Playwright.Page do
 
   defdelegate goto(page, url, params \\ %{}),
     to: Playwright.Frame
+
+  # defdelegate hover(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate inner_html(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate inner_text(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate input_value(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate is_checked(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate is_disabled(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate is_editable(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate is_enabled(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate is_hidden(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate is_visible(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate locator(page, selector),
+  #   to: Playwright.Frame
 
   defdelegate press(page, selector, key, options \\ %{}),
     to: Playwright.Frame
@@ -132,8 +169,20 @@ defmodule Playwright.Page do
   defdelegate query_selector_all(page, selector, options \\ %{}),
     to: Playwright.Frame
 
+  # defdelegate pause(page),
+  #   to: Playwright.BrowserContext
+
+  # defdelegate select_option(page, selector, values \\ nil, options \\ %{}),
+  #   to: Playwright.Frame
+
   defdelegate set_content(page, html, options \\ %{}),
     to: Playwright.Frame
+
+  # defdelegate set_input_files(page, selector, files, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate tap(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
 
   defdelegate text_content(page, selector, options \\ %{}),
     to: Playwright.Frame
@@ -141,8 +190,26 @@ defmodule Playwright.Page do
   defdelegate title(page),
     to: Playwright.Frame
 
+  # defdelegate type(page, selector, text, options \\ %{}),
+  #   to: Playwright.Frame
+
+  # defdelegate uncheck(page, selector, options \\ %{}),
+  #   to: Playwright.Frame
+
+  defdelegate url(page),
+    to: Playwright.Frame
+
+  # defdelegate wait_for_function(page, expression, arg \\ nil, options \\ %{}),
+  #   to: Playwright.Frame
+
   defdelegate wait_for_selector(page, selector, options \\ %{}),
     to: Playwright.Frame
+
+  # defdelegate wait_for_timeout(page, timeout),
+  #   to: Playwright.Frame
+
+  # defdelegate wait_for_url(page, url, options \\ %{}),
+  #   to: Playwright.Frame
 
   # API
   # ---------------------------------------------------------------------------
@@ -254,6 +321,18 @@ defmodule Playwright.Page do
 
   # ---
 
+  # @spec expect_event(Page.t(), atom() | binary(), function(), options()) :: :ok
+  # def expect_event(page, event, predicate \\ nil, options \\ %{})
+  # ...defdelegate wait_for_event
+
+  # @spec expect_request(Page.t(), binary() | function(), options()) :: :ok
+  # def expect_request(page, url_or_predicate, options \\ %{})
+  # ...defdelegate wait_for_request
+
+  # @spec expect_response(Page.t(), binary() | function(), options()) :: :ok
+  # def expect_response(page, url_or_predicate, options \\ %{})
+  # ...defdelegate wait_for_response
+
   # @spec expose_binding(Page.t(), binary(), function(), options()) :: :ok
   # def expose_binding(page, name, callback, options \\ %{})
 
@@ -269,8 +348,14 @@ defmodule Playwright.Page do
   # @spec frame_locator(Page.t(), binary()) :: FrameLocator.t()
   # def frame_locator(page, selector)
 
-  # @spec go_back(Page.t(), options()) :: {:ok, binary() | nil}
+  # @spec go_back(Page.t(), options()) :: {:ok, Response.t() | nil}
   # def go_back(page, options \\ %{})
+
+  # @spec go_forward(Page.t(), options()) :: {:ok, Response.t() | nil}
+  # def go_forward(page, options \\ %{})
+
+  # @spec is_closed(Page.t()) :: boolean()
+  # def is_closed(page)
 
   # ---
 
@@ -295,24 +380,37 @@ defmodule Playwright.Page do
     on(owner, event, callback)
   end
 
-  @spec route(Page.t(), binary(), function(), map()) :: {atom(), Page.t()}
-  def route(owner, pattern, callback, options \\ %{})
+  # ---
 
-  def route(%Page{} = owner, pattern, callback, _options) do
+  # @spec opener(Page.t()) :: {:ok, Page.t() | nil}
+  # def opener(page)
+
+  # @spec pdf(Page.t(), options()) :: {:ok, binary()}
+  # def pdf(page, options \\ %{})
+
+  # @spec reload(Page.t(), options()) :: {:ok, Response.t() | nil}
+  # def reload(page, options \\ %{})
+
+  # ---
+
+  @spec route(Page.t(), binary(), function(), map()) :: {atom(), Page.t()}
+  def route(owner, pattern, handler, options \\ %{})
+
+  def route(%Page{} = owner, pattern, handler, _options) do
     matcher = Helpers.URLMatcher.new(pattern)
 
     if Enum.empty?(owner.listeners["route"] || []) do
       Channel.post(owner, :set_network_interception_enabled, %{enabled: true})
     end
 
-    Channel.bind(owner, :route, &Page.exec_callback_on_route(&1, matcher, callback))
+    Channel.bind(owner, :route, &Page.exec_callback_on_route(&1, matcher, handler))
   end
 
-  def route({:ok, owner}, pattern, callback, options) do
-    route(owner, pattern, callback, options)
+  def route({:ok, owner}, pattern, handler, options) do
+    route(owner, pattern, handler, options)
   end
 
-  @spec screenshot(Page.t(), map()) :: {:ok, binary()}
+  @spec screenshot(Page.t(), options()) :: {:ok, binary()}
   def screenshot(owner, options \\ %{})
 
   def screenshot(%Page{} = owner, options) do
@@ -333,9 +431,35 @@ defmodule Playwright.Page do
     screenshot(owner, options)
   end
 
-  def url(page) do
-    main_frame(page) |> Frame.url()
-  end
+  # ---
+
+  # @spec set_checked(Page.t(), binary(), boolean(), options()) :: :ok
+  # def set_checked(page, selector, checked, options \\ %{})
+
+  # NOTE: these 2 are good examples of functions that should `cast` instead of `call`.
+  # ...
+  # @spec set_default_navigation_timeout(Page.t(), number()) :: nil (???)
+  # def set_default_navigation_timeout(page, timeout)
+
+  # @spec set_default_timeout(Page.t(), number()) :: nil (???)
+  # def set_default_timeout(page, timeout)
+
+  # @spec set_extra_http_headers(Page.t(), map()) :: :ok
+  # def set_extra_http_headers(page, headers)
+
+  # @spec set_viewport_size(Page.t(), dimensions()) :: :ok
+  # def set_viewport_size(page, dimensions)
+
+  # @spec unroute(Page.t(), function()) :: :ok
+  # def unroute(owner, handler \\ nil)
+
+  # @spec video(Page.t()) :: Video.t() | nil
+  # def video(owner, handler \\ nil)
+
+  # @spec viewport_size(Page.t()) :: dimensions() | nil
+  # def viewport_size(owner)
+
+  # ---
 
   @spec wait_for_load_state(Page.t(), binary(), options()) :: {:ok, Page.t()}
   def wait_for_load_state(owner, state \\ "load", options \\ %{})
@@ -359,6 +483,19 @@ defmodule Playwright.Page do
   def wait_for_load_state(%Page{} = owner, options, _) when is_map(options) do
     wait_for_load_state(owner, "load", options)
   end
+
+  # ---
+
+  # @spec workers(Page.t()) :: [Worker.t()]
+  # def workers(owner)
+
+  # def accessibility(page)
+  # def coverage(page)
+  # def keyboard(page)
+  # def mouse(page)
+  # def request(page)
+  # def touchscreen(page)
+  # ---
 
   # private
   # ---------------------------------------------------------------------------
