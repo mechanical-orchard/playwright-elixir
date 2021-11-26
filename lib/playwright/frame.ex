@@ -18,6 +18,12 @@ defmodule Playwright.Frame do
   alias Playwright.{ChannelOwner, ElementHandle, Frame, Page, Response}
   alias Playwright.Runner.{EventInfo, Helpers}
 
+  # temp/hack to get navigation_test passing. a better fix is to replace the
+  # current delegate+property approach.
+  def url(%Page{} = page) do
+    from(page) |> url()
+  end
+
   @property :load_states
   @property :url
 
