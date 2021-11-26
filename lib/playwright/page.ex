@@ -489,12 +489,16 @@ defmodule Playwright.Page do
   # @spec workers(Page.t()) :: [Worker.t()]
   # def workers(owner)
 
+  # ---
+
+  # ... (like Locator?)
   # def accessibility(page)
   # def coverage(page)
   # def keyboard(page)
   # def mouse(page)
   # def request(page)
   # def touchscreen(page)
+
   # ---
 
   # private

@@ -27,18 +27,36 @@ defmodule Playwright.Request do
   use Playwright.ChannelOwner
   alias Playwright.Runner.Connection
 
+  @property :failure
   @property :frame
   @property :headers
   @property :is_navigation_request
   @property :method
   @property :post_data
+  @property :post_data_buffer
+  @property :post_data_json
+  @property :redirected_from
+  @property :redirected_to
   @property :resource_type
+  @property :timing
   @property :url
 
   # ---
 
-  # def all_headers(request) do
-  # end
+  # @spec all_headers(Request.t()) :: {:ok, map()}
+  # def all_headers(request)
+
+  # @spec header_value(Request.t(), binary()) :: {:ok, binary() | nil}
+  # def header_value(request, name)
+
+  # @spec headers_array(Request.t()) :: {:ok, [map()]}
+  # def headers_array(request)
+
+  # @spec response(Request.t()) :: {:ok, Response.t() | nil}
+  # def response(request)
+
+  # @spec sizes(Request.t()) :: {:ok, map()}
+  # def sizes(request)
 
   # ---
 
