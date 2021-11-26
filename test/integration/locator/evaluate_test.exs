@@ -74,13 +74,13 @@ defmodule Playwright.Locator.EvaluateTest do
     test "retrieves content from a subtree match", %{page: page} do
       locator = Page.locator(page, "#myId .a")
 
-      page
-      |> Page.set_content("""
-        <div class="a">other content</div>
-        <div id="myId">
-          <div class="a">desired content</div>
-        </div>
-      """)
+      :ok =
+        Page.set_content(page, """
+          <div class="a">other content</div>
+          <div id="myId">
+            <div class="a">desired content</div>
+          </div>
+        """)
 
       assert {:ok, "desired content"} = Locator.evaluate(locator, "node => node.innerText")
     end

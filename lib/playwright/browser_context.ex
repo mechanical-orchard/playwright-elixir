@@ -69,6 +69,7 @@ defmodule Playwright.BrowserContext do
           ...
 
       > NOTE:
+      >
       > - Only works with Chromium browser's persistent context.
 
     - `:close`
@@ -100,6 +101,7 @@ defmodule Playwright.BrowserContext do
           end)
 
       > NOTE:
+      >
       > - Use `Playwright.Page.wait_for_load_state/3` to wait until the page
       >   gets to a particular state (you should not need it in most cases).
 
@@ -123,6 +125,7 @@ defmodule Playwright.BrowserContext do
       `Playwright.Page.on/3` (for `:request_failed`).
 
       > NOTE:
+      >
       > - HTTP error responses, such as 404 or 503, are still successful
       >   responses from HTTP standpoint. So, the request will complete with
       >   a `:request_finished` event and not with `:request_failed`.
@@ -152,6 +155,7 @@ defmodule Playwright.BrowserContext do
       target is a `Playwright.Worker`.
 
       > NOTE:
+      >
       > - Service workers are only supported on Chromium-based browsers.
   """
 
@@ -201,8 +205,8 @@ defmodule Playwright.BrowserContext do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(%BrowserContext{} = owner, _initializer) do
-    {:ok, %{owner | browser: owner.parent}}
+  def init(%BrowserContext{} = context, _initializer) do
+    {:ok, %{context | browser: context.parent}}
   end
 
   # API
@@ -233,29 +237,29 @@ defmodule Playwright.BrowserContext do
   | `:sameSite` | *(optional)* one of "Strict", "Lax", "None" |
   """
   @spec add_cookies(BrowserContext.t(), [cookie]) :: :ok
-  def add_cookies(owner, cookies)
+  def add_cookies(context, cookies)
 
-  def add_cookies(%BrowserContext{} = owner, cookies) do
-    {:ok, _} = Channel.post(owner, :add_cookies, %{cookies: cookies})
+  def add_cookies(%BrowserContext{} = context, cookies) do
+    {:ok, _} = Channel.post(context, :add_cookies, %{cookies: cookies})
     :ok
   end
 
   # ---
 
   # @spec add_init_script(BrowserContext.t(), binary(), options()) :: :ok
-  # def add_init_script(owner, script, options \\ %{})
+  # def add_init_script(context, script, options \\ %{})
 
   # @spec background_pages(BrowserContext.t()) :: {:ok, [Playwright.Page.t()]}
-  # def background_pages(owner)
+  # def background_pages(context)
 
   # @spec browser(BrowserContext.t()) :: {:ok, Playwright.Browser.t()}
-  # def browser(owner)
+  # def browser(context)
 
   # @spec clear_cookies(BrowserContext.t()) :: :ok
-  # def clear_cookies(owner)
+  # def clear_cookies(context)
 
   # @spec clear_permissions(BrowserContext.t()) :: :ok
-  # def clear_permissions(owner)
+  # def clear_permissions(context)
 
   # ---
 
@@ -267,13 +271,13 @@ defmodule Playwright.BrowserContext do
   > - The default browser context cannot be closed.
   """
   @spec close(BrowserContext.t()) :: :ok
-  def close(%BrowserContext{} = owner) do
-    {:ok, _} = Channel.post(owner, :close)
+  def close(%BrowserContext{} = context) do
+    {:ok, _} = Channel.post(context, :close)
     :ok
   end
 
-  def close({:ok, owner}) do
-    close(owner)
+  def close({:ok, context}) do
+    close(context)
   end
 
   @doc """
@@ -289,10 +293,10 @@ defmodule Playwright.BrowserContext do
   See `add_cookies/2` for cookie field details.
   """
   @spec cookies(BrowserContext.t(), url | [url]) :: {:ok, [cookie]}
-  def cookies(owner, urls \\ [])
+  def cookies(context, urls \\ [])
 
-  def cookies(%BrowserContext{} = owner, urls) do
-    Channel.post(owner, :cookies, %{urls: urls})
+  def cookies(%BrowserContext{} = context, urls) do
+    Channel.post(context, :cookies, %{urls: urls})
   end
 
   @doc """
@@ -315,8 +319,8 @@ defmodule Playwright.BrowserContext do
 
   ## Example
 
-      {:ok, event_info} = BrowserContext.expect_event(owner, :page, fn ->
-        BrowserContext.new_page(owner)
+      {:ok, event_info} = BrowserContext.expect_event(context, :page, fn ->
+        BrowserContext.new_page(context)
       end)
 
   > NOTE:
@@ -325,27 +329,29 @@ defmodule Playwright.BrowserContext do
   """
   @spec expect_event(BrowserContext.t() | Page.t(), atom() | binary(), fun(), function_or_options(), map()) ::
           {:ok, Playwright.Runner.EventInfo.t()}
-  def expect_event(owner, event, trigger, predicate \\ nil, options \\ %{})
+  def expect_event(context, event, trigger, predicate \\ nil, options \\ %{})
 
-  def expect_event(%BrowserContext{} = owner, event, trigger, _predicate, _options)
+  def expect_event(%BrowserContext{} = context, event, trigger, _predicate, _options)
       when is_function(trigger) do
-    Channel.wait_for(owner, event, trigger)
+    Channel.wait_for(context, event, trigger)
   end
 
-  def expect_event(%BrowserContext{} = owner, event, trigger, options, _)
+  def expect_event(%BrowserContext{} = context, event, trigger, options, _)
       when is_map(options) do
-    expect_event(owner, event, trigger, nil, options)
+    expect_event(context, event, trigger, nil, options)
   end
 
-  def expect_event(%Page{} = owner, event, trigger, predicate, options) do
-    Page.context(owner) |> expect_event(event, trigger, predicate, options)
+  def expect_event(%Page{} = context, event, trigger, predicate, options) do
+    Page.context(context) |> expect_event(event, trigger, predicate, options)
   end
 
-  # def expect_event({:ok, owner}, event, trigger, predicate, options) do
-  #   expect_event(owner, event, trigger, predicate, options)
+  # def expect_event({:ok, context}, event, trigger, predicate, options) do
+  #   expect_event(context, event, trigger, predicate, options)
   # end
 
-  defdelegate wait_for_event(owner, event, trigger, predicate \\ nil, options \\ %{}), to: __MODULE__, as: :expect_event
+  defdelegate wait_for_event(context, event, trigger, predicate \\ nil, options \\ %{}),
+    to: __MODULE__,
+    as: :expect_event
 
   @doc """
   Executes `trigger` and waits for a new `Playwright.Page` to be created within
@@ -371,33 +377,33 @@ defmodule Playwright.BrowserContext do
   > - The handling of `timeout` is not yet implemented.
   """
   @spec expect_page(BrowserContext.t(), fun(), function_or_options(), map()) :: {:ok, Playwright.Runner.EventInfo.t()}
-  def expect_page(owner, trigger, predicate \\ nil, options \\ %{})
+  def expect_page(context, trigger, predicate \\ nil, options \\ %{})
 
-  def expect_page(%BrowserContext{} = owner, trigger, predicate, options)
+  def expect_page(%BrowserContext{} = context, trigger, predicate, options)
       when is_function(trigger) do
-    expect_event(owner, :page, trigger, predicate, options)
+    expect_event(context, :page, trigger, predicate, options)
   end
 
-  def expect_page(%BrowserContext{} = owner, trigger, options, _)
+  def expect_page(%BrowserContext{} = context, trigger, options, _)
       when is_map(options) do
-    expect_page(owner, trigger, nil, options)
+    expect_page(context, trigger, nil, options)
   end
 
-  defdelegate wait_for_page(owner, trigger, predicate \\ nil, options \\ %{}), to: __MODULE__, as: :expect_page
+  defdelegate wait_for_page(context, trigger, predicate \\ nil, options \\ %{}), to: __MODULE__, as: :expect_page
 
   # ---
 
   # @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: :ok
-  # def expose_binding(owner, name, callback, options \\ %{})
+  # def expose_binding(context, name, callback, options \\ %{})
 
   # @spec expose_function(BrowserContext.t(), String.t(), function()) :: :ok
-  # def expose_function(owner, name, callback)
+  # def expose_function(context, name, callback)
 
   # @spec grant_permissions(BrowserContext.t(), [String.t()], options()) :: :ok
-  # def grant_permissions(owner, permission, options \\ %{})
+  # def grant_permissions(context, permission, options \\ %{})
 
   # @spec new_cdp_session(BrowserContext.t(), Page.t()) :: {:ok, Playwright.CDPSession.t()}
-  # def new_cdp_session(owner, page)
+  # def new_cdp_session(context, page)
 
   # ---
 
@@ -409,26 +415,26 @@ defmodule Playwright.BrowserContext do
   because there should be a 1-to-1 mapping in that case.
   """
   @spec new_page(t() | {:ok, t()}) :: {:ok, Page.t()}
-  def new_page(owner)
+  def new_page(context)
 
-  def new_page(%BrowserContext{} = owner) do
-    case owner.owner_page do
+  def new_page(%BrowserContext{} = context) do
+    case context.owner_page do
       nil ->
-        Channel.post(owner, :new_page)
+        Channel.post(context, :new_page)
 
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")
     end
   end
 
-  def new_page({:ok, owner}) do
-    new_page(owner)
+  def new_page({:ok, context}) do
+    new_page(context)
   end
 
   # ---
 
   # @spec pages(BrowserContext.t()) :: {:ok, [Page.t()]}
-  # def pages(owner)
+  # def pages(context)
 
   # ---
 
@@ -436,41 +442,41 @@ defmodule Playwright.BrowserContext do
   Register a (non-blocking) callback/handler for various types of events.
   """
   @spec on(BrowserContext.t(), event(), function()) :: {:ok, BrowserContext.t()}
-  def on(%BrowserContext{} = owner, event, callback) do
-    Channel.bind(owner, event, callback)
+  def on(%BrowserContext{} = context, event, callback) do
+    Channel.bind(context, event, callback)
   end
 
   # ---
 
   # @spec route(BrowserContext.t(), String.t(), function(), options()) :: :ok
-  # def route(owner, url_pattern, handler, options \\ %{})
+  # def route(context, url_pattern, handler, options \\ %{})
 
   # @spec service_workers(BrowserContext.t()) :: {:ok, [Playwright.Worker.t()]}
-  # def service_workers(owner)
+  # def service_workers(context)
 
   # @spec set_default_navigation_timeout(BrowserContext.t(), number()) :: :ok
-  # def set_default_navigation_timeout(owner, timeout)
+  # def set_default_navigation_timeout(context, timeout)
 
   # @spec set_default_imeout(BrowserContext.t(), number()) :: :ok
-  # def set_default_imeout(owner, timeout)
+  # def set_default_imeout(context, timeout)
 
   # @spec set_extra_http_headers(BrowserContext.t(), headers()) :: :ok
-  # def set_extra_http_headers(owner, headers)
+  # def set_extra_http_headers(context, headers)
 
   # @spec set_geolocation(BrowserContext.t(), geolocation()) :: :ok
-  # def set_geolocation(owner, geolocation)
+  # def set_geolocation(context, geolocation)
 
   # @spec set_http_credentials(BrowserContext.t(), http_credentials()) :: :ok
-  # def set_http_credentials(owner, http_credentials)
+  # def set_http_credentials(context, http_credentials)
 
   # @spec set_offline(BrowserContext.t(), boolean()) :: :ok
-  # def set_offline(owner, offline)
+  # def set_offline(context, offline)
 
   # @spec storage_state(BrowserContext.t(), String.t()) :: {:ok, storage_state()}
-  # def storage_state(owner, path \\ nil)
+  # def storage_state(context, path \\ nil)
 
   # @spec route(BrowserContext.t(), String.t(), options()) :: :ok
-  # def route(owner, url_pattern, options \\ %{})
+  # def route(context, url_pattern, options \\ %{})
 
   # ---
 end
