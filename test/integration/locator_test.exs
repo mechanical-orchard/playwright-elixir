@@ -188,7 +188,7 @@ defmodule Playwright.LocatorTest do
 
       assert {:ok, true} = Locator.is_checked(locator)
 
-      Locator.evaluate(locator, "input => input.checked = false")
+      assert {:ok, false} = Locator.evaluate(locator, "input => input.checked = false")
       assert {:ok, false} = Locator.is_checked(locator)
     end
   end
