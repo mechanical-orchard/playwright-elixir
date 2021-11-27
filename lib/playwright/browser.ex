@@ -37,19 +37,19 @@ defmodule Playwright.Browser do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(owner, _initializer) do
-    # Channel.bind(owner, :close, fn event ->
+  def init(browser, _initializer) do
+    # Channel.bind(browser, :close, fn event ->
     #   {:patch, }
     # end)
 
-    {:ok, %{owner | version: cut_version(owner.version)}}
+    {:ok, %{browser | version: cut_version(browser.version)}}
   end
 
   # API
   # ---------------------------------------------------------------------------
 
   # @spec close(Browser.t()) :: :ok
-  # def close(owner)
+  # def close(browser)
 
   @doc """
   Returns an array of all open browser contexts. In a newly created browser,
@@ -66,10 +66,10 @@ defmodule Playwright.Browser do
       assert length(contexts) == 1
   """
   @spec contexts(Browser.t()) :: {:ok, [BrowserContext.t()]}
-  def contexts(%Browser{} = owner) do
+  def contexts(%Browser{} = browser) do
     result =
-      Channel.all(owner.connection, %{
-        parent: owner,
+      Channel.all(browser.connection, %{
+        parent: browser,
         type: "BrowserContext"
       })
 
@@ -79,10 +79,10 @@ defmodule Playwright.Browser do
   # ---
 
   # @spec is_connected(BrowserContext.t()) :: boolean()
-  # def is_connected(owner)
+  # def is_connected(browser)
 
   # @spec new_browser_cdp_session(BrowserContext.t()) :: {:ok, Playwright.CDPSession.t()}
-  # def new_browser_cdp_session(owner)
+  # def new_browser_cdp_session(browser)
 
   # ---
 
@@ -114,8 +114,8 @@ defmodule Playwright.Browser do
   | `...`              | option | `...`       | ... |
   """
   @spec new_context(Browser.t(), options()) :: {:ok, BrowserContext.t()}
-  def new_context(%Browser{} = owner, options \\ %{}) do
-    Channel.post(owner, :new_context, prepare(options))
+  def new_context(%Browser{} = browser, options \\ %{}) do
+    Channel.post(browser, :new_context, prepare(options))
   end
 
   @doc """
@@ -134,10 +134,10 @@ defmodule Playwright.Browser do
   resource lifecycles.
   """
   @spec new_page(t() | {:ok, t()}, options()) :: {:ok, Page.t()}
-  def new_page(owner, options \\ %{})
+  def new_page(browser, options \\ %{})
 
-  def new_page(%Browser{connection: connection} = owner, options) do
-    {:ok, context} = new_context(owner, options)
+  def new_page(%Browser{connection: connection} = browser, options) do
+    {:ok, context} = new_context(browser, options)
     {:ok, page} = BrowserContext.new_page(context)
 
     # establish co-dependency
@@ -145,20 +145,20 @@ defmodule Playwright.Browser do
     {:ok, _} = Channel.patch(connection, page.guid, %{owned_context: context})
   end
 
-  def new_page({:ok, owner}, options) do
-    new_page(owner, options)
+  def new_page({:ok, browser}, options) do
+    new_page(browser, options)
   end
 
   # ---
 
   # @spec on(Browser.t(), event(), function()) :: {:ok, Browser.t()}
-  # def on(owner, event, callback)
+  # def on(browser, event, callback)
 
   # @spec start_tracing(Browser.t(), Page.t(), options()) :: :ok
-  # def start_tracing(owner, page \\ nil, options \\ %{})
+  # def start_tracing(browser, page \\ nil, options \\ %{})
 
   # @spec stop_tracing(Browser.t()) :: {:ok, binary()}
-  # def stop_tracing(owner)
+  # def stop_tracing(browser)
 
   # ---
 
