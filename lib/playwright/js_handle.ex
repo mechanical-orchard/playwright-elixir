@@ -83,20 +83,20 @@ defmodule Playwright.JSHandle do
   """
   @spec evaluate_handle(t() | ElementHandle.t() | {:ok, t() | ElementHandle.t()}, binary(), any()) ::
           {:ok, t() | ElementHandle.t()}
-  def evaluate_handle(owner, expression, arg \\ nil)
+  def evaluate_handle(handle, expression, arg \\ nil)
 
-  def evaluate_handle(%{} = owner, expression, arg) do
+  def evaluate_handle(%{} = handle, expression, arg) do
     params = %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
     }
 
-    Channel.post(owner, :evaluate_expression_handle, params)
+    Channel.post(handle, :evaluate_expression_handle, params)
   end
 
-  def evaluate_handle({:ok, owner}, expression, arg) do
-    evaluate_handle(owner, expression, arg)
+  def evaluate_handle({:ok, handle}, expression, arg) do
+    evaluate_handle(handle, expression, arg)
   end
 
   def string(%{} = handle) do

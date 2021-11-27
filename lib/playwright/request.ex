@@ -68,8 +68,8 @@ defmodule Playwright.Request do
   end
 
   @doc false
-  def get_header(subject, name) do
-    Enum.find(subject.initializer.headers, fn header ->
+  def get_header(request, name) do
+    Enum.find(request.initializer.headers, fn header ->
       header.name == name
     end)
   end
