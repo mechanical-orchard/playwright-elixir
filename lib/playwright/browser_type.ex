@@ -80,10 +80,10 @@ defmodule Playwright.BrowserType do
   # ---
 
   # @spec connect_over_cdp(BrowserType.t(), url(), options()) :: {:ok, Playwright.Browser.t()}
-  # def connect_over_cdp(owner, endpoint_url, options \\ %{})
+  # def connect_over_cdp(browser_type, endpoint_url, options \\ %{})
 
   # @spec executable_path(BrowserType.t()) :: String.t()
-  # def executable_path(owner)
+  # def executable_path(browser_type)
 
   # ---
 
@@ -161,21 +161,21 @@ defmodule Playwright.BrowserType do
   # ---
 
   # @spec launch_persistent_context(BrowserType.t(), String.t(), options()) :: {:ok, Playwright.BrowserContext.t()}
-  # def launch_persistent_context(owner, user_data_dir, options \\ %{})
+  # def launch_persistent_context(browser_type, user_data_dir, options \\ %{})
 
   # @spec launch_server(BrowserType.t(), options()) :: {:ok, Playwright.BrowserServer.t()}
-  # def launch_server(owner, options \\ %{})
+  # def launch_server(browser_type, options \\ %{})
 
   # @spec name(BrowserType.t()) :: client()
-  # def name(owner)
+  # def name(browser_type)
 
   # ---
 
   # private
   # ----------------------------------------------------------------------------
 
-  defp browser(%BrowserType{} = owner) do
-    case Channel.post(owner, :launch, Config.launch_options(true)) do
+  defp browser(%BrowserType{} = browser_type) do
+    case Channel.post(browser_type, :launch, Config.launch_options(true)) do
       {:ok, %Playwright.Browser{} = result} ->
         result
 
