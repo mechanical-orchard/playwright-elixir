@@ -263,16 +263,19 @@ defmodule Playwright.Frame do
 
   @doc """
   Returns element attribute value.
-
   !!!
   """
   @spec get_attribute(Frame.t() | Page.t(), binary(), binary(), map()) :: {:ok, binary() | nil}
   def get_attribute(owner, selector, name, options \\ %{})
 
-  def get_attribute(%Frame{} = owner, selector, name, _options) do
-    owner
-    |> query_selector!(selector)
-    |> ElementHandle.get_attribute(name)
+  def get_attribute(%Frame{} = frame, selector, name, options) do
+    params =
+      Map.merge(options, %{
+        selector: selector,
+        name: name
+      })
+
+    Channel.post(frame, :get_attribute, params)
   end
 
   def get_attribute(%Page{} = owner, selector, name, options) do

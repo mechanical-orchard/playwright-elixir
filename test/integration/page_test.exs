@@ -1,7 +1,7 @@
 defmodule Playwright.PageTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, ElementHandle, Page}
-  alias Playwright.Runner.{Connection, EventInfo}
+  alias Playwright.Runner.{Channel, Connection, EventInfo}
 
   describe "Page.on/3" do
     @tag exclude: [:page]
@@ -223,9 +223,7 @@ defmodule Playwright.PageTest do
       assert page |> Page.get_attribute("div#outer", "name") == {:ok, "value"}
       assert page |> Page.get_attribute("div#outer", "foo") == {:ok, nil}
 
-      assert_raise RuntimeError, "No element found for selector: glorp", fn ->
-        page |> Page.get_attribute("glorp", "foo")
-      end
+      assert({:error, %Channel.Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 200}))
     end
 
     test ".press/2", %{assets: assets, page: page} do

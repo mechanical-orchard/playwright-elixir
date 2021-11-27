@@ -191,7 +191,7 @@ defmodule Playwright.Locator do
 
   | key / name       | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
-  | `:button`        | option | `:left`, `:right` or `:middle`  | `(default: :left)` |
+  | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
   | `:click_count`   | option | `number()`                        | See [MDN: `UIEvent.detail`](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail) `(default: 1)` |
   | `:delay`         | option | `number()`                        | Time to wait between `mousedown` and `mouseup` in milliseconds. `(default: 0)` |
   | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
