@@ -15,8 +15,8 @@ defmodule Playwright.ConsoleMessage do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(owner, initializer) do
-    {:ok, %{owner | message_text: initializer.text, message_type: initializer.type}}
+  def init(message, initializer) do
+    {:ok, %{message | message_text: initializer.text, message_type: initializer.type}}
   end
 
   # API
@@ -25,19 +25,19 @@ defmodule Playwright.ConsoleMessage do
   # ---
 
   # @spec args(ConsoleMessage.t()) :: [JSHandle.t()]
-  # def args(owner)
+  # def args(message)
 
   # @spec location(ConsoleMessage.t()) :: call_location()
-  # def location(owner)
+  # def location(message)
 
   # @spec location(ConsoleMessage.t()) :: call_location()
-  # def location(owner)
+  # def location(message)
 
   # @spec text(ConsoleMessage.t()) :: String.t()
-  # def text(owner)
+  # def text(message)
 
   # @spec type(ConsoleMessage.t()) :: String.t()
-  # def type(owner)
+  # def type(message)
 
   # ---
 end

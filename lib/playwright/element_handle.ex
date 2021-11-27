@@ -65,8 +65,8 @@ defmodule Playwright.ElementHandle do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(%ElementHandle{} = owner, _initializer) do
-    Channel.bind(owner, :preview_updated, fn %{params: params} = event ->
+  def init(%ElementHandle{} = handle, _initializer) do
+    Channel.bind(handle, :preview_updated, fn %{params: params} = event ->
       {:patch, %{event.target | preview: params.preview}}
     end)
   end
@@ -89,13 +89,13 @@ defmodule Playwright.ElementHandle do
   # ---
 
   # @spec bounding_box(ElementHandle.t()) :: {:ok, map() | nil}
-  # def bounding_box(owner)
+  # def bounding_box(handle)
 
   # @spec check(ElementHandle.t(), options()) :: :ok
-  # def check(owner, options \\ %{})
+  # def check(handle, options \\ %{})
 
   # @spec click(ElementHandle.t(), options()) :: :ok
-  # def click(owner, options \\ %{})
+  # def click(handle, options \\ %{})
 
   # ---
 
@@ -118,15 +118,15 @@ defmodule Playwright.ElementHandle do
   disables this.
   """
   @spec click(t() | {:ok, t()}, options()) :: :ok
-  def click(owner, _options \\ %{})
+  def click(handle, _options \\ %{})
 
-  def click(%ElementHandle{} = owner, _options) do
-    {:ok, _} = Channel.post(owner, :click)
+  def click(%ElementHandle{} = handle, _options) do
+    {:ok, _} = Channel.post(handle, :click)
     :ok
   end
 
-  def click({:ok, owner}, options) do
-    click(owner, options)
+  def click({:ok, handle}, options) do
+    click(handle, options)
   end
 
   @doc """
@@ -134,29 +134,29 @@ defmodule Playwright.ElementHandle do
   or `nil otherwise.
   """
   @spec content_frame(t() | {:ok, t()}) :: {:ok, Frame.t() | nil}
-  def content_frame(owner)
+  def content_frame(handle)
 
-  def content_frame(%ElementHandle{} = owner) do
-    Channel.post(owner, :content_frame)
+  def content_frame(%ElementHandle{} = handle) do
+    Channel.post(handle, :content_frame)
   end
 
-  def content_frame({:ok, owner}) do
-    content_frame(owner)
+  def content_frame({:ok, handle}) do
+    content_frame(handle)
   end
 
   # ---
 
   # @spec dblclick(ElementHandle.t(), options()) :: :ok
-  # def dblclick(owner, options \\ %{})
+  # def dblclick(handle, options \\ %{})
 
   # @spec dispatch_event(ElementHandle.t(), event(), evaluation_argument()) :: :ok
-  # def dispatch_event(owner, type, arg \\ nil)
+  # def dispatch_event(handle, type, arg \\ nil)
 
   # @spec fill(ElementHandle.t(), binary(), options()) :: :ok
-  # def fill(owner, value, options \\ %{})
+  # def fill(handle, value, options \\ %{})
 
   # @spec focus(ElementHandle.t()) :: :ok
-  # def focus(owner)
+  # def focus(handle)
 
   # ---
 
@@ -164,63 +164,63 @@ defmodule Playwright.ElementHandle do
   Returns the value of an element's attribute.
   """
   @spec get_attribute(t() | {:ok, t()}, binary()) :: {:ok, binary() | nil}
-  def get_attribute(owner, name)
+  def get_attribute(handle, name)
 
-  def get_attribute(%ElementHandle{} = owner, name) do
-    Channel.post(owner, :get_attribute, %{name: name})
+  def get_attribute(%ElementHandle{} = handle, name) do
+    Channel.post(handle, :get_attribute, %{name: name})
   end
 
-  def get_attribute({:ok, owner}, name) do
-    get_attribute(owner, name)
+  def get_attribute({:ok, handle}, name) do
+    get_attribute(handle, name)
   end
 
   # ---
 
   # @spec hover(ElementHandle.t(), options()) :: :ok
-  # def hover(owner, options \\ %{})
+  # def hover(handle, options \\ %{})
 
   # @spec inner_html(ElementHandle.t()) :: {:ok, binary() | nil}
-  # def inner_html(owner)
+  # def inner_html(handle)
 
   # @spec inner_text(ElementHandle.t()) :: {:ok, binary() | nil}
-  # def inner_text(owner)
+  # def inner_text(handle)
 
   # @spec input_value(ElementHandle.t(), options()) :: {:ok, binary()}
-  # def input_value(owner, options)
+  # def input_value(handle, options)
 
   # @spec is_checked(ElementHandle.t()) :: {:ok, boolean()}
-  # def is_checked(owner)
+  # def is_checked(handle)
 
   # @spec is_disabled(ElementHandle.t()) :: {:ok, boolean()}
-  # def is_disabled(owner)
+  # def is_disabled(handle)
 
   # @spec is_editable(ElementHandle.t()) :: {:ok, boolean()}
-  # def is_editable(owner)
+  # def is_editable(handle)
 
   # @spec is_enabled(ElementHandle.t()) :: {:ok, boolean()}
-  # def is_enabled(owner)
+  # def is_enabled(handle)
 
   # @spec is_hidden(ElementHandle.t()) :: {:ok, boolean()}
-  # def is_hidden(owner)
+  # def is_hidden(handle)
 
   # ---
 
   @spec is_visible(t() | {:ok, t()}) :: {:ok, boolean()}
-  def is_visible(owner)
+  def is_visible(handle)
 
-  def is_visible(%ElementHandle{} = owner) do
-    {:ok, result} = Channel.post(owner, :is_visible)
+  def is_visible(%ElementHandle{} = handle) do
+    {:ok, result} = Channel.post(handle, :is_visible)
     {:ok, result == true}
   end
 
-  def is_visible({:ok, owner}) do
-    is_visible(owner)
+  def is_visible({:ok, handle}) do
+    is_visible(handle)
   end
 
   # ---
 
   # @spec press(ElementHandle.t(), binary(), options()) :: :ok
-  # def press(owner, key, options \\ %{})
+  # def press(handle, key, options \\ %{})
 
   # ---
 
@@ -233,44 +233,44 @@ defmodule Playwright.ElementHandle do
   If no elements match the selector, returns `nil`.
   """
   @spec query_selector(t() | {:ok, t()}, binary()) :: {:ok, ElementHandle.t() | nil}
-  def query_selector(owner, selector)
+  def query_selector(handle, selector)
 
-  def query_selector(%ElementHandle{} = owner, selector) do
-    owner |> Channel.post(:query_selector, %{selector: selector})
+  def query_selector(%ElementHandle{} = handle, selector) do
+    handle |> Channel.post(:query_selector, %{selector: selector})
   end
 
-  def query_selector({:ok, owner}, selector) do
-    query_selector(owner, selector)
+  def query_selector({:ok, handle}, selector) do
+    query_selector(handle, selector)
   end
 
-  defdelegate q(owner, selector), to: __MODULE__, as: :query_selector
+  defdelegate q(handle, selector), to: __MODULE__, as: :query_selector
 
   # ---
 
   # @spec query_selector_all(ElementHandle.t(), binary()) :: {:ok, [ElementHandle.t()]}
-  # def query_selector_all(owner, selector)
-  # defdelegate qq(owner, selector), to: __MODULE__, as: :query_selector_all
+  # def query_selector_all(handle, selector)
+  # defdelegate qq(handle, selector), to: __MODULE__, as: :query_selector_all
 
   # @spec screenshot(ElementHandle.t(), options()) :: {:ok, binary()}
-  # def screenshot(owner, options \\ %{})
+  # def screenshot(handle, options \\ %{})
 
   # @spec scroll_into_view_if_needed(ElementHandle.t(), options()) :: :ok
-  # def scroll_into_view_if_needed(owner, options \\ %{})
+  # def scroll_into_view_if_needed(handle, options \\ %{})
 
   # @spec select_option(ElementHandle.t(), selection(), options()) :: {:ok, [binary()]}
-  # def select_option(owner, values, options \\ %{})
+  # def select_option(handle, values, options \\ %{})
 
   # @spec select_option(ElementHandle.t(), options()) :: :ok
-  # def select_option(owner, options \\ %{})
+  # def select_option(handle, options \\ %{})
 
   # @spec set_checked(ElementHandle.t(), boolean(), options()) :: :ok
-  # def set_checked(owner, checked, options \\ %{})
+  # def set_checked(handle, checked, options \\ %{})
 
   # @spec set_input_files(ElementHandle.t(), file_list(), options()) :: :ok
-  # def set_input_files(owner, files, options \\ %{})
+  # def set_input_files(handle, files, options \\ %{})
 
   # @spec tap(ElementHandle.t(), options()) :: :ok
-  # def tap(owner, options \\ %{})
+  # def tap(handle, options \\ %{})
 
   # ---
 
@@ -278,29 +278,29 @@ defmodule Playwright.ElementHandle do
   Returns the `node.textContent` (all text within the element).
   """
   @spec text_content(t() | {:ok, t()}) :: {:ok, binary() | nil}
-  def text_content(owner)
+  def text_content(handle)
 
-  def text_content(%ElementHandle{} = owner) do
-    owner |> Channel.post(:text_content)
+  def text_content(%ElementHandle{} = handle) do
+    handle |> Channel.post(:text_content)
   end
 
-  def text_content({:ok, owner}) do
-    text_content(owner)
+  def text_content({:ok, handle}) do
+    text_content(handle)
   end
 
   # ---
 
   # @spec type(ElementHandle.t(), binary(), options()) :: :ok
-  # def type(owner, text, options \\ %{})
+  # def type(handle, text, options \\ %{})
 
   # @spec uncheck(ElementHandle.t(), options()) :: :ok
-  # def uncheck(owner, options \\ %{})
+  # def uncheck(handle, options \\ %{})
 
   # @spec wait_for_element_state(ElementHandle.t(), state(), options()) :: :ok
-  # def wait_for_element_state(owner, state, options \\ %{})
+  # def wait_for_element_state(handle, state, options \\ %{})
 
   # @spec wait_for_selector(ElementHandle.t(), binary(), options()) :: {:ok, ElementHandle.t() | nil}
-  # def wait_for_selector(owner, selector, options \\ %{})
+  # def wait_for_selector(handle, selector, options \\ %{})
 
   # ---
 end

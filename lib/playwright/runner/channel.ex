@@ -33,8 +33,8 @@ defmodule Playwright.Runner.Channel do
     Connection.on(owner.connection, {event, owner}, callback)
   end
 
-  def on(connection, {event, subject}, handler) do
-    Connection.on(connection, {event, subject}, handler)
+  def on(connection, {event, owner}, handler) do
+    Connection.on(connection, {event, owner}, handler)
   end
 
   # spec: :: {:ok, struct()}
