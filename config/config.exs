@@ -26,7 +26,7 @@ if config_env() == :dev do
   playwright_cli = ["./node_modules/playwright-core/lib/cli/cli.js"] ++ common_args
 
   config :esbuild,
-    version: "0.13.10",
+    version: "0.14.0",
     module:
       esbuild.(
         playwright_core ++
