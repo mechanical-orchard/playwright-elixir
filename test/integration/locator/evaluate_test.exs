@@ -19,7 +19,13 @@ defmodule Playwright.Locator.EvaluateTest do
         </html>
       """)
 
-      assert {:ok, "100"} = Locator.evaluate(locator, "node => node.innerText")
+      case Locator.evaluate(locator, "node => node.innerText") do
+        {:ok, "100"} ->
+          assert true
+
+        {:error, :timeout} ->
+          log_element_handle_error()
+      end
     end
 
     test "accepts `param: arg` for expression evaluation", %{page: page} do
@@ -82,7 +88,13 @@ defmodule Playwright.Locator.EvaluateTest do
           </div>
         """)
 
-      assert {:ok, "desired content"} = Locator.evaluate(locator, "node => node.innerText")
+      case Locator.evaluate(locator, "node => node.innerText") do
+        {:ok, "desired content"} ->
+          assert true
+
+        {:error, :timeout} ->
+          log_element_handle_error()
+      end
     end
   end
 

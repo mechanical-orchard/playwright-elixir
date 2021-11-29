@@ -208,8 +208,52 @@ defmodule Playwright.Locator do
   # @spec count(Locator.t()) :: {:ok, non_neg_integer()}
   # def count(locator)
 
-  # @spec dblclick(Locator.t(), options()) :: :ok
-  # def dblclick(locator, options \\ %{})
+  @doc """
+  Double clicks the element.
+
+  Performs the following steps:
+
+    1. Wait for actionability checks on the matched element, unless
+      `option: force` is set.
+    2. Scroll the element into view if needed.
+    3 Use `Page.Mouse` to double click in the center of the element, or the
+      specified `option: position`.
+    4. Wait for initiated navigations to either succeed or fail, unless
+      `option: no_wait_after` is set. Note that if the first click of the
+      `dblclick/3` triggers a navigation event, the call will throw.
+
+  If the element is detached from the DOM at any moment during the action,
+  the call throws.
+
+  When all steps combined have not finished during the specified
+  `option: timeout`, throws a `TimeoutError`. Passing `timeout: 0` disables
+  this.
+
+  > NOTE
+  >
+  > `dblclick/3` dispatches two `click` events and a single `dblclick` event.
+
+  ## Returns
+
+    - :ok
+
+  ## Arguments
+
+  | key / name       | type   |                                   | description |
+  | ---------------- | ------ | --------------------------------- | ----------- |
+  | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
+  | `:delay`         | option | `number() `                       | Time to wait between keydown and keyup in milliseconds. `(default: 0)` |
+  | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
+  | `:modifiers`     | option | `[:alt, :control, :meta, :shift]` | Modifier keys to press. Ensures that only these modifiers are pressed during the operation, and then restores current modifiers back. If not specified, currently pressed modifiers are used. |
+  | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:position`      | option | `%{x: x, y: y}`                   | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
+  """
+  @spec dblclick(Locator.t(), options()) :: :ok
+  def dblclick(locator, options \\ %{}) do
+    Frame.dblclick(locator.frame, locator.selector, options)
+  end
 
   # @spec dispatch_event(Locator.t(), atom() | binary(), any(), options()) :: :ok
   # def dispatch_event(locator, type, event_init \\ nil, options \\ %{})

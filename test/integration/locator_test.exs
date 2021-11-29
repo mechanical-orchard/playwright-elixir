@@ -30,7 +30,7 @@ defmodule Playwright.LocatorTest do
 
   describe "Locator.check/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 1_000}
+      options = %{timeout: 200}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
       page |> Page.set_content("<input id='exists' type='checkbox'/>")
@@ -49,13 +49,13 @@ defmodule Playwright.LocatorTest do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "input#bogus")
-      assert {:error, %Error{message: "Timeout 1000ms exceeded."}} = Locator.check(locator, options)
+      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.check(locator, options)
     end
   end
 
   describe "Locator.click/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 1_000}
+      options = %{timeout: 200}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
       page |> Page.set_content("<a id='exists' target=_blank rel=noopener href='/one-style.html'>yo</a>")
@@ -74,13 +74,47 @@ defmodule Playwright.LocatorTest do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "a#bogus")
-      assert {:error, %Error{message: "Timeout 1000ms exceeded."}} = Locator.click(locator, options)
+      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.click(locator, options)
+    end
+  end
+
+  describe "Locator.click/2, mimicking Python tests" do
+    test "test_locators.py: `test_locators_click_should_work`", %{assets: assets, page: page} do
+      locator = Page.locator(page, "button")
+      page |> Page.goto(assets.prefix <> "/input/button.html")
+
+      Locator.click(locator, %{timeout: 200})
+      assert {:ok, "Clicked"} = Page.evaluate(page, "window['result']")
+    end
+
+    # NOTE: The following is not implemented/mimicked.
+    # The test deletes `window['Node']`, but that never existed on the page.
+    # test "test_locators.py: `test_locators_click_should_work_with_node_removed`"
+
+    test "test_locators.py: `test_locators_click_should_work_for_text_nodes`", %{assets: assets, page: page} do
+      locator = Page.locator(page, "button")
+      page |> Page.goto(assets.prefix <> "/input/button.html")
+
+      page
+      |> Page.evaluate("""
+      () => {
+        window['double'] = false;
+        const button = document.querySelector('button');
+        button.addEventListener('dblclick', event => {
+          window['double'] = true;
+        });
+      }
+      """)
+
+      Locator.dblclick(locator, %{timeout: 200})
+      assert {:ok, true} = Page.evaluate(page, "window['double']")
+      assert {:ok, "Clicked"} = Page.evaluate(page, "window['result']")
     end
   end
 
   describe "Locator.wait_for/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 1_000}
+      options = %{timeout: 200}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
 
@@ -130,6 +164,7 @@ defmodule Playwright.LocatorTest do
 
       Locator.evaluate(locator, "function (input) { return input.checked = false; }", handle)
 
+      # flaky
       {:ok, checked} = Locator.is_checked(locator)
       refute checked
     end

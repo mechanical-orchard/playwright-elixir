@@ -36,8 +36,8 @@ defmodule Playwright.Frame do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(owner, _initializer) do
-    Channel.bind(owner, :loadstate, fn %{params: params} = event ->
+  def init(frame, _initializer) do
+    Channel.bind(frame, :loadstate, fn %{params: params} = event ->
       target = event.target
 
       case params do
@@ -49,11 +49,11 @@ defmodule Playwright.Frame do
       end
     end)
 
-    Channel.bind(owner, :navigated, fn event ->
+    Channel.bind(frame, :navigated, fn event ->
       {:patch, %{event.target | url: event.params.url}}
     end)
 
-    {:ok, owner}
+    {:ok, frame}
   end
 
   # API
@@ -62,16 +62,16 @@ defmodule Playwright.Frame do
   # ---
 
   # @spec add_script_tag(Frame.t(), options()) :: {:ok, ElementHandle.t()}
-  # def add_script_tag(owner, options \\ %{})
+  # def add_script_tag(frame, options \\ %{})
 
   # @spec add_style_tag(Frame.t(), options()) :: {:ok, ElementHandle.t()}
-  # def add_style_tag(owner, options \\ %{})
+  # def add_style_tag(frame, options \\ %{})
 
   # @spec check(Frame.t(), binary(), options()) :: :ok
-  # def check(owner, selector, options \\ %{})
+  # def check(frame, selector, options \\ %{})
 
   # @spec child_frames(Frame.t()) :: {:ok, [Frame.t()]}
-  # def child_frames(owner)
+  # def child_frames(frame)
 
   # ---
 
@@ -93,14 +93,14 @@ defmodule Playwright.Frame do
   `option: timeout`, `/click/3` raises a `TimeoutError`. Passing zero for
   `option: timeout` disables this.
   """
-  @spec click(struct(), binary(), options()) :: :ok
+  @spec click(t() | Page.t() | {:ok, t() | Page.t()}, binary(), options()) :: :ok
   def click(owner, selector, options \\ %{})
 
-  def click(%Page{} = owner, selector, options) do
-    from(owner) |> click(selector, options)
+  def click(%Page{} = page, selector, options) do
+    from(page) |> click(selector, options)
   end
 
-  def click(%Frame{} = owner, selector, options) do
+  def click(%Frame{} = frame, selector, options) do
     params =
       Map.merge(
         %{
@@ -111,7 +111,7 @@ defmodule Playwright.Frame do
         options
       )
 
-    {:ok, _} = Channel.post(owner, :click, params)
+    {:ok, _} = Channel.post(frame, :click, params)
     :ok
   end
 
@@ -122,22 +122,81 @@ defmodule Playwright.Frame do
   # ---
 
   # @spec content(Frame.t()) :: {:ok, binary()}
-  # def content(owner)
+  # def content(frame)
 
-  # @spec dblclick(Frame.t(), binary(), options()) :: :ok
-  # def dblclick(owner, selector, options \\ %{})
+  # ---
+
+  @doc """
+  Double clicks an element matching selector.
+
+  Performs the following steps:
+
+    1. Find an element matching `param: selector`. If there is none, wait until
+      a matching element is attached to the DOM.
+    2. Wait for actionability checks on the matched element, unless
+      `option: force` is set. If the element is detached during the checks, the
+      whole action is retried.
+    3. Scroll the element into view if needed.
+    4. Use `Page.Mouse` to double click in the center of the element, or the
+      specified `option: position`.
+    5. Wait for initiated navigations to either succeed or fail, unless
+      `option: no_wait_after` is set. Note that if the first click of the
+      `dblclick/3` triggers a navigation event, the call will throw.
+
+  When all steps combined have not finished during the specified
+  `option: timeout`, throws a `TimeoutError`. Passing `timeout: 0` disables
+  this.
+
+  > NOTE
+  >
+  > `dblclick/3` dispatches two `click` events and a single `dblclick` event.
+
+  ## Returns
+
+    - :ok
+
+  ## Arguments
+
+  | key / name       | type   |                                   | description |
+  | ---------------- | ------ | --------------------------------- | ----------- |
+  | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
+  | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
+  | `:delay`         | option | `number() `                       | Time to wait between keydown and keyup in milliseconds. `(default: 0)` |
+  | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
+  | `:modifiers`     | option | `[:alt, :control, :meta, :shift]` | Modifier keys to press. Ensures that only these modifiers are pressed during the operation, and then restores current modifiers back. If not specified, currently pressed modifiers are used. |
+  | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:position`      | option | `%{x: x, y: y}`                   | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
+  | `:strict`        | option | `boolean()`                       | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
+  """
+  @spec dblclick(Frame.t(), binary(), options()) :: :ok
+  def dblclick(frame, selector, options \\ %{}) do
+    params =
+      Map.merge(
+        %{
+          selector: selector
+        },
+        options
+      )
+
+    {:ok, _} = Channel.post(frame, :dblclick, params)
+    :ok
+  end
+
+  # ---
 
   # @spec dispatch_event(Frame.t(), binary(), binary(), evaluation_argument(), options()) :: :ok
-  # def dispatch_event(owner, selector, type, arg, options \\ %{})
+  # def dispatch_event(frame, selector, type, arg, options \\ %{})
 
   # @spec drag_and_drop(Frame.t(), binary(), binary(), options()) :: :ok
-  # def drag_and_drop(owner, source, target, options \\ %{})
+  # def drag_and_drop(frame, source, target, options \\ %{})
 
   # @spec eval_on_selector(Frame.t(), binary(), expression(), any(), options()) :: :ok
-  # def eval_on_selector(owner, selector, expression, arg \\ nil, options \\ %{})
+  # def eval_on_selector(frame, selector, expression, arg \\ nil, options \\ %{})
 
   # @spec eval_on_selector_all(Frame.t(), binary(), expression(), any(), options()) :: :ok
-  # def eval_on_selector_all(owner, selector, expression, arg \\ nil, options \\ %{})
+  # def eval_on_selector_all(frame, selector, expression, arg \\ nil, options \\ %{})
 
   # ---
 
@@ -147,10 +206,10 @@ defmodule Playwright.Frame do
   !!!
   """
   @spec eval_on_selector(Frame.t(), binary(), binary(), term(), map()) :: term()
-  def eval_on_selector(owner, selector, expression, arg \\ nil, options \\ %{})
+  def eval_on_selector(frame, selector, expression, arg \\ nil, options \\ %{})
 
-  def eval_on_selector(%Frame{} = owner, selector, expression, arg, _options) do
-    Channel.post(owner, :eval_on_selector, %{
+  def eval_on_selector(%Frame{} = frame, selector, expression, arg, _options) do
+    Channel.post(frame, :eval_on_selector, %{
       selector: selector,
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
@@ -172,11 +231,11 @@ defmodule Playwright.Frame do
 
   !!!
   """
-  @spec evaluate(Frame.t() | Page.t(), expression(), any()) :: {:ok, serializable()}
+  @spec evaluate(t() | Page.t() | {:ok, t() | Page.t()}, expression(), any()) :: {:ok, serializable()}
   def evaluate(owner, expression, arg \\ nil)
 
-  def evaluate(%Frame{} = owner, expression, arg) do
-    Channel.post(owner, :evaluate_expression, %{
+  def evaluate(%Frame{} = frame, expression, arg) do
+    Channel.post(frame, :evaluate_expression, %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
@@ -184,8 +243,8 @@ defmodule Playwright.Frame do
     |> Helpers.Serialization.deserialize()
   end
 
-  def evaluate(%Page{} = owner, expression, arg) do
-    from(owner) |> evaluate(expression, arg)
+  def evaluate(%Page{} = page, expression, arg) do
+    from(page) |> evaluate(expression, arg)
   end
 
   def evaluate({:ok, owner}, expression, arg) do
@@ -197,19 +256,19 @@ defmodule Playwright.Frame do
 
   !!!
   """
-  @spec evaluate_handle(Frame.t() | Page.t(), expression(), any()) :: {:ok, serializable()}
+  @spec evaluate_handle(t() | Page.t() | {:ok, t() | Page.t()}, expression(), any()) :: {:ok, serializable()}
   def evaluate_handle(owner, expression, arg \\ nil)
 
-  def evaluate_handle(%Frame{} = owner, expression, arg) do
-    Channel.post(owner, :evaluate_expression_handle, %{
+  def evaluate_handle(%Frame{} = frame, expression, arg) do
+    Channel.post(frame, :evaluate_expression_handle, %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
     })
   end
 
-  def evaluate_handle(%Page{} = owner, expression, arg) do
-    from(owner) |> evaluate_handle(expression, arg)
+  def evaluate_handle(%Page{} = page, expression, arg) do
+    from(page) |> evaluate_handle(expression, arg)
   end
 
   def evaluate_handle({:ok, owner}, expression, arg) do
@@ -219,7 +278,7 @@ defmodule Playwright.Frame do
   # ---
 
   # @spec expect_navigation(Frame.t(), function(), options()) :: {:ok, Playwright.Response.t() | nil}
-  # def expect_navigation(owner, trigger, options \\ %{})
+  # def expect_navigation(frame, trigger, options \\ %{})
 
   # ---
 
@@ -238,26 +297,26 @@ defmodule Playwright.Frame do
   To send fine-grained keyboard events, use `Playwright.Frame.type/4`.
   """
   @spec fill(Frame.t(), binary(), binary()) :: :ok
-  def fill(%Frame{} = owner, selector, value) do
-    {:ok, _} = Channel.post(owner, :fill, %{selector: selector, value: value})
+  def fill(%Frame{} = frame, selector, value) do
+    {:ok, _} = Channel.post(frame, :fill, %{selector: selector, value: value})
     :ok
   end
 
   @spec fill(Page.t(), binary(), binary()) :: {:ok, Page.t()}
-  def fill(%Page{} = owner, selector, value) do
-    from(owner) |> fill(selector, value)
+  def fill(%Page{} = page, selector, value) do
+    from(page) |> fill(selector, value)
   end
 
   # ---
 
   # @spec focus(Frame.t(), binary(), options()) :: :ok
-  # def focus(owner, trigger, options \\ %{})
+  # def focus(frame, trigger, options \\ %{})
 
   # @spec frame_element(Frame.t()) :: {:ok, ElementHandle.t()}
-  # def frame_element(owner)
+  # def frame_element(frame)
 
   # @spec frame_locator(Frame.t(), binary()) :: {:ok, Locator.t()}
-  # def frame_locator(owner, selector)
+  # def frame_locator(frame, selector)
 
   # ---
 
@@ -265,7 +324,7 @@ defmodule Playwright.Frame do
   Returns element attribute value.
   !!!
   """
-  @spec get_attribute(Frame.t() | Page.t(), binary(), binary(), map()) :: {:ok, binary() | nil}
+  @spec get_attribute(t() | Page.t() | {:ok, t() | Page.t()}, binary(), binary(), map()) :: {:ok, binary() | nil}
   def get_attribute(owner, selector, name, options \\ %{})
 
   def get_attribute(%Frame{} = frame, selector, name, options) do
@@ -278,18 +337,18 @@ defmodule Playwright.Frame do
     Channel.post(frame, :get_attribute, params)
   end
 
-  def get_attribute(%Page{} = owner, selector, name, options) do
-    from(owner) |> get_attribute(selector, name, options)
+  def get_attribute(%Page{} = page, selector, name, options) do
+    from(page) |> get_attribute(selector, name, options)
   end
 
   @doc """
   !!!
   """
-  @spec goto(Page.t(), binary(), map()) :: {:ok, Response.t()} | {:error, term()}
+  @spec goto(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: {:ok, Response.t()} | {:error, term()}
   def goto(owner, url, params \\ %{})
 
-  def goto(%Page{} = owner, url, _params) do
-    Channel.post(from(owner), :goto, %{url: url})
+  def goto(%Page{} = page, url, _params) do
+    Channel.post(from(page), :goto, %{url: url})
   end
 
   def goto({:ok, owner}, url, params) do
@@ -299,7 +358,7 @@ defmodule Playwright.Frame do
   # ---
 
   # @spec hover(Frame.t(), binary(), options()) :: :ok
-  # def hover(owner, selector, options \\ %{})
+  # def hover(frame, selector, options \\ %{})
 
   @spec inner_html(Frame.t(), binary(), options()) :: {:ok, binary()}
   def inner_html(frame, selector, options \\ %{}) do
@@ -326,7 +385,7 @@ defmodule Playwright.Frame do
   end
 
   # @spec is_detached(Frame.t(), binary(), options()) :: {:ok, boolean()}
-  # def is_detached(owner, selector, options \\ %{})
+  # def is_detached(frame, selector, options \\ %{})
 
   @spec is_disabled(Frame.t(), binary(), options()) :: {:ok, boolean()}
   def is_disabled(frame, selector, options \\ %{}) do
@@ -361,16 +420,16 @@ defmodule Playwright.Frame do
   # ---
 
   # @spec locator(Frame.t(), binary()) :: Playwright.Locator.t()
-  # def locator(owner, selector)
+  # def locator(frame, selector)
 
   # @spec name(Frame.t()) :: binary()
-  # def name(owner)
+  # def name(frame)
 
   # @spec page(Frame.t()) :: Page.t()
-  # def page(owner)
+  # def page(frame)
 
   # @spec parent_page(Frame.t()) :: Frame.t()
-  # def parent_page(owner)
+  # def parent_page(frame)
 
   # ---
 
@@ -419,12 +478,12 @@ defmodule Playwright.Frame do
   @spec press(Frame.t() | Page.t(), binary(), binary(), options()) :: :ok
   def press(owner, selector, key, options \\ %{})
 
-  def press(%Page{} = owner, selector, key, options) do
-    from(owner) |> press(selector, key, options)
+  def press(%Page{} = page, selector, key, options) do
+    from(page) |> press(selector, key, options)
   end
 
-  def press(%Frame{} = owner, selector, key, options) do
-    {:ok, _} = Channel.post(owner, :press, Map.merge(%{selector: selector, key: key}, options))
+  def press(%Frame{} = frame, selector, key, options) do
+    {:ok, _} = Channel.post(frame, :press, Map.merge(%{selector: selector, key: key}, options))
     :ok
   end
 
@@ -445,16 +504,16 @@ defmodule Playwright.Frame do
   | `selector` | param  | `binary()`  | A selector to query for. See "working with selectors (guide)" for more details. |
   | `strict`   | option | `boolean()` | When true, the call requires `selector` to resolve to a single element. If the given `selector` resolves to more then one element, the call raises an error. |
   """
-  @spec query_selector(Frame.t() | Page.t(), binary(), map()) :: {:ok, ElementHandle.t() | nil}
+  @spec query_selector(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: {:ok, ElementHandle.t() | nil}
   def query_selector(owner, selector, options \\ %{})
 
-  def query_selector(%Page{} = owner, selector, options) do
-    from(owner) |> query_selector(selector, options)
+  def query_selector(%Page{} = page, selector, options) do
+    from(page) |> query_selector(selector, options)
   end
 
-  def query_selector(%Frame{} = owner, selector, options) do
+  def query_selector(%Frame{} = frame, selector, options) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(owner, :query_selector, params)
+    Channel.post(frame, :query_selector, params)
   end
 
   def query_selector({:ok, owner}, selector, options) do
@@ -466,15 +525,15 @@ defmodule Playwright.Frame do
   # NOTE: this should either delegate to `query_selector` w/ `strict: true`, or
   # be removed.
   @doc false
-  @spec query_selector!(struct(), binary(), map()) :: struct()
+  @spec query_selector!(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: struct()
   def query_selector!(owner, selector, options \\ %{})
 
-  def query_selector!(%Page{} = owner, selector, options) do
-    from(owner) |> query_selector!(selector, options)
+  def query_selector!(%Page{} = page, selector, options) do
+    from(page) |> query_selector!(selector, options)
   end
 
-  def query_selector!(%Frame{} = owner, selector, options) do
-    case query_selector(owner, selector, options) do
+  def query_selector!(%Frame{} = frame, selector, options) do
+    case query_selector(frame, selector, options) do
       {:ok, nil} -> raise "No element found for selector: #{selector}"
       {:ok, handle} -> handle
     end
@@ -504,16 +563,16 @@ defmodule Playwright.Frame do
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to query for. See "working with selectors (guide)" for more details. |
   """
-  @spec query_selector_all(Frame.t() | Page.t(), binary(), map()) :: {atom(), [ElementHandle.t()]}
+  @spec query_selector_all(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: {atom(), [ElementHandle.t()]}
   def query_selector_all(owner, selector, options \\ %{})
 
-  def query_selector_all(%Page{} = owner, selector, options) do
-    from(owner) |> query_selector_all(selector, options)
+  def query_selector_all(%Page{} = page, selector, options) do
+    from(page) |> query_selector_all(selector, options)
   end
 
-  def query_selector_all(%Frame{} = owner, selector, options) do
+  def query_selector_all(%Frame{} = frame, selector, options) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(owner, :query_selector_all, params)
+    Channel.post(frame, :query_selector_all, params)
   end
 
   def query_selector_all({:ok, owner}, selector, options) do
@@ -525,10 +584,10 @@ defmodule Playwright.Frame do
   # ---
 
   # @spec select_option(Frame.t(), binary(), any(), options()) :: {:ok, [binary()]}
-  # def select_option(owner, selector, values, options \\ %{})
+  # def select_option(frame, selector, values, options \\ %{})
 
   # @spec set_checked(Frame.t(), boolean(), options()) :: :ok
-  # def set_checked(owner, checked, options \\ %{})
+  # def set_checked(frame, checked, options \\ %{})
 
   # ---
 
@@ -544,17 +603,17 @@ defmodule Playwright.Frame do
   | `html`     | param  | `binary()`  | HTML markup to assign to the page. |
   | `timeout`  | option | `number()`  | Maximum operation time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_navigation_timeout/2`, `Playwright.BrowserContext.set_default_timeout/2`, `Playwright.Page.set_default_navigation_timeout/2` or `Playwright.Page.set_default_timeout/` functions. `(default: 30 seconds)` |
   """
-  @spec set_content(Frame.t() | Page.t(), binary(), options()) :: :ok
+  @spec set_content(t() | Page.t() | {:ok, t() | Page.t()}, binary(), options()) :: :ok
   def set_content(owner, html, options \\ %{})
 
-  def set_content(%Frame{} = owner, html, options) do
+  def set_content(%Frame{} = frame, html, options) do
     params = Map.merge(%{html: html, timeout: 30_000, wait_until: "load"}, options)
-    {:ok, _response} = Channel.post(owner, :set_content, params)
+    {:ok, _response} = Channel.post(frame, :set_content, params)
     :ok
   end
 
-  def set_content(%Page{} = owner, html, options) do
-    from(owner) |> set_content(html, options)
+  def set_content(%Page{} = page, html, options) do
+    from(page) |> set_content(html, options)
   end
 
   def set_content({:ok, owner}, html, options) do
@@ -564,10 +623,10 @@ defmodule Playwright.Frame do
   # ---
 
   # @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
-  # def set_input_files(owner, selector, files, options \\ %{})
+  # def set_input_files(frame, selector, files, options \\ %{})
 
   # @spec tap(Frame.t(), binary(), options()) :: :ok
-  # def tap(owner, selector, options \\ %{})
+  # def tap(frame, selector, options \\ %{})
 
   # ---
 
@@ -589,12 +648,12 @@ defmodule Playwright.Frame do
   @spec text_content(Frame.t() | Page.t(), binary(), map()) :: {:ok, binary() | nil}
   def text_content(owner, selector, options \\ %{})
 
-  def text_content(%Frame{} = owner, selector, options) do
-    Channel.post(owner, :text_content, Map.merge(%{selector: selector}, options))
+  def text_content(%Frame{} = frame, selector, options) do
+    Channel.post(frame, :text_content, Map.merge(%{selector: selector}, options))
   end
 
-  def text_content(%Page{} = owner, selector, options) do
-    from(owner) |> text_content(selector, options)
+  def text_content(%Page{} = page, selector, options) do
+    from(page) |> text_content(selector, options)
   end
 
   @doc """
@@ -607,24 +666,24 @@ defmodule Playwright.Frame do
   @spec title(Frame.t() | Page.t()) :: {:ok, binary()}
   def title(owner)
 
-  def title(%Frame{} = owner) do
-    Channel.post(owner, :title)
+  def title(%Frame{} = frame) do
+    Channel.post(frame, :title)
   end
 
-  def title(%Page{} = owner) do
-    from(owner) |> title()
+  def title(%Page{} = page) do
+    from(page) |> title()
   end
 
   # ---
 
   # @spec type(Frame.t(), binary(), binary(), options()) :: :ok
-  # def type(owner, selector, text, options \\ %{})
+  # def type(frame, selector, text, options \\ %{})
 
   # @spec uncheck(Frame.t(), binary(), options()) :: :ok
-  # def uncheck(owner, selector, options \\ %{})
+  # def uncheck(frame, selector, options \\ %{})
 
   # @spec wait_for_function(Frame.t(), expression(), any(), options()) :: {:ok, JSHandle.t()}
-  # def wait_for_function(owner, expression, arg \\ nil, options \\ %{})
+  # def wait_for_function(frame, expression, arg \\ nil, options \\ %{})
 
   # ---
 
@@ -637,31 +696,31 @@ defmodule Playwright.Frame do
   immediately.
   """
   @spec wait_for_load_state(Frame.t(), binary(), options()) :: {:ok, Frame.t()}
-  def wait_for_load_state(owner, state \\ "load", options \\ %{})
+  def wait_for_load_state(frame, state \\ "load", options \\ %{})
 
-  def wait_for_load_state(%Frame{} = owner, state, _options)
+  def wait_for_load_state(%Frame{} = frame, state, _options)
       when is_binary(state)
       when state in ["load", "domcontentloaded", "networkidle", "commit"] do
-    if Enum.member?(owner.load_states, state) do
-      {:ok, owner}
+    if Enum.member?(frame.load_states, state) do
+      {:ok, frame}
     else
-      {:ok, _} = Channel.wait_for(owner, :loadstate)
-      {:ok, owner}
+      {:ok, _} = Channel.wait_for(frame, :loadstate)
+      {:ok, frame}
     end
   end
 
-  def wait_for_load_state(%Frame{} = owner, state, options) when is_binary(state) do
-    wait_for_load_state(owner, state, options)
+  def wait_for_load_state(%Frame{} = frame, state, options) when is_binary(state) do
+    wait_for_load_state(frame, state, options)
   end
 
-  def wait_for_load_state(%Frame{} = owner, options, _) when is_map(options) do
-    wait_for_load_state(owner, "load", options)
+  def wait_for_load_state(%Frame{} = frame, options, _) when is_map(options) do
+    wait_for_load_state(frame, "load", options)
   end
 
   # ---
 
   # @spec wait_for_navigation(Frame.t(), options()) :: :ok
-  # def wait_for_navigation(owner, options \\ %{})
+  # def wait_for_navigation(frame, options \\ %{})
 
   # ---
 
@@ -673,29 +732,29 @@ defmodule Playwright.Frame do
   @spec wait_for_selector(Frame.t() | Page.t(), binary(), map()) :: {:ok, ElementHandle.t() | nil}
   def wait_for_selector(owner, selector, options \\ %{})
 
-  def wait_for_selector(%Frame{} = owner, selector, options) do
-    Channel.post(owner, :wait_for_selector, Map.merge(%{selector: selector}, options))
+  def wait_for_selector(%Frame{} = frame, selector, options) do
+    Channel.post(frame, :wait_for_selector, Map.merge(%{selector: selector}, options))
   end
 
-  def wait_for_selector(%Page{} = owner, selector, options) do
-    from(owner) |> wait_for_selector(selector, options)
+  def wait_for_selector(%Page{} = page, selector, options) do
+    from(page) |> wait_for_selector(selector, options)
   end
 
   # ---
 
   # @spec wait_for_timeout(Frame.t(), number()) :: :ok
-  # def wait_for_timeout(owner, timeout)
+  # def wait_for_timeout(frame, timeout)
 
   # @spec wait_for_url(Frame.t(), binary(), options()) :: :ok
-  # def wait_for_url(owner, url, options \\ %{})
+  # def wait_for_url(frame, url, options \\ %{})
 
   # ---
 
   # private
   # ---------------------------------------------------------------------------
 
-  defp from(%Page{} = owner) do
-    {:ok, frame} = Channel.find(owner, owner.main_frame)
+  defp from(%Page{} = page) do
+    {:ok, frame} = Channel.find(page, page.main_frame)
     frame
   end
 end

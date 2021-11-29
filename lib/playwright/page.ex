@@ -81,9 +81,6 @@ defmodule Playwright.Page do
   defdelegate click(page, selector, options \\ %{}),
     to: Playwright.Frame
 
-  # defdelegate dblclick(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
   # defdelegate dispatch_event(page, selector, type, event_init \\ nil, options \\ %{}),
   #   to: Playwright.Frame
 
@@ -298,6 +295,20 @@ defmodule Playwright.Page do
 
   def context({:ok, owner}) do
     context(owner)
+  end
+
+  @doc """
+  A shortcut for the main frame's `Playwright.Frame.dblclick/3`.
+  """
+  @spec dblclick(t() | {:ok, t()}, binary(), options()) :: :ok
+  def dblclick(page, selector, options \\ %{})
+
+  def dblclick(%Page{} = page, selector, options) do
+    main_frame(page) |> Frame.dblclick(selector, options)
+  end
+
+  def dblclick({:ok, page}, selector, options) do
+    dblclick(page, selector, options)
   end
 
   # ---

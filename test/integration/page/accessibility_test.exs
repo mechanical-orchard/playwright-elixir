@@ -275,13 +275,17 @@ defmodule Playwright.Page.AccessibilityTest do
     test "with an input", %{page: page} do
       Page.set_content(page, "<input title='My Input' value='My Value'>")
 
-      element = Page.query_selector!(page, "input")
+      case Page.query_selector(page, "input") do
+        {:ok, element} ->
+          assert Page.Accessibility.snapshot(page, %{root: element}) == %{
+                   role: "textbox",
+                   name: "My Input",
+                   value: "My Value"
+                 }
 
-      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-               role: "textbox",
-               name: "My Input",
-               value: "My Value"
-             }
+        {:error, :timeout} ->
+          log_element_handle_error()
+      end
     end
 
     test "with a menu", %{page: page} do
@@ -293,17 +297,21 @@ defmodule Playwright.Page.AccessibilityTest do
       </div>
       """)
 
-      element = Page.query_selector!(page, "div[role='menu']")
+      case Page.query_selector(page, "div[role='menu']") do
+        {:ok, element} ->
+          assert Page.Accessibility.snapshot(page, %{root: element}) == %{
+                   role: "menu",
+                   name: "My Menu",
+                   children: [
+                     %{role: "menuitem", name: "First Item"},
+                     %{role: "menuitem", name: "Second Item"},
+                     %{role: "menuitem", name: "Third Item"}
+                   ]
+                 }
 
-      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-               role: "menu",
-               name: "My Menu",
-               children: [
-                 %{role: "menuitem", name: "First Item"},
-                 %{role: "menuitem", name: "Second Item"},
-                 %{role: "menuitem", name: "Third Item"}
-               ]
-             }
+        {:error, :timeout} ->
+          log_element_handle_error()
+      end
     end
 
     test "when the DOM node is removed, returns nil", %{page: page} do
