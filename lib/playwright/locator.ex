@@ -54,7 +54,7 @@ defmodule Playwright.Locator do
   """
 
   import Playwright.Locator.Macros
-  alias Playwright.{ElementHandle, Frame, Locator, Page}
+  alias Playwright.{ElementHandle, Frame, JSHandle, Locator, Page}
   alias Playwright.Runner.Channel
 
   @enforce_keys [:frame, :selector]
