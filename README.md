@@ -59,3 +59,7 @@ end
 - Run tests: `bin/dev/test`
 - Start server: `bin/dev/start`
 - Run tests and push: `bin/dev/shipit`
+
+### Building assets for a release
+
+`mix assets.build`

@@ -1,0 +1,27 @@
+{
+  "name": "playwright_elixir",
+  "version": "0.1.16-preview-3",
+  "description": "The Playwright Elixir JS Code",
+  "license": "MIT",
+  "module": "./priv/static/playwright_elixir.esm.js",
+  "cli": "./priv/static/playwright_cli.js",
+  "main": "./priv/static/playwright_elixir.cjs.js",
+  "unpkg": "./priv/static/playwright_elixir.min.js",
+  "jsdelivr": "./priv/static/playwright_elixir.min.js",
+  "exports": {
+    "import": "./priv/static/playwright_elixir.esm.js",
+    "require": "./priv/static/playwright_elixir.cjs.js"
+  },
+  "author": "Corey Innis <corey@geometer.io>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/geometerio/playwright-elixir.git"
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "package.json",
+    "priv/static/*",
+    "assets/js/playwright_elixir/*"
+  ]
+}

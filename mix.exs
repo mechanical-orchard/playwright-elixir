@@ -11,6 +11,7 @@ defmodule Playwright.MixProject do
         "Playwright is an Elixir library to automate Chromium, Firefox and WebKit browsers with a single API. Playwright delivers automation that is ever-green, capable, reliable and fast.",
       dialyzer: dialyzer(),
       docs: docs(),
+      aliases: aliases(),
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
       homepage_url: @source_url,
@@ -48,6 +49,7 @@ defmodule Playwright.MixProject do
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.25", only: :dev, runtime: false},
+      {:esbuild, "~> 0.2", runtime: Mix.env() == :dev},
       {:gun, "~> 2.0.0-rc.2"},
       {:jason, "~> 1.2"},
       {:json_diff, "~> 0.1"},
@@ -105,7 +107,15 @@ defmodule Playwright.MixProject do
       links: %{
         homepage: @source_url,
         source: @source_url
-      }
+      },
+      files: ~w(assets/js lib priv LICENSE mix.exs package.json README.md)
+    ]
+  end
+
+  defp aliases do
+    [
+      "assets.build": ["esbuild module", "esbuild cdn", "esbuild cdn_min", "esbuild main", "esbuild cli"],
+      "assets.watch": ["esbuild module --watch"]
     ]
   end
 end
