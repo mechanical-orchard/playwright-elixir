@@ -41,27 +41,5 @@ defmodule Playwright.Mimic.PyLocatorsTest do
     # NOTE: Not implemented/mimicked.
     # The matching Python implementation has results that differ from the Node.js version.
     # test "should_have_repr", %{assets: assets, page: page}
-
-    test "should_query_existing_element", %{assets: assets, page: page} do
-      page |> Page.goto(assets.prefix <> "/playground.html")
-
-      page
-      |> Page.set_content("""
-      <html>
-      <body>
-        <div class="outer">
-          <div class="inner">A</div>
-        </div>
-      </body>
-      </html>
-      """)
-
-      html = Page.locator(page, "html")
-      outer = Locator.locator(html, ".outer")
-      inner = Locator.locator(outer, ".inner")
-
-      {:ok, handle} = Locator.element_handle(inner)
-      assert {:ok, "A"} = Page.evaluate(page, "e => e.textContent", handle)
-    end
   end
 end

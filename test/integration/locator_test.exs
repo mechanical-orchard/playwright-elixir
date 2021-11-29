@@ -1,7 +1,7 @@
 defmodule Playwright.LocatorTest do
   use Playwright.TestCase, async: true
 
-  alias Playwright.{Locator, Page}
+  alias Playwright.{ElementHandle, Locator, Page}
   alias Playwright.Runner.Channel.Error
 
   describe "Locator.all_inner_texts/1" do
@@ -78,28 +78,27 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  describe "Locator.wait_for/2" do
-    setup(%{assets: assets, page: page}) do
-      options = %{timeout: 200}
+  describe "Locator.element_handle/2" do
+    test "passed as `arg` to a nested Locator", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/playground.html")
 
-      page |> Page.goto(assets.prefix <> "/empty.html")
+      page
+      |> Page.set_content("""
+      <html>
+      <body>
+        <div class="outer">
+          <div class="inner">A</div>
+        </div>
+      </body>
+      </html>
+      """)
 
-      [options: options]
-    end
+      html = Page.locator(page, "html")
+      outer = Locator.locator(html, ".outer")
+      inner = Locator.locator(outer, ".inner")
 
-    test "waiting for 'attached'", %{options: options, page: page} do
-      frame = Page.main_frame(page)
-
-      locator = Locator.new(frame, "a#exists")
-
-      task =
-        Task.async(fn ->
-          assert :ok = Locator.wait_for(locator, Map.put(options, :state, "attached"))
-        end)
-
-      page |> Page.set_content("<a id='exists' target=_blank rel=noopener href='/one-style.html'>yo</a>")
-
-      Task.await(task)
+      {:ok, handle} = Locator.element_handle(inner)
+      assert {:ok, "A"} = Page.evaluate(page, "e => e.textContent", handle)
     end
   end
 
@@ -133,6 +132,17 @@ defmodule Playwright.LocatorTest do
       # flaky
       {:ok, checked} = Locator.is_checked(locator)
       refute checked
+    end
+  end
+
+  describe "Locator.evaluate_handle/3" do
+    test "returns a JSHandle", %{assets: assets, page: page} do
+      Page.goto(page, assets.dom)
+
+      inner = Page.locator(page, "#inner")
+      {:ok, text} = Locator.evaluate_handle(inner, "e => e.firstChild")
+
+      assert ElementHandle.string(text) == ~s|JSHandle@#text=Text,↵more text|
     end
   end
 
@@ -276,13 +286,11 @@ defmodule Playwright.LocatorTest do
 
       outer = Page.locator(page, "#outer")
       inner = Locator.locator(outer, "#inner")
-      check = Page.locator(page, "#check")
-      # text = Locator.evaluate_handle(inner, "e => e.firstChild")
+      check = Locator.locator(inner, "#check")
 
       assert Locator.string(outer) == ~s|Locator@#outer|
       assert Locator.string(inner) == ~s|Locator@#outer >> #inner|
       assert Locator.string(check) == ~s|Locator@#check|
-      # assert ElementHandle.string(text) == ~s|JSHandle@#text=Text,↵more text|
     end
   end
 
@@ -292,6 +300,31 @@ defmodule Playwright.LocatorTest do
 
       Page.goto(page, assets.dom)
       assert {:ok, "Text,\nmore text"} = Locator.text_content(locator)
+    end
+  end
+
+  describe "Locator.wait_for/2" do
+    setup(%{assets: assets, page: page}) do
+      options = %{timeout: 200}
+
+      page |> Page.goto(assets.prefix <> "/empty.html")
+
+      [options: options]
+    end
+
+    test "waiting for 'attached'", %{options: options, page: page} do
+      frame = Page.main_frame(page)
+
+      locator = Locator.new(frame, "a#exists")
+
+      task =
+        Task.async(fn ->
+          assert :ok = Locator.wait_for(locator, Map.put(options, :state, "attached"))
+        end)
+
+      page |> Page.set_content("<a id='exists' target=_blank rel=noopener href='/one-style.html'>yo</a>")
+
+      Task.await(task)
     end
   end
 end
