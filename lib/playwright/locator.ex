@@ -335,7 +335,28 @@ defmodule Playwright.Locator do
   end
 
   @doc """
-  ...
+  Returns the result of `param: expression` as a `Playwright.JSHandle`.
+
+  Passes the handle as the first argument to `param: expression`.
+
+  The only difference between `Playwright.Locator.evaluate/4` and
+  `Playwright.Locator.evaluate_handle/3` is that `evaluate_handle` returns
+  `JSHandle`.
+
+  See `Playwright.Page.evaluate_handle` for more details.
+
+  ## Returns
+
+    - `{:ok, Playwright.JSHandle.t()}`
+    - `{:error, Playwright.Runner.Channel.Error.t()}`
+
+  ## Arguments
+
+  | key / name   | type   |            | description |
+  | ------------ | ------ | ---------- | ----------- |
+  | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
+  | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
+  | `:timeout`   | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @spec evaluate_handle(Locator.t(), binary(), any(), options()) :: {:ok, JSHandle.t()} | {:error, Channel.Error.t()}
   def evaluate_handle(locator, expression, arg \\ nil, options \\ %{})
