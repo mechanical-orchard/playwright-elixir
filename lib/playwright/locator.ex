@@ -235,7 +235,7 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - :ok
+    - `:ok`
 
   ## Arguments
 
@@ -255,11 +255,40 @@ defmodule Playwright.Locator do
     Frame.dblclick(locator.frame, locator.selector, options)
   end
 
+  # ---
+
   # @spec dispatch_event(Locator.t(), atom() | binary(), any(), options()) :: :ok
   # def dispatch_event(locator, type, event_init \\ nil, options \\ %{})
 
-  # @spec element_handle(Locator.t(), options()) :: {:ok, ElementHandle.t()} | {:error, Channel.Error.t()}
-  # def element_handle(locator, options \\ %{})
+  # ---
+
+  @doc """
+  Resolves the given `Playwright.Locator` to the first matching DOM element.
+
+  If no elements matching the query are visible, waits for them up to a given
+  timeout. If multiple elements match the selector, throws.
+
+  ## Returns
+
+  - `{:ok, Playwright.ElementHandle.t()}`
+  - `{:error, Playwright.Runner.Channel.Error.t()}`
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec element_handle(Locator.t(), options()) :: {:ok, ElementHandle.t()} | {:error, Channel.Error.t()}
+  def element_handle(locator, options \\ %{}) do
+    options = Map.merge(%{strict: true, state: "attached"}, options)
+
+    with_element(locator, options, fn handle ->
+      {:ok, handle}
+    end)
+  end
+
+  # ---
 
   # @spec element_handles(Locator.t()) :: {:ok, [ElementHandle.t()]}
   # def element_handle(locator, options \\ %{})
