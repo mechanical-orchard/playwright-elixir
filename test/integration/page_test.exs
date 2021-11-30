@@ -3,6 +3,15 @@ defmodule Playwright.PageTest do
   alias Playwright.{Browser, ElementHandle, Page}
   alias Playwright.Runner.{Channel, Connection, EventInfo}
 
+  describe "Page.hover/2" do
+    test "triggers hover state", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/scrollable.html")
+      page |> Page.hover("#button-6")
+
+      assert {:ok, "button-6"} = Page.evaluate(page, "document.querySelector('button:hover').id")
+    end
+  end
+
   describe "Page.on/3" do
     @tag exclude: [:page]
     test "on :close (atom)", %{browser: browser} do

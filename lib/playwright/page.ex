@@ -365,6 +365,17 @@ defmodule Playwright.Page do
   # @spec go_forward(Page.t(), options()) :: {:ok, Response.t() | nil}
   # def go_forward(page, options \\ %{})
 
+  # ---
+
+  @doc """
+  A shortcut for the main frame's `Playwright.Frame.hover/2`.
+  """
+  def hover(%Page{} = page, selector) do
+    main_frame(page) |> Frame.hover(selector)
+  end
+
+  # ---
+
   # @spec is_closed(Page.t()) :: boolean()
   # def is_closed(page)
 

@@ -323,6 +323,16 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.hover/2" do
+    test "puts the matching element into :hover state", %{assets: assets, page: page} do
+      locator = Page.locator(page, "#button-6")
+      page |> Page.goto(assets.prefix <> "/input/scrollable.html")
+
+      Locator.hover(locator)
+      assert {:ok, "button-6"} = Page.evaluate(page, "document.querySelector('button:hover').id")
+    end
+  end
+
   describe "Locator.inner_html/2" do
     test "...", %{assets: assets, page: page} do
       content = ~s|<div id="inner">Text,\nmore text</div>|

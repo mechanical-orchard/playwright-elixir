@@ -153,7 +153,7 @@ defmodule Playwright.Frame do
 
   ## Returns
 
-    - :ok
+    - `:ok`
 
   ## Arguments
 
@@ -355,10 +355,47 @@ defmodule Playwright.Frame do
     goto(owner, url, params)
   end
 
-  # ---
+  @doc """
+  Hovers over an element matching `param: selector`.
 
-  # @spec hover(Frame.t(), binary(), options()) :: :ok
-  # def hover(frame, selector, options \\ %{})
+  Performs the following steps:
+
+  1. Find an element matching `param: selector`. If there is none, wait until
+    a matching element is attached to the DOM.
+  2. Wait for actionability checks on the matched element, unless
+    `option: force` option is set. If the element is detached during the checks,
+    the whole action is retried.
+  3. Scroll the element into view if needed.
+  4. Use `Page.Mouse` to hover over the center of the element, or the specified
+    `option: position`.
+  5. Wait for initiated navigations to either succeed or fail, unless
+    `option: no_wait_after` is set.
+
+  When all steps combined have not finished during the specified `option: timeout`,
+  throws a `TimeoutError`. Passing `0` timeout disables this.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name       | type   |                                   | description |
+  | ---------------- | ------ | --------------------------------- | ----------- |
+  | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
+  | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
+  | `:modifiers`     | option | `[:alt, :control, :meta, :shift]` | Modifier keys to press. Ensures that only these modifiers are pressed during the operation, and then restores current modifiers back. If not specified, currently pressed modifiers are used. |
+  | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:position`      | option | `%{x: x, y: y}`                   | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
+  | `:strict`        | option | `boolean()`                       | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
+  """
+  @spec hover(Frame.t(), binary(), options()) :: :ok
+  def hover(frame, selector, options \\ %{}) do
+    params = Map.merge(%{selector: selector}, options)
+    Channel.post(frame, :hover, params)
+  end
 
   @spec inner_html(Frame.t(), binary(), options()) :: {:ok, binary()}
   def inner_html(frame, selector, options \\ %{}) do
