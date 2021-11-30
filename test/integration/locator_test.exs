@@ -102,27 +102,27 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  describe "Locator.element_handle/2" do
-    test "passed as `arg` to a nested Locator", %{assets: assets, page: page} do
-      page |> Page.goto(assets.prefix <> "/playground.html")
-
+  describe "Locator.element_handles/1" do
+    test "returns a collection of handles", %{page: page} do
       page
       |> Page.set_content("""
       <html>
       <body>
-        <div class="outer">
-          <div class="inner">A</div>
-        </div>
+        <div>A</div>
+        <div>B</div>
       </body>
       </html>
       """)
 
       html = Page.locator(page, "html")
-      outer = Locator.locator(html, ".outer")
-      inner = Locator.locator(outer, ".inner")
+      divs = Locator.locator(html, "div")
 
-      {:ok, handle} = Locator.element_handle(inner)
-      assert {:ok, "A"} = Page.evaluate(page, "e => e.textContent", handle)
+      {:ok, handles} = Locator.element_handles(divs)
+
+      assert [
+               %ElementHandle{preview: "JSHandle@<div>A</div>"},
+               %ElementHandle{preview: "JSHandle@<div>B</div>"}
+             ] = handles
     end
   end
 
@@ -314,7 +314,7 @@ defmodule Playwright.LocatorTest do
 
       assert Locator.string(outer) == ~s|Locator@#outer|
       assert Locator.string(inner) == ~s|Locator@#outer >> #inner|
-      assert Locator.string(check) == ~s|Locator@#check|
+      assert Locator.string(check) == ~s|Locator@#outer >> #inner >> #check|
     end
   end
 

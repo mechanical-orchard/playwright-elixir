@@ -288,12 +288,17 @@ defmodule Playwright.Locator do
     end)
   end
 
-  # ---
+  @doc """
+  Resolves given locator to all matching DOM elements.
 
-  # @spec element_handles(Locator.t()) :: {:ok, [ElementHandle.t()]}
-  # def element_handle(locator, options \\ %{})
+  ## Returns
 
-  # ---
+  - `[Playwright.ElementHandle.t()]`
+  """
+  @spec element_handles(Locator.t()) :: {:ok, [ElementHandle.t()]}
+  def element_handles(locator) do
+    Frame.query_selector_all(locator.frame, locator.selector)
+  end
 
   # NOTE: not really `| nil`... also Serializable or JSHandle
   @doc """
