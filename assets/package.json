@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "electron": "15.3.1",
-    "playwright": "^1.16.3"
+    "electron": "16.0.2",
+    "playwright": "^1.17.0"
   }
 }
