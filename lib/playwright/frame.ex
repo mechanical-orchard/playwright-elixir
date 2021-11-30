@@ -283,28 +283,48 @@ defmodule Playwright.Frame do
   # ---
 
   @doc """
-  Waits for an element matching the `selector`, waits for
-  "actionability (guide)" checks, focuses the element, fills it and triggers an
-  input event after filling.
+  Fills a form field or `contenteditable` element with text.
 
-  Note that you can pass an empty string to clear the input field.
+  Waits for an element matching `param: selector`, waits for "actionability
+  checks", focuses the element, fills it and triggers an input event after
+  filling.
 
   If the target element is not an `<input>`, `<textarea>` or `contenteditable`
   element, this function raises an error. However, if the element is inside the
   `<label>` element that has an associated control, the control will be filled
   instead.
 
-  To send fine-grained keyboard events, use `Playwright.Frame.type/4`.
+  > NOTE
+  >
+  > - Pass an empty string to clear the input field.
+  > - To send fine-grained keyboard events, use `Playwright.Frame.type/4`.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name       | type   |                                   | description |
+  | ---------------- | ------ | --------------------------------- | ----------- |
+  | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
+  | `value`          | param  | `binary()`                        | Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element |
+  | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
+  | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:strict`        | option | `boolean()`                       | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec fill(Frame.t(), binary(), binary()) :: :ok
-  def fill(%Frame{} = frame, selector, value) do
-    {:ok, _} = Channel.post(frame, :fill, %{selector: selector, value: value})
+  @spec fill(t() | Page.t(), binary(), binary(), options()) :: :ok
+  def fill(frame, selector, value, options \\ %{})
+
+  def fill(%Frame{} = frame, selector, value, options) do
+    params = Map.merge(options, %{selector: selector, value: value})
+    {:ok, _} = Channel.post(frame, :fill, params)
     :ok
   end
 
-  @spec fill(Page.t(), binary(), binary()) :: {:ok, Page.t()}
-  def fill(%Page{} = page, selector, value) do
-    from(page) |> fill(selector, value)
+  def fill(%Page{} = page, selector, value, options) do
+    from(page) |> fill(selector, value, options)
   end
 
   # ---
@@ -394,7 +414,8 @@ defmodule Playwright.Frame do
   @spec hover(Frame.t(), binary(), options()) :: :ok
   def hover(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :hover, params)
+    {:ok, _} = Channel.post(frame, :hover, params)
+    :ok
   end
 
   @spec inner_html(Frame.t(), binary(), options()) :: {:ok, binary()}

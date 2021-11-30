@@ -312,6 +312,16 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.fill/3" do
+    test "filling a textarea element", %{assets: assets, page: page} do
+      locator = Page.locator(page, "input")
+      page |> Page.goto(assets.prefix <> "/input/textarea.html")
+
+      Locator.fill(locator, "some value")
+      assert {:ok, "some value"} = Page.evaluate(page, "result")
+    end
+  end
+
   describe "Locator.get_attribute/3" do
     test "...", %{assets: assets, page: page} do
       locator = Page.locator(page, "#outer")

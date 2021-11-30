@@ -394,15 +394,51 @@ defmodule Playwright.Locator do
     end)
   end
 
+  @doc """
+  Fills a form field or `contenteditable` element with text.
+
+  Waits for an element matching `param: selector`, waits for "actionability
+  checks", focuses the element, fills it and triggers an input event after
+  filling.
+
+  If the target element is not an `<input>`, `<textarea>` or `contenteditable`
+  element, this function raises an error. However, if the element is inside the
+  `<label>` element that has an associated control, the control will be filled
+  instead.
+
+  > NOTE
+  >
+  > - Pass an empty string to clear the input field.
+  > - To send fine-grained keyboard events, use `Playwright.Locator.type/3`.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name       | type   |                                   | description |
+  | ---------------- | ------ | --------------------------------- | ----------- |
+  | `value`          | param  | `binary()`                        | Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element |
+  | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
+  | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec fill(Locator.t(), binary(), options()) :: :ok
+  def fill(locator, value, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.fill(locator.frame, locator.selector, value, options)
+  end
+
   # ---
-  # @spec fill(Locator.t(), binary(), options()) :: :ok
-  # def fill(locator, value, options \\ %{})
 
   # @spec first(Locator.t()) :: Locator.t()
   # def first(locator)
 
   # @spec focus(Locator.t(), options()) :: :ok
   # def focus(locator, options \\ %{})
+
+  # ---
 
   @spec get_attribute(Locator.t(), binary(), options()) :: {:ok, binary() | nil}
   def get_attribute(%Locator{} = locator, name, options \\ %{}) do
