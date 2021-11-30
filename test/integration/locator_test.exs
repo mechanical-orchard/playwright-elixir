@@ -322,6 +322,17 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.focus/2" do
+    test "focuses/activates an element", %{assets: assets, page: page} do
+      button = Page.locator(page, "button")
+      page |> Page.goto(assets.prefix <> "/input/button.html")
+
+      assert {:ok, false} = Locator.evaluate(button, "(button) => document.activeElement === button")
+      Locator.focus(button)
+      assert {:ok, true} = Locator.evaluate(button, "(button) => document.activeElement === button")
+    end
+  end
+
   describe "Locator.get_attribute/3" do
     test "...", %{assets: assets, page: page} do
       locator = Page.locator(page, "#outer")

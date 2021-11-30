@@ -435,10 +435,26 @@ defmodule Playwright.Locator do
   # @spec first(Locator.t()) :: Locator.t()
   # def first(locator)
 
-  # @spec focus(Locator.t(), options()) :: :ok
-  # def focus(locator, options \\ %{})
-
   # ---
+
+  @doc """
+  Calls [focus](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus) on the element.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec focus(Locator.t(), options()) :: :ok
+  def focus(%Locator{} = locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.focus(locator.frame, locator.selector, options)
+  end
 
   @spec get_attribute(Locator.t(), binary(), options()) :: {:ok, binary() | nil}
   def get_attribute(%Locator{} = locator, name, options \\ %{}) do

@@ -329,8 +329,29 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec focus(Frame.t(), binary(), options()) :: :ok
-  # def focus(frame, trigger, options \\ %{})
+  @doc """
+  Fetches an element with `param: selector` and focuses it.
+
+  If no element matches the selector, waits until a matching element appears in the DOM.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name | type   |             | description |
+  | ---------- | ------ | ----------- | ----------- |
+  | `selector` | param  | `binary()`  | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
+  | `:strict`  | option | `boolean()` | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
+  | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec focus(t(), binary(), options()) :: :ok
+  def focus(%Frame{} = frame, selector, options \\ %{}) do
+    params = Map.merge(options, %{selector: selector})
+    {:ok, _} = Channel.post(frame, :focus, params)
+    :ok
+  end
 
   # @spec frame_element(Frame.t()) :: {:ok, ElementHandle.t()}
   # def frame_element(frame)

@@ -1,6 +1,8 @@
 defmodule Playwright.Runner.Channel.Callback do
   @moduledoc false
 
+  require Logger
+
   alias Playwright.ElementHandle
   alias Playwright.Runner.Channel
   alias Playwright.Runner.Channel.Callback
@@ -19,8 +21,6 @@ defmodule Playwright.Runner.Channel.Callback do
   def resolve(%Callback{listener: listener}, %Error{} = error) do
     GenServer.reply(listener, {:error, error})
   end
-
-  require Logger
 
   def resolve(%Callback{listener: listener}, %Response{parsed: %ElementHandle{} = handle}) do
     Task.start_link(fn ->
@@ -56,7 +56,10 @@ defmodule Playwright.Runner.Channel.Callback do
 
   defp await_preview(%ElementHandle{} = handle, timeout) do
     if DateTime.compare(DateTime.utc_now(), timeout) == :gt do
-      {:error, :timeout}
+      # {:error, :timeout}
+      # hmm... maybe it's OK in most cases that the preview is not "hydrated" (?)
+      Logger.warn("Timed out awaiting preview update... returning handle as is: #{inspect(handle)}")
+      {:ok, handle}
     else
       case handle.preview do
         "JSHandle@node" ->

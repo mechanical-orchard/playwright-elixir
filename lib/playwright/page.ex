@@ -103,9 +103,6 @@ defmodule Playwright.Page do
   defdelegate fill(page, selector, value),
     to: Playwright.Frame
 
-  # defdelegate focus(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
   defdelegate get_attribute(page, selector, name, options \\ %{}),
     to: Playwright.Frame
 
@@ -346,6 +343,18 @@ defmodule Playwright.Page do
 
   # @spec expose_function(Page.t(), binary(), function()) :: :ok
   # def expose_function(page, name, callback)
+
+  # ---
+
+  @doc """
+  A shortcut for the main frame's `Playwright.Frame.focus/3`.
+  """
+  @spec focus(t(), binary(), options()) :: :ok
+  def focus(%Page{} = page, selector, options \\ %{}) do
+    main_frame(page) |> Frame.focus(selector, options)
+  end
+
+  # ---
 
   # @spec frame(Page.t(), binary()) :: Frame.t() | nil
   # def frame(page, selector)
