@@ -124,6 +124,26 @@ defmodule Playwright.LocatorTest do
                %ElementHandle{preview: "JSHandle@<div>B</div>"}
              ] = handles
     end
+
+    test "returns an empty list when there are no matches", %{page: page} do
+      page
+      |> Page.set_content("""
+      <html>
+      <body>
+        <div>A</div>
+        <div>B</div>
+      </body>
+      </html>
+      """)
+
+      html = Page.locator(page, "html")
+      para = Locator.locator(html, "p")
+
+      {:ok, handles} = Locator.element_handles(para)
+
+      assert [] = handles
+      assert length(handles) == 0
+    end
   end
 
   describe "Locator.evaluate/4" do
