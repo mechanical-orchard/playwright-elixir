@@ -537,8 +537,71 @@ defmodule Playwright.Locator do
   # @spec scroll_into_view_if_needed(Locator.t(), options()) :: :ok
   # def scroll_into_view_if_needed(locator, options \\ %{})
 
-  # @spec select_option(Locator.t(), any(), options()) :: {:ok, [binary()]}
-  # def select_option(locator, values, options \\ %{})
+  # ---
+
+  @doc """
+  Selects one or more options from a `<select>` element.
+
+  Performs the following steps:
+
+  1. Waits for actionability checks
+  2. Waits until all specified options are present in the `<select>` element
+  3. Selects those options
+
+  If the target element is not a `<select>` element, raises an error. However,
+  if the element is inside the `<label>` element that has an associated control,
+  the control will be used instead.
+
+  Returns the list of option values that have been successfully selected.
+
+  Triggers a change and input event once all the provided options have been selected.
+
+  ## Example
+      locator = Page.locator(page, "select#colors")
+
+      # single selection matching the value
+      Locator.select_option(locator, "blue")
+
+      # single selection matching both the label
+      Locator.select_option(locator, %{label: "blue"})
+
+      # multiple selection
+      Locator.select_option(locator, %{value: ["red", "green", "blue"]})
+
+  ## Returns
+
+    - `{:ok, [binary()]}`
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `values`         | param  | `any()`         | Options to select. |
+  | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
+  | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+
+  ### On `values`
+
+  If the `<select>` has the `multiple` attribute, all matching options are
+  selected, otherwise only the first option matching one of the passed options
+  is selected.
+
+  String values are equivalent to `%{value: "string"}`.
+
+  Option is considered matching if all specified properties match.
+
+  - `value <binary>` Matches by `option.value`. `(optional)`.
+  - `label <binary>` Matches by `option.label`. `(optional)`.
+  - `index <number>` Matches by the index. `(optional)`.
+  """
+  @spec select_option(Locator.t(), any(), options()) :: {:ok, [binary()]}
+  def select_option(locator, values, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.select_option(locator.frame, locator.selector, values, options)
+  end
+
+  # ---
 
   # @spec select_text(Locator.t(), options()) :: :ok
   # def select_text(locator, options \\ %{})

@@ -1,5 +1,7 @@
 defmodule Playwright.Response do
-  @moduledoc false
+  @moduledoc """
+  ...
+  """
   use Playwright.ChannelOwner
   alias Playwright.Response
 

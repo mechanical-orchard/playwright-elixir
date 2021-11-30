@@ -40,6 +40,10 @@ defmodule Playwright.Runner.Channel.Response do
     value
   end
 
+  defp parse([{:cookies, cookies}], _catalog) do
+    cookies
+  end
+
   defp parse([{:elements, value}], catalog) do
     Enum.map(value, fn %{guid: guid} -> Catalog.get(catalog, guid) end)
   end
@@ -48,8 +52,8 @@ defmodule Playwright.Runner.Channel.Response do
     value
   end
 
-  defp parse([{:cookies, cookies}], _catalog) do
-    cookies
+  defp parse([{:values, values}], _catalog) do
+    values
   end
 
   defp parse([], _catalog) do

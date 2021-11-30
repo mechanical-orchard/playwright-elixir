@@ -169,9 +169,6 @@ defmodule Playwright.Page do
   # defdelegate pause(page),
   #   to: Playwright.BrowserContext
 
-  # defdelegate select_option(page, selector, values \\ nil, options \\ %{}),
-  #   to: Playwright.Frame
-
   defdelegate set_content(page, html, options \\ %{}),
     to: Playwright.Frame
 
@@ -451,6 +448,14 @@ defmodule Playwright.Page do
 
   def screenshot({:ok, owner}, options) do
     screenshot(owner, options)
+  end
+
+  @doc """
+  A shortcut for the main frame's `Playwright.Frame.select_option/4`.
+  """
+  @spec select_option(t(), binary(), any(), options()) :: {:ok, [binary()]}
+  def select_option(%Page{} = page, selector, values \\ nil, options \\ %{}) do
+    main_frame(page) |> Frame.select_option(selector, values, options)
   end
 
   # ---

@@ -134,6 +134,92 @@ defmodule Playwright.PageTest do
     end
   end
 
+  describe "Page.select_option/4" do
+    test "with a single option", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+      page |> Page.select_option("select", "blue")
+
+      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onChange")
+      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onInput")
+    end
+
+    test "with a single option by :value", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+      page |> Page.select_option("select", %{value: "blue"})
+
+      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onChange")
+      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onInput")
+    end
+
+    test "with a single option by :label", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+      page |> Page.select_option("select", %{label: "Indigo"})
+
+      assert {:ok, ["indigo"]} = Page.evaluate(page, "() => window['result'].onChange")
+      assert {:ok, ["indigo"]} = Page.evaluate(page, "() => window['result'].onInput")
+    end
+
+    test "with a single option by ElementHandle", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+      page |> Page.select_option("select", Page.query_selector!(page, "[id=whiteOption]"))
+
+      assert {:ok, ["white"]} = Page.evaluate(page, "() => window['result'].onChange")
+      assert {:ok, ["white"]} = Page.evaluate(page, "() => window['result'].onInput")
+    end
+
+    test "with a single option by :index", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+      page |> Page.select_option("select", %{index: 2})
+
+      assert {:ok, ["brown"]} = Page.evaluate(page, "() => window['result'].onChange")
+      assert {:ok, ["brown"]} = Page.evaluate(page, "() => window['result'].onInput")
+    end
+
+    test "with a single option by multiple attributes", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+      page |> Page.select_option("select", %{value: "green", label: "Green"})
+
+      assert {:ok, ["green"]} = Page.evaluate(page, "() => window['result'].onChange")
+      assert {:ok, ["green"]} = Page.evaluate(page, "() => window['result'].onInput")
+    end
+
+    test "with a single option given mismatched attributes, returns a timeout", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+
+      assert {:error, %Channel.Error{message: "Timeout 200ms exceeded."}} =
+               Page.select_option(page, "select", %{value: "green", label: "Brown"}, %{timeout: 200})
+    end
+
+    test "with multiple options and a single-option select, selects the first", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+      page |> Page.select_option("select", ["blue", "green", "red"])
+
+      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onChange")
+      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onInput")
+    end
+
+    # test "does not throw when select causes navigation"
+    # test "selects multiple options"
+    # test "selects multiple options with attributes"
+    # test "selects options with sibling label"
+    # test "selects options with outer label"
+    # test "respects event bubbling"
+    # test "throws when element is not a <select>"
+    # test "returns [] on no matched values"
+    # test "returns an array of matched values"
+    # test "returns an array of one element when multiple is not set"
+    # test "returns [] on no values',async ({ page, server }) => {
+    # test "does not allow nil items',async ({ page, server }) => {
+    # test "unselects with nil',async ({ page, server }) => {
+    # test "deselects all options when passed no values for a multiple select',async ({ page, server }) => {
+    # test "deselects all options when passed no values for a select without multiple',async ({ page, server }) => {
+    # test "throws if passed wrong types"
+    # test "works when re-defining top-level Event class"
+    # test "waits for option to be present',async ({ page, server }) => {
+    # test "waits for option index to be present',async ({ page, server }) => {
+    # test "waits for multiple options to be present',async ({ page, server }) => {
+  end
+
   describe "more Page stuff..." do
     test ".query_selector/2", %{assets: assets, connection: connection, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")

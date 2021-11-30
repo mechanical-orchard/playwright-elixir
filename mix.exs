@@ -88,10 +88,17 @@ defmodule Playwright.MixProject do
           Playwright.Page.Locator,
           Playwright.RemoteBrowser,
           Playwright.Request,
+          Playwright.Response,
+          Playwright.Route,
+          Playwright.Selectors,
+          Playwright.WebSocket,
           Playwright.Worker
         ],
         Runner: [
           Playwright.Runner.Config
+        ],
+        Utilities: [
+          Playwright.CLI
         ],
         "Test Helpers": [
           PlaywrightTest.Case,

@@ -639,10 +639,71 @@ defmodule Playwright.Frame do
 
   defdelegate qq(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
 
-  # ---
+  @doc """
+  Selects one or more options from a `<select>` element.
 
-  # @spec select_option(Frame.t(), binary(), any(), options()) :: {:ok, [binary()]}
-  # def select_option(frame, selector, values, options \\ %{})
+  Performs the following steps:
+
+  1. Waits for an element matching `param: selector`
+  2. Waits for actionability checks
+  3. Waits until all specified options are present in the `<select>` element
+  4. Selects those options
+
+  If the target element is not a `<select>` element, raises an error. However,
+  if the element is inside the `<label>` element that has an associated control,
+  the control will be used instead.
+
+  Returns the list of option values that have been successfully selected.
+
+  Triggers a change and input event once all the provided options have been selected.
+
+  ## Example
+
+      # single selection matching the value
+      Frame.select_option(frame, "select#colors", "blue")
+
+      # single selection matching both the label
+      Frame.select_option(frame, "select#colors", %{label: "blue"})
+
+      # multiple selection
+      Frame.select_option(frame, "select#colors", %{value: ["red", "green", "blue"]})
+
+  ## Returns
+
+    - `{:ok, [binary()]}`
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `selector`       | param  | `binary()`      | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
+  | `values`         | param  | `any()`         | Options to select. |
+  | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
+  | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:strict`        | option | `boolean()`     | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+
+  ### On `values`
+
+  If the `<select>` has the `multiple` attribute, all matching options are
+  selected, otherwise only the first option matching one of the passed options
+  is selected.
+
+  String values are equivalent to `%{value: "string"}`.
+
+  Option is considered matching if all specified properties match.
+
+  - `value <binary>` Matches by `option.value`. `(optional)`.
+  - `label <binary>` Matches by `option.label`. `(optional)`.
+  - `index <number>` Matches by the index. `(optional)`.
+  """
+  @spec select_option(Frame.t(), binary(), any(), options()) :: {:ok, [binary()]}
+  def select_option(%Frame{} = frame, selector, values, options \\ %{}) do
+    params = Map.merge(options, Map.merge(select_option_values(values), %{selector: selector}))
+    Channel.post(frame, :select_option, params)
+  end
+
+  # ---
 
   # @spec set_checked(Frame.t(), boolean(), options()) :: :ok
   # def set_checked(frame, checked, options \\ %{})
@@ -814,5 +875,57 @@ defmodule Playwright.Frame do
   defp from(%Page{} = page) do
     {:ok, frame} = Channel.find(page, page.main_frame)
     frame
+  end
+
+  # NOTE: these might all want to move to ElementHandle
+  defp select_option_values(values) when is_nil(values) do
+    %{}
+  end
+
+  defp select_option_values(values) when not is_list(values) do
+    select_option_values([values])
+  end
+
+  defp select_option_values(values) when is_list(values) do
+    if Enum.empty?(values) do
+      %{}
+    else
+      if is_struct(List.first(values), ElementHandle) do
+        # "elements":[{"guid":"handle@861d62cf4e61c383ddd049a675c895eb"}]
+        elements =
+          Enum.into(values, [], fn value ->
+            select_option_value(value)
+          end)
+
+        %{elements: elements}
+      else
+        options =
+          Enum.into(values, [], fn value ->
+            select_option_value(value)
+          end)
+
+        %{options: options}
+      end
+    end
+  end
+
+  defp select_option_value(value) when is_binary(value) do
+    %{value: value}
+  end
+
+  defp select_option_value(%{index: _} = value) when is_map(value) do
+    value
+  end
+
+  defp select_option_value(%{label: _} = value) when is_map(value) do
+    value
+  end
+
+  defp select_option_value(%{value: _} = value) when is_map(value) do
+    value
+  end
+
+  defp select_option_value(%ElementHandle{guid: guid}) do
+    %{guid: guid}
   end
 end

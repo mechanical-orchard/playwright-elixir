@@ -480,6 +480,17 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.select_option/2" do
+    test "single selection matching value", %{assets: assets, page: page} do
+      locator = Page.locator(page, "select")
+      page |> Page.goto(assets.prefix <> "/input/select.html")
+
+      Locator.select_option(locator, "blue")
+      assert {:ok, ["blue"]} = Page.evaluate(page, "result.onChange")
+      assert {:ok, ["blue"]} = Page.evaluate(page, "result.onInput")
+    end
+  end
+
   describe "Locator.text_content/2" do
     test "...", %{assets: assets, page: page} do
       locator = Page.locator(page, "#inner")
