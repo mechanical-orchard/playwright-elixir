@@ -569,10 +569,41 @@ defmodule Playwright.Locator do
   # @spec type(Locator.t(), binary(), options()) :: :ok
   # def type(locator, text, options \\ %{})
 
-  # @spec uncheck(Locator.t(), options()) :: :ok
-  # def uncheck(locator, options \\ %{})
-
   # ---
+
+  @doc """
+  Unchecks the (checkmark) element by performing the following steps:
+
+    1. Ensure that element is a checkbox or a radio input. If not, this method
+      throws. If the element is already checked, this method returns immediately.
+    2. Wait for actionability checks on the element, unless force option is set.
+    3. Scroll the element into view if needed.
+    4. Use `Playwright.Page.Mouse` to click in the center of the element.
+    5. Wait for initiated navigations to either succeed or fail, unless
+      `option: no_wait_after` is set.
+    6. Ensure that the element is now checked. If not, this method throws.
+
+  If the element is detached from the DOM at any moment during the action,
+  this method throws.
+
+  When all steps combined have not finished during the specified timeout, this
+  method throws a `TimeoutError`. Passing `0` timeout disables this.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
+  | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:position`      | option | `%{x: x, y: y}` | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
+  | `:trial`         | option | `boolean()`     | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
+  """
+  def_locator(:uncheck, :uncheck)
 
   @doc """
   Returns when element specified by locator satisfies `option: state`.

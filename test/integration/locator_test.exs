@@ -33,7 +33,7 @@ defmodule Playwright.LocatorTest do
       options = %{timeout: 200}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
-      page |> Page.set_content("<input id='exists' type='checkbox'/>")
+      page |> Page.set_content("<input id='checkbox' type='checkbox'/>")
 
       [options: options]
     end
@@ -41,7 +41,7 @@ defmodule Playwright.LocatorTest do
     test "returns :ok on a successful 'check'", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Locator.new(frame, "input#exists")
+      locator = Locator.new(frame, "input#checkbox")
       assert :ok = Locator.check(locator, options)
     end
 
@@ -58,7 +58,7 @@ defmodule Playwright.LocatorTest do
       options = %{timeout: 200}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
-      page |> Page.set_content("<a id='exists' target=_blank rel=noopener href='/one-style.html'>yo</a>")
+      page |> Page.set_content("<a id='link' target=_blank rel=noopener href='/one-style.html'>yo</a>")
 
       [options: options]
     end
@@ -66,7 +66,7 @@ defmodule Playwright.LocatorTest do
     test "returns :ok on a successful click", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Locator.new(frame, "a#exists")
+      locator = Locator.new(frame, "a#link")
       assert :ok = Locator.click(locator, options)
     end
 
@@ -489,6 +489,30 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.uncheck/2" do
+    setup(%{assets: assets, page: page}) do
+      options = %{timeout: 200}
+
+      page |> Page.goto(assets.prefix <> "/empty.html")
+      page |> Page.set_content("<input id='checkbox' type='checkbox' checked/>")
+
+      [options: options]
+    end
+
+    test "returns :ok on a successful 'uncheck'", %{options: options, page: page} do
+      locator = Page.locator(page, "input#checkbox")
+      assert {:ok, true} = Locator.is_checked(locator)
+
+      assert :ok = Locator.uncheck(locator, options)
+      assert {:ok, false} = Locator.is_checked(locator)
+    end
+
+    test "returns a timeout error when unable to 'uncheck'", %{options: options, page: page} do
+      locator = Page.locator(page, "input#bogus")
+      assert {:error, %Channel.Error{message: "Timeout 200ms exceeded."}} = Locator.uncheck(locator, options)
+    end
+  end
+
   describe "Locator.wait_for/2" do
     setup(%{assets: assets, page: page}) do
       options = %{timeout: 200}
@@ -501,14 +525,14 @@ defmodule Playwright.LocatorTest do
     test "waiting for 'attached'", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
-      locator = Locator.new(frame, "a#exists")
+      locator = Locator.new(frame, "a#link")
 
       task =
         Task.async(fn ->
           assert :ok = Locator.wait_for(locator, Map.put(options, :state, "attached"))
         end)
 
-      page |> Page.set_content("<a id='exists' target=_blank rel=noopener href='/one-style.html'>yo</a>")
+      page |> Page.set_content("<a id='link' target=_blank rel=noopener href='/one-style.html'>yo</a>")
 
       Task.await(task)
     end
