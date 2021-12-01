@@ -28,6 +28,17 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.bounding_box/2" do
+    test "returns position and dimension", %{assets: assets, page: page} do
+      locator = Page.locator(page, ".box:nth-of-type(13)")
+      page |> Page.set_viewport_size(%{width: 500, height: 500})
+      page |> Page.goto(assets.prefix <> "/grid.html")
+
+      {:ok, bounds} = Locator.bounding_box(locator)
+      assert bounds == %{x: 100, y: 50, width: 50, height: 50}
+    end
+  end
+
   describe "Locator.check/2" do
     setup(%{assets: assets, page: page}) do
       options = %{timeout: 200}

@@ -127,12 +127,12 @@ defmodule Playwright.Locator do
     Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.textContent || '')")
   end
 
-  # ---
-
-  # @spec bounding_box(Locator.t(), options()) :: {:ok, map() | nil}
-  # def bounding_box(locator, options \\ %{})
-
-  # ---
+  @spec bounding_box(Locator.t(), options()) :: {:ok, map() | nil}
+  def bounding_box(%Locator{} = locator, options \\ %{}) do
+    with_element(locator, options, fn handle ->
+      ElementHandle.bounding_box(handle)
+    end)
+  end
 
   @doc """
   Checks the (checkmark) element by performing the following steps:

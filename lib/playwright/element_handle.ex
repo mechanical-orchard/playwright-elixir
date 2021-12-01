@@ -86,10 +86,12 @@ defmodule Playwright.ElementHandle do
   # API
   # ---------------------------------------------------------------------------
 
-  # ---
+  @spec bounding_box(ElementHandle.t()) :: {:ok, map() | nil}
+  def bounding_box(handle) do
+    Channel.post(handle, :bounding_box)
+  end
 
-  # @spec bounding_box(ElementHandle.t()) :: {:ok, map() | nil}
-  # def bounding_box(handle)
+  # ---
 
   # @spec check(ElementHandle.t(), options()) :: :ok
   # def check(handle, options \\ %{})
