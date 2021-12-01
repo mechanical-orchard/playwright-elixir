@@ -49,6 +49,7 @@ defmodule Playwright.Page do
   @property :main_frame
   @property :owned_context
 
+  @type dimensions :: map()
   @type function_or_options :: fun() | options() | nil
   @type options :: map()
 
@@ -491,8 +492,11 @@ defmodule Playwright.Page do
   # @spec set_extra_http_headers(Page.t(), map()) :: :ok
   # def set_extra_http_headers(page, headers)
 
-  # @spec set_viewport_size(Page.t(), dimensions()) :: :ok
-  # def set_viewport_size(page, dimensions)
+  @spec set_viewport_size(Page.t(), dimensions()) :: :ok
+  def set_viewport_size(%Page{} = page, dimensions) do
+    {:ok, _} = Channel.post(page, :set_viewport_size, %{viewport_size: dimensions})
+    :ok
+  end
 
   # @spec unroute(Page.t(), function()) :: :ok
   # def unroute(owner, handler \\ nil)

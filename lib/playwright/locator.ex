@@ -614,12 +614,12 @@ defmodule Playwright.Locator do
     Frame.press(locator.frame, locator.selector, key, options)
   end
 
-  # ---
-
-  # @spec screenshot(Locator.t(), options()) :: {:ok, binary()}
-  # def screenshot(locator, options \\ %{})
-
-  # ---
+  @spec screenshot(Locator.t(), options()) :: {:ok, binary()}
+  def screenshot(locator, options \\ %{}) do
+    with_element(locator, options, fn handle ->
+      ElementHandle.screenshot(handle, options)
+    end)
+  end
 
   @spec scroll_into_view(Locator.t(), options()) :: :ok
   def scroll_into_view(%Locator{} = locator, options \\ %{}) do

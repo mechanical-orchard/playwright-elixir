@@ -251,10 +251,24 @@ defmodule Playwright.ElementHandle do
   # def query_selector_all(handle, selector)
   # defdelegate qq(handle, selector), to: __MODULE__, as: :query_selector_all
 
-  # @spec screenshot(ElementHandle.t(), options()) :: {:ok, binary()}
-  # def screenshot(handle, options \\ %{})
-
   # ---
+
+  @spec screenshot(ElementHandle.t(), options()) :: {:ok, binary()}
+  def screenshot(%ElementHandle{} = handle, options \\ %{}) do
+    case Map.pop(options, :path) do
+      {nil, params} ->
+        {:ok, encoded} = Channel.post(handle, :screenshot, params)
+        Base.decode64(encoded)
+
+      {path, params} ->
+        [_, filetype] = String.split(path, ".")
+
+        {:ok, encoded} = Channel.post(handle, :screenshot, Map.put(params, :type, filetype))
+        {:ok, decoded} = Base.decode64(encoded)
+        File.write!(path, decoded)
+        {:ok, decoded}
+    end
+  end
 
   @spec scroll_into_view(ElementHandle.t(), options()) :: :ok
   def scroll_into_view(%ElementHandle{} = handle, options \\ %{}) do

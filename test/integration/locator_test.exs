@@ -493,6 +493,19 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.screenshot/2" do
+    test "captures an image of the element", %{assets: assets, page: page} do
+      fixture = File.read!("test/support/fixtures/screenshot-element-bounding-box-chromium.png")
+      locator = Page.locator(page, ".box:nth-of-type(3)")
+
+      page |> Page.set_viewport_size(%{width: 500, height: 500})
+      page |> Page.goto(assets.prefix <> "/grid.html")
+
+      {:ok, data} = Locator.screenshot(locator)
+      assert Base.encode64(data) == Base.encode64(fixture)
+    end
+  end
+
   describe "Locator.scroll_into_view/2" do
     test "scrolls the element into view, if needed", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/offscreenbuttons.html")
