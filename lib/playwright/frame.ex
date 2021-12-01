@@ -853,12 +853,12 @@ defmodule Playwright.Frame do
   #   }
   # end
 
-  # ---
-
-  # @spec tap(Frame.t(), binary(), options()) :: :ok
-  # def tap(frame, selector, options \\ %{})
-
-  # ---
+  @spec tap(Frame.t(), binary(), options()) :: :ok
+  def tap(%Frame{} = frame, selector, options \\ %{}) do
+    params = Map.merge(options, %{selector: selector})
+    {:ok, _} = Channel.post(frame, :tap, params)
+    :ok
+  end
 
   @doc """
   Returns `Playwright.ElementHandle.text_content/1`

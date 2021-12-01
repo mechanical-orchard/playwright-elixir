@@ -710,12 +710,11 @@ defmodule Playwright.Locator do
     "Locator@#{locator.selector}"
   end
 
-  # ---
-
-  # @spec tap(Locator.t(), options()) :: :ok
-  # def tap(locator, options \\ %{})
-
-  # ---
+  @spec tap(Locator.t(), options()) :: :ok
+  def tap(locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.tap(locator.frame, locator.selector, options)
+  end
 
   def_locator(:text_content, :text_content)
 

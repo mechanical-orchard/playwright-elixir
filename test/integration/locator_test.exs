@@ -649,6 +649,21 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.tap/1" do
+    @tag exclude: [:page]
+    test "registers 'click' events, when touch is enabled", %{browser: browser} do
+      {:ok, context} = Playwright.Browser.new_context(browser, %{has_touch: true})
+      {:ok, page} = Playwright.BrowserContext.new_page(context)
+
+      locator = Page.locator(page, "button")
+      page |> Page.set_content("<button />")
+      page |> Page.evaluate("(btn) => btn.onclick = () => btn.textContent = 'clicked'", Page.q!(page, "button"))
+
+      Locator.tap(locator)
+      assert {:ok, "clicked"} = Page.text_content(page, "button")
+    end
+  end
+
   describe "Locator.text_content/2" do
     test "...", %{assets: assets, page: page} do
       locator = Page.locator(page, "#inner")
