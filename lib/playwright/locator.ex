@@ -117,17 +117,61 @@ defmodule Playwright.Locator do
     }
   end
 
-  @spec all_inner_texts(Locator.t()) :: {:ok, [binary()]}
-  def all_inner_texts(locator) do
+  @doc """
+  Returns an list of `node.innerText` values for all matching nodes.
+
+  ## Returns
+
+    - `{:ok, [binary()]}`
+  """
+  @spec all_inner_texts(t()) :: {:ok, [binary()]}
+  def all_inner_texts(%Locator{} = locator) do
     Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.innerText)")
   end
 
-  @spec all_text_contents(Locator.t()) :: {:ok, [binary()]}
-  def all_text_contents(locator) do
+  @doc """
+  Returns an list of `node.textContent` values for all matching nodes.
+
+  ## Returns
+
+    - `{:ok, [binary()]}`
+  """
+  @spec all_text_contents(t()) :: {:ok, [binary()]}
+  def all_text_contents(%Locator{} = locator) do
     Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.textContent || '')")
   end
 
-  @spec bounding_box(Locator.t(), options()) :: {:ok, map() | nil}
+  @doc """
+  Returns the bounding box of the element, or `nil` if the element is not visible.
+
+  The bounding box is calculated relative to the main frame viewport which is
+  usually the same as the browser window.
+
+  Scrolling affects the returned bounding box, similarly to
+  [Element.getBoundingClientRect](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect).
+
+  That means `x` and/or `y` may be negative.
+
+  Elements from child frames return the bounding box relative to the main frame,
+  unlike [Element.getBoundingClientRect](https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect).
+
+  Assuming the page is static, it is safe to use bounding box coordinates to perform input. For example, the following snippet should click the center of the element:options()
+
+      box = Locator.bounding_box(locator)
+      Page.Mouse.click(page, box.x + box.width / 2, box.y + box.height / 2)
+
+  ## Returns
+
+    - `{:ok, %{x: x, y: y, width: width, height: height}}`
+    - `{:ok, nil}`
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
+  """
+  @spec bounding_box(t(), options()) :: {:ok, map() | nil}
   def bounding_box(%Locator{} = locator, options \\ %{}) do
     with_element(locator, options, fn handle ->
       ElementHandle.bounding_box(handle)
@@ -203,7 +247,14 @@ defmodule Playwright.Locator do
   """
   def_locator(:click, :click, options_click())
 
-  @spec count(Locator.t()) :: {:ok, term()}
+  @doc """
+  Returns the number of elements matching given selector.
+
+  ## Returns
+
+    - `{:ok, number()}`
+  """
+  @spec count(t()) :: {:ok, term()}
   def count(%Locator{} = locator) do
     evaluate_all(locator, "ee => ee.length")
   end
@@ -250,8 +301,8 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  @spec dblclick(Locator.t(), options()) :: :ok
-  def dblclick(locator, options \\ %{}) do
+  @spec dblclick(t(), options()) :: :ok
+  def dblclick(%Locator{} = locator, options \\ %{}) do
     Frame.dblclick(locator.frame, locator.selector, options)
   end
 
@@ -302,10 +353,8 @@ defmodule Playwright.Locator do
   | `event_init`     | param  | `evaluation_argument()` | Optional event-specific initialization properties. |
   | `:timeout`       | option | `number()`              | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec dispatch_event(Locator.t(), atom() | binary(), Frame.evaluation_argument(), options()) :: :ok
-  def dispatch_event(locator, type, event_init \\ nil, options \\ %{})
-
-  def dispatch_event(%Locator{} = locator, type, event_init, options) do
+  @spec dispatch_event(t(), atom() | binary(), Frame.evaluation_argument(), options()) :: :ok
+  def dispatch_event(%Locator{} = locator, type, event_init \\ nil, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.dispatch_event(locator.frame, locator.selector, type, event_init, options)
   end
@@ -327,7 +376,7 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec element_handle(Locator.t(), options()) :: {:ok, ElementHandle.t()} | {:error, Channel.Error.t()}
+  @spec element_handle(t(), options()) :: {:ok, ElementHandle.t()} | {:error, Channel.Error.t()}
   def element_handle(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(%{strict: true, state: "attached"}, options)
 
@@ -349,18 +398,31 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-  - `[Playwright.ElementHandle.t()]`
+    - `[Playwright.ElementHandle.t()]`
   """
-  @spec element_handles(Locator.t()) :: {:ok, [ElementHandle.t()]}
+  @spec element_handles(t()) :: {:ok, [ElementHandle.t()]}
   def element_handles(locator) do
     Frame.query_selector_all(locator.frame, locator.selector)
   end
 
-  # NOTE: not really `| nil`... also Serializable or JSHandle
   @doc """
-  ...
+  Returns the result of executing `param: expression`.
+
+  Passes the handle as the first argument to the expression.
+
+  ## Returns
+
+    - `{:ok, Serializable.t()}`
+
+  ## Arguments
+
+  | key / name   | type   |            | description |
+  | ------------ | ------ | ---------- | ----------- |
+  | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
+  | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
+  | `:timeout`   | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec evaluate(Locator.t(), binary(), ElementHandle.t() | nil, options()) :: {:ok, serializable()}
+  @spec evaluate(t(), binary(), ElementHandle.t() | nil, options()) :: {:ok, serializable()}
   def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
   # NOTE: need to do all of the map-like things before a plain `map()`,
@@ -392,9 +454,23 @@ defmodule Playwright.Locator do
   end
 
   @doc """
-  ...
+  Finds all elements matching the specified locator and passes the list of
+  matched elements as an argument to `param: expression`.
+
+  Returns the result of expression invocation.
+
+  ## Returns
+
+    - `{:ok, Serializable.t()}`
+
+  ## Arguments
+
+  | key / name   | type   |            | description |
+  | ------------ | ------ | ---------- | ----------- |
+  | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
+  | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   """
-  @spec evaluate_all(Locator.t(), binary(), ElementHandle.t() | nil) :: {:ok, [serializable()]}
+  @spec evaluate_all(t(), binary(), ElementHandle.t() | nil) :: {:ok, [serializable()]}
   def evaluate_all(locator, expression, arg \\ nil)
 
   def evaluate_all(%Locator{} = locator, expression, arg) do
@@ -425,7 +501,7 @@ defmodule Playwright.Locator do
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   | `:timeout`   | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec evaluate_handle(Locator.t(), binary(), any(), options()) :: {:ok, JSHandle.t()} | {:error, Channel.Error.t()}
+  @spec evaluate_handle(t(), binary(), any(), options()) :: {:ok, JSHandle.t()} | {:error, Channel.Error.t()}
   def evaluate_handle(locator, expression, arg \\ nil, options \\ %{})
 
   # NOTE: need to do all of the map-like things before a plain `map()`,
@@ -479,20 +555,23 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key / name       | type   |                                   | description |
-  | ---------------- | ------ | --------------------------------- | ----------- |
-  | `value`          | param  | `binary()`                        | Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element |
-  | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
-  | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
-  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | key / name       | type   |             | description |
+  | ---------------- | ------ | ----------- | ----------- |
+  | `value`          | param  | `binary()`  | Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element |
+  | `:force`         | option | `boolean()` | Whether to bypass the actionability checks. `(default: false)` |
+  | `:no_wait_after` | option | `boolean()` | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:timeout`       | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec fill(Locator.t(), binary(), options()) :: :ok
+  @spec fill(t(), binary(), options()) :: :ok
   def fill(%Locator{} = locator, value, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.fill(locator.frame, locator.selector, value, options)
   end
 
-  @spec first(Locator.t()) :: Locator.t()
+  @doc """
+  Returns a new `Playwright.Locator` scoped to the first matching element.
+  """
+  @spec first(t()) :: Locator.t()
   def first(%Locator{} = context) do
     locator(context, "nth=0")
   end
@@ -510,13 +589,30 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec focus(Locator.t(), options()) :: :ok
+  @spec focus(t(), options()) :: :ok
   def focus(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.focus(locator.frame, locator.selector, options)
   end
 
-  @spec get_attribute(Locator.t(), binary(), options()) :: {:ok, binary() | nil}
+  # ---
+
+  # @spec frame_locator(t(), binary()) :: FrameLocator.t()
+  # def frame_locator(locator, selector)
+
+  # ---
+
+  @doc """
+  Returns element attribute value.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `name`     | param  | `binary()` | Name of the attribute to retrieve. |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec get_attribute(t(), binary(), options()) :: {:ok, binary() | nil}
   def get_attribute(%Locator{} = locator, name, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.get_attribute(locator.frame, locator.selector, name, options)
@@ -555,65 +651,248 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  @spec hover(Locator.t(), options()) :: :ok
+  @spec hover(t(), options()) :: :ok
   def hover(%Locator{} = locator, options \\ %{}) do
     Frame.hover(locator.frame, locator.selector, options)
   end
 
-  @spec inner_html(Locator.t(), options()) :: {:ok, binary()}
-  def inner_html(locator, options \\ %{}) do
+  @doc """
+  Returns the `element.innerHTML`.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec inner_html(t(), options()) :: {:ok, binary()}
+  def inner_html(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.inner_html(locator.frame, locator.selector, options)
   end
 
-  @spec inner_text(Locator.t(), options()) :: {:ok, binary()}
-  def inner_text(locator, options \\ %{}) do
+  @doc """
+  Returns the `element.innerText`.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec inner_text(t(), options()) :: {:ok, binary()}
+  def inner_text(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.inner_text(locator.frame, locator.selector, options)
   end
 
-  @spec input_value(Locator.t(), options()) :: {:ok, binary()}
-  def input_value(locator, options \\ %{}) do
+  @doc """
+  Returns the `input.value`.
+
+  Works on `<input>`, `<textarea>`, or `<select>` elements. Throws for
+  non-input elements.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec input_value(t(), options()) :: {:ok, binary()}
+  def input_value(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.input_value(locator.frame, locator.selector, options)
   end
 
+  @doc """
+  Returns whether the element is checked.
+
+  Throws if the element is not a checkbox or radio input.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
   def_locator(:is_checked, :is_checked)
+
+  @doc """
+  Returns whether the element is disabled.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
   def_locator(:is_disabled, :is_disabled)
+
+  @doc """
+  Returns whether the element is editable.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
   def_locator(:is_editable, :is_editable)
+
+  @doc """
+  Returns whether the element is enabled.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
   def_locator(:is_enabled, :is_enabled)
+
+  @doc """
+  Returns whether the element is hidden.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
   def_locator(:is_hidden, :is_hidden)
+
+  @doc """
+  Returns whether the element is visible.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
   def_locator(:is_visible, :is_visible)
 
-  @spec last(Locator.t()) :: Locator.t()
+  @doc """
+  Returns a new `Playwright.Locator` scoped to the last matching element.
+  """
+  @spec last(t()) :: Locator.t()
   def last(%Locator{} = context) do
     locator(context, "nth=-1")
   end
 
-  @spec locator(Locator.t(), binary()) :: Locator.t()
-  def locator(locator, selector) do
+  @doc """
+  Returns a new `Playwright.Locator` scoped to the Locator's subtree.
+  """
+  @spec locator(t(), binary()) :: Locator.t()
+  def locator(%Locator{} = locator, selector) do
     Locator.new(locator.frame, "#{locator.selector} >> #{selector}")
   end
 
-  @spec nth(Locator.t(), term()) :: Locator.t()
-  def nth(context, index) do
+  @doc """
+  Returns a new `Playwright.Locator` scoped to the n-th matching element.
+  """
+  @spec nth(t(), term()) :: Locator.t()
+  def nth(%Locator{} = context, index) do
     locator(context, "nth=#{index}")
   end
 
-  @spec press(Locator.t(), binary(), options()) :: :ok
-  def press(locator, key, options \\ %{}) do
+  @doc """
+  Focuses the element, and then uses `keyboard.down(key)` and `keyboard.up(key)`.
+
+  `param: key` can specify the intended [keyboardEvent.key](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key)
+  value or a single character. A superset of the key values can be found [on MDN](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values).
+
+  Examples of the keys are:
+
+  - `F1` - `F12`
+  - `Digit0` - `Digit9`
+  - `KeyA` - `KeyZ`
+  - `Backquote`
+  - `Minus`
+  - `Equal`
+  - `Backslash`
+  - `Backspace`
+  - `Tab`
+  - `Delete`
+  - `Escape`
+  - `ArrowDown`
+  - `End`
+  - `Enter`
+  - `Home`
+  - `Insert`
+  - `PageDown`
+  - `PageUp`
+  - `ArrowRight`
+  - `ArrowUp`
+
+  The fllowing modification shortcuts are also supported:
+
+  - `Shift`
+  - `Control`
+  - `Alt`
+  - `Meta`
+  - `ShiftLeft`
+
+  Holding down `Shift` will type the text that corresponds to the `param: key`
+  in the upper case.
+
+  If `param: key` is a single character, it is case-sensitive, so the values
+  `a` and `A` will generate different respective texts.
+
+  Shortcuts such as `key: "Control+o"` or `key: "Control+Shift+T"` are
+  supported as well. When specified with the modifier, modifier is pressed
+  and held while the subsequent key is pressed.
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `key`            | param  | `binary()`      | Name of the key to press or a character to generate, such as `ArrowLeft` or `a`. |
+  | `:delay`         | option | `number()`      | Time to wait between `mousedown` and `mouseup` in milliseconds. `(default: 0)` |
+  | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec press(t(), binary(), options()) :: :ok
+  def press(%Locator{} = locator, key, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.press(locator.frame, locator.selector, key, options)
   end
 
-  @spec screenshot(Locator.t(), options()) :: {:ok, binary()}
-  def screenshot(locator, options \\ %{}) do
+  @doc """
+  Returns a buffer with the captured screenshot data.
+
+  Waits for the actionability checks, then scrolls element into view before
+  taking a screenshot. If the element is detached from DOM, throws an error.
+
+  ## Arguments
+
+  | key / name         | type   |                   | description |
+  | ------------------ | ------ | ----------------- | ----------- |
+  | `:omit_background` | option | `boolean()`       | Hides default white background and allows capturing screenshots with transparency. Not applicable to jpeg images. `(default: false)` |
+  | `:path`            | option | `binary()`        | The file path to which to save the image. The screenshot type will be inferred from file extension. If path is a relative path, then it is resolved relative to the current working directory. If no path is provided, the image won't be saved to the disk. |
+  | `:quality`         | option | `number()`        | The quality of the image, between 0-100. Not applicable to `png` images. |
+  | `:timeout`         | option | `number()`        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:type`            | option | `:png` or `:jpeg` | Specify screenshot type. `(default: :png)` |
+  """
+  @spec screenshot(t(), options()) :: {:ok, binary()}
+  def screenshot(%Locator{} = locator, options \\ %{}) do
     with_element(locator, options, fn handle ->
       ElementHandle.screenshot(handle, options)
     end)
   end
 
-  @spec scroll_into_view(Locator.t(), options()) :: :ok
+  @doc """
+  Waits for actionability checks, then tries to scroll element into view,
+  unless it is completely visible as defined by [IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)'s
+  ratio.
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec scroll_into_view(t(), options()) :: :ok
   def scroll_into_view(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
 
@@ -678,20 +957,63 @@ defmodule Playwright.Locator do
   - `label <binary>` Matches by `option.label`. `(optional)`.
   - `index <number>` Matches by the index. `(optional)`.
   """
-  @spec select_option(Locator.t(), any(), options()) :: {:ok, [binary()]}
-  def select_option(locator, values, options \\ %{}) do
+  @spec select_option(t(), any(), options()) :: {:ok, [binary()]}
+  def select_option(%Locator{} = locator, values, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.select_option(locator.frame, locator.selector, values, options)
   end
 
-  @spec select_text(Locator.t(), options()) :: :ok
-  def select_text(locator, options \\ %{}) do
+  @doc """
+  Waits for actionability checks, then focuses the element and selects all its
+  text content.
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec select_text(t(), options()) :: :ok
+  def select_text(%Locator{} = locator, options \\ %{}) do
     with_element(locator, options, fn handle ->
       ElementHandle.select_text(handle, options)
     end)
   end
 
-  @spec set_checked(Locator.t(), boolean(), options()) :: :ok
+  @doc """
+  Checks or unchecks an element.
+
+  Performs the following steps and checks:
+
+    1. Ensure that the matched element is a checkbox or a radio input. If not,
+      the call throws.
+    2. If the element already has the right checked state, returns immediately.
+    3. Wait for actionability checks on the matched element, unless
+      `option: force` is set. If the element is detached during the checks, the
+      whole action is retried.
+    4. Scroll the element into view if needed.
+    5. Use `Page.Mouse` to click in the center of the element.
+    6. Wait for initiated navigations to either succeed or fail, unless
+      `option: no_wait_after` is set.
+    7. Ensure that the element is now checked or unchecked.
+      If not, the call throws.
+
+  When all steps combined have not finished during the specified timeout,
+  throws a `TimeoutError`. Passing `0` timeout disables this.
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `checked`        | param  | `boolean()`     | Whether to check or uncheck the checkbox. |
+  | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
+  | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:position`      | option | `%{x: x, y: y}` | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
+  | `:trial`         | option | `boolean()`     | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
+  """
+  @spec set_checked(t(), boolean(), options()) :: :ok
   def set_checked(%Locator{} = locator, checked, options \\ %{}) do
     if checked do
       check(locator, options)
@@ -700,25 +1022,105 @@ defmodule Playwright.Locator do
     end
   end
 
-  @spec set_input_files(Locator.t(), any(), options()) :: :ok
-  def set_input_files(locator, files, options \\ %{}) do
+  @doc """
+  Sets the value of the file input to these file paths or files.
+
+  If some of the file paths are relative paths, they are resolved relative to
+  the the current working directory. An empty list, clears the selected files.
+
+  Expects element (i.e., `locator.selector`) to point to an input element.
+
+  ## Arguments
+
+  | key / name       | type   |                 | description |
+  | ---------------- | ------ | --------------- | ----------- |
+  | `files`          | param  | `any()`         | ... |
+  | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec set_input_files(t(), any(), options()) :: :ok
+  def set_input_files(%Locator{} = locator, files, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.set_input_files(locator.frame, locator.selector, files, options)
   end
 
-  def string(locator) do
+  @doc """
+  Returns a string representation of the `Playwright.Locator`.
+  """
+  @spec string(t()) :: binary()
+  def string(%Locator{} = locator) do
     "Locator@#{locator.selector}"
   end
 
-  @spec tap(Locator.t(), options()) :: :ok
+  @doc """
+  Taps the element (i.e., mimicking trackpad input).
+
+  Performs the following steps:
+
+    1. Wait for actionability checks on the element, unless `option: force`
+      is set.
+    2. Scroll the element into view if needed.
+    3. Use `Page.Touchscreen` to tap the center of the element, or the
+      specified position.
+    4. Wait for initiated navigations to either succeed or fail, unless
+      `option: no_wait_after` is set.
+
+  If the element is detached from the DOM at any moment during the action,
+  throws an erro.
+
+  When all steps combined have not finished during the specified timeout,
+  throws a `TimeoutError`. Passing `0` timeout disables this.
+
+  > NOTE:
+  >
+  > `tap/2` requires that the `:has_touch` option of the browser context be
+  > set to `true`.
+
+  ## Arguments
+
+  | key / name       | type   |                                   | description |
+  | ---------------- | ------ | --------------------------------- | ----------- |
+  | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
+  | `:modifiers`     | option | `[:alt, :control, :meta, :shift]` | Modifier keys to press. Ensures that only these modifiers are pressed during the operation, and then restores current modifiers back. If not specified, currently pressed modifiers are used. |
+  | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:position`      | option | `%{x: x, y: y}`                   | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
+  | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
+  """
+  @spec tap(t(), options()) :: :ok
   def tap(locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.tap(locator.frame, locator.selector, options)
   end
 
+  @doc """
+  Returns the `node.textContent`.
+
+  ## Arguments
+
+  | key / name | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
   def_locator(:text_content, :text_content)
 
-  @spec type(Locator.t(), binary(), options()) :: :ok
+  @doc """
+  Focuses the element, and then sends a `keydown`, `keypress/input`, and
+  `keyup` event for each character in the text.
+
+  To press a special key, like `Control` or `ArrowDown`, use
+  `Playwright.Locator.press/3`.
+
+  ## Arguments
+
+  | key / name       | type   |             | description |
+  | ---------------- | ------ | ----------- | ----------- |
+  | `text`           | param  | `binary()`  | Text to type into a focused element. |
+  | `:delay`         | option | `number()`  | Time to wait between `mousedown` and `mouseup` in milliseconds. `(default: 0)` |
+  | `:no_wait_after` | option | `boolean()` | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
+  | `:timeout`       | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
+  """
+  @spec type(t(), binary(), options()) :: :ok
   def type(%Locator{} = locator, text, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.type(locator.frame, locator.selector, text, options)
