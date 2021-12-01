@@ -844,25 +844,6 @@ defmodule Playwright.Frame do
     :ok
   end
 
-  defp normalize_file_payloads(files) when is_binary(files) do
-    normalize_file_payloads([files])
-  end
-
-  defp normalize_file_payloads(files) when is_list(files) do
-    Enum.into(files, [], fn file ->
-      normalize_file_payload(file)
-    end)
-  end
-
-  defp normalize_file_payload(file) when is_binary(file) do
-    {:ok, data} = File.read(file)
-
-    %{
-      name: Path.basename(file),
-      buffer: Base.encode64(data)
-    }
-  end
-
   # when it's a `FilePayload`...
   # defp normalize_file_payload(file) do
   #   %{
@@ -923,10 +904,14 @@ defmodule Playwright.Frame do
     from(page) |> title()
   end
 
-  # ---
+  @spec type(Frame.t(), binary(), binary(), options()) :: :ok
+  def type(%Frame{} = frame, selector, text, options \\ %{}) do
+    params = Map.merge(%{selector: selector, text: text}, options)
+    {:ok, _} = Channel.post(frame, :type, params)
+    :ok
+  end
 
-  # @spec type(Frame.t(), binary(), binary(), options()) :: :ok
-  # def type(frame, selector, text, options \\ %{})
+  # ---
 
   # @spec uncheck(Frame.t(), binary(), options()) :: :ok
   # def uncheck(frame, selector, options \\ %{})
@@ -1005,6 +990,25 @@ defmodule Playwright.Frame do
   defp from(%Page{} = page) do
     {:ok, frame} = Channel.find(page, page.main_frame)
     frame
+  end
+
+  defp normalize_file_payloads(files) when is_binary(files) do
+    normalize_file_payloads([files])
+  end
+
+  defp normalize_file_payloads(files) when is_list(files) do
+    Enum.into(files, [], fn file ->
+      normalize_file_payload(file)
+    end)
+  end
+
+  defp normalize_file_payload(file) when is_binary(file) do
+    {:ok, data} = File.read(file)
+
+    %{
+      name: Path.basename(file),
+      buffer: Base.encode64(data)
+    }
   end
 
   # NOTE: these might all want to move to ElementHandle

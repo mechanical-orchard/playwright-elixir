@@ -557,6 +557,16 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.type/3" do
+    test "focuses an element and 'types' each key within it", %{page: page} do
+      locator = Page.locator(page, "input")
+      page |> Page.set_content("<input type='text' />")
+
+      Locator.type(locator, "hello")
+      assert {:ok, %{s: "hello"}} = Page.eval_on_selector(page, "input", "(input) => input.value")
+    end
+  end
+
   describe "Locator.uncheck/2" do
     setup(%{assets: assets, page: page}) do
       options = %{timeout: 200}

@@ -727,12 +727,11 @@ defmodule Playwright.Locator do
 
   def_locator(:text_content, :text_content)
 
-  # ---
-
-  # @spec type(Locator.t(), binary(), options()) :: :ok
-  # def type(locator, text, options \\ %{})
-
-  # ---
+  @spec type(Locator.t(), binary(), options()) :: :ok
+  def type(%Locator{} = locator, text, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.type(locator.frame, locator.selector, text, options)
+  end
 
   @doc """
   Unchecks the (checkmark) element by performing the following steps:
