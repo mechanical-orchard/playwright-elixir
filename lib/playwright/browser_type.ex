@@ -124,7 +124,7 @@ defmodule Playwright.BrowserType do
   > [This article](https://chromium.googlesource.com/chromium/src/+/lkgr/docs/chromium_browser_vs_google_chrome.md)
   > describes some differences for Linux users.
   """
-  @spec launch(client() | nil, options()) :: {pid(), Playwright.Browser.t()}
+  @spec launch(client() | nil, any()) :: {pid(), Playwright.Browser.t()}
   def launch(client \\ nil, options \\ %{})
 
   def launch(nil, options) do
@@ -134,17 +134,7 @@ defmodule Playwright.BrowserType do
   def launch(client, options)
       when is_atom(client)
       when client in [:chromium] do
-    opts =
-      Map.merge(
-        %{
-          executable_path: "assets/node_modules/playwright/cli.js"
-        },
-        options
-      )
-
-    # |> IO.inspect(label: "launch options")
-
-    {:ok, connection} = new_session(Transport.Driver, opts)
+    {:ok, connection} = new_session(Transport.Driver, options)
     {connection, chromium(connection)}
   end
 

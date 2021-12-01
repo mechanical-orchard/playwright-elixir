@@ -70,6 +70,7 @@ defmodule Playwright.MixProject do
       main: "README",
       extras: [
         "README.md": [filename: "README"],
+        "guides/actionability.md": [title: "Actionability"],
         "guides/getting-started.md": [title: "Getting started"]
       ],
       groups_for_modules: [
@@ -121,7 +122,10 @@ defmodule Playwright.MixProject do
 
   defp aliases do
     [
-      "assets.build": ["esbuild module", "esbuild cdn", "esbuild cdn_min", "esbuild main", "esbuild cli"],
+      "assets.build": [
+        "cmd mkdir -p priv/static/node_modules ; cp -r assets/node_modules/ws priv/static/node_modules",
+        "esbuild cli"
+      ],
       "assets.watch": ["esbuild module --watch"]
     ]
   end

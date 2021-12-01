@@ -40,7 +40,8 @@ defmodule Playwright do
   end
 
   def launch(client) when client in [:chromium, :firefox, :webkit] do
-    {_connection, browser} = Playwright.BrowserType.launch()
+    options = Playwright.Runner.Config.launch_options()
+    {_connection, browser} = Playwright.BrowserType.launch(client, options)
     browser
   end
 end

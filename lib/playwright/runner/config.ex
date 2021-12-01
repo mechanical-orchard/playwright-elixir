@@ -189,8 +189,7 @@ defmodule Playwright.Runner.Config do
 
   @typedoc false
   @type connect_options :: %{
-          ws_endpoint: String.t(),
-          playwright_cli_path: String.t()
+          ws_endpoint: String.t()
         }
 
   @typedoc false
@@ -202,7 +201,8 @@ defmodule Playwright.Runner.Config do
           downloads_path: String.t(),
           env: any(),
           executable_path: String.t(),
-          headless: boolean()
+          headless: boolean(),
+          playwright_cli_path: String.t()
         }
 
   @typedoc false
@@ -220,7 +220,16 @@ defmodule Playwright.Runner.Config do
 
     defmodule LaunchOptions do
       @moduledoc false
-      defstruct [:args, :channel, :chromium_sandbox, :devtools, :downloads_path, :headless, :executable_path]
+      defstruct [
+        :args,
+        :channel,
+        :chromium_sandbox,
+        :devtools,
+        :downloads_path,
+        :executable_path,
+        :headless,
+        :playwright_cli_path
+      ]
     end
 
     defmodule PlaywrightTest do

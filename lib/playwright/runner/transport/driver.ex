@@ -27,8 +27,7 @@ defmodule Playwright.Runner.Transport.Driver do
 
   @impl GenServer
   def init({connection, config}) do
-    # Logger.warn("Driver.init with connection: #{inspect(connection)} and config: #{inspect(config)}")
-    cli = config.executable_path
+    cli = config.playwright_cli_path
     cmd = "run-driver"
 
     port = Port.open({:spawn, "#{cli} #{cmd}"}, [:binary, :exit_status])
