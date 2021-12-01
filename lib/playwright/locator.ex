@@ -691,12 +691,14 @@ defmodule Playwright.Locator do
     end)
   end
 
-  # ---
-
-  # @spec set_checked(Locator.t(), boolean(), options()) :: :ok
-  # def set_checked(locator, checked, options \\ %{})
-
-  # ---
+  @spec set_checked(Locator.t(), boolean(), options()) :: :ok
+  def set_checked(%Locator{} = locator, checked, options \\ %{}) do
+    if checked do
+      check(locator, options)
+    else
+      uncheck(locator, options)
+    end
+  end
 
   @spec set_input_files(Locator.t(), any(), options()) :: :ok
   def set_input_files(locator, files, options \\ %{}) do

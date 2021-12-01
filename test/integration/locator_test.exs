@@ -625,6 +625,19 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.set_checked/2" do
+    test "sets the checked value on a checkbox", %{page: page} do
+      locator = Page.locator(page, "input")
+      page |> Page.set_content("<input id='checkbox' type='checkbox'></input>")
+
+      Locator.set_checked(locator, true)
+      assert {:ok, true} = Page.evaluate(page, "checkbox.checked")
+
+      Locator.set_checked(locator, false)
+      assert {:ok, false} = Page.evaluate(page, "checkbox.checked")
+    end
+  end
+
   describe "Locator.set_input_files/3" do
     test "file upload", %{assets: assets, page: page} do
       fixture = "test/support/assets_server/assets/file-to-upload.txt"
