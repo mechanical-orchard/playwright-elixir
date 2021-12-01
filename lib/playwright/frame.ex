@@ -318,9 +318,14 @@ defmodule Playwright.Frame do
     evaluate(owner, expression, arg)
   end
 
+  @doc false
+  def evaluate!(owner, expression, arg \\ nil) do
+    {:ok, result} = evaluate(owner, expression, arg)
+    result
+  end
+
   @doc """
   Returns the return value of `expression` as a `Playwright.JSHandle`.
-
   !!!
   """
   @spec evaluate_handle(t() | Page.t() | {:ok, t() | Page.t()}, expression(), any()) :: {:ok, serializable()}

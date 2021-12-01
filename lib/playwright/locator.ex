@@ -694,8 +694,12 @@ defmodule Playwright.Locator do
 
   # ---
 
-  # @spec select_text(Locator.t(), options()) :: :ok
-  # def select_text(locator, options \\ %{})
+  @spec select_text(Locator.t(), options()) :: :ok
+  def select_text(locator, options \\ %{}) do
+    with_element(locator, options, fn handle ->
+      ElementHandle.select_text(handle, options)
+    end)
+  end
 
   # @spec set_checked(Locator.t(), boolean(), options()) :: :ok
   # def set_checked(locator, checked, options \\ %{})

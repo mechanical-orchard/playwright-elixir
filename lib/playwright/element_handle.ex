@@ -254,17 +254,28 @@ defmodule Playwright.ElementHandle do
   # @spec screenshot(ElementHandle.t(), options()) :: {:ok, binary()}
   # def screenshot(handle, options \\ %{})
 
+  # ---
+
   @spec scroll_into_view(ElementHandle.t(), options()) :: :ok
   def scroll_into_view(%ElementHandle{} = handle, options \\ %{}) do
     {:ok, _} = Channel.post(handle, :scroll_into_view_if_needed, options)
     :ok
   end
 
+  # ---
+
   # @spec select_option(ElementHandle.t(), selection(), options()) :: {:ok, [binary()]}
   # def select_option(handle, values, options \\ %{})
 
-  # @spec select_option(ElementHandle.t(), options()) :: :ok
-  # def select_option(handle, options \\ %{})
+  # ---
+
+  @spec select_text(ElementHandle.t(), options()) :: :ok
+  def select_text(handle, options \\ %{}) do
+    {:ok, _} = Channel.post(handle, :select_text, options)
+    :ok
+  end
+
+  # ---
 
   # @spec set_checked(ElementHandle.t(), boolean(), options()) :: :ok
   # def set_checked(handle, checked, options \\ %{})

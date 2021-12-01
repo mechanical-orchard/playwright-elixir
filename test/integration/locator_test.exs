@@ -525,6 +525,18 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.select_text/2" do
+    test "within a <textarea> element", %{assets: assets, page: page} do
+      locator = Page.locator(page, "textarea")
+      page |> Page.goto(assets.prefix <> "/input/textarea.html")
+
+      Locator.evaluate(locator, "(textarea) => textarea.value = 'some value'")
+      Locator.select_text(locator)
+
+      assert "some value" = Page.evaluate!(page, "window.getSelection().toString()")
+    end
+  end
+
   describe "Locator.set_input_files/3" do
     test "file upload", %{assets: assets, page: page} do
       fixture = "test/support/assets_server/assets/file-to-upload.txt"

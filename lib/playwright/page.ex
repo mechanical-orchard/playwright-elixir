@@ -87,6 +87,9 @@ defmodule Playwright.Page do
   defdelegate evaluate(page, expression, arg \\ nil),
     to: Playwright.Frame
 
+  defdelegate evaluate!(page, expression, arg \\ nil),
+    to: Playwright.Frame
+
   defdelegate evaluate_handle(page, expression, arg \\ nil),
     to: Playwright.Frame
 
