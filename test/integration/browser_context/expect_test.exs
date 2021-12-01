@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserContext.ExpectTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.{Browser, BrowserContext, Page}
 
   require Logger

@@ -1,5 +1,5 @@
 defmodule Playwright.Page.NetworkTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.{Page, Response}
 
   describe "Page.expect_*/*" do

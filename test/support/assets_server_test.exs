@@ -1,5 +1,5 @@
 defmodule Test.Support.AssetsServerTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.{Page, Response}
 
   describe "Embedded test assets server" do

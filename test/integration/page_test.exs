@@ -1,5 +1,5 @@
 defmodule Playwright.PageTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.{Browser, ElementHandle, Page}
   alias Playwright.Runner.{Channel, Connection, EventInfo}
 

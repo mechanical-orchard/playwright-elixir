@@ -1,5 +1,5 @@
 defmodule Playwright.Page.EvaluateHandleTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
 
   describe "Page.evaluate_handle/2" do
     alias Playwright.Page

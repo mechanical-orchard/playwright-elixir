@@ -1,5 +1,5 @@
 defmodule Playwright.ClickTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
 
   alias Playwright.Page
 

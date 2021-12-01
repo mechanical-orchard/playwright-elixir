@@ -1,5 +1,5 @@
 defmodule Playwright.Page.RouteTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.{Page, Response, Route}
 
   describe "Page.route/3" do

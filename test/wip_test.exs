@@ -1,5 +1,5 @@
 defmodule Playwright.WIPTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
   use PlaywrightTest.Case
   alias Playwright.{Browser, Page, Response}
 

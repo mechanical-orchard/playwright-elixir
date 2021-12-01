@@ -1,5 +1,5 @@
 defmodule Playwright.Page.WaitForTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   # alias Playwright.{Page}
 
   # describe "Page.wait_for_load_state/3" do

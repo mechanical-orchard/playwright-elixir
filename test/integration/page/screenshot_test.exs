@@ -1,5 +1,5 @@
 defmodule Page.ScreenshotTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   require Logger
   alias Playwright.Page
 

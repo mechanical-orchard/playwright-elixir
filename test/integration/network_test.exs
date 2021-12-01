@@ -1,5 +1,5 @@
 defmodule Playwright.NetworkTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.Page
 
   describe "Page network events" do

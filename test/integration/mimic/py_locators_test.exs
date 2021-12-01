@@ -1,5 +1,5 @@
 defmodule Playwright.Mimic.PyLocatorsTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
 
   alias Playwright.{Locator, Page}
   # alias Playwright.Runner.Channel.Error

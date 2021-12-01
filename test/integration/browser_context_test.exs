@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserContextTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.{Browser, BrowserContext, Page}
 
   describe "BrowserContext.new_context/1" do

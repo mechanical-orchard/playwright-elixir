@@ -1,5 +1,5 @@
 defmodule Playwright.LocatorTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
 
   alias Playwright.{ElementHandle, Locator, Page}
   alias Playwright.Runner.Channel

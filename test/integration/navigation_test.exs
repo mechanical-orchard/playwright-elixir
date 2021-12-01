@@ -1,5 +1,5 @@
 defmodule Playwright.NavigationTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
   alias Playwright.{Page, Response}
 
   describe "Page.goto/2" do

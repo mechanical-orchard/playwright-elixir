@@ -1,5 +1,5 @@
 defmodule Playwright.ResponseTest do
-  use Playwright.TestCase, async: true
+  use Playwright.TestCase
 
   alias Playwright.Page
   alias Playwright.Response
