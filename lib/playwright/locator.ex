@@ -385,6 +385,12 @@ defmodule Playwright.Locator do
     end)
   end
 
+  @doc false
+  def evaluate!(%Locator{} = locator, expression, arg \\ nil, options \\ %{}) do
+    {:ok, result} = evaluate(locator, expression, arg, options)
+    result
+  end
+
   @doc """
   ...
   """
@@ -613,10 +619,16 @@ defmodule Playwright.Locator do
   # @spec screenshot(Locator.t(), options()) :: {:ok, binary()}
   # def screenshot(locator, options \\ %{})
 
-  # @spec scroll_into_view_if_needed(Locator.t(), options()) :: :ok
-  # def scroll_into_view_if_needed(locator, options \\ %{})
-
   # ---
+
+  @spec scroll_into_view(Locator.t(), options()) :: :ok
+  def scroll_into_view(%Locator{} = locator, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+
+    with_element(locator, options, fn handle ->
+      ElementHandle.scroll_into_view(handle, options)
+    end)
+  end
 
   @doc """
   Selects one or more options from a `<select>` element.

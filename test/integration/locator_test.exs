@@ -493,6 +493,27 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.scroll_into_view/2" do
+    test "scrolls the element into view, if needed", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/offscreenbuttons.html")
+
+      Enum.each(0..10, fn i ->
+        locator = Page.locator(page, "#btn#{i}")
+        expression = "(btn) => btn.getBoundingClientRect().right - window.innerWidth"
+
+        initial = Locator.evaluate!(locator, expression)
+        assert initial == 10 * i
+
+        Locator.scroll_into_view(locator)
+
+        updated = Locator.evaluate!(locator, expression)
+        assert updated <= 0
+
+        Page.evaluate(page, "() => window.scrollTo(0, 0)")
+      end)
+    end
+  end
+
   describe "Locator.select_option/2" do
     test "single selection matching value", %{assets: assets, page: page} do
       locator = Page.locator(page, "select")
