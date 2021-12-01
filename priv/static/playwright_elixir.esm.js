@@ -80,7 +80,7 @@ var require_serializers = __commonJS({
       return {
         value: serializeValue(e, (value) => ({
           fallThrough: value
-        }), /* @__PURE__ */ new Set())
+        }), new Set())
       };
     }
     function parseError(error) {
@@ -3042,7 +3042,7 @@ var require_ubuntuVersion = __commonJS({
       }
     }
     function parseUbuntuVersion(osReleaseText) {
-      const fields = /* @__PURE__ */ new Map();
+      const fields = new Map();
       for (const line of osReleaseText.split("\n")) {
         const tokens = line.split("=");
         const name = tokens.shift();
@@ -4257,7 +4257,7 @@ var require_package = __commonJS({
   "node_modules/playwright-core/package.json"(exports, module) {
     module.exports = {
       name: "playwright-core",
-      version: "1.17.0",
+      version: "1.16.3",
       description: "A high-level API to automate web browsers",
       repository: "github:Microsoft/playwright",
       homepage: "https://playwright.dev",
@@ -4463,7 +4463,7 @@ var require_utils = __commonJS({
       return new Promise((resolve, reject) => {
         httpRequest(params, async (response) => {
           if (response.statusCode !== 200) {
-            const error = onError ? await onError(params, response) : new Error(`fetch failed: server returned code ${response.statusCode}. URL: ${params.url}`);
+            const error = onError ? await onError(response) : new Error(`fetch failed: server returned code ${response.statusCode}. URL: ${params.url}`);
             reject(error);
             return;
           }
@@ -4817,10 +4817,9 @@ var require_utils = __commonJS({
       }
       if (platform === "linux") {
         const ubuntuVersion = (0, _ubuntuVersion.getUbuntuVersionSync)();
-        const archSuffix = _os.default.arch() === "arm64" ? "-arm64" : "";
         if (parseInt(ubuntuVersion, 10) <= 19)
-          return "ubuntu18.04" + archSuffix;
-        return "ubuntu20.04" + archSuffix;
+          return "ubuntu18.04";
+        return "ubuntu20.04";
       }
       if (platform === "win32")
         return "win64";
@@ -5104,7 +5103,13 @@ var require_validator = __commonJS({
           buffer: _validatorPrimitives.tBinary
         }))
       });
-      scheme.APIRequestContextFetchParams = (0, _validatorPrimitives.tObject)({
+      scheme.InterceptedResponse = (0, _validatorPrimitives.tObject)({
+        request: tChannel("Request"),
+        status: _validatorPrimitives.tNumber,
+        statusText: _validatorPrimitives.tString,
+        headers: (0, _validatorPrimitives.tArray)(tType("NameValue"))
+      });
+      scheme.FetchRequestFetchParams = (0, _validatorPrimitives.tObject)({
         url: _validatorPrimitives.tString,
         params: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tArray)(tType("NameValue"))),
         method: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
@@ -5117,22 +5122,21 @@ var require_validator = __commonJS({
         failOnStatusCode: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean),
         ignoreHTTPSErrors: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean)
       });
-      scheme.APIRequestContextFetchResponseBodyParams = (0, _validatorPrimitives.tObject)({
+      scheme.FetchRequestFetchResponseBodyParams = (0, _validatorPrimitives.tObject)({
         fetchUid: _validatorPrimitives.tString
       });
-      scheme.APIRequestContextStorageStateParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
-      scheme.APIRequestContextDisposeAPIResponseParams = (0, _validatorPrimitives.tObject)({
+      scheme.FetchRequestStorageStateParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+      scheme.FetchRequestDisposeFetchResponseParams = (0, _validatorPrimitives.tObject)({
         fetchUid: _validatorPrimitives.tString
       });
-      scheme.APIRequestContextDisposeParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
-      scheme.APIResponse = (0, _validatorPrimitives.tObject)({
+      scheme.FetchRequestDisposeParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+      scheme.FetchResponse = (0, _validatorPrimitives.tObject)({
         fetchUid: _validatorPrimitives.tString,
         url: _validatorPrimitives.tString,
         status: _validatorPrimitives.tNumber,
         statusText: _validatorPrimitives.tString,
         headers: (0, _validatorPrimitives.tArray)(tType("NameValue"))
       });
-      scheme.LifecycleEvent = (0, _validatorPrimitives.tEnum)(["load", "domcontentloaded", "networkidle", "commit"]);
       scheme.RootInitializeParams = (0, _validatorPrimitives.tObject)({
         sdkLanguage: _validatorPrimitives.tString
       });
@@ -5270,6 +5274,7 @@ var require_validator = __commonJS({
         forcedColors: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["active", "none"])),
         acceptDownloads: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean),
         baseURL: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+        _debugName: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
         recordVideo: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({
           dir: _validatorPrimitives.tString,
           size: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({
@@ -5329,6 +5334,7 @@ var require_validator = __commonJS({
         forcedColors: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["active", "none"])),
         acceptDownloads: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean),
         baseURL: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+        _debugName: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
         recordVideo: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({
           dir: _validatorPrimitives.tString,
           size: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({
@@ -5396,10 +5402,10 @@ var require_validator = __commonJS({
       });
       scheme.BrowserContextNewPageParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
       scheme.BrowserContextSetDefaultNavigationTimeoutNoReplyParams = (0, _validatorPrimitives.tObject)({
-        timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber)
+        timeout: _validatorPrimitives.tNumber
       });
       scheme.BrowserContextSetDefaultTimeoutNoReplyParams = (0, _validatorPrimitives.tObject)({
-        timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber)
+        timeout: _validatorPrimitives.tNumber
       });
       scheme.BrowserContextSetExtraHTTPHeadersParams = (0, _validatorPrimitives.tObject)({
         headers: (0, _validatorPrimitives.tArray)(tType("NameValue"))
@@ -5444,20 +5450,17 @@ var require_validator = __commonJS({
         snapshots: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean),
         screenshots: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean)
       });
-      scheme.BrowserContextTracingStartChunkParams = (0, _validatorPrimitives.tObject)({
-        title: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString)
-      });
+      scheme.BrowserContextTracingStartChunkParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
       scheme.BrowserContextTracingStopChunkParams = (0, _validatorPrimitives.tObject)({
-        save: _validatorPrimitives.tBoolean,
-        skipCompress: _validatorPrimitives.tBoolean
+        save: _validatorPrimitives.tBoolean
       });
       scheme.BrowserContextTracingStopParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
       scheme.BrowserContextHarExportParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
       scheme.PageSetDefaultNavigationTimeoutNoReplyParams = (0, _validatorPrimitives.tObject)({
-        timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber)
+        timeout: _validatorPrimitives.tNumber
       });
       scheme.PageSetDefaultTimeoutNoReplyParams = (0, _validatorPrimitives.tObject)({
-        timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber)
+        timeout: _validatorPrimitives.tNumber
       });
       scheme.PageSetFileChooserInterceptedNoReplyParams = (0, _validatorPrimitives.tObject)({
         intercepted: _validatorPrimitives.tBoolean
@@ -5480,15 +5483,15 @@ var require_validator = __commonJS({
       });
       scheme.PageGoBackParams = (0, _validatorPrimitives.tObject)({
         timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
-        waitUntil: (0, _validatorPrimitives.tOptional)(tType("LifecycleEvent"))
+        waitUntil: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["load", "domcontentloaded", "networkidle"]))
       });
       scheme.PageGoForwardParams = (0, _validatorPrimitives.tObject)({
         timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
-        waitUntil: (0, _validatorPrimitives.tOptional)(tType("LifecycleEvent"))
+        waitUntil: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["load", "domcontentloaded", "networkidle"]))
       });
       scheme.PageReloadParams = (0, _validatorPrimitives.tObject)({
         timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
-        waitUntil: (0, _validatorPrimitives.tOptional)(tType("LifecycleEvent"))
+        waitUntil: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["load", "domcontentloaded", "networkidle"]))
       });
       scheme.PageScreenshotParams = (0, _validatorPrimitives.tObject)({
         timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
@@ -5695,7 +5698,7 @@ var require_validator = __commonJS({
       scheme.FrameGotoParams = (0, _validatorPrimitives.tObject)({
         url: _validatorPrimitives.tString,
         timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
-        waitUntil: (0, _validatorPrimitives.tOptional)(tType("LifecycleEvent")),
+        waitUntil: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["load", "domcontentloaded", "networkidle"])),
         referer: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString)
       });
       scheme.FrameHoverParams = (0, _validatorPrimitives.tObject)({
@@ -5781,7 +5784,7 @@ var require_validator = __commonJS({
       scheme.FrameSetContentParams = (0, _validatorPrimitives.tObject)({
         html: _validatorPrimitives.tString,
         timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
-        waitUntil: (0, _validatorPrimitives.tOptional)(tType("LifecycleEvent"))
+        waitUntil: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["load", "domcontentloaded", "networkidle"]))
       });
       scheme.FrameSetInputFilesParams = (0, _validatorPrimitives.tObject)({
         selector: _validatorPrimitives.tString,
@@ -6048,15 +6051,18 @@ var require_validator = __commonJS({
         url: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
         method: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
         headers: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tArray)(tType("NameValue"))),
-        postData: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBinary)
+        postData: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBinary),
+        interceptResponse: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean)
       });
       scheme.RouteFulfillParams = (0, _validatorPrimitives.tObject)({
         status: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
         headers: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tArray)(tType("NameValue"))),
         body: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
         isBase64: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean),
+        useInterceptedResponseBody: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean),
         fetchResponseUid: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString)
       });
+      scheme.RouteResponseBodyParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
       scheme.ResourceTiming = (0, _validatorPrimitives.tObject)({
         startTime: _validatorPrimitives.tNumber,
         domainLookupStart: _validatorPrimitives.tNumber,
@@ -6281,6 +6287,7 @@ var require_validator = __commonJS({
         reducedMotion: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["reduce", "no-preference"])),
         forcedColors: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tEnum)(["active", "none"])),
         acceptDownloads: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tBoolean),
+        _debugName: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
         recordVideo: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({
           dir: _validatorPrimitives.tString,
           size: (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({
@@ -6443,7 +6450,6 @@ var require_instrumentation = __commonJS({
     function internalCallMetadata() {
       return {
         id: "",
-        wallTime: 0,
         startTime: 0,
         endTime: 0,
         type: "Internal",
@@ -6736,7 +6742,6 @@ ${lines.join("\n")}`;
     var CLIENT_SRC = _path.default.join(CORE_DIR, "src", "client");
     var TEST_DIR_SRC = _path.default.resolve(CORE_DIR, "..", "playwright-test");
     var TEST_DIR_LIB = _path.default.resolve(CORE_DIR, "..", "@playwright", "test");
-    var WS_LIB = _path.default.relative(process.cwd(), _path.default.dirname(__require.resolve("ws")));
     function captureStackTrace() {
       const stackTraceLimit = Error.stackTraceLimit;
       Error.stackTraceLimit = 30;
@@ -6753,15 +6758,7 @@ ${lines.join("\n")}`;
           return null;
         if (frame.file === "events.js" && (_frame$function = frame.function) !== null && _frame$function !== void 0 && _frame$function.endsWith(".emit"))
           return null;
-        if (frame.file === "_stream_readable.js" || frame.file === "_stream_writable.js")
-          return null;
-        if (frame.file.startsWith(WS_LIB))
-          return null;
-        let fileName;
-        if (frame.file.startsWith("file://"))
-          fileName = new URL(frame.file).pathname;
-        else
-          fileName = _path.default.resolve(process.cwd(), frame.file);
+        const fileName = _path.default.resolve(process.cwd(), frame.file);
         if (isTesting && fileName.includes(_path.default.join("playwright", "tests", "config", "coverage.js")))
           return null;
         const inClient = fileName.startsWith(CLIENT_LIB) || fileName.startsWith(CLIENT_SRC);
@@ -6858,7 +6855,7 @@ var require_dispatcher = __commonJS({
         this._connection = void 0;
         this._isScope = void 0;
         this._parent = void 0;
-        this._dispatchers = /* @__PURE__ */ new Map();
+        this._dispatchers = new Map();
         this._disposed = false;
         this._guid = void 0;
         this._type = void 0;
@@ -6945,7 +6942,6 @@ var require_dispatcher = __commonJS({
             objectId: sdkObject === null || sdkObject === void 0 ? void 0 : sdkObject.guid,
             pageId: sdkObject === null || sdkObject === void 0 ? void 0 : (_sdkObject$attributio = sdkObject.attribution) === null || _sdkObject$attributio === void 0 ? void 0 : (_sdkObject$attributio2 = _sdkObject$attributio.page) === null || _sdkObject$attributio2 === void 0 ? void 0 : _sdkObject$attributio2.guid,
             frameId: sdkObject === null || sdkObject === void 0 ? void 0 : (_sdkObject$attributio3 = sdkObject.attribution) === null || _sdkObject$attributio3 === void 0 ? void 0 : (_sdkObject$attributio4 = _sdkObject$attributio3.frame) === null || _sdkObject$attributio4 === void 0 ? void 0 : _sdkObject$attributio4.guid,
-            wallTime: Date.now(),
             startTime: (0, _utils.monotonicTime)(),
             endTime: 0,
             type,
@@ -6963,12 +6959,12 @@ var require_dispatcher = __commonJS({
         });
       }
       constructor() {
-        this._dispatchers = /* @__PURE__ */ new Map();
+        this._dispatchers = new Map();
         this.onmessage = (message) => {
         };
         this._validateParams = void 0;
         this._validateMetadata = void 0;
-        this._waitOperations = /* @__PURE__ */ new Map();
+        this._waitOperations = new Map();
         const tChannel = (name) => {
           return (arg, path) => {
             if (arg && typeof arg === "object" && typeof arg.guid === "string") {
@@ -7042,7 +7038,6 @@ var require_dispatcher = __commonJS({
           objectId: sdkObject === null || sdkObject === void 0 ? void 0 : sdkObject.guid,
           pageId: sdkObject === null || sdkObject === void 0 ? void 0 : (_sdkObject$attributio5 = sdkObject.attribution) === null || _sdkObject$attributio5 === void 0 ? void 0 : (_sdkObject$attributio6 = _sdkObject$attributio5.page) === null || _sdkObject$attributio6 === void 0 ? void 0 : _sdkObject$attributio6.guid,
           frameId: sdkObject === null || sdkObject === void 0 ? void 0 : (_sdkObject$attributio7 = sdkObject.attribution) === null || _sdkObject$attributio7 === void 0 ? void 0 : (_sdkObject$attributio8 = _sdkObject$attributio7.frame) === null || _sdkObject$attributio8 === void 0 ? void 0 : _sdkObject$attributio8.guid,
-          wallTime: Date.now(),
           startTime: (0, _utils.monotonicTime)(),
           endTime: 0,
           type: dispatcher._type,
@@ -8870,13 +8865,7 @@ var require_websocket = __commonJS({
       }
       const isUnixSocket = parsedUrl.protocol === "ws+unix:";
       if (!parsedUrl.host && (!isUnixSocket || !parsedUrl.pathname)) {
-        const err = new Error(`Invalid URL: ${websocket.url}`);
-        if (websocket._redirects === 0) {
-          throw err;
-        } else {
-          emitErrorAndClose(websocket, err);
-          return;
-        }
+        throw new Error(`Invalid URL: ${websocket.url}`);
       }
       const isSecure = parsedUrl.protocol === "wss:" || parsedUrl.protocol === "https:";
       const defaultPort = isSecure ? 443 : 80;
@@ -8930,7 +8919,9 @@ var require_websocket = __commonJS({
         if (req === null || req.aborted)
           return;
         req = websocket._req = null;
-        emitErrorAndClose(websocket, err);
+        websocket._readyState = WebSocket.CLOSING;
+        websocket.emit("error", err);
+        websocket.emitClose();
       });
       req.on("response", (res) => {
         const location2 = res.headers.location;
@@ -8941,13 +8932,7 @@ var require_websocket = __commonJS({
             return;
           }
           req.abort();
-          let addr;
-          try {
-            addr = new URL2(location2, address);
-          } catch (err) {
-            emitErrorAndClose(websocket, err);
-            return;
-          }
+          const addr = new URL2(location2, address);
           initAsClient(websocket, addr, protocols, options);
         } else if (!websocket.emit("unexpected-response", req, res)) {
           abortHandshake(websocket, req, `Unexpected server response: ${res.statusCode}`);
@@ -9013,11 +8998,6 @@ var require_websocket = __commonJS({
         }
         websocket.setSocket(socket, head, opts.maxPayload);
       });
-    }
-    function emitErrorAndClose(websocket, err) {
-      websocket._readyState = WebSocket.CLOSING;
-      websocket.emit("error", err);
-      websocket.emitClose();
     }
     function netConnect(options) {
       options.path = options.socketPath;
@@ -9246,7 +9226,7 @@ var require_stream = __commonJS({
         }
       };
       duplex._read = function() {
-        if ((ws.readyState === ws.OPEN || ws.readyState === ws.CLOSING) && !resumeOnReceiverDrain) {
+        if (ws.readyState === ws.OPEN && !resumeOnReceiverDrain) {
           resumeOnReceiverDrain = true;
           if (!ws._receiver._writableState.needDrain)
             ws._socket.resume();
@@ -9333,7 +9313,7 @@ var require_websocket_server = __commonJS({
         if (options.perMessageDeflate === true)
           options.perMessageDeflate = {};
         if (options.clientTracking)
-          this.clients = /* @__PURE__ */ new Set();
+          this.clients = new Set();
         this.options = options;
         this._state = RUNNING;
       }
@@ -9533,8 +9513,8 @@ var require_timeoutSettings = __commonJS({
     var TimeoutSettings = class {
       constructor(parent) {
         this._parent = void 0;
-        this._defaultTimeout = void 0;
-        this._defaultNavigationTimeout = void 0;
+        this._defaultTimeout = null;
+        this._defaultNavigationTimeout = null;
         this._parent = parent;
       }
       setDefaultTimeout(timeout) {
@@ -9546,9 +9526,9 @@ var require_timeoutSettings = __commonJS({
       navigationTimeout(options) {
         if (typeof options.timeout === "number")
           return options.timeout;
-        if (this._defaultNavigationTimeout !== void 0)
+        if (this._defaultNavigationTimeout !== null)
           return this._defaultNavigationTimeout;
-        if (this._defaultTimeout !== void 0)
+        if (this._defaultTimeout !== null)
           return this._defaultTimeout;
         if (this._parent)
           return this._parent.navigationTimeout(options);
@@ -9557,7 +9537,7 @@ var require_timeoutSettings = __commonJS({
       timeout(options) {
         if (typeof options.timeout === "number")
           return options.timeout;
-        if (this._defaultTimeout !== void 0)
+        if (this._defaultTimeout !== null)
           return this._defaultTimeout;
         if (this._parent)
           return this._parent.timeout(options);
@@ -9600,7 +9580,7 @@ var require_debugLogger = __commonJS({
     };
     var DebugLogger = class {
       constructor() {
-        this._debuggers = /* @__PURE__ */ new Map();
+        this._debuggers = new Map();
         if (process.env.DEBUG_FILE) {
           const ansiRegex = new RegExp(["[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)", "(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-ntqry=><~]))"].join("|"), "g");
           const stream = _fs.default.createWriteStream(process.env.DEBUG_FILE);
@@ -11848,7 +11828,7 @@ var require_cookieStore = __commonJS({
     };
     var CookieStore = class {
       constructor() {
-        this._nameToCookies = /* @__PURE__ */ new Map();
+        this._nameToCookies = new Map();
       }
       addCookies(cookies) {
         for (const cookie of cookies)
@@ -11873,7 +11853,7 @@ var require_cookieStore = __commonJS({
           return;
         let set = this._nameToCookies.get(cookie.name());
         if (!set) {
-          set = /* @__PURE__ */ new Set();
+          set = new Set();
           this._nameToCookies.set(cookie.name(), set);
         }
         CookieStore.pruneExpired(set);
@@ -11996,7 +11976,7 @@ var require_fetch = __commonJS({
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.GlobalAPIRequestContext = exports.BrowserContextAPIRequestContext = exports.APIRequestContext = void 0;
+    exports.GlobalFetchRequest = exports.BrowserContextFetchRequest = exports.FetchRequest = void 0;
     var http = _interopRequireWildcard(__require("http"));
     var https = _interopRequireWildcard(__require("https"));
     var _httpsProxyAgent = require_dist();
@@ -12052,9 +12032,9 @@ var require_fetch = __commonJS({
       }
       return newObj;
     }
-    var APIRequestContext = class extends _instrumentation.SdkObject {
+    var FetchRequest = class extends _instrumentation.SdkObject {
       static findResponseBody(guid) {
-        for (const request of APIRequestContext.allInstances) {
+        for (const request of FetchRequest.allInstances) {
           const body = request.fetchResponses.get(guid);
           if (body)
             return body;
@@ -12063,13 +12043,13 @@ var require_fetch = __commonJS({
       }
       constructor(parent) {
         super(parent, "fetchRequest");
-        this.fetchResponses = /* @__PURE__ */ new Map();
-        APIRequestContext.allInstances.add(this);
+        this.fetchResponses = new Map();
+        FetchRequest.allInstances.add(this);
       }
       _disposeImpl() {
-        APIRequestContext.allInstances.delete(this);
+        FetchRequest.allInstances.delete(this);
         this.fetchResponses.clear();
-        this.emit(APIRequestContext.Events.Dispose);
+        this.emit(FetchRequest.Events.Dispose);
       }
       _storeResponseBody(body) {
         const uid = (0, _utils.createGuid)();
@@ -12136,7 +12116,7 @@ var require_fetch = __commonJS({
               requestUrl.searchParams.set(name, value);
           }
           let postData;
-          if (["POST", "PUT", "PATCH", "DELETE"].includes(method))
+          if (["POST", "PUT", "PATCH"].includes(method))
             postData = serializePostData(params, headers);
           else if (params.postData || params.jsonData || params.formData || params.multipartData)
             throw new Error(`Method ${method} does not accept post data`);
@@ -12156,7 +12136,7 @@ var require_fetch = __commonJS({
           };
         } catch (e) {
           return {
-            error: e instanceof Error ? e.message : String(e)
+            error: String(e)
           };
         }
       }
@@ -12294,8 +12274,8 @@ var require_fetch = __commonJS({
             reject(new Error("Request context disposed."));
             request.destroy();
           };
-          this.on(APIRequestContext.Events.Dispose, disposeListener);
-          request.on("close", () => this.off(APIRequestContext.Events.Dispose, disposeListener));
+          this.on(FetchRequest.Events.Dispose, disposeListener);
+          request.on("close", () => this.off(FetchRequest.Events.Dispose, disposeListener));
           if (_debugLogger.debugLogger.isEnabled("api")) {
             _debugLogger.debugLogger.log("api", `\u2192 ${options.method} ${url.toString()}`);
             if (options.headers) {
@@ -12321,12 +12301,12 @@ var require_fetch = __commonJS({
         });
       }
     };
-    exports.APIRequestContext = APIRequestContext;
-    APIRequestContext.Events = {
+    exports.FetchRequest = FetchRequest;
+    FetchRequest.Events = {
       Dispose: "dispose"
     };
-    APIRequestContext.allInstances = /* @__PURE__ */ new Set();
-    var BrowserContextAPIRequestContext = class extends APIRequestContext {
+    FetchRequest.allInstances = new Set();
+    var BrowserContextFetchRequest = class extends FetchRequest {
       constructor(context) {
         super(context);
         this._context = void 0;
@@ -12357,8 +12337,8 @@ var require_fetch = __commonJS({
         return this._context.storageState();
       }
     };
-    exports.BrowserContextAPIRequestContext = BrowserContextAPIRequestContext;
-    var GlobalAPIRequestContext = class extends APIRequestContext {
+    exports.BrowserContextFetchRequest = BrowserContextFetchRequest;
+    var GlobalFetchRequest = class extends FetchRequest {
       constructor(playwright2, options) {
         super(playwright2);
         this._cookieStore = new _cookieStore.CookieStore();
@@ -12407,7 +12387,7 @@ var require_fetch = __commonJS({
         };
       }
     };
-    exports.GlobalAPIRequestContext = GlobalAPIRequestContext;
+    exports.GlobalFetchRequest = GlobalFetchRequest;
     function toHeadersArray(rawHeaders) {
       const result = [];
       for (let i = 0; i < rawHeaders.length; i += 2)
@@ -12464,24 +12444,11 @@ var require_fetch = __commonJS({
       }
       return cookie;
     }
-    function isJsonParsable(value) {
-      if (typeof value !== "string")
-        return false;
-      try {
-        JSON.parse(value);
-        return true;
-      } catch (e) {
-        if (e instanceof SyntaxError)
-          return false;
-        else
-          throw e;
-      }
-    }
     function serializePostData(params, headers) {
       (0, _utils.assert)((params.postData ? 1 : 0) + (params.jsonData ? 1 : 0) + (params.formData ? 1 : 0) + (params.multipartData ? 1 : 0) <= 1, `Only one of 'data', 'form' or 'multipart' can be specified`);
       if (params.jsonData) {
         var _contentType, _headers$_contentType;
-        const json = isJsonParsable(params.jsonData) ? params.jsonData : JSON.stringify(params.jsonData);
+        const json = JSON.stringify(params.jsonData);
         (_headers$_contentType = headers[_contentType = "content-type"]) !== null && _headers$_contentType !== void 0 ? _headers$_contentType : headers[_contentType] = "application/json";
         return Buffer.from(json, "utf8");
       } else if (params.formData) {
@@ -12528,7 +12495,7 @@ var require_network = __commonJS({
     exports.stripFragmentFromUrl = stripFragmentFromUrl;
     exports.singleHeader = singleHeader;
     exports.mergeHeaders = mergeHeaders;
-    exports.STATUS_TEXTS = exports.WebSocket = exports.Response = exports.Route = exports.Request = void 0;
+    exports.STATUS_TEXTS = exports.WebSocket = exports.InterceptedResponse = exports.Response = exports.Route = exports.Request = void 0;
     var _utils = require_utils();
     var _async = require_async();
     var _instrumentation = require_instrumentation();
@@ -12599,7 +12566,7 @@ var require_network = __commonJS({
         this._method = void 0;
         this._postData = void 0;
         this._headers = void 0;
-        this._headersMap = /* @__PURE__ */ new Map();
+        this._headersMap = new Map();
         this._rawRequestHeadersPromise = void 0;
         this._frame = void 0;
         this._waitForResponsePromise = new _async.ManualPromise();
@@ -12715,6 +12682,7 @@ var require_network = __commonJS({
         this._request = void 0;
         this._delegate = void 0;
         this._handled = false;
+        this._response = null;
         this._request = request;
         this._delegate = delegate;
       }
@@ -12734,9 +12702,12 @@ var require_network = __commonJS({
         if (body === void 0) {
           if (overrides.fetchResponseUid) {
             const context = this._request.frame()._page._browserContext;
-            const buffer = context.fetchRequest.fetchResponses.get(overrides.fetchResponseUid) || _fetch.APIRequestContext.findResponseBody(overrides.fetchResponseUid);
+            const buffer = context.fetchRequest.fetchResponses.get(overrides.fetchResponseUid) || _fetch.FetchRequest.findResponseBody(overrides.fetchResponseUid);
             (0, _utils.assert)(buffer, "Fetch response has been disposed");
             body = buffer.toString("base64");
+            isBase64 = true;
+          } else if (this._response && overrides.useInterceptedResponseBody) {
+            body = (await this._delegate.responseBody()).toString("base64");
             isBase64 = true;
           } else {
             body = "";
@@ -12752,13 +12723,19 @@ var require_network = __commonJS({
       }
       async continue(overrides = {}) {
         (0, _utils.assert)(!this._handled, "Route is already handled!");
+        (0, _utils.assert)(!this._response, "Cannot call continue after response interception!");
         if (overrides.url) {
           const newUrl = new URL(overrides.url);
           const oldUrl = new URL(this._request.url());
           if (oldUrl.protocol !== newUrl.protocol)
             throw new Error("New URL must have same protocol as overridden URL");
         }
-        await this._delegate.continue(this._request, overrides);
+        this._response = await this._delegate.continue(this._request, overrides);
+        return this._response;
+      }
+      async responseBody() {
+        (0, _utils.assert)(!this._handled, "Route is already handled!");
+        return this._delegate.responseBody();
       }
     };
     exports.Route = Route;
@@ -12772,7 +12749,7 @@ var require_network = __commonJS({
         this._statusText = void 0;
         this._url = void 0;
         this._headers = void 0;
-        this._headersMap = /* @__PURE__ */ new Map();
+        this._headersMap = new Map();
         this._getResponseBodyCallback = void 0;
         this._timing = void 0;
         this._serverAddrPromise = new _async.ManualPromise();
@@ -12904,6 +12881,32 @@ var require_network = __commonJS({
       }
     };
     exports.Response = Response;
+    var InterceptedResponse = class extends _instrumentation.SdkObject {
+      constructor(request, status, statusText, headers) {
+        super(request.frame(), "interceptedResponse");
+        this._request = void 0;
+        this._status = void 0;
+        this._statusText = void 0;
+        this._headers = void 0;
+        this._request = request._finalRequest();
+        this._status = status;
+        this._statusText = statusText;
+        this._headers = headers;
+      }
+      status() {
+        return this._status;
+      }
+      statusText() {
+        return this._statusText;
+      }
+      headers() {
+        return this._headers;
+      }
+      request() {
+        return this._request;
+      }
+    };
+    exports.InterceptedResponse = InterceptedResponse;
     var WebSocket = class extends _instrumentation.SdkObject {
       constructor(parent, url) {
         super(parent, "ws");
@@ -13012,8 +13015,8 @@ var require_network = __commonJS({
       }];
     }
     function mergeHeaders(headers) {
-      const lowerCaseToValue = /* @__PURE__ */ new Map();
-      const lowerCaseToOriginalCase = /* @__PURE__ */ new Map();
+      const lowerCaseToValue = new Map();
+      const lowerCaseToOriginalCase = new Map();
       for (const h of headers) {
         if (!h)
           continue;
@@ -13120,7 +13123,7 @@ var require_injectedScriptSource = __commonJS({
       value: true
     });
     exports.source = void 0;
-    var source = 'var pwExport;(()=>{"use strict";var e={204:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.checkComponentAttribute=function(e,t){for(const n of t.jsonPath)null!=e&&(e=e[n]);const n="string"!=typeof e||t.caseSensetive?e:e.toUpperCase(),r="string"!=typeof t.value||t.caseSensetive?t.value:t.value.toUpperCase();return"<truthy>"===t.op?!!n:"="===t.op?n===r:"string"==typeof n&&"string"==typeof r&&("*="===t.op?n.includes(r):"^="===t.op?n.startsWith(r):"$="===t.op?n.endsWith(r):"|="===t.op?n===r||n.startsWith(r+"-"):"~="===t.op&&n.split(" ").includes(r))},t.parseComponentSelector=function(e){let t=0,n=0===e.length;const r=()=>e[t]||"",o=()=>{const o=r();return++t,n=t>=e.length,o},i=o=>{if(n)throw new Error(`Unexpected end of selector while parsing selector \\`${e}\\``);throw new Error(`Error while parsing selector \\`${e}\\` - unexpected symbol "${r()}" at position ${t}`+(o?" during "+o:""))};function s(){for(;!n&&/\\s/.test(r());)o()}function c(){let e="";for(s();!n&&/[-$0-9A-Z_]/i.test(r());)e+=o();return e}function a(e){let t=o();for(t!==e&&i("parsing quoted string");!n&&r()!==e;)"\\\\"===r()&&o(),t+=o();return r()!==e&&i("parsing quoted string"),t+=o(),t}function u(){let e="";return s(),e="\'"===r()||\'"\'===r()?a(r()).slice(1,-1):c(),e||i("parsing property path"),e}function l(){o();const t=[];for(t.push(u()),s();"."===r();)o(),t.push(u()),s();if("]"===r())return o(),{jsonPath:t,op:"<truthy>",value:null,caseSensetive:!1};const c=function(){s();let e="";return n||(e+=o()),n||"="===e||(e+=o()),["=","*=","^=","$=","|=","~="].includes(e)||i("parsing operator"),e}();let l,p=!0;if(s(),"\'"===r()||\'"\'===r())l=a(r()).slice(1,-1),s(),"i"===r()||"I"===r()?(p=!1,o()):"s"!==r()&&"S"!==r()||(p=!0,o());else{for(l="";!n&&!/\\s/.test(r())&&"]"!==r();)l+=o();"true"===l?l=!0:"false"===l?l=!1:(l=+l,isNaN(l)&&i("parsing attribute value"))}if(s(),"]"!==r()&&i("parsing attribute value"),o(),"="!==c&&"string"!=typeof l)throw new Error(`Error while parsing selector \\`${e}\\` - cannot use ${c} in attribute with non-string matching value - ${l}`);return{jsonPath:t,op:c,value:l,caseSensetive:p}}const p={name:"",attributes:[]};for(p.name=c(),s();"["===r();)p.attributes.push(l()),s();if(n||i(void 0),!p.name&&!p.attributes.length)throw new Error(`Error while parsing selector \\`${e}\\` - selector cannot be empty`);return p}},317:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseCSS=function(e,t){let n;try{n=r.tokenize(e),n[n.length-1]instanceof r.EOFToken||n.push(new r.EOFToken)}catch(t){const n=t.message+` while parsing selector "${e}"`,r=(t.stack||"").indexOf(t.message);throw-1!==r&&(t.stack=t.stack.substring(0,r)+n+t.stack.substring(r+t.message.length)),t.message=n,t}const o=n.find((e=>e instanceof r.AtKeywordToken||e instanceof r.BadStringToken||e instanceof r.BadURLToken||e instanceof r.ColumnToken||e instanceof r.CDOToken||e instanceof r.CDCToken||e instanceof r.SemicolonToken||e instanceof r.OpenCurlyToken||e instanceof r.CloseCurlyToken||e instanceof r.URLToken||e instanceof r.PercentageToken));if(o)throw new Error(`Unsupported token "${o.toSource()}" while parsing selector "${e}"`);let i=0;const s=new Set;function c(){return new Error(`Unexpected token "${n[i].toSource()}" while parsing selector "${e}"`)}function a(){for(;n[i]instanceof r.WhitespaceToken;)i++}function u(e=i){return n[e]instanceof r.IdentToken}function l(e=i){return n[e]instanceof r.CommaToken}function p(e=i){return n[e]instanceof r.CloseParenToken}function h(e=i){return n[e]instanceof r.DelimToken&&"*"===n[e].value}function f(e=i){return n[e]instanceof r.EOFToken}function d(e=i){return n[e]instanceof r.DelimToken&&[">","+","~"].includes(n[e].value)}function m(e=i){return l(e)||p(e)||f(e)||d(e)||n[e]instanceof r.WhitespaceToken}function g(){const e=[y()];for(;a(),l();)i++,e.push(y());return e}function y(){return a(),function(e=i){return n[e]instanceof r.NumberToken}()||function(e=i){return n[e]instanceof r.StringToken}()?n[i++].value:function(){const e={simples:[]};for(a(),d()?e.simples.push({selector:{functions:[{name:"scope",args:[]}]},combinator:""}):e.simples.push({selector:w(),combinator:""});;){if(a(),d())e.simples[e.simples.length-1].combinator=n[i++].value,a();else if(m())break;e.simples.push({combinator:"",selector:w()})}return e}()}function w(){let e="";const o=[];for(;!m();)if(u()||h())e+=n[i++].toSource();else if(n[i]instanceof r.HashToken)e+=n[i++].toSource();else if(n[i]instanceof r.DelimToken&&"."===n[i].value){if(i++,!u())throw c();e+="."+n[i++].toSource()}else if(n[i]instanceof r.ColonToken)if(i++,u())if(t.has(n[i].value.toLowerCase())){const e=n[i++].value.toLowerCase();o.push({name:e,args:[]}),s.add(e)}else e+=":"+n[i++].toSource();else{if(!(n[i]instanceof r.FunctionToken))throw c();{const r=n[i++].value.toLowerCase();if(t.has(r)?(o.push({name:r,args:g()}),s.add(r)):e+=`:${r}(${v()})`,a(),!p())throw c();i++}}else{if(!(n[i]instanceof r.OpenSquareToken))throw c();for(e+="[",i++;!(n[i]instanceof r.CloseSquareToken||f());)e+=n[i++].toSource();if(!(n[i]instanceof r.CloseSquareToken))throw c();e+="]",i++}if(!e&&!o.length)throw c();return{css:e||void 0,functions:o}}function v(){let e="";for(;!p()&&!f();)e+=n[i++].toSource();return e}const b=g();if(!f())throw new Error(`Error while parsing selector "${e}"`);if(b.some((e=>"object"!=typeof e||!("simples"in e))))throw new Error(`Error while parsing selector "${e}"`);return{selector:b,names:Array.from(s)}},t.serializeSelector=function e(t){return t.map((t=>"string"==typeof t?`"${t}"`:"number"==typeof t?String(t):t.simples.map((({selector:t,combinator:n})=>{let r=t.css||"";return r+=t.functions.map((t=>`:${t.name}(${e(t.args)})`)).join(""),n&&(r+=" "+n),r})).join(" "))).join(", ")};var r=function(e,t){if(e&&e.__esModule)return e;if(null===e||"object"!=typeof e&&"function"!=typeof e)return{default:e};var n=o(t);if(n&&n.has(e))return n.get(e);var r={},i=Object.defineProperty&&Object.getOwnPropertyDescriptor;for(var s in e)if("default"!==s&&Object.prototype.hasOwnProperty.call(e,s)){var c=i?Object.getOwnPropertyDescriptor(e,s):null;c&&(c.get||c.set)?Object.defineProperty(r,s,c):r[s]=e[s]}return r.default=e,n&&n.set(e,r),r}(n(503));function o(e){if("function"!=typeof WeakMap)return null;var t=new WeakMap,n=new WeakMap;return(o=function(e){return e?n:t})(e)}},503:(e,t)=>{var n,r;n=function(e){var t=function(e,t,n){return e>=t&&e<=n};function n(e){return t(e,48,57)}function r(e){return n(e)||t(e,65,70)||t(e,97,102)}function o(e){return function(e){return t(e,65,90)}(e)||function(e){return t(e,97,122)}(e)}function i(e){return o(e)||function(e){return e>=128}(e)||95==e}function s(e){return i(e)||n(e)||45==e}function c(e){return t(e,0,8)||11==e||t(e,14,31)||127==e}function a(e){return 10==e}function u(e){return a(e)||9==e||32==e}var l=function(e){this.message=e};function p(e){if(e<=65535)return String.fromCharCode(e);e-=Math.pow(2,16);var t=Math.floor(e/Math.pow(2,10))+55296,n=e%Math.pow(2,10)+56320;return String.fromCharCode(t)+String.fromCharCode(n)}function h(){throw"Abstract Base Class"}function f(){return this}function d(){return this}function m(){return this}function g(){return this}function y(){return this}function w(){return this}function v(){return this}function b(){return this}function E(){throw"Abstract Base Class"}function _(){return this.value="{",this.mirror="}",this}function S(){return this.value="}",this.mirror="{",this}function T(){return this.value="[",this.mirror="]",this}function k(){return this.value="]",this.mirror="[",this}function N(){return this.value="(",this.mirror=")",this}function x(){return this.value=")",this.mirror="(",this}function C(){return this}function A(){return this}function O(){return this}function M(){return this}function $(){return this}function R(){return this}function L(){return this}function P(e){return this.value=p(e),this}function j(){throw"Abstract Base Class"}function I(e){this.value=e}function q(e){this.value=e,this.mirror=")"}function D(e){this.value=e}function U(e){this.value=e,this.type="unrestricted"}function W(e){this.value=e}function F(e){this.value=e}function B(){this.value=null,this.type="integer",this.repr=""}function z(){this.value=null,this.repr=""}function H(){this.value=null,this.type="integer",this.repr="",this.unit=""}function V(e){for(var n="",r=(e=""+e).charCodeAt(0),o=0;o<e.length;o++){var i=e.charCodeAt(o);if(0==i)throw new l("Invalid character: the input contains U+0000.");t(i,1,31)||127==i||0==o&&t(i,48,57)||1==o&&t(i,48,57)&&45==r?n+="\\\\"+i.toString(16)+" ":i>=128||45==i||95==i||t(i,48,57)||t(i,65,90)||t(i,97,122)?n+=e[o]:n+="\\\\"+e[o]}return n}function G(e){e=""+e;for(var n="",r=0;r<e.length;r++){var o=e.charCodeAt(r);if(0==o)throw new l("Invalid character: the input contains U+0000.");t(o,1,31)||127==o?n+="\\\\"+o.toString(16)+" ":n+=34==o||92==o?"\\\\"+e[r]:e[r]}return n}(l.prototype=new Error).name="InvalidCharacterError",h.prototype.toJSON=function(){return{token:this.tokenType}},h.prototype.toString=function(){return this.tokenType},h.prototype.toSource=function(){return""+this},f.prototype=Object.create(h.prototype),f.prototype.tokenType="BADSTRING",d.prototype=Object.create(h.prototype),d.prototype.tokenType="BADURL",m.prototype=Object.create(h.prototype),m.prototype.tokenType="WHITESPACE",m.prototype.toString=function(){return"WS"},m.prototype.toSource=function(){return" "},g.prototype=Object.create(h.prototype),g.prototype.tokenType="CDO",g.prototype.toSource=function(){return"\\x3c!--"},y.prototype=Object.create(h.prototype),y.prototype.tokenType="CDC",y.prototype.toSource=function(){return"--\\x3e"},w.prototype=Object.create(h.prototype),w.prototype.tokenType=":",v.prototype=Object.create(h.prototype),v.prototype.tokenType=";",b.prototype=Object.create(h.prototype),b.prototype.tokenType=",",E.prototype=Object.create(h.prototype),_.prototype=Object.create(E.prototype),_.prototype.tokenType="{",S.prototype=Object.create(E.prototype),S.prototype.tokenType="}",T.prototype=Object.create(E.prototype),T.prototype.tokenType="[",k.prototype=Object.create(E.prototype),k.prototype.tokenType="]",N.prototype=Object.create(E.prototype),N.prototype.tokenType="(",x.prototype=Object.create(E.prototype),x.prototype.tokenType=")",C.prototype=Object.create(h.prototype),C.prototype.tokenType="~=",A.prototype=Object.create(h.prototype),A.prototype.tokenType="|=",O.prototype=Object.create(h.prototype),O.prototype.tokenType="^=",M.prototype=Object.create(h.prototype),M.prototype.tokenType="$=",$.prototype=Object.create(h.prototype),$.prototype.tokenType="*=",R.prototype=Object.create(h.prototype),R.prototype.tokenType="||",L.prototype=Object.create(h.prototype),L.prototype.tokenType="EOF",L.prototype.toSource=function(){return""},P.prototype=Object.create(h.prototype),P.prototype.tokenType="DELIM",P.prototype.toString=function(){return"DELIM("+this.value+")"},P.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},P.prototype.toSource=function(){return"\\\\"==this.value?"\\\\\\n":this.value},j.prototype=Object.create(h.prototype),j.prototype.ASCIIMatch=function(e){return this.value.toLowerCase()==e.toLowerCase()},j.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},I.prototype=Object.create(j.prototype),I.prototype.tokenType="IDENT",I.prototype.toString=function(){return"IDENT("+this.value+")"},I.prototype.toSource=function(){return V(this.value)},q.prototype=Object.create(j.prototype),q.prototype.tokenType="FUNCTION",q.prototype.toString=function(){return"FUNCTION("+this.value+")"},q.prototype.toSource=function(){return V(this.value)+"("},D.prototype=Object.create(j.prototype),D.prototype.tokenType="AT-KEYWORD",D.prototype.toString=function(){return"AT("+this.value+")"},D.prototype.toSource=function(){return"@"+V(this.value)},U.prototype=Object.create(j.prototype),U.prototype.tokenType="HASH",U.prototype.toString=function(){return"HASH("+this.value+")"},U.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e},U.prototype.toSource=function(){return"id"==this.type?"#"+V(this.value):"#"+function(e){for(var n="",r=((e=""+e).charCodeAt(0),0);r<e.length;r++){var o=e.charCodeAt(r);if(0==o)throw new l("Invalid character: the input contains U+0000.");o>=128||45==o||95==o||t(o,48,57)||t(o,65,90)||t(o,97,122)?n+=e[r]:n+="\\\\"+o.toString(16)+" "}return n}(this.value)},W.prototype=Object.create(j.prototype),W.prototype.tokenType="STRING",W.prototype.toString=function(){return\'"\'+G(this.value)+\'"\'},F.prototype=Object.create(j.prototype),F.prototype.tokenType="URL",F.prototype.toString=function(){return"URL("+this.value+")"},F.prototype.toSource=function(){return\'url("\'+G(this.value)+\'")\'},B.prototype=Object.create(h.prototype),B.prototype.tokenType="NUMBER",B.prototype.toString=function(){return"integer"==this.type?"INT("+this.value+")":"NUMBER("+this.value+")"},B.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e},B.prototype.toSource=function(){return this.repr},z.prototype=Object.create(h.prototype),z.prototype.tokenType="PERCENTAGE",z.prototype.toString=function(){return"PERCENTAGE("+this.value+")"},z.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.repr=this.repr,e},z.prototype.toSource=function(){return this.repr+"%"},H.prototype=Object.create(h.prototype),H.prototype.tokenType="DIMENSION",H.prototype.toString=function(){return"DIM("+this.value+","+this.unit+")"},H.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e.unit=this.unit,e},H.prototype.toSource=function(){var e=this.repr,n=V(this.unit);return"e"!=n[0].toLowerCase()||"-"!=n[1]&&!t(n.charCodeAt(1),48,57)||(n="\\\\65 "+n.slice(1,n.length)),e+n},e.tokenize=function(e){e=function(e){for(var n=[],r=0;r<e.length;r++){var o=e.charCodeAt(r);if(13==o&&10==e.charCodeAt(r+1)&&(o=10,r++),13!=o&&12!=o||(o=10),0==o&&(o=65533),t(o,55296,56319)&&t(e.charCodeAt(r+1),56320,57343)){var i=o-55296,s=e.charCodeAt(r+1)-56320;o=Math.pow(2,16)+i*Math.pow(2,10)+s,r++}n.push(o)}return n}(e);for(var o,l=-1,h=[],E=0,j=0,V=0,G={line:E,column:j},X=function(t){return t>=e.length?-1:e[t]},J=function(e){if(void 0===e&&(e=1),e>3)throw"Spec Error: no more than three codepoints of lookahead.";return X(l+e)},Q=function(e){return void 0===e&&(e=1),a(o=X(l+=e))?(E+=1,V=j,j=0):j+=e,!0},K=function(){return l-=1,a(o)?(E-=1,j=V):j-=1,G.line=E,G.column=j,!0},Y=function(e){return void 0===e&&(e=o),-1==e},Z=function(){return console.log("Parse error at index "+l+", processing codepoint 0x"+o.toString(16)+"."),!0},ee=function(){if(te(),Q(),u(o)){for(;u(J());)Q();return new m}if(34==o)return oe();if(35==o){if(s(J())||ce(J(1),J(2))){var e=new U;return ue(J(1),J(2),J(3))&&(e.type="id"),e.value=he(),e}return new P(o)}return 36==o?61==J()?(Q(),new M):new P(o):39==o?oe():40==o?new N:41==o?new x:42==o?61==J()?(Q(),new $):new P(o):43==o?pe()?(K(),ne()):new P(o):44==o?new b:45==o?pe()?(K(),ne()):45==J(1)&&62==J(2)?(Q(2),new y):le()?(K(),re()):new P(o):46==o?pe()?(K(),ne()):new P(o):58==o?new w:59==o?new v:60==o?33==J(1)&&45==J(2)&&45==J(3)?(Q(3),new g):new P(o):64==o?ue(J(1),J(2),J(3))?new D(he()):new P(o):91==o?new T:92==o?ae()?(K(),re()):(Z(),new P(o)):93==o?new k:94==o?61==J()?(Q(),new O):new P(o):123==o?new _:124==o?61==J()?(Q(),new A):124==J()?(Q(),new R):new P(o):125==o?new S:126==o?61==J()?(Q(),new C):new P(o):n(o)?(K(),ne()):i(o)?(K(),re()):Y()?new L:new P(o)},te=function(){for(;47==J(1)&&42==J(2);)for(Q(2);;){if(Q(),42==o&&47==J()){Q();break}if(Y())return void Z()}},ne=function(){var e,t=fe();return ue(J(1),J(2),J(3))?((e=new H).value=t.value,e.repr=t.repr,e.type=t.type,e.unit=he(),e):37==J()?(Q(),(e=new z).value=t.value,e.repr=t.repr,e):((e=new B).value=t.value,e.repr=t.repr,e.type=t.type,e)},re=function(){var e=he();if("url"==e.toLowerCase()&&40==J()){for(Q();u(J(1))&&u(J(2));)Q();return 34==J()||39==J()?new q(e):!u(J())||34!=J(2)&&39!=J(2)?ie():new q(e)}return 40==J()?(Q(),new q(e)):new I(e)},oe=function(e){void 0===e&&(e=o);for(var t="";Q();){if(o==e||Y())return new W(t);if(a(o))return Z(),K(),new f;92==o?Y(J())||(a(J())?Q():t+=p(se())):t+=p(o)}},ie=function(){for(var e=new F("");u(J());)Q();if(Y(J()))return e;for(;Q();){if(41==o||Y())return e;if(u(o)){for(;u(J());)Q();return 41==J()||Y(J())?(Q(),e):(me(),new d)}if(34==o||39==o||40==o||c(o))return Z(),me(),new d;if(92==o){if(!ae())return Z(),me(),new d;e.value+=p(se())}else e.value+=p(o)}},se=function(){if(Q(),r(o)){for(var e=[o],t=0;t<5&&r(J());t++)Q(),e.push(o);u(J())&&Q();var n=parseInt(e.map((function(e){return String.fromCharCode(e)})).join(""),16);return n>1114111&&(n=65533),n}return Y()?65533:o},ce=function(e,t){return 92==e&&!a(t)},ae=function(){return ce(o,J())},ue=function(e,t,n){return 45==e?i(t)||45==t||ce(t,n):!!i(e)||92==e&&ce(e,t)},le=function(){return ue(o,J(1),J(2))},pe=function(){return e=o,t=J(1),r=J(2),43==e||45==e?!!n(t)||!(46!=t||!n(r)):46==e?!!n(t):!!n(e);var e,t,r},he=function(){for(var e="";Q();)if(s(o))e+=p(o);else{if(!ae())return K(),e;e+=p(se())}},fe=function(){var e=[],t="integer";for(43!=J()&&45!=J()||(Q(),e+=p(o));n(J());)Q(),e+=p(o);if(46==J(1)&&n(J(2)))for(Q(),e+=p(o),Q(),e+=p(o),t="number";n(J());)Q(),e+=p(o);var r=J(1),i=J(2),s=J(3);if(69!=r&&101!=r||!n(i)){if((69==r||101==r)&&(43==i||45==i)&&n(s))for(Q(),e+=p(o),Q(),e+=p(o),Q(),e+=p(o),t="number";n(J());)Q(),e+=p(o)}else for(Q(),e+=p(o),Q(),e+=p(o),t="number";n(J());)Q(),e+=p(o);return{type:t,value:de(e),repr:e}},de=function(e){return+e},me=function(){for(;Q();){if(41==o||Y())return;ae()&&se()}},ge=0;!Y(J());)if(h.push(ee()),++ge>2*e.length)return"I\'m infinite-looping!";return h},e.IdentToken=I,e.FunctionToken=q,e.AtKeywordToken=D,e.HashToken=U,e.StringToken=W,e.BadStringToken=f,e.URLToken=F,e.BadURLToken=d,e.DelimToken=P,e.NumberToken=B,e.PercentageToken=z,e.DimensionToken=H,e.IncludeMatchToken=C,e.DashMatchToken=A,e.PrefixMatchToken=O,e.SuffixMatchToken=M,e.SubstringMatchToken=$,e.ColumnToken=R,e.WhitespaceToken=m,e.CDOToken=g,e.CDCToken=y,e.ColonToken=w,e.SemicolonToken=v,e.CommaToken=b,e.OpenParenToken=N,e.CloseParenToken=x,e.OpenSquareToken=T,e.CloseSquareToken=k,e.OpenCurlyToken=_,e.CloseCurlyToken=S,e.EOFToken=L,e.CSSParserToken=h,e.GroupingToken=E},void 0===(r=n.apply(t,[t]))||(e.exports=r)},461:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseSelector=i,t.splitSelectorByFrame=function(e){const t=i(e),n=[];let r={parts:[]},o=0;for(let e=0;e<t.parts.length;++e){const i=t.parts[e];if("control"!==i.name||"enter-frame"!==i.body)t.capture===e&&(r.capture=e-o),r.parts.push(i);else{if(!r.parts.length)throw new Error("Selector cannot start with entering frame, select the iframe first");n.push(r),r={parts:[]},o=e+1}}if(!r.parts.length)throw new Error(`Selector cannot end with entering frame, while parsing selector ${e}`);if(n.push(r),"number"==typeof t.capture&&"number"!=typeof n[n.length-1].capture)throw new Error("Can not capture the selector before diving into the frame. Only use * after the last frame has been selected");return n},t.stringifySelector=function(e){return"string"==typeof e?e:e.parts.map(((t,n)=>{const r="css"===t.name?"":t.name+"=";return`${n===e.capture?"*":""}${r}${t.source}`})).join(" >> ")},t.customCSSNames=void 0;var r=n(317);const o=new Set(["not","is","where","has","scope","light","visible","text","text-matches","text-is","has-text","above","below","right-of","left-of","near","nth-match"]);function i(e){const t=function(e){let t,n=0,r=0;const o={parts:[]},i=()=>{const t=e.substring(r,n).trim(),i=t.indexOf("=");let s,c;-1!==i&&t.substring(0,i).trim().match(/^[a-zA-Z_0-9-+:*]+$/)?(s=t.substring(0,i).trim(),c=t.substring(i+1)):t.length>1&&\'"\'===t[0]&&\'"\'===t[t.length-1]||t.length>1&&"\'"===t[0]&&"\'"===t[t.length-1]?(s="text",c=t):/^\\(*\\/\\//.test(t)||t.startsWith("..")?(s="xpath",c=t):(s="css",c=t);let a=!1;if("*"===s[0]&&(a=!0,s=s.substring(1)),o.parts.push({name:s,body:c}),a){if(void 0!==o.capture)throw new Error("Only one of the selectors can capture using * modifier");o.capture=o.parts.length-1}};if(!e.includes(">>"))return n=e.length,i(),o;for(;n<e.length;){const o=e[n];"\\\\"===o&&n+1<e.length?n+=2:o===t?(t=void 0,n++):t||\'"\'!==o&&"\'"!==o&&"`"!==o?t||">"!==o||">"!==e[n+1]?n++:(i(),n+=2,r=n):(t=o,n++)}return i(),o}(e),n=t.parts.map((e=>"css"===e.name||"css:light"===e.name?("css:light"===e.name&&(e.body=":light("+e.body+")"),{name:"css",body:(0,r.parseCSS)(e.body,o).selector,source:e.body}):{...e,source:e.body}));return{capture:t.capture,parts:n}}t.customCSSNames=o},836:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.ReactEngine=void 0;var r=n(204);function o(e){if("function"==typeof e.type)return e.type.displayName||e.type.name||"Anonymous";if("string"==typeof e.type)return e.type;if(e._currentElement){const t=e._currentElement.type;if("string"==typeof t)return t;if("function"==typeof t)return t.displayName||t.name||"Anonymous"}return""}function i(e){if(e.child){const t=[];for(let n=e.child;n;n=n.sibling)t.push(n);return t}if(!e._currentElement)return[];const t=e=>{var t;const n=null===(t=e._currentElement)||void 0===t?void 0:t.type;return"function"==typeof n||"string"==typeof n};if(e._renderedComponent){const n=e._renderedComponent;return t(n)?[n]:[]}return e._renderedChildren?[...Object.values(e._renderedChildren)].filter(t):[]}function s(e){var t;const n=e.memoizedProps||(null===(t=e._currentElement)||void 0===t?void 0:t.props);if(!n||"string"==typeof n)return n;const r={...n};return delete r.children,r}function c(e){var t;const n={name:o(e),children:i(e).map(c),rootElements:[],props:s(e)},r=e.stateNode||e._hostNode||(null===(t=e._renderedComponent)||void 0===t?void 0:t._hostNode);if(r instanceof Element)n.rootElements.push(r);else for(const e of n.children)n.rootElements.push(...e.rootElements);return n}function a(e,t,n=[]){t(e)&&n.push(e);for(const r of e.children)a(r,t,n);return n}const u={queryAll(e,t){const{name:n,attributes:o}=(0,r.parseComponentSelector)(t),i=function(){const e=[],t=document.createTreeWalker(document,NodeFilter.SHOW_ELEMENT);for(;t.nextNode();){const n=t.currentNode;n.hasOwnProperty("_reactRootContainer")&&e.push(n._reactRootContainer._internalRoot.current)}for(const t of document.querySelectorAll("[data-reactroot]"))for(const n of Object.keys(t))(n.startsWith("__reactInternalInstance")||n.startsWith("__reactFiber"))&&e.push(t[n]);return e}().map((e=>c(e))).map((t=>a(t,(t=>{if(n&&t.name!==n)return!1;if(t.rootElements.some((t=>!e.contains(t))))return!1;for(const e of o)if(!(0,r.checkComponentAttribute)(t.props,e))return!1;return!0})))).flat(),s=new Set;for(const e of i)for(const t of e.rootElements)s.add(t);return[...s]}};t.ReactEngine=u},848:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.createLaxTextMatcher=d,t.createStrictTextMatcher=m,t.createRegexTextMatcher=g,t.elementText=w,t.elementMatchesText=v,t.parentElementOrShadowHost=x,t.isVisible=O,t.SelectorEvaluatorImpl=void 0;var r=n(461);t.SelectorEvaluatorImpl=class{constructor(e){this._engines=new Map,this._cacheQueryCSS=new Map,this._cacheMatches=new Map,this._cacheQuery=new Map,this._cacheMatchesSimple=new Map,this._cacheMatchesParents=new Map,this._cacheCallMatches=new Map,this._cacheCallQuery=new Map,this._cacheQuerySimple=new Map,this._cacheText=new Map,this._scoreMap=void 0,this._retainCacheCounter=0;for(const[t,n]of e)this._engines.set(t,n);this._engines.set("not",c),this._engines.set("is",o),this._engines.set("where",o),this._engines.set("has",i),this._engines.set("scope",s),this._engines.set("light",a),this._engines.set("visible",u),this._engines.set("text",l),this._engines.set("text-is",p),this._engines.set("text-matches",h),this._engines.set("has-text",f),this._engines.set("right-of",k("right-of",b)),this._engines.set("left-of",k("left-of",E)),this._engines.set("above",k("above",_)),this._engines.set("below",k("below",S)),this._engines.set("near",k("near",T)),this._engines.set("nth-match",N);const t=[...this._engines.keys()];t.sort();const n=[...r.customCSSNames];if(n.sort(),t.join("|")!==n.join("|"))throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${t.join("|")} vs ${n.join("|")}`)}begin(){++this._retainCacheCounter}end(){--this._retainCacheCounter,this._retainCacheCounter||(this._cacheQueryCSS.clear(),this._cacheMatches.clear(),this._cacheQuery.clear(),this._cacheMatchesSimple.clear(),this._cacheMatchesParents.clear(),this._cacheCallMatches.clear(),this._cacheCallQuery.clear(),this._cacheQuerySimple.clear(),this._cacheText.clear())}_cached(e,t,n,r){e.has(t)||e.set(t,[]);const o=e.get(t),i=o.find((e=>n.every(((t,n)=>e.rest[n]===t))));if(i)return i.result;const s=r();return o.push({rest:n,result:s}),s}_checkSelector(e){if("object"!=typeof e||!e||!(Array.isArray(e)||"simples"in e&&e.simples.length))throw new Error(`Malformed selector "${e}"`);return e}matches(e,t,n){const r=this._checkSelector(t);this.begin();try{return this._cached(this._cacheMatches,e,[r,n.scope,n.pierceShadow],(()=>Array.isArray(r)?this._matchesEngine(o,e,r,n):!!this._matchesSimple(e,r.simples[r.simples.length-1].selector,n)&&this._matchesParents(e,r,r.simples.length-2,n)))}finally{this.end()}}query(e,t){const n=this._checkSelector(t);this.begin();try{return this._cached(this._cacheQuery,n,[e.scope,e.pierceShadow],(()=>{if(Array.isArray(n))return this._queryEngine(o,e,n);const t=this._scoreMap;this._scoreMap=new Map;let r=this._querySimple(e,n.simples[n.simples.length-1].selector);return r=r.filter((t=>this._matchesParents(t,n,n.simples.length-2,e))),this._scoreMap.size&&r.sort(((e,t)=>{const n=this._scoreMap.get(e),r=this._scoreMap.get(t);return n===r?0:void 0===n?1:void 0===r?-1:n-r})),this._scoreMap=t,r}))}finally{this.end()}}_markScore(e,t){this._scoreMap&&this._scoreMap.set(e,t)}_matchesSimple(e,t,n){return this._cached(this._cacheMatchesSimple,e,[t,n.scope,n.pierceShadow],(()=>{if(!t.functions.some((e=>"scope"===e.name||"is"===e.name))&&e===n.scope)return!1;if(t.css&&!this._matchesCSS(e,t.css))return!1;for(const r of t.functions)if(!this._matchesEngine(this._getEngine(r.name),e,r.args,n))return!1;return!0}))}_querySimple(e,t){return t.functions.length?this._cached(this._cacheQuerySimple,t,[e.scope,e.pierceShadow],(()=>{let n=t.css;const r=t.functions;let o;"*"===n&&r.length&&(n=void 0);let i=-1;void 0!==n?o=this._queryCSS(e,n):(i=r.findIndex((e=>void 0!==this._getEngine(e.name).query)),-1===i&&(i=0),o=this._queryEngine(this._getEngine(r[i].name),e,r[i].args));for(let t=0;t<r.length;t++){if(t===i)continue;const n=this._getEngine(r[t].name);void 0!==n.matches&&(o=o.filter((o=>this._matchesEngine(n,o,r[t].args,e))))}for(let t=0;t<r.length;t++){if(t===i)continue;const n=this._getEngine(r[t].name);void 0===n.matches&&(o=o.filter((o=>this._matchesEngine(n,o,r[t].args,e))))}return o})):this._queryCSS(e,t.css||"*")}_matchesParents(e,t,n,r){return n<0||this._cached(this._cacheMatchesParents,e,[t,n,r.scope,r.pierceShadow],(()=>{const{selector:o,combinator:i}=t.simples[n];if(">"===i){const i=C(e,r);return!(!i||!this._matchesSimple(i,o,r))&&this._matchesParents(i,t,n-1,r)}if("+"===i){const i=A(e,r);return!(!i||!this._matchesSimple(i,o,r))&&this._matchesParents(i,t,n-1,r)}if(""===i){let i=C(e,r);for(;i;){if(this._matchesSimple(i,o,r)){if(this._matchesParents(i,t,n-1,r))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,r)}return!1}if("~"===i){let i=A(e,r);for(;i;){if(this._matchesSimple(i,o,r)){if(this._matchesParents(i,t,n-1,r))return!0;if("~"===t.simples[n-1].combinator)break}i=A(i,r)}return!1}if(">="===i){let i=e;for(;i;){if(this._matchesSimple(i,o,r)){if(this._matchesParents(i,t,n-1,r))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,r)}return!1}throw new Error(`Unsupported combinator "${i}"`)}))}_matchesEngine(e,t,n,r){if(e.matches)return this._callMatches(e,t,n,r);if(e.query)return this._callQuery(e,n,r).includes(t);throw new Error(\'Selector engine should implement "matches" or "query"\')}_queryEngine(e,t,n){if(e.query)return this._callQuery(e,n,t);if(e.matches)return this._queryCSS(t,"*").filter((r=>this._callMatches(e,r,n,t)));throw new Error(\'Selector engine should implement "matches" or "query"\')}_callMatches(e,t,n,r){return this._cached(this._cacheCallMatches,t,[e,r.scope,r.pierceShadow,...n],(()=>e.matches(t,n,r,this)))}_callQuery(e,t,n){return this._cached(this._cacheCallQuery,e,[n.scope,n.pierceShadow,...t],(()=>e.query(n,t,this)))}_matchesCSS(e,t){return e.matches(t)}_queryCSS(e,t){return this._cached(this._cacheQueryCSS,t,[e.scope,e.pierceShadow],(()=>{let n=[];return function r(o){if(n=n.concat([...o.querySelectorAll(t)]),e.pierceShadow){o.shadowRoot&&r(o.shadowRoot);for(const e of o.querySelectorAll("*"))e.shadowRoot&&r(e.shadowRoot)}}(e.scope),n}))}_getEngine(e){const t=this._engines.get(e);if(!t)throw new Error(`Unknown selector engine "${e}"`);return t}};const o={matches(e,t,n,r){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');return t.some((t=>r.matches(e,t,n)))},query(e,t,n){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');let r=[];for(const o of t)r=r.concat(n.query(e,o));return 1===t.length?r:function(e){const t=new Map,n=[],r=[];function o(e){let r=t.get(e);if(r)return r;const i=x(e);return i?o(i).children.push(e):n.push(e),r={children:[],taken:!1},t.set(e,r),r}return e.forEach((e=>o(e).taken=!0)),n.forEach((function e(n){const o=t.get(n);if(o.taken&&r.push(n),o.children.length>1){const e=new Set(o.children);o.children=[];let t=n.firstElementChild;for(;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling;for(t=n.shadowRoot?n.shadowRoot.firstElementChild:null;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling}o.children.forEach(e)})),r}(r)}},i={matches(e,t,n,r){if(0===t.length)throw new Error(\'"has" engine expects non-empty selector list\');return r.query({...n,scope:e},t).length>0}},s={matches(e,t,n,r){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');return 9===n.scope.nodeType?e===n.scope.documentElement:e===n.scope},query(e,t,n){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');if(9===e.scope.nodeType){const t=e.scope.documentElement;return t?[t]:[]}return 1===e.scope.nodeType?[e.scope]:[]}},c={matches(e,t,n,r){if(0===t.length)throw new Error(\'"not" engine expects non-empty selector list\');return!r.matches(e,t,n)}},a={query:(e,t,n)=>n.query({...e,pierceShadow:!1},t),matches:(e,t,n,r)=>r.matches(e,t,{...n,pierceShadow:!1})},u={matches(e,t,n,r){if(t.length)throw new Error(\'"visible" engine expects no arguments\');return O(e)}},l={matches(e,t,n,r){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text" engine expects a single string\');return"self"===v(r,e,d(t[0]))}},p={matches(e,t,n,r){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text-is" engine expects a single string\');return"none"!==v(r,e,m(t[0]))}},h={matches(e,t,n,r){if(0===t.length||"string"!=typeof t[0]||t.length>2||2===t.length&&"string"!=typeof t[1])throw new Error(\'"text-matches" engine expects a regexp body and optional regexp flags\');return"self"===v(r,e,g(t[0],2===t.length?t[1]:void 0))}},f={matches(e,t,n,r){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"has-text" engine expects a single string\');return!y(e)&&d(t[0])(w(r,e))}};function d(e){return e=e.trim().replace(/\\s+/g," ").toLowerCase(),t=>t.full.trim().replace(/\\s+/g," ").toLowerCase().includes(e)}function m(e){return e=e.trim().replace(/\\s+/g," "),t=>!e&&!t.immediate.length||t.immediate.some((t=>t.trim().replace(/\\s+/g," ")===e))}function g(e,t){const n=new RegExp(e,t);return e=>n.test(e.full)}function y(e){return"SCRIPT"===e.nodeName||"STYLE"===e.nodeName||document.head&&document.head.contains(e)}function w(e,t){let n=e._cacheText.get(t);if(void 0===n){if(n={full:"",immediate:[]},!y(t)){let r="";if(t instanceof HTMLInputElement&&("submit"===t.type||"button"===t.type))n={full:t.value,immediate:[t.value]};else{for(let o=t.firstChild;o;o=o.nextSibling)o.nodeType===Node.TEXT_NODE?(n.full+=o.nodeValue||"",r+=o.nodeValue||""):(r&&n.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(n.full+=w(e,o).full));r&&n.immediate.push(r),t.shadowRoot&&(n.full+=w(e,t.shadowRoot).full)}}e._cacheText.set(t,n)}return n}function v(e,t,n){if(y(t))return"none";if(!n(w(e,t)))return"none";for(let r=t.firstChild;r;r=r.nextSibling)if(r.nodeType===Node.ELEMENT_NODE&&n(w(e,r)))return"selfAndChildren";return t.shadowRoot&&n(w(e,t.shadowRoot))?"selfAndChildren":"self"}function b(e,t,n){const r=e.left-t.right;if(!(r<0||void 0!==n&&r>n))return r+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function E(e,t,n){const r=t.left-e.right;if(!(r<0||void 0!==n&&r>n))return r+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function _(e,t,n){const r=t.top-e.bottom;if(!(r<0||void 0!==n&&r>n))return r+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function S(e,t,n){const r=e.top-t.bottom;if(!(r<0||void 0!==n&&r>n))return r+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function T(e,t,n){const r=void 0===n?50:n;let o=0;return e.left-t.right>=0&&(o+=e.left-t.right),t.left-e.right>=0&&(o+=t.left-e.right),t.top-e.bottom>=0&&(o+=t.top-e.bottom),e.top-t.bottom>=0&&(o+=e.top-t.bottom),o>r?void 0:o}function k(e,t){return{matches(n,r,o,i){const s=r.length&&"number"==typeof r[r.length-1]?r[r.length-1]:void 0,c=void 0===s?r:r.slice(0,r.length-1);if(r.length<1+(void 0===s?0:1))throw new Error(`"${e}" engine expects a selector list and optional maximum distance in pixels`);const a=n.getBoundingClientRect();let u;for(const e of i.query(o,c)){if(e===n)continue;const r=t(a,e.getBoundingClientRect(),s);void 0!==r&&(void 0===u||r<u)&&(u=r)}return void 0!==u&&(i._markScore(n,u),!0)}}}const N={query(e,t,n){let r=t[t.length-1];if(t.length<2)throw new Error(\'"nth-match" engine expects non-empty selector list and an index argument\');if("number"!=typeof r||r<1)throw new Error(\'"nth-match" engine expects a one-based index as the last argument\');const i=o.query(e,t.slice(0,t.length-1),n);return r--,r<i.length?[i[r]]:[]}};function x(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:void 0}function C(e,t){if(e!==t.scope)return t.pierceShadow?x(e):e.parentElement||void 0}function A(e,t){if(e!==t.scope)return e.previousElementSibling||void 0}function O(e){if(!e.ownerDocument||!e.ownerDocument.defaultView)return!0;const t=e.ownerDocument.defaultView.getComputedStyle(e);if(!t||"hidden"===t.visibility)return!1;const n=e.getBoundingClientRect();return n.width>0&&n.height>0}},854:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.querySelector=function(e,t,n){try{const r=e.parseSelector(t);return{selector:t,elements:e.querySelectorAll(r,n)}}catch(e){return{selector:t,elements:[]}}},t.generateSelector=function(e,t){e._evaluator.begin();try{const n=function(e,t){if(t.ownerDocument.documentElement===t)return[{engine:"css",selector:"html",score:1}];const n=(u,p)=>{const d=p?o:i;let m=d.get(u);return void 0===m&&(m=((o,i)=>{const u=o===t;let p=i?function(e,t,n){if("SELECT"===t.nodeName)return[];const o=(0,r.elementText)(e._evaluator,t).full.trim().replace(/\\s+/g," ").substring(0,80);if(!o)return[];const i=[];let s=o;if((o.includes(\'"\')||o.includes(">>")||"/"===o[0])&&(s=`/.*${function(e){return e.replace(/[.*+?^>${}()|[\\]\\\\]/g,"\\\\$&")}(o)}.*/`),i.push({engine:"text",selector:s,score:10}),n&&s===o){let e=t.nodeName.toLocaleLowerCase();t.hasAttribute("role")&&(e+=`[role=${l(t.getAttribute("role"))}]`),i.push({engine:"css",selector:`${e}:has-text("${o}")`,score:30})}return i}(e,o,o===t).map((e=>[e])):[];o!==t&&(p=s(p));const d=function(e,t){const n=[];for(const e of["data-testid","data-test-id","data-test"])t.hasAttribute(e)&&n.push({engine:"css",selector:`[${e}=${l(t.getAttribute(e))}]`,score:1});if("INPUT"===t.nodeName){const e=t;e.placeholder&&n.push({engine:"css",selector:`[placeholder=${l(e.placeholder)}]`,score:10})}t.hasAttribute("aria-label")&&n.push({engine:"css",selector:`[aria-label=${l(t.getAttribute("aria-label"))}]`,score:10}),t.getAttribute("alt")&&["APPLET","AREA","IMG","INPUT"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[alt=${l(t.getAttribute("alt"))}]`,score:10}),t.hasAttribute("role")&&n.push({engine:"css",selector:`${t.nodeName.toLocaleLowerCase()}[role=${l(t.getAttribute("role"))}]`,score:50}),t.getAttribute("name")&&["BUTTON","FORM","FIELDSET","IFRAME","INPUT","KEYGEN","OBJECT","OUTPUT","SELECT","TEXTAREA","MAP","META","PARAM"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[name=${l(t.getAttribute("name"))}]`,score:50}),["INPUT","TEXTAREA"].includes(t.nodeName)&&"hidden"!==t.getAttribute("type")&&t.getAttribute("type")&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[type=${l(t.getAttribute("type"))}]`,score:50}),["INPUT","TEXTAREA","SELECT"].includes(t.nodeName)&&n.push({engine:"css",selector:t.nodeName.toLowerCase(),score:50});const r=t.getAttribute("id");return r&&!function(e){let t,n=0;for(let r=0;r<e.length;++r){const o=e[r];let i;"-"!==o&&"_"!==o&&(i=o>="a"&&o<="z"?"lower":o>="A"&&o<="Z"?"upper":o>="0"&&o<="9"?"digit":"other","lower"!==i||"upper"!==t?(t&&t!==i&&++n,t=i):t=i)}return n>=e.length/4}(r)&&n.push({engine:"css",selector:a(r),score:100}),n.push({engine:"css",selector:t.nodeName.toLocaleLowerCase(),score:200}),n}(0,o).map((e=>[e]));let m=f(e,t.ownerDocument,o,[...p,...d],u);p=s(p);const g=t=>{const r=i&&!t.length,s=[...t,...d].filter((e=>!m||h(e)<h(m)));let a=s[0];if(a)for(let t=c(o);t;t=c(t)){const i=n(t,r);if(!i)continue;if(m&&h([...i,...a])>=h(m))continue;if(a=f(e,t,o,s,u),!a)return;const c=[...i,...a];(!m||h(c)<h(m))&&(m=c)}};return g(p),o===t&&p.length&&g([]),m})(u,p),d.set(u,m)),m};return n(t,!0)}(e,t=t.closest("button,select,input,[role=button],[role=checkbox],[role=radio]")||t),d=p(n||[u(e,t)]),m=e.parseSelector(d);return{selector:d,elements:e.querySelectorAll(m,t.ownerDocument)}}finally{o.clear(),i.clear(),e._evaluator.end()}};var r=n(848);const o=new Map,i=new Map;function s(e){return e.filter((e=>"/"!==e[0].selector[0]))}function c(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:null}function a(e){return/^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(e)?"#"+e:`[id="${e}"]`}function u(e,t){const n=1e7,r=t.ownerDocument,o=[];function i(n){const r=o.slice();n&&r.unshift(n);const i=r.join(" "),s=e.parseSelector(i);return e.querySelector(s,t.ownerDocument,!1)===t?i:void 0}for(let e=t;e&&e!==r;e=c(e)){const t=e.nodeName.toLowerCase();let r="";if(e.id){const t=a(e.id),o=i(t);if(o)return{engine:"css",selector:o,score:n};r=t}const s=e.parentNode,c=[...e.classList];for(let e=0;e<c.length;++e){const t="."+c.slice(0,e+1).join("."),o=i(t);if(o)return{engine:"css",selector:o,score:n};!r&&s&&1===s.querySelectorAll(t).length&&(r=t)}if(s){const o=[...s.children],c=0===o.filter((e=>e.nodeName.toLowerCase()===t)).indexOf(e)?t:`${t}:nth-child(${1+o.indexOf(e)})`,a=i(c);if(a)return{engine:"css",selector:a,score:n};r||(r=c)}else r||(r=t);o.unshift(r)}return{engine:"css",selector:i(),score:n}}function l(e){return`"${e.replace(/"/g,\'\\\\"\').replace(/\\n/g,"\\\\n")}"`}function p(e){const t=[];let n="";for(const{engine:r,selector:o}of e)t.length&&("css"!==n||"css"!==r||o.startsWith(":nth-match("))&&t.push(">>"),n=r,"css"===r?t.push(o):t.push(`${r}=${o}`);return t.join(" ")}function h(e){let t=0;for(let n=0;n<e.length;n++)t+=e[n].score*(e.length-n);return t}function f(e,t,n,r,o){const i=r.map((e=>({tokens:e,score:h(e)})));i.sort(((e,t)=>e.score-t.score));let s=null;for(const{tokens:r}of i){const i=e.parseSelector(p(r)),c=e.querySelectorAll(i,t),a=c.indexOf(n);if(0===a)return r;if(!o||s||-1===a||c.length>5)continue;const u=r.map((e=>"text"!==e.engine?e:e.selector.startsWith("/")&&e.selector.endsWith("/")?{engine:"css",selector:`:text-matches("${e.selector.substring(1,e.selector.length-1)}")`,score:e.score}:{engine:"css",selector:`:text("${e.selector}")`,score:e.score}));s=[{engine:"css",selector:`:nth-match(${p(u)}, ${a+1})`,score:h(u)+1e3}]}return s}},12:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.VueEngine=void 0;var r=n(204);function o(e,t){const n=e.replace(/^[a-zA-Z]:/,"").replace(/\\\\/g,"/");let r=n.substring(n.lastIndexOf("/")+1);return t&&r.endsWith(t)&&(r=r.substring(0,r.length-t.length)),r}function i(e,t){return t?t.toUpperCase():""}const s=/(?:^|[-_/])(\\w)/g,c=e=>e&&e.replace(s,i);function a(e,t,n=[]){t(e)&&n.push(e);for(const r of e.children)a(r,t,n);return n}const u={queryAll(e,t){const{name:n,attributes:i}=(0,r.parseComponentSelector)(t),s=function(){const e=[];for(const t of document.querySelectorAll("[data-v-app]"))t._vnode&&t._vnode.component&&e.push({root:t._vnode.component,version:3});const t=document.createTreeWalker(document,NodeFilter.SHOW_ELEMENT),n=new Set;for(;t.nextNode();){const e=t.currentNode;e&&e.__vue__&&n.add(e.__vue__.$root)}for(const t of n)e.push({version:2,root:t});return e}().map((e=>3===e.version?function(e){function t(e,t){return e.type.__playwright_guessedName=t,t}function n(e){const n=function(e){const t=e.name||e._componentTag||e.__playwright_guessedName;if(t)return t;const n=e.__file;return n?c(o(n,".vue")):void 0}(e.type||{});if(n)return n;if(e.root===e)return"Root";for(const n in null===(r=e.parent)||void 0===r||null===(i=r.type)||void 0===i?void 0:i.components){var r,i,s;if((null===(s=e.parent)||void 0===s?void 0:s.type.components[n])===e.type)return t(e,n)}for(const n in null===(a=e.appContext)||void 0===a?void 0:a.components){var a;if(e.appContext.components[n]===e.type)return t(e,n)}return"Anonymous Component"}function r(e){const t=[];return e.component&&t.push(e.component),e.suspense&&t.push(...r(e.suspense.activeBranch)),Array.isArray(e.children)&&e.children.forEach((e=>{e.component?t.push(e.component):t.push(...r(e))})),t.filter((e=>{var t;return!(function(e){return e._isBeingDestroyed||e.isUnmounted}(e)||null!==(t=e.type.devtools)&&void 0!==t&&t.hide)}))}function i(e){return function(e){return"Symbol(Fragment)"===e.subTree.type.toString()}(e)?function(e){if(!e.children)return[];const t=[];for(let n=0,r=e.children.length;n<r;n++){const r=e.children[n];r.component?t.push(...i(r.component)):r.el&&t.push(r.el)}return t}(e.subTree):[e.subTree.el]}return function e(t){return{name:n(t),children:r(t.subTree).map(e),rootElements:i(t),props:t.props}}(e)}(e.root):function(e){function t(e){return function(e){const t=e.displayName||e.name||e._componentTag;if(t)return t;const n=e.__file;return n?c(o(n,".vue")):void 0}(e.$options||e.fnOptions||{})||(e.$root===e?"Root":"Anonymous Component")}function n(e){return e.$children?e.$children:Array.isArray(e.subTree.children)?e.subTree.children.filter((e=>!!e.component)).map((e=>e.component)):[]}return function e(r){return{name:t(r),children:n(r).map(e),rootElements:[r.$el],props:r._props}}(e)}(e.root))).map((t=>a(t,(t=>{if(n&&t.name!==n)return!1;if(t.rootElements.some((t=>!e.contains(t))))return!1;for(const e of i)if(!(0,r.checkComponentAttribute)(t.props,e))return!1;return!0})))).flat(),u=new Set;for(const e of s)for(const t of e.rootElements)u.add(t);return[...u]}};t.VueEngine=u},530:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.XPathEngine=void 0;const n={queryAll(e,t){t.startsWith("/")&&(t="."+t);const n=[],r=e instanceof Document?e:e.ownerDocument;if(!r)return n;const o=r.evaluate(t,e,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE);for(let e=o.iterateNext();e;e=o.iterateNext())e.nodeType===Node.ELEMENT_NODE&&n.push(e);return n}};t.XPathEngine=n}},t={};function n(r){var o=t[r];if(void 0!==o)return o.exports;var i=t[r]={exports:{}};return e[r](i,i.exports,n),i.exports}n.g=function(){if("object"==typeof globalThis)return globalThis;try{return this||new Function("return this")()}catch(e){if("object"==typeof window)return window}}();var r={};(()=>{var e=r;e.default=void 0;var t=n(530),o=n(836),i=n(12),s=n(461),c=n(848),a=n(854);const u=new Set(["AREA","BASE","BR","COL","COMMAND","EMBED","HR","IMG","INPUT","KEYGEN","LINK","MENUITEM","META","PARAM","SOURCE","TRACK","WBR"]),l=new Set(["checked","selected","disabled","readonly","multiple"]);function p(e){return e.replace(/\\n/g,"\u21B5").replace(/\\t/g,"\u21C6")}const h=new Map([["auxclick","mouse"],["click","mouse"],["dblclick","mouse"],["mousedown","mouse"],["mouseeenter","mouse"],["mouseleave","mouse"],["mousemove","mouse"],["mouseout","mouse"],["mouseover","mouse"],["mouseup","mouse"],["mouseleave","mouse"],["mousewheel","mouse"],["keydown","keyboard"],["keyup","keyboard"],["keypress","keyboard"],["textInput","keyboard"],["touchstart","touch"],["touchmove","touch"],["touchend","touch"],["touchcancel","touch"],["pointerover","pointer"],["pointerout","pointer"],["pointerenter","pointer"],["pointerleave","pointer"],["pointerdown","pointer"],["pointerup","pointer"],["pointermove","pointer"],["pointercancel","pointer"],["gotpointercapture","pointer"],["lostpointercapture","pointer"],["focus","focus"],["blur","focus"],["drag","drag"],["dragstart","drag"],["dragend","drag"],["dragover","drag"],["dragenter","drag"],["dragleave","drag"],["dragexit","drag"],["drop","drag"]]),f=new Set(["mousemove"]),d=new Set(["pointerdown","pointerup","touchstart","touchend","touchcancel"]),m=new Set(["mousedown","mouseup","pointerdown","pointerup","click","auxclick","dblclick","contextmenu"]),g=new Set([...f,...d,...m]);function y(e){if(!e.includes("\\\\"))return e;const t=[];let n=0;for(;n<e.length;)"\\\\"===e[n]&&n+1<e.length&&n++,t.push(e[n++]);return t.join("")}class w{constructor(e){this._string=void 0,this._substring=void 0,this._regex=void 0,this._normalizeWhiteSpace=void 0,this._normalizeWhiteSpace=e.normalizeWhiteSpace,this._string=e.matchSubstring?void 0:this.normalizeWhiteSpace(e.string),this._substring=e.matchSubstring?this.normalizeWhiteSpace(e.string):void 0,this._regex=e.regexSource?new RegExp(e.regexSource,e.regexFlags):void 0}matches(e){return this._normalizeWhiteSpace&&!this._regex&&(e=this.normalizeWhiteSpace(e)),void 0!==this._string?e===this._string:void 0!==this._substring?e.includes(this._substring):!!this._regex&&!!this._regex.test(e)}normalizeWhiteSpace(e){return e&&this._normalizeWhiteSpace?e.trim().replace(/\\s+/g," "):e}}function v(e,t){if(e===t)return!0;if(e&&t&&"object"==typeof e&&"object"==typeof t){if(e.constructor!==t.constructor)return!1;if(Array.isArray(e)){if(e.length!==t.length)return!1;for(let n=0;n<e.length;++n)if(!v(e[n],t[n]))return!1;return!0}if(e instanceof RegExp)return e.source===t.source&&e.flags===t.flags;if(e.valueOf!==Object.prototype.valueOf)return e.valueOf()===t.valueOf();if(e.toString!==Object.prototype.toString)return e.toString()===t.toString();const n=Object.keys(e);if(n.length!==Object.keys(t).length)return!1;for(let e=0;e<n.length;++e)if(!t.hasOwnProperty(n[e]))return!1;for(const r of n)if(!v(e[r],t[r]))return!1;return!0}return"number"==typeof e&&"number"==typeof t&&isNaN(e)&&isNaN(t)}var b=class{constructor(e,n,r){this._engines=void 0,this._evaluator=void 0,this._stableRafCount=void 0,this._browserName=void 0,this.onGlobalListenersRemoved=new Set,this._hitTargetInterceptor=void 0,this._evaluator=new c.SelectorEvaluatorImpl(new Map),this._engines=new Map,this._engines.set("xpath",t.XPathEngine),this._engines.set("xpath:light",t.XPathEngine),this._engines.set("_react",o.ReactEngine),this._engines.set("_vue",i.VueEngine),this._engines.set("text",this._createTextEngine(!0)),this._engines.set("text:light",this._createTextEngine(!1)),this._engines.set("id",this._createAttributeEngine("id",!0)),this._engines.set("id:light",this._createAttributeEngine("id",!1)),this._engines.set("data-testid",this._createAttributeEngine("data-testid",!0)),this._engines.set("data-testid:light",this._createAttributeEngine("data-testid",!1)),this._engines.set("data-test-id",this._createAttributeEngine("data-test-id",!0)),this._engines.set("data-test-id:light",this._createAttributeEngine("data-test-id",!1)),this._engines.set("data-test",this._createAttributeEngine("data-test",!0)),this._engines.set("data-test:light",this._createAttributeEngine("data-test",!1)),this._engines.set("css",this._createCSSEngine()),this._engines.set("nth",{queryAll:()=>[]}),this._engines.set("visible",{queryAll:()=>[]}),this._engines.set("control",this._createControlEngine());for(const{name:e,engine:t}of r)this._engines.set(e,t);this._stableRafCount=e,this._browserName=n,this._setupGlobalListenersRemovalDetection(),this._setupHitTargetInterceptors()}eval(e){return n.g.eval(e)}parseSelector(e){const t=(0,s.parseSelector)(e);for(const n of t.parts)if(!this._engines.has(n.name))throw this.createStacklessError(`Unknown engine "${n.name}" while parsing selector ${e}`);return t}querySelector(e,t,n){if(!t.querySelector)throw this.createStacklessError("Node is not queryable.");this._evaluator.begin();try{var r,o;const i=this._querySelectorRecursively([{element:t,capture:void 0}],e,0,new Map);if(n&&i.length>1)throw this.strictModeViolationError(e,i.map((e=>e.element)));return(null===(r=i[0])||void 0===r?void 0:r.capture)||(null===(o=i[0])||void 0===o?void 0:o.element)}finally{this._evaluator.end()}}_querySelectorRecursively(e,t,n,r){if(n===t.parts.length)return e;const o=t.parts[n];if("nth"===o.name){let i=[];if("0"===o.body)i=e.slice(0,1);else if("-1"===o.body)e.length&&(i=e.slice(e.length-1));else{if("number"==typeof t.capture)throw this.createStacklessError("Can\'t query n-th element in a request with the capture.");const n=+o.body,r=new Set;for(const t of e)r.add(t.element),n+1===r.size&&(i=[t])}return this._querySelectorRecursively(i,t,n+1,r)}if("visible"===o.name){const i=Boolean(o.body),s=e.filter((e=>i===(0,c.isVisible)(e.element)));return this._querySelectorRecursively(s,t,n+1,r)}const i=[];for(const o of e){const e=n-1===t.capture?o.element:o.capture;let s=r.get(o.element);s||(s=[],r.set(o.element,s));let c=s[n];c||(c=this._queryEngineAll(t.parts[n],o.element),s[n]=c);for(const t of c){if(!("nodeName"in t))throw this.createStacklessError(`Expected a Node but got ${Object.prototype.toString.call(t)}`);i.push({element:t,capture:e})}}return this._querySelectorRecursively(i,t,n+1,r)}querySelectorAll(e,t){if(!t.querySelectorAll)throw this.createStacklessError("Node is not queryable.");this._evaluator.begin();try{const n=this._querySelectorRecursively([{element:t,capture:void 0}],e,0,new Map),r=new Set;for(const e of n)r.add(e.capture||e.element);return[...r]}finally{this._evaluator.end()}}_queryEngineAll(e,t){return this._engines.get(e.name).queryAll(t,e.body)}_createAttributeEngine(e,t){return{queryAll:(n,r)=>this._evaluator.query({scope:n,pierceShadow:t},(t=>[{simples:[{selector:{css:`[${e}=${JSON.stringify(t)}]`,functions:[]},combinator:""}]}])(r))}}_createCSSEngine(){const e=this._evaluator;return{queryAll:(t,n)=>e.query({scope:t,pierceShadow:!0},n)}}_createTextEngine(e){const t=(t,n)=>{const{matcher:r,kind:o}=function(e){if("/"===e[0]&&e.lastIndexOf("/")>0){const t=e.lastIndexOf("/");return{matcher:(0,c.createRegexTextMatcher)(e.substring(1,t),e.substring(t+1)),kind:"regex"}}let t=!1;return e.length>1&&\'"\'===e[0]&&\'"\'===e[e.length-1]&&(e=y(e.substring(1,e.length-1)),t=!0),e.length>1&&"\'"===e[0]&&"\'"===e[e.length-1]&&(e=y(e.substring(1,e.length-1)),t=!0),{matcher:t?(0,c.createStrictTextMatcher)(e):(0,c.createLaxTextMatcher)(e),kind:t?"strict":"lax"}}(n),i=[];let s=null;const a=e=>{if("lax"===o&&s&&s.contains(e))return!1;const t=(0,c.elementMatchesText)(this._evaluator,e,r);"none"===t&&(s=e),("self"===t||"selfAndChildren"===t&&"strict"===o)&&i.push(e)};t.nodeType===Node.ELEMENT_NODE&&a(t);const u=this._evaluator._queryCSS({scope:t,pierceShadow:e},"*");for(const e of u)a(e);return i};return{queryAll:(e,n)=>t(e,n)}}_createControlEngine(){return{queryAll(e,t){if("enter-frame"===t)return[];if("return-empty"===t)return[];throw new Error(`Internal error, unknown control selector ${t}`)}}}extend(e,t){return new(n.g.eval(`\\n    (() => {\\n      ${e}\\n      return pwExport;\\n    })()`))(this,t)}isVisible(e){return(0,c.isVisible)(e)}pollRaf(e){return this.poll(e,(e=>requestAnimationFrame(e)))}pollInterval(e,t){return this.poll(t,(t=>setTimeout(t,e)))}pollLogScale(e){const t=[100,250,500];let n=0;return this.poll(e,(e=>setTimeout(e,t[n++]||1e3)))}poll(e,t){return this._runAbortableTask((n=>{let r,o;const i=new Promise(((e,t)=>{r=e,o=t})),s=()=>{if(!n.aborted)try{const o=e(n);o!==n.continuePolling?r(o):t(s)}catch(e){n.log("  "+e.message),o(e)}};return s(),i}))}_runAbortableTask(e){let t,n=[],r=!1;const o=()=>{t&&(t(n),n=[],t=void 0)};let i,s="";const c={injectedScript:this,aborted:!1,continuePolling:Symbol("continuePolling"),log:e=>{s=e,n.push({message:e}),o()},logRepeating:e=>{e!==s&&c.log(e)},setIntermediateResult:e=>{i!==e&&(i=e,n.push({intermediateResult:e}),o())}};return{takeNextLogs:()=>new Promise((e=>{t=e,(n.length||r)&&o()})),run:()=>{const t=e(c);return t.finally((()=>{r=!0,o()})),t},cancel:()=>{c.aborted=!0},takeLastLogs:()=>n}}getElementBorderWidth(e){if(e.nodeType!==Node.ELEMENT_NODE||!e.ownerDocument||!e.ownerDocument.defaultView)return{left:0,top:0};const t=e.ownerDocument.defaultView.getComputedStyle(e);return{left:parseInt(t.borderLeftWidth||"",10),top:parseInt(t.borderTopWidth||"",10)}}retarget(e,t){let n=e.nodeType===Node.ELEMENT_NODE?e:e.parentElement;return n?(n.matches("input, textarea, select")||(n=n.closest("button, [role=button], [role=checkbox], [role=radio]")||n),"follow-label"===t&&(n.matches("input, textarea, button, select, [role=button], [role=checkbox], [role=radio]")||n.isContentEditable||(n=n.closest("label")||n),"LABEL"===n.nodeName&&(n=n.control||n)),n):null}waitForElementStatesAndPerformAction(e,t,n,r){let o,i=0,s=0,c=0;return this.pollRaf((a=>{if(n)return a.log("    forcing action"),r(e,a);for(const n of t){if("stable"!==n){const t=this.elementState(e,n);if("boolean"!=typeof t)return t;if(!t)return a.logRepeating(`    element is not ${n} - waiting...`),a.continuePolling;continue}const t=this.retarget(e,"no-follow-label");if(!t)return"error:notconnected";if(1==++i)return a.continuePolling;const r=performance.now();if(this._stableRafCount>1&&r-c<15)return a.continuePolling;c=r;const u=t.getBoundingClientRect(),l={x:u.top,y:u.left,width:u.width,height:u.height};o&&l.x===o.x&&l.y===o.y&&l.width===o.width&&l.height===o.height?++s:s=0;const p=s>=this._stableRafCount,h=p||!o;if(o=l,h||a.logRepeating("    element is not stable - waiting..."),!p)return a.continuePolling}return r(e,a)}))}elementState(e,t){const n=this.retarget(e,["stable","visible","hidden"].includes(t)?"no-follow-label":"follow-label");if(!n||!n.isConnected)return"hidden"===t||"error:notconnected";if("visible"===t)return this.isVisible(n);if("hidden"===t)return!this.isVisible(n);const r=["BUTTON","INPUT","SELECT","TEXTAREA"].includes(n.nodeName)&&n.hasAttribute("disabled");if("disabled"===t)return r;if("enabled"===t)return!r;const o=!(["INPUT","TEXTAREA","SELECT"].includes(n.nodeName)&&n.hasAttribute("readonly"));if("editable"===t)return!r&&o;if("checked"===t){if(["checkbox","radio"].includes(n.getAttribute("role")||""))return"true"===n.getAttribute("aria-checked");if("INPUT"!==n.nodeName)throw this.createStacklessError("Not a checkbox or radio button");if(!["radio","checkbox"].includes(n.type.toLowerCase()))throw this.createStacklessError("Not a checkbox or radio button");return n.checked}throw this.createStacklessError(`Unexpected element state "${t}"`)}selectOptions(e,t,n){const r=this.retarget(t,"follow-label");if(!r)return"error:notconnected";if("select"!==r.nodeName.toLowerCase())throw this.createStacklessError("Element is not a <select> element");const o=r,i=[...o.options],s=[];let c=e.slice();for(let e=0;e<i.length;e++){const t=i[e],n=n=>{if(n instanceof Node)return t===n;let r=!0;return void 0!==n.value&&(r=r&&n.value===t.value),void 0!==n.label&&(r=r&&n.label===t.label),void 0!==n.index&&(r=r&&n.index===e),r};if(c.some(n)){if(s.push(t),!o.multiple){c=[];break}c=c.filter((e=>!n(e)))}}return c.length?(n.logRepeating("    did not find some options - waiting... "),n.continuePolling):(o.value=void 0,s.forEach((e=>e.selected=!0)),n.log("    selected specified option(s)"),o.dispatchEvent(new Event("input",{bubbles:!0})),o.dispatchEvent(new Event("change",{bubbles:!0})),s.map((e=>e.value)))}fill(e,t,n){const r=this.retarget(t,"follow-label");if(!r)return"error:notconnected";if("input"===r.nodeName.toLowerCase()){const t=r,o=t.type.toLowerCase(),i=new Set(["date","time","datetime","datetime-local","month","week"]);if(!new Set(["","email","number","password","search","tel","text","url"]).has(o)&&!i.has(o))throw n.log(`    input of type "${o}" cannot be filled`),this.createStacklessError(`Input of type "${o}" cannot be filled`);if("number"===o&&(e=e.trim(),isNaN(Number(e))))throw this.createStacklessError("Cannot type text into input[type=number]");if(i.has(o)){if(e=e.trim(),t.focus(),t.value=e,t.value!==e)throw this.createStacklessError("Malformed value");return r.dispatchEvent(new Event("input",{bubbles:!0})),r.dispatchEvent(new Event("change",{bubbles:!0})),"done"}}else if("textarea"===r.nodeName.toLowerCase());else if(!r.isContentEditable)throw this.createStacklessError("Element is not an <input>, <textarea> or [contenteditable] element");return this.selectText(r),"needsinput"}selectText(e){const t=this.retarget(e,"follow-label");if(!t)return"error:notconnected";if("input"===t.nodeName.toLowerCase()){const e=t;return e.select(),e.focus(),"done"}if("textarea"===t.nodeName.toLowerCase()){const e=t;return e.selectionStart=0,e.selectionEnd=e.value.length,e.focus(),"done"}const n=t.ownerDocument.createRange();n.selectNodeContents(t);const r=t.ownerDocument.defaultView.getSelection();return r&&(r.removeAllRanges(),r.addRange(n)),t.focus(),"done"}focusNode(e,t){if(!e.isConnected)return"error:notconnected";if(e.nodeType!==Node.ELEMENT_NODE)throw this.createStacklessError("Node is not an element");const n=e.getRootNode().activeElement===e&&e.ownerDocument&&e.ownerDocument.hasFocus();if(e.focus(),t&&!n&&"input"===e.nodeName.toLowerCase())try{e.setSelectionRange(0,0)}catch(e){}return"done"}setInputFiles(e,t){if(e.nodeType!==Node.ELEMENT_NODE)return"Node is not of type HTMLElement";const n=e;if("INPUT"!==n.nodeName)return"Not an <input> element";const r=n;if("file"!==(r.getAttribute("type")||"").toLowerCase())return"Not an input[type=file] element";const o=t.map((e=>{const t=Uint8Array.from(atob(e.buffer),(e=>e.charCodeAt(0)));return new File([t],e.name,{type:e.mimeType})})),i=new DataTransfer;for(const e of o)i.items.add(e);r.files=i.files,r.dispatchEvent(new Event("input",{bubbles:!0})),r.dispatchEvent(new Event("change",{bubbles:!0}))}checkHitTargetAt(e,t){let n=e.nodeType===Node.ELEMENT_NODE?e:e.parentElement;if(!n||!n.isConnected)return"error:notconnected";n=n.closest("button, [role=button]")||n;const r=this.deepElementFromPoint(document,t.x,t.y);return this._expectHitTargetParent(r,n)}_expectHitTargetParent(e,t){const n=[];for(;e&&e!==t;)n.push(e),e=(0,c.parentElementOrShadowHost)(e);if(e===t)return"done";const r=this.previewNode(n[0]||document.documentElement);let o,i=t;for(;i;){const e=n.indexOf(i);if(-1!==e){e>1&&(o=this.previewNode(n[e-1]));break}i=(0,c.parentElementOrShadowHost)(i)}return o?{hitTargetDescription:`${r} from ${o} subtree`}:{hitTargetDescription:r}}setupHitTargetInterceptor(e,t,n){const r=e.nodeType===Node.ELEMENT_NODE?e:e.parentElement;if(!r||!r.isConnected)return"error:notconnected";const o=r.closest("button, [role=button]")||r,i={hover:f,tap:d,mouse:m}[t];let s;const c=e=>{if(!i.has(e.type))return;if(!e.isTrusted)return;if(!o.isConnected)return;const t=window.TouchEvent&&e instanceof window.TouchEvent?e.touches[0]:e;if(t&&(void 0===s||"done"===s)){const e=this.deepElementFromPoint(document,t.clientX,t.clientY);s=this._expectHitTargetParent(e,o)}(n||"done"!==s)&&(e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation())};return this._hitTargetInterceptor=c,{stop:()=>(this._hitTargetInterceptor===c&&(this._hitTargetInterceptor=void 0),s||"done")}}dispatchEvent(e,t,n){let r;switch(n={bubbles:!0,cancelable:!0,composed:!0,...n},h.get(t)){case"mouse":r=new MouseEvent(t,n);break;case"keyboard":r=new KeyboardEvent(t,n);break;case"touch":r=new TouchEvent(t,n);break;case"pointer":r=new PointerEvent(t,n);break;case"focus":r=new FocusEvent(t,n);break;case"drag":r=new DragEvent(t,n);break;default:r=new Event(t,n)}e.dispatchEvent(r)}deepElementFromPoint(e,t,n){let r,o=e;for(;o;){const e=o.elementsFromPoint(t,n)[0];if(!e||r===e)break;r=e,o=r.shadowRoot}return r}previewNode(e){if(e.nodeType===Node.TEXT_NODE)return p(`#text=${e.nodeValue||""}`);if(e.nodeType!==Node.ELEMENT_NODE)return p(`<${e.nodeName.toLowerCase()} />`);const t=e,n=[];for(let e=0;e<t.attributes.length;e++){const{name:r,value:o}=t.attributes[e];"style"===r||r.startsWith("__playwright")||(!o&&l.has(r)?n.push(` ${r}`):n.push(` ${r}="${o}"`))}n.sort(((e,t)=>e.length-t.length));let r=n.join("");if(r.length>50&&(r=r.substring(0,49)+"\u2026"),u.has(t.nodeName))return p(`<${t.nodeName.toLowerCase()}${r}/>`);const o=t.childNodes;let i=!1;if(o.length<=5){i=!0;for(let e=0;e<o.length;e++)i=i&&o[e].nodeType===Node.TEXT_NODE}let s=i?t.textContent||"":o.length?"\u2026":"";return s.length>50&&(s=s.substring(0,49)+"\u2026"),p(`<${t.nodeName.toLowerCase()}${r}>${s}</${t.nodeName.toLowerCase()}>`)}strictModeViolationError(e,t){const n=t.slice(0,10).map((e=>({preview:this.previewNode(e),selector:(0,a.generateSelector)(this,e).selector}))),r=n.map(((e,t)=>`\\n    ${t+1}) ${e.preview} aka playwright.$("${e.selector}")`));return n.length<t.length&&r.push("\\n    ..."),this.createStacklessError(`strict mode violation: "${(0,s.stringifySelector)(e)}" resolved to ${t.length} elements:${r.join("")}\\n`)}createStacklessError(e){if("firefox"===this._browserName){const t=new Error("Error: "+e);return t.stack="",t}const t=new Error(e);return delete t.stack,t}_setupGlobalListenersRemovalDetection(){const e="__playwright_global_listeners_check__";let t=!1;const n=()=>t=!0;window.addEventListener(e,n),new MutationObserver((r=>{if(r.some((e=>Array.from(e.addedNodes).includes(document.documentElement)))&&(t=!1,window.dispatchEvent(new CustomEvent(e)),!t)){window.addEventListener(e,n);for(const e of this.onGlobalListenersRemoved)e()}})).observe(document,{childList:!0})}_setupHitTargetInterceptors(){const e=e=>{var t;return null===(t=this._hitTargetInterceptor)||void 0===t?void 0:t.call(this,e)},t=()=>{for(const t of g)window.addEventListener(t,e,{capture:!0,passive:!1})};t(),this.onGlobalListenersRemoved.add(t)}expectSingleElement(e,t,n){const r=e.injectedScript,o=n.expression;{let n;if("to.be.checked"===o)n=e.injectedScript.elementState(t,"checked");else if("to.be.disabled"===o)n=e.injectedScript.elementState(t,"disabled");else if("to.be.editable"===o)n=e.injectedScript.elementState(t,"editable");else if("to.be.empty"===o){var i;n="INPUT"===t.nodeName||"TEXTAREA"===t.nodeName?!t.value:!(null!==(i=t.textContent)&&void 0!==i&&i.trim())}else"to.be.enabled"===o?n=e.injectedScript.elementState(t,"enabled"):"to.be.focused"===o?n=document.activeElement===t:"to.be.hidden"===o?n=e.injectedScript.elementState(t,"hidden"):"to.be.visible"===o&&(n=e.injectedScript.elementState(t,"visible"));if(void 0!==n){if("error:notcheckbox"===n)throw r.createStacklessError("Element is not a checkbox");if("error:notconnected"===n)throw r.createStacklessError("Element is not connected");return{received:n,matches:n}}}if("to.have.property"===o){const e=t[n.expressionArg];return{received:e,matches:v(e,n.expectedValue)}}{let e;if("to.have.attribute"===o)e=t.getAttribute(n.expressionArg)||"";else if("to.have.class"===o)e=t.className;else if("to.have.css"===o)e=window.getComputedStyle(t)[n.expressionArg];else if("to.have.id"===o)e=t.id;else if("to.have.text"===o)e=n.useInnerText?t.innerText:t.textContent||"";else if("to.have.title"===o)e=document.title;else if("to.have.url"===o)e=document.location.href;else if("to.have.value"===o){if("INPUT"!==t.nodeName&&"TEXTAREA"!==t.nodeName&&"SELECT"!==t.nodeName)throw this.createStacklessError("Not an input element");e=t.value}if(void 0!==e&&n.expectedText)return{received:e,matches:new w(n.expectedText[0]).matches(e)}}throw this.createStacklessError("Unknown expect matcher: "+o)}expectArray(e,t){const n=t.expression;if("to.have.count"===n){const n=e.length;return{received:n,matches:n===t.expectedNumber}}let r;if("to.have.text.array"===n||"to.contain.text.array"===n?r=e.map((e=>t.useInnerText?e.innerText:e.textContent||"")):"to.have.class.array"===n&&(r=e.map((e=>e.className))),r&&t.expectedText){const e="to.contain.text.array"!==n;if(r.length!==t.expectedText.length&&e)return{received:r,matches:!1};let o=0;const i=t.expectedText.map((e=>new w(e)));let s=!0;for(const e of i){for(;o<r.length&&!e.matches(r[o]);)o++;if(o>=r.length){s=!1;break}}return{received:r,matches:s}}throw this.createStacklessError("Unknown expect matcher: "+n)}};e.default=b})(),pwExport=r.default})();';
+    var source = 'var pwExport;(()=>{"use strict";var e={204:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.checkComponentAttribute=function(e,t){for(const n of t.jsonPath)null!=e&&(e=e[n]);const n="string"!=typeof e||t.caseSensetive?e:e.toUpperCase(),r="string"!=typeof t.value||t.caseSensetive?t.value:t.value.toUpperCase();return"<truthy>"===t.op?!!n:"="===t.op?n===r:"string"==typeof n&&"string"==typeof r&&("*="===t.op?n.includes(r):"^="===t.op?n.startsWith(r):"$="===t.op?n.endsWith(r):"|="===t.op?n===r||n.startsWith(r+"-"):"~="===t.op&&n.split(" ").includes(r))},t.parseComponentSelector=function(e){let t=0,n=0===e.length;const r=()=>e[t]||"",o=()=>{const o=r();return++t,n=t>=e.length,o},i=o=>{if(n)throw new Error(`Unexpected end of selector while parsing selector \\`${e}\\``);throw new Error(`Error while parsing selector \\`${e}\\` - unexpected symbol "${r()}" at position ${t}`+(o?" during "+o:""))};function s(){for(;!n&&/\\s/.test(r());)o()}function c(){let e="";for(s();!n&&/[-$0-9A-Z_]/i.test(r());)e+=o();return e}function a(e){let t=o();for(t!==e&&i("parsing quoted string");!n&&r()!==e;)"\\\\"===r()&&o(),t+=o();return r()!==e&&i("parsing quoted string"),t+=o(),t}function u(){let e="";return s(),e="\'"===r()||\'"\'===r()?a(r()).slice(1,-1):c(),e||i("parsing property path"),e}function l(){o();const t=[];for(t.push(u()),s();"."===r();)o(),t.push(u()),s();if("]"===r())return o(),{jsonPath:t,op:"<truthy>",value:null,caseSensetive:!1};const c=function(){s();let e="";return n||(e+=o()),n||"="===e||(e+=o()),["=","*=","^=","$=","|=","~="].includes(e)||i("parsing operator"),e}();let l,h=!0;if(s(),"\'"===r()||\'"\'===r())l=a(r()).slice(1,-1),s(),"i"===r()||"I"===r()?(h=!1,o()):"s"!==r()&&"S"!==r()||(h=!0,o());else{for(l="";!n&&!/\\s/.test(r())&&"]"!==r();)l+=o();"true"===l?l=!0:"false"===l?l=!1:(l=+l,isNaN(l)&&i("parsing attribute value"))}if(s(),"]"!==r()&&i("parsing attribute value"),o(),"="!==c&&"string"!=typeof l)throw new Error(`Error while parsing selector \\`${e}\\` - cannot use ${c} in attribute with non-string matching value - ${l}`);return{jsonPath:t,op:c,value:l,caseSensetive:h}}const h={name:"",attributes:[]};for(h.name=c(),s();"["===r();)h.attributes.push(l()),s();if(n||i(void 0),!h.name&&!h.attributes.length)throw new Error(`Error while parsing selector \\`${e}\\` - selector cannot be empty`);return h}},317:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseCSS=function(e,t){let n;try{n=r.tokenize(e),n[n.length-1]instanceof r.EOFToken||n.push(new r.EOFToken)}catch(t){const n=t.message+` while parsing selector "${e}"`,r=(t.stack||"").indexOf(t.message);throw-1!==r&&(t.stack=t.stack.substring(0,r)+n+t.stack.substring(r+t.message.length)),t.message=n,t}const o=n.find((e=>e instanceof r.AtKeywordToken||e instanceof r.BadStringToken||e instanceof r.BadURLToken||e instanceof r.ColumnToken||e instanceof r.CDOToken||e instanceof r.CDCToken||e instanceof r.SemicolonToken||e instanceof r.OpenCurlyToken||e instanceof r.CloseCurlyToken||e instanceof r.URLToken||e instanceof r.PercentageToken));if(o)throw new Error(`Unsupported token "${o.toSource()}" while parsing selector "${e}"`);let i=0;const s=new Set;function c(){return new Error(`Unexpected token "${n[i].toSource()}" while parsing selector "${e}"`)}function a(){for(;n[i]instanceof r.WhitespaceToken;)i++}function u(e=i){return n[e]instanceof r.IdentToken}function l(e=i){return n[e]instanceof r.CommaToken}function h(e=i){return n[e]instanceof r.CloseParenToken}function p(e=i){return n[e]instanceof r.DelimToken&&"*"===n[e].value}function f(e=i){return n[e]instanceof r.EOFToken}function d(e=i){return n[e]instanceof r.DelimToken&&[">","+","~"].includes(n[e].value)}function m(e=i){return l(e)||h(e)||f(e)||d(e)||n[e]instanceof r.WhitespaceToken}function g(){const e=[y()];for(;a(),l();)i++,e.push(y());return e}function y(){return a(),function(e=i){return n[e]instanceof r.NumberToken}()||function(e=i){return n[e]instanceof r.StringToken}()?n[i++].value:function(){const e={simples:[]};for(a(),d()?e.simples.push({selector:{functions:[{name:"scope",args:[]}]},combinator:""}):e.simples.push({selector:v(),combinator:""});;){if(a(),d())e.simples[e.simples.length-1].combinator=n[i++].value,a();else if(m())break;e.simples.push({combinator:"",selector:v()})}return e}()}function v(){let e="";const o=[];for(;!m();)if(u()||p())e+=n[i++].toSource();else if(n[i]instanceof r.HashToken)e+=n[i++].toSource();else if(n[i]instanceof r.DelimToken&&"."===n[i].value){if(i++,!u())throw c();e+="."+n[i++].toSource()}else if(n[i]instanceof r.ColonToken)if(i++,u())if(t.has(n[i].value.toLowerCase())){const e=n[i++].value.toLowerCase();o.push({name:e,args:[]}),s.add(e)}else e+=":"+n[i++].toSource();else{if(!(n[i]instanceof r.FunctionToken))throw c();{const r=n[i++].value.toLowerCase();if(t.has(r)?(o.push({name:r,args:g()}),s.add(r)):e+=`:${r}(${w()})`,a(),!h())throw c();i++}}else{if(!(n[i]instanceof r.OpenSquareToken))throw c();for(e+="[",i++;!(n[i]instanceof r.CloseSquareToken||f());)e+=n[i++].toSource();if(!(n[i]instanceof r.CloseSquareToken))throw c();e+="]",i++}if(!e&&!o.length)throw c();return{css:e||void 0,functions:o}}function w(){let e="";for(;!h()&&!f();)e+=n[i++].toSource();return e}const b=g();if(!f())throw new Error(`Error while parsing selector "${e}"`);if(b.some((e=>"object"!=typeof e||!("simples"in e))))throw new Error(`Error while parsing selector "${e}"`);return{selector:b,names:Array.from(s)}},t.serializeSelector=function e(t){return t.map((t=>"string"==typeof t?`"${t}"`:"number"==typeof t?String(t):t.simples.map((({selector:t,combinator:n})=>{let r=t.css||"";return r+=t.functions.map((t=>`:${t.name}(${e(t.args)})`)).join(""),n&&(r+=" "+n),r})).join(" "))).join(", ")};var r=function(e,t){if(e&&e.__esModule)return e;if(null===e||"object"!=typeof e&&"function"!=typeof e)return{default:e};var n=o(t);if(n&&n.has(e))return n.get(e);var r={},i=Object.defineProperty&&Object.getOwnPropertyDescriptor;for(var s in e)if("default"!==s&&Object.prototype.hasOwnProperty.call(e,s)){var c=i?Object.getOwnPropertyDescriptor(e,s):null;c&&(c.get||c.set)?Object.defineProperty(r,s,c):r[s]=e[s]}return r.default=e,n&&n.set(e,r),r}(n(503));function o(e){if("function"!=typeof WeakMap)return null;var t=new WeakMap,n=new WeakMap;return(o=function(e){return e?n:t})(e)}},503:(e,t)=>{var n,r;n=function(e){var t=function(e,t,n){return e>=t&&e<=n};function n(e){return t(e,48,57)}function r(e){return n(e)||t(e,65,70)||t(e,97,102)}function o(e){return function(e){return t(e,65,90)}(e)||function(e){return t(e,97,122)}(e)}function i(e){return o(e)||function(e){return e>=128}(e)||95==e}function s(e){return i(e)||n(e)||45==e}function c(e){return t(e,0,8)||11==e||t(e,14,31)||127==e}function a(e){return 10==e}function u(e){return a(e)||9==e||32==e}var l=function(e){this.message=e};function h(e){if(e<=65535)return String.fromCharCode(e);e-=Math.pow(2,16);var t=Math.floor(e/Math.pow(2,10))+55296,n=e%Math.pow(2,10)+56320;return String.fromCharCode(t)+String.fromCharCode(n)}function p(){throw"Abstract Base Class"}function f(){return this}function d(){return this}function m(){return this}function g(){return this}function y(){return this}function v(){return this}function w(){return this}function b(){return this}function E(){throw"Abstract Base Class"}function _(){return this.value="{",this.mirror="}",this}function S(){return this.value="}",this.mirror="{",this}function T(){return this.value="[",this.mirror="]",this}function k(){return this.value="]",this.mirror="[",this}function N(){return this.value="(",this.mirror=")",this}function x(){return this.value=")",this.mirror="(",this}function C(){return this}function A(){return this}function O(){return this}function M(){return this}function $(){return this}function R(){return this}function j(){return this}function L(e){return this.value=h(e),this}function P(){throw"Abstract Base Class"}function q(e){this.value=e}function D(e){this.value=e,this.mirror=")"}function I(e){this.value=e}function U(e){this.value=e,this.type="unrestricted"}function W(e){this.value=e}function F(e){this.value=e}function B(){this.value=null,this.type="integer",this.repr=""}function z(){this.value=null,this.repr=""}function V(){this.value=null,this.type="integer",this.repr="",this.unit=""}function H(e){for(var n="",r=(e=""+e).charCodeAt(0),o=0;o<e.length;o++){var i=e.charCodeAt(o);if(0==i)throw new l("Invalid character: the input contains U+0000.");t(i,1,31)||127==i||0==o&&t(i,48,57)||1==o&&t(i,48,57)&&45==r?n+="\\\\"+i.toString(16)+" ":i>=128||45==i||95==i||t(i,48,57)||t(i,65,90)||t(i,97,122)?n+=e[o]:n+="\\\\"+e[o]}return n}function J(e){e=""+e;for(var n="",r=0;r<e.length;r++){var o=e.charCodeAt(r);if(0==o)throw new l("Invalid character: the input contains U+0000.");t(o,1,31)||127==o?n+="\\\\"+o.toString(16)+" ":n+=34==o||92==o?"\\\\"+e[r]:e[r]}return n}(l.prototype=new Error).name="InvalidCharacterError",p.prototype.toJSON=function(){return{token:this.tokenType}},p.prototype.toString=function(){return this.tokenType},p.prototype.toSource=function(){return""+this},f.prototype=Object.create(p.prototype),f.prototype.tokenType="BADSTRING",d.prototype=Object.create(p.prototype),d.prototype.tokenType="BADURL",m.prototype=Object.create(p.prototype),m.prototype.tokenType="WHITESPACE",m.prototype.toString=function(){return"WS"},m.prototype.toSource=function(){return" "},g.prototype=Object.create(p.prototype),g.prototype.tokenType="CDO",g.prototype.toSource=function(){return"\\x3c!--"},y.prototype=Object.create(p.prototype),y.prototype.tokenType="CDC",y.prototype.toSource=function(){return"--\\x3e"},v.prototype=Object.create(p.prototype),v.prototype.tokenType=":",w.prototype=Object.create(p.prototype),w.prototype.tokenType=";",b.prototype=Object.create(p.prototype),b.prototype.tokenType=",",E.prototype=Object.create(p.prototype),_.prototype=Object.create(E.prototype),_.prototype.tokenType="{",S.prototype=Object.create(E.prototype),S.prototype.tokenType="}",T.prototype=Object.create(E.prototype),T.prototype.tokenType="[",k.prototype=Object.create(E.prototype),k.prototype.tokenType="]",N.prototype=Object.create(E.prototype),N.prototype.tokenType="(",x.prototype=Object.create(E.prototype),x.prototype.tokenType=")",C.prototype=Object.create(p.prototype),C.prototype.tokenType="~=",A.prototype=Object.create(p.prototype),A.prototype.tokenType="|=",O.prototype=Object.create(p.prototype),O.prototype.tokenType="^=",M.prototype=Object.create(p.prototype),M.prototype.tokenType="$=",$.prototype=Object.create(p.prototype),$.prototype.tokenType="*=",R.prototype=Object.create(p.prototype),R.prototype.tokenType="||",j.prototype=Object.create(p.prototype),j.prototype.tokenType="EOF",j.prototype.toSource=function(){return""},L.prototype=Object.create(p.prototype),L.prototype.tokenType="DELIM",L.prototype.toString=function(){return"DELIM("+this.value+")"},L.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},L.prototype.toSource=function(){return"\\\\"==this.value?"\\\\\\n":this.value},P.prototype=Object.create(p.prototype),P.prototype.ASCIIMatch=function(e){return this.value.toLowerCase()==e.toLowerCase()},P.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},q.prototype=Object.create(P.prototype),q.prototype.tokenType="IDENT",q.prototype.toString=function(){return"IDENT("+this.value+")"},q.prototype.toSource=function(){return H(this.value)},D.prototype=Object.create(P.prototype),D.prototype.tokenType="FUNCTION",D.prototype.toString=function(){return"FUNCTION("+this.value+")"},D.prototype.toSource=function(){return H(this.value)+"("},I.prototype=Object.create(P.prototype),I.prototype.tokenType="AT-KEYWORD",I.prototype.toString=function(){return"AT("+this.value+")"},I.prototype.toSource=function(){return"@"+H(this.value)},U.prototype=Object.create(P.prototype),U.prototype.tokenType="HASH",U.prototype.toString=function(){return"HASH("+this.value+")"},U.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e},U.prototype.toSource=function(){return"id"==this.type?"#"+H(this.value):"#"+function(e){for(var n="",r=((e=""+e).charCodeAt(0),0);r<e.length;r++){var o=e.charCodeAt(r);if(0==o)throw new l("Invalid character: the input contains U+0000.");o>=128||45==o||95==o||t(o,48,57)||t(o,65,90)||t(o,97,122)?n+=e[r]:n+="\\\\"+o.toString(16)+" "}return n}(this.value)},W.prototype=Object.create(P.prototype),W.prototype.tokenType="STRING",W.prototype.toString=function(){return\'"\'+J(this.value)+\'"\'},F.prototype=Object.create(P.prototype),F.prototype.tokenType="URL",F.prototype.toString=function(){return"URL("+this.value+")"},F.prototype.toSource=function(){return\'url("\'+J(this.value)+\'")\'},B.prototype=Object.create(p.prototype),B.prototype.tokenType="NUMBER",B.prototype.toString=function(){return"integer"==this.type?"INT("+this.value+")":"NUMBER("+this.value+")"},B.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e},B.prototype.toSource=function(){return this.repr},z.prototype=Object.create(p.prototype),z.prototype.tokenType="PERCENTAGE",z.prototype.toString=function(){return"PERCENTAGE("+this.value+")"},z.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.repr=this.repr,e},z.prototype.toSource=function(){return this.repr+"%"},V.prototype=Object.create(p.prototype),V.prototype.tokenType="DIMENSION",V.prototype.toString=function(){return"DIM("+this.value+","+this.unit+")"},V.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e.unit=this.unit,e},V.prototype.toSource=function(){var e=this.repr,n=H(this.unit);return"e"!=n[0].toLowerCase()||"-"!=n[1]&&!t(n.charCodeAt(1),48,57)||(n="\\\\65 "+n.slice(1,n.length)),e+n},e.tokenize=function(e){e=function(e){for(var n=[],r=0;r<e.length;r++){var o=e.charCodeAt(r);if(13==o&&10==e.charCodeAt(r+1)&&(o=10,r++),13!=o&&12!=o||(o=10),0==o&&(o=65533),t(o,55296,56319)&&t(e.charCodeAt(r+1),56320,57343)){var i=o-55296,s=e.charCodeAt(r+1)-56320;o=Math.pow(2,16)+i*Math.pow(2,10)+s,r++}n.push(o)}return n}(e);for(var o,l=-1,p=[],E=0,P=0,H=0,J={line:E,column:P},Q=function(t){return t>=e.length?-1:e[t]},X=function(e){if(void 0===e&&(e=1),e>3)throw"Spec Error: no more than three codepoints of lookahead.";return Q(l+e)},G=function(e){return void 0===e&&(e=1),a(o=Q(l+=e))?(E+=1,H=P,P=0):P+=e,!0},K=function(){return l-=1,a(o)?(E-=1,P=H):P-=1,J.line=E,J.column=P,!0},Z=function(e){return void 0===e&&(e=o),-1==e},Y=function(){return console.log("Parse error at index "+l+", processing codepoint 0x"+o.toString(16)+"."),!0},ee=function(){if(te(),G(),u(o)){for(;u(X());)G();return new m}if(34==o)return oe();if(35==o){if(s(X())||ce(X(1),X(2))){var e=new U;return ue(X(1),X(2),X(3))&&(e.type="id"),e.value=pe(),e}return new L(o)}return 36==o?61==X()?(G(),new M):new L(o):39==o?oe():40==o?new N:41==o?new x:42==o?61==X()?(G(),new $):new L(o):43==o?he()?(K(),ne()):new L(o):44==o?new b:45==o?he()?(K(),ne()):45==X(1)&&62==X(2)?(G(2),new y):le()?(K(),re()):new L(o):46==o?he()?(K(),ne()):new L(o):58==o?new v:59==o?new w:60==o?33==X(1)&&45==X(2)&&45==X(3)?(G(3),new g):new L(o):64==o?ue(X(1),X(2),X(3))?new I(pe()):new L(o):91==o?new T:92==o?ae()?(K(),re()):(Y(),new L(o)):93==o?new k:94==o?61==X()?(G(),new O):new L(o):123==o?new _:124==o?61==X()?(G(),new A):124==X()?(G(),new R):new L(o):125==o?new S:126==o?61==X()?(G(),new C):new L(o):n(o)?(K(),ne()):i(o)?(K(),re()):Z()?new j:new L(o)},te=function(){for(;47==X(1)&&42==X(2);)for(G(2);;){if(G(),42==o&&47==X()){G();break}if(Z())return void Y()}},ne=function(){var e,t=fe();return ue(X(1),X(2),X(3))?((e=new V).value=t.value,e.repr=t.repr,e.type=t.type,e.unit=pe(),e):37==X()?(G(),(e=new z).value=t.value,e.repr=t.repr,e):((e=new B).value=t.value,e.repr=t.repr,e.type=t.type,e)},re=function(){var e=pe();if("url"==e.toLowerCase()&&40==X()){for(G();u(X(1))&&u(X(2));)G();return 34==X()||39==X()?new D(e):!u(X())||34!=X(2)&&39!=X(2)?ie():new D(e)}return 40==X()?(G(),new D(e)):new q(e)},oe=function(e){void 0===e&&(e=o);for(var t="";G();){if(o==e||Z())return new W(t);if(a(o))return Y(),K(),new f;92==o?Z(X())||(a(X())?G():t+=h(se())):t+=h(o)}},ie=function(){for(var e=new F("");u(X());)G();if(Z(X()))return e;for(;G();){if(41==o||Z())return e;if(u(o)){for(;u(X());)G();return 41==X()||Z(X())?(G(),e):(me(),new d)}if(34==o||39==o||40==o||c(o))return Y(),me(),new d;if(92==o){if(!ae())return Y(),me(),new d;e.value+=h(se())}else e.value+=h(o)}},se=function(){if(G(),r(o)){for(var e=[o],t=0;t<5&&r(X());t++)G(),e.push(o);u(X())&&G();var n=parseInt(e.map((function(e){return String.fromCharCode(e)})).join(""),16);return n>1114111&&(n=65533),n}return Z()?65533:o},ce=function(e,t){return 92==e&&!a(t)},ae=function(){return ce(o,X())},ue=function(e,t,n){return 45==e?i(t)||45==t||ce(t,n):!!i(e)||92==e&&ce(e,t)},le=function(){return ue(o,X(1),X(2))},he=function(){return e=o,t=X(1),r=X(2),43==e||45==e?!!n(t)||!(46!=t||!n(r)):46==e?!!n(t):!!n(e);var e,t,r},pe=function(){for(var e="";G();)if(s(o))e+=h(o);else{if(!ae())return K(),e;e+=h(se())}},fe=function(){var e=[],t="integer";for(43!=X()&&45!=X()||(G(),e+=h(o));n(X());)G(),e+=h(o);if(46==X(1)&&n(X(2)))for(G(),e+=h(o),G(),e+=h(o),t="number";n(X());)G(),e+=h(o);var r=X(1),i=X(2),s=X(3);if(69!=r&&101!=r||!n(i)){if((69==r||101==r)&&(43==i||45==i)&&n(s))for(G(),e+=h(o),G(),e+=h(o),G(),e+=h(o),t="number";n(X());)G(),e+=h(o)}else for(G(),e+=h(o),G(),e+=h(o),t="number";n(X());)G(),e+=h(o);return{type:t,value:de(e),repr:e}},de=function(e){return+e},me=function(){for(;G();){if(41==o||Z())return;ae()&&se()}},ge=0;!Z(X());)if(p.push(ee()),++ge>2*e.length)return"I\'m infinite-looping!";return p},e.IdentToken=q,e.FunctionToken=D,e.AtKeywordToken=I,e.HashToken=U,e.StringToken=W,e.BadStringToken=f,e.URLToken=F,e.BadURLToken=d,e.DelimToken=L,e.NumberToken=B,e.PercentageToken=z,e.DimensionToken=V,e.IncludeMatchToken=C,e.DashMatchToken=A,e.PrefixMatchToken=O,e.SuffixMatchToken=M,e.SubstringMatchToken=$,e.ColumnToken=R,e.WhitespaceToken=m,e.CDOToken=g,e.CDCToken=y,e.ColonToken=v,e.SemicolonToken=w,e.CommaToken=b,e.OpenParenToken=N,e.CloseParenToken=x,e.OpenSquareToken=T,e.CloseSquareToken=k,e.OpenCurlyToken=_,e.CloseCurlyToken=S,e.EOFToken=j,e.CSSParserToken=p,e.GroupingToken=E},void 0===(r=n.apply(t,[t]))||(e.exports=r)},461:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseSelector=function(e){const t=function(e){let t,n=0,r=0;const o={parts:[]},i=()=>{const t=e.substring(r,n).trim(),i=t.indexOf("=");let s,c;-1!==i&&t.substring(0,i).trim().match(/^[a-zA-Z_0-9-+:*]+$/)?(s=t.substring(0,i).trim(),c=t.substring(i+1)):t.length>1&&\'"\'===t[0]&&\'"\'===t[t.length-1]||t.length>1&&"\'"===t[0]&&"\'"===t[t.length-1]?(s="text",c=t):/^\\(*\\/\\//.test(t)||t.startsWith("..")?(s="xpath",c=t):(s="css",c=t);let a=!1;if("*"===s[0]&&(a=!0,s=s.substring(1)),o.parts.push({name:s,body:c}),a){if(void 0!==o.capture)throw new Error("Only one of the selectors can capture using * modifier");o.capture=o.parts.length-1}};if(!e.includes(">>"))return n=e.length,i(),o;for(;n<e.length;){const o=e[n];"\\\\"===o&&n+1<e.length?n+=2:o===t?(t=void 0,n++):t||\'"\'!==o&&"\'"!==o&&"`"!==o?t||">"!==o||">"!==e[n+1]?n++:(i(),n+=2,r=n):(t=o,n++)}return i(),o}(e),n=t.parts.map((e=>"css"===e.name||"css:light"===e.name?("css:light"===e.name&&(e.body=":light("+e.body+")"),{name:"css",body:(0,r.parseCSS)(e.body,o).selector}):e));return{selector:e,capture:t.capture,parts:n}},t.customCSSNames=void 0;var r=n(317);const o=new Set(["not","is","where","has","scope","light","visible","text","text-matches","text-is","has-text","above","below","right-of","left-of","near","nth-match"]);t.customCSSNames=o},836:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.ReactEngine=void 0;var r=n(204);function o(e){if("function"==typeof e.type)return e.type.displayName||e.type.name||"Anonymous";if("string"==typeof e.type)return e.type;if(e._currentElement){const t=e._currentElement.type;if("string"==typeof t)return t;if("function"==typeof t)return t.displayName||t.name||"Anonymous"}return""}function i(e){if(e.child){const t=[];for(let n=e.child;n;n=n.sibling)t.push(n);return t}if(!e._currentElement)return[];const t=e=>{var t;const n=null===(t=e._currentElement)||void 0===t?void 0:t.type;return"function"==typeof n||"string"==typeof n};if(e._renderedComponent){const n=e._renderedComponent;return t(n)?[n]:[]}return e._renderedChildren?[...Object.values(e._renderedChildren)].filter(t):[]}function s(e){var t;const n=e.memoizedProps||(null===(t=e._currentElement)||void 0===t?void 0:t.props);if(!n||"string"==typeof n)return n;const r={...n};return delete r.children,r}function c(e){var t;const n={name:o(e),children:i(e).map(c),rootElements:[],props:s(e)},r=e.stateNode||e._hostNode||(null===(t=e._renderedComponent)||void 0===t?void 0:t._hostNode);if(r instanceof Element)n.rootElements.push(r);else for(const e of n.children)n.rootElements.push(...e.rootElements);return n}function a(e,t,n=[]){t(e)&&n.push(e);for(const r of e.children)a(r,t,n);return n}const u={queryAll(e,t){const{name:n,attributes:o}=(0,r.parseComponentSelector)(t),i=function(){const e=[],t=document.createTreeWalker(document,NodeFilter.SHOW_ELEMENT);for(;t.nextNode();){const n=t.currentNode;n.hasOwnProperty("_reactRootContainer")&&e.push(n._reactRootContainer._internalRoot.current)}for(const t of document.querySelectorAll("[data-reactroot]"))for(const n of Object.keys(t))(n.startsWith("__reactInternalInstance")||n.startsWith("__reactFiber"))&&e.push(t[n]);return e}().map((e=>c(e))).map((t=>a(t,(t=>{if(n&&t.name!==n)return!1;if(t.rootElements.some((t=>!e.contains(t))))return!1;for(const e of o)if(!(0,r.checkComponentAttribute)(t.props,e))return!1;return!0})))).flat(),s=new Set;for(const e of i)for(const t of e.rootElements)s.add(t);return[...s]}};t.ReactEngine=u},848:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.createLaxTextMatcher=d,t.createStrictTextMatcher=m,t.createRegexTextMatcher=g,t.elementText=v,t.elementMatchesText=w,t.parentElementOrShadowHost=x,t.isVisible=O,t.SelectorEvaluatorImpl=void 0;var r=n(461);t.SelectorEvaluatorImpl=class{constructor(e){this._engines=new Map,this._cacheQueryCSS=new Map,this._cacheMatches=new Map,this._cacheQuery=new Map,this._cacheMatchesSimple=new Map,this._cacheMatchesParents=new Map,this._cacheCallMatches=new Map,this._cacheCallQuery=new Map,this._cacheQuerySimple=new Map,this._cacheText=new Map,this._scoreMap=void 0,this._retainCacheCounter=0;for(const[t,n]of e)this._engines.set(t,n);this._engines.set("not",c),this._engines.set("is",o),this._engines.set("where",o),this._engines.set("has",i),this._engines.set("scope",s),this._engines.set("light",a),this._engines.set("visible",u),this._engines.set("text",l),this._engines.set("text-is",h),this._engines.set("text-matches",p),this._engines.set("has-text",f),this._engines.set("right-of",k("right-of",b)),this._engines.set("left-of",k("left-of",E)),this._engines.set("above",k("above",_)),this._engines.set("below",k("below",S)),this._engines.set("near",k("near",T)),this._engines.set("nth-match",N);const t=[...this._engines.keys()];t.sort();const n=[...r.customCSSNames];if(n.sort(),t.join("|")!==n.join("|"))throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${t.join("|")} vs ${n.join("|")}`)}begin(){++this._retainCacheCounter}end(){--this._retainCacheCounter,this._retainCacheCounter||(this._cacheQueryCSS.clear(),this._cacheMatches.clear(),this._cacheQuery.clear(),this._cacheMatchesSimple.clear(),this._cacheMatchesParents.clear(),this._cacheCallMatches.clear(),this._cacheCallQuery.clear(),this._cacheQuerySimple.clear(),this._cacheText.clear())}_cached(e,t,n,r){e.has(t)||e.set(t,[]);const o=e.get(t),i=o.find((e=>n.every(((t,n)=>e.rest[n]===t))));if(i)return i.result;const s=r();return o.push({rest:n,result:s}),s}_checkSelector(e){if("object"!=typeof e||!e||!(Array.isArray(e)||"simples"in e&&e.simples.length))throw new Error(`Malformed selector "${e}"`);return e}matches(e,t,n){const r=this._checkSelector(t);this.begin();try{return this._cached(this._cacheMatches,e,[r,n.scope,n.pierceShadow],(()=>Array.isArray(r)?this._matchesEngine(o,e,r,n):!!this._matchesSimple(e,r.simples[r.simples.length-1].selector,n)&&this._matchesParents(e,r,r.simples.length-2,n)))}finally{this.end()}}query(e,t){const n=this._checkSelector(t);this.begin();try{return this._cached(this._cacheQuery,n,[e.scope,e.pierceShadow],(()=>{if(Array.isArray(n))return this._queryEngine(o,e,n);const t=this._scoreMap;this._scoreMap=new Map;let r=this._querySimple(e,n.simples[n.simples.length-1].selector);return r=r.filter((t=>this._matchesParents(t,n,n.simples.length-2,e))),this._scoreMap.size&&r.sort(((e,t)=>{const n=this._scoreMap.get(e),r=this._scoreMap.get(t);return n===r?0:void 0===n?1:void 0===r?-1:n-r})),this._scoreMap=t,r}))}finally{this.end()}}_markScore(e,t){this._scoreMap&&this._scoreMap.set(e,t)}_matchesSimple(e,t,n){return this._cached(this._cacheMatchesSimple,e,[t,n.scope,n.pierceShadow],(()=>{if(!t.functions.some((e=>"scope"===e.name||"is"===e.name))&&e===n.scope)return!1;if(t.css&&!this._matchesCSS(e,t.css))return!1;for(const r of t.functions)if(!this._matchesEngine(this._getEngine(r.name),e,r.args,n))return!1;return!0}))}_querySimple(e,t){return t.functions.length?this._cached(this._cacheQuerySimple,t,[e.scope,e.pierceShadow],(()=>{let n=t.css;const r=t.functions;let o;"*"===n&&r.length&&(n=void 0);let i=-1;void 0!==n?o=this._queryCSS(e,n):(i=r.findIndex((e=>void 0!==this._getEngine(e.name).query)),-1===i&&(i=0),o=this._queryEngine(this._getEngine(r[i].name),e,r[i].args));for(let t=0;t<r.length;t++){if(t===i)continue;const n=this._getEngine(r[t].name);void 0!==n.matches&&(o=o.filter((o=>this._matchesEngine(n,o,r[t].args,e))))}for(let t=0;t<r.length;t++){if(t===i)continue;const n=this._getEngine(r[t].name);void 0===n.matches&&(o=o.filter((o=>this._matchesEngine(n,o,r[t].args,e))))}return o})):this._queryCSS(e,t.css||"*")}_matchesParents(e,t,n,r){return n<0||this._cached(this._cacheMatchesParents,e,[t,n,r.scope,r.pierceShadow],(()=>{const{selector:o,combinator:i}=t.simples[n];if(">"===i){const i=C(e,r);return!(!i||!this._matchesSimple(i,o,r))&&this._matchesParents(i,t,n-1,r)}if("+"===i){const i=A(e,r);return!(!i||!this._matchesSimple(i,o,r))&&this._matchesParents(i,t,n-1,r)}if(""===i){let i=C(e,r);for(;i;){if(this._matchesSimple(i,o,r)){if(this._matchesParents(i,t,n-1,r))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,r)}return!1}if("~"===i){let i=A(e,r);for(;i;){if(this._matchesSimple(i,o,r)){if(this._matchesParents(i,t,n-1,r))return!0;if("~"===t.simples[n-1].combinator)break}i=A(i,r)}return!1}if(">="===i){let i=e;for(;i;){if(this._matchesSimple(i,o,r)){if(this._matchesParents(i,t,n-1,r))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,r)}return!1}throw new Error(`Unsupported combinator "${i}"`)}))}_matchesEngine(e,t,n,r){if(e.matches)return this._callMatches(e,t,n,r);if(e.query)return this._callQuery(e,n,r).includes(t);throw new Error(\'Selector engine should implement "matches" or "query"\')}_queryEngine(e,t,n){if(e.query)return this._callQuery(e,n,t);if(e.matches)return this._queryCSS(t,"*").filter((r=>this._callMatches(e,r,n,t)));throw new Error(\'Selector engine should implement "matches" or "query"\')}_callMatches(e,t,n,r){return this._cached(this._cacheCallMatches,t,[e,r.scope,r.pierceShadow,...n],(()=>e.matches(t,n,r,this)))}_callQuery(e,t,n){return this._cached(this._cacheCallQuery,e,[n.scope,n.pierceShadow,...t],(()=>e.query(n,t,this)))}_matchesCSS(e,t){return e.matches(t)}_queryCSS(e,t){return this._cached(this._cacheQueryCSS,t,[e.scope,e.pierceShadow],(()=>{let n=[];return function r(o){if(n=n.concat([...o.querySelectorAll(t)]),e.pierceShadow){o.shadowRoot&&r(o.shadowRoot);for(const e of o.querySelectorAll("*"))e.shadowRoot&&r(e.shadowRoot)}}(e.scope),n}))}_getEngine(e){const t=this._engines.get(e);if(!t)throw new Error(`Unknown selector engine "${e}"`);return t}};const o={matches(e,t,n,r){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');return t.some((t=>r.matches(e,t,n)))},query(e,t,n){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');let r=[];for(const o of t)r=r.concat(n.query(e,o));return 1===t.length?r:function(e){const t=new Map,n=[],r=[];function o(e){let r=t.get(e);if(r)return r;const i=x(e);return i?o(i).children.push(e):n.push(e),r={children:[],taken:!1},t.set(e,r),r}return e.forEach((e=>o(e).taken=!0)),n.forEach((function e(n){const o=t.get(n);if(o.taken&&r.push(n),o.children.length>1){const e=new Set(o.children);o.children=[];let t=n.firstElementChild;for(;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling;for(t=n.shadowRoot?n.shadowRoot.firstElementChild:null;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling}o.children.forEach(e)})),r}(r)}},i={matches(e,t,n,r){if(0===t.length)throw new Error(\'"has" engine expects non-empty selector list\');return r.query({...n,scope:e},t).length>0}},s={matches(e,t,n,r){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');return 9===n.scope.nodeType?e===n.scope.documentElement:e===n.scope},query(e,t,n){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');if(9===e.scope.nodeType){const t=e.scope.documentElement;return t?[t]:[]}return 1===e.scope.nodeType?[e.scope]:[]}},c={matches(e,t,n,r){if(0===t.length)throw new Error(\'"not" engine expects non-empty selector list\');return!r.matches(e,t,n)}},a={query:(e,t,n)=>n.query({...e,pierceShadow:!1},t),matches:(e,t,n,r)=>r.matches(e,t,{...n,pierceShadow:!1})},u={matches(e,t,n,r){if(t.length)throw new Error(\'"visible" engine expects no arguments\');return O(e)}},l={matches(e,t,n,r){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text" engine expects a single string\');return"self"===w(r,e,d(t[0]))}},h={matches(e,t,n,r){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text-is" engine expects a single string\');return"none"!==w(r,e,m(t[0]))}},p={matches(e,t,n,r){if(0===t.length||"string"!=typeof t[0]||t.length>2||2===t.length&&"string"!=typeof t[1])throw new Error(\'"text-matches" engine expects a regexp body and optional regexp flags\');return"self"===w(r,e,g(t[0],2===t.length?t[1]:void 0))}},f={matches(e,t,n,r){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"has-text" engine expects a single string\');return!y(e)&&d(t[0])(v(r,e))}};function d(e){return e=e.trim().replace(/\\s+/g," ").toLowerCase(),t=>t.full.trim().replace(/\\s+/g," ").toLowerCase().includes(e)}function m(e){return e=e.trim().replace(/\\s+/g," "),t=>!e&&!t.immediate.length||t.immediate.some((t=>t.trim().replace(/\\s+/g," ")===e))}function g(e,t){const n=new RegExp(e,t);return e=>n.test(e.full)}function y(e){return"SCRIPT"===e.nodeName||"STYLE"===e.nodeName||document.head&&document.head.contains(e)}function v(e,t){let n=e._cacheText.get(t);if(void 0===n){if(n={full:"",immediate:[]},!y(t)){let r="";if(t instanceof HTMLInputElement&&("submit"===t.type||"button"===t.type))n={full:t.value,immediate:[t.value]};else{for(let o=t.firstChild;o;o=o.nextSibling)o.nodeType===Node.TEXT_NODE?(n.full+=o.nodeValue||"",r+=o.nodeValue||""):(r&&n.immediate.push(r),r="",o.nodeType===Node.ELEMENT_NODE&&(n.full+=v(e,o).full));r&&n.immediate.push(r),t.shadowRoot&&(n.full+=v(e,t.shadowRoot).full)}}e._cacheText.set(t,n)}return n}function w(e,t,n){if(y(t))return"none";if(!n(v(e,t)))return"none";for(let r=t.firstChild;r;r=r.nextSibling)if(r.nodeType===Node.ELEMENT_NODE&&n(v(e,r)))return"selfAndChildren";return t.shadowRoot&&n(v(e,t.shadowRoot))?"selfAndChildren":"self"}function b(e,t,n){const r=e.left-t.right;if(!(r<0||void 0!==n&&r>n))return r+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function E(e,t,n){const r=t.left-e.right;if(!(r<0||void 0!==n&&r>n))return r+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function _(e,t,n){const r=t.top-e.bottom;if(!(r<0||void 0!==n&&r>n))return r+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function S(e,t,n){const r=e.top-t.bottom;if(!(r<0||void 0!==n&&r>n))return r+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function T(e,t,n){const r=void 0===n?50:n;let o=0;return e.left-t.right>=0&&(o+=e.left-t.right),t.left-e.right>=0&&(o+=t.left-e.right),t.top-e.bottom>=0&&(o+=t.top-e.bottom),e.top-t.bottom>=0&&(o+=e.top-t.bottom),o>r?void 0:o}function k(e,t){return{matches(n,r,o,i){const s=r.length&&"number"==typeof r[r.length-1]?r[r.length-1]:void 0,c=void 0===s?r:r.slice(0,r.length-1);if(r.length<1+(void 0===s?0:1))throw new Error(`"${e}" engine expects a selector list and optional maximum distance in pixels`);const a=n.getBoundingClientRect();let u;for(const e of i.query(o,c)){if(e===n)continue;const r=t(a,e.getBoundingClientRect(),s);void 0!==r&&(void 0===u||r<u)&&(u=r)}return void 0!==u&&(i._markScore(n,u),!0)}}}const N={query(e,t,n){let r=t[t.length-1];if(t.length<2)throw new Error(\'"nth-match" engine expects non-empty selector list and an index argument\');if("number"!=typeof r||r<1)throw new Error(\'"nth-match" engine expects a one-based index as the last argument\');const i=o.query(e,t.slice(0,t.length-1),n);return r--,r<i.length?[i[r]]:[]}};function x(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:void 0}function C(e,t){if(e!==t.scope)return t.pierceShadow?x(e):e.parentElement||void 0}function A(e,t){if(e!==t.scope)return e.previousElementSibling||void 0}function O(e){if(!e.ownerDocument||!e.ownerDocument.defaultView)return!0;const t=e.ownerDocument.defaultView.getComputedStyle(e);if(!t||"hidden"===t.visibility)return!1;const n=e.getBoundingClientRect();return n.width>0&&n.height>0}},854:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.querySelector=function(e,t,n){try{const r=e.parseSelector(t);return{selector:t,elements:e.querySelectorAll(r,n)}}catch(e){return{selector:t,elements:[]}}},t.generateSelector=function(e,t){e._evaluator.begin();try{const n=function(e,t){if(t.ownerDocument.documentElement===t)return[{engine:"css",selector:"html",score:1}];const n=(u,h)=>{const d=h?o:i;let m=d.get(u);return void 0===m&&(m=((o,i)=>{const u=o===t;let h=i?function(e,t,n){if("SELECT"===t.nodeName)return[];const o=(0,r.elementText)(e._evaluator,t).full.trim().replace(/\\s+/g," ").substring(0,80);if(!o)return[];const i=[];let s=o;if((o.includes(\'"\')||o.includes(">>")||"/"===o[0])&&(s=`/.*${function(e){return e.replace(/[.*+?^>${}()|[\\]\\\\]/g,"\\\\$&")}(o)}.*/`),i.push({engine:"text",selector:s,score:10}),n&&s===o){let e=t.nodeName.toLocaleLowerCase();t.hasAttribute("role")&&(e+=`[role=${l(t.getAttribute("role"))}]`),i.push({engine:"css",selector:`${e}:has-text("${o}")`,score:30})}return i}(e,o,o===t).map((e=>[e])):[];o!==t&&(h=s(h));const d=function(e,t){const n=[];for(const e of["data-testid","data-test-id","data-test"])t.hasAttribute(e)&&n.push({engine:"css",selector:`[${e}=${l(t.getAttribute(e))}]`,score:1});if("INPUT"===t.nodeName){const e=t;e.placeholder&&n.push({engine:"css",selector:`[placeholder=${l(e.placeholder)}]`,score:10})}t.hasAttribute("aria-label")&&n.push({engine:"css",selector:`[aria-label=${l(t.getAttribute("aria-label"))}]`,score:10}),t.getAttribute("alt")&&["APPLET","AREA","IMG","INPUT"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[alt=${l(t.getAttribute("alt"))}]`,score:10}),t.hasAttribute("role")&&n.push({engine:"css",selector:`${t.nodeName.toLocaleLowerCase()}[role=${l(t.getAttribute("role"))}]`,score:50}),t.getAttribute("name")&&["BUTTON","FORM","FIELDSET","IFRAME","INPUT","KEYGEN","OBJECT","OUTPUT","SELECT","TEXTAREA","MAP","META","PARAM"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[name=${l(t.getAttribute("name"))}]`,score:50}),["INPUT","TEXTAREA"].includes(t.nodeName)&&"hidden"!==t.getAttribute("type")&&t.getAttribute("type")&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[type=${l(t.getAttribute("type"))}]`,score:50}),["INPUT","TEXTAREA","SELECT"].includes(t.nodeName)&&n.push({engine:"css",selector:t.nodeName.toLowerCase(),score:50});const r=t.getAttribute("id");return r&&!function(e){let t,n=0;for(let r=0;r<e.length;++r){const o=e[r];let i;"-"!==o&&"_"!==o&&(i=o>="a"&&o<="z"?"lower":o>="A"&&o<="Z"?"upper":o>="0"&&o<="9"?"digit":"other","lower"!==i||"upper"!==t?(t&&t!==i&&++n,t=i):t=i)}return n>=e.length/4}(r)&&n.push({engine:"css",selector:a(r),score:100}),n.push({engine:"css",selector:t.nodeName.toLocaleLowerCase(),score:200}),n}(0,o).map((e=>[e]));let m=f(e,t.ownerDocument,o,[...h,...d],u);h=s(h);const g=t=>{const r=i&&!t.length,s=[...t,...d].filter((e=>!m||p(e)<p(m)));let a=s[0];if(a)for(let t=c(o);t;t=c(t)){const i=n(t,r);if(!i)continue;if(m&&p([...i,...a])>=p(m))continue;if(a=f(e,t,o,s,u),!a)return;const c=[...i,...a];(!m||p(c)<p(m))&&(m=c)}};return g(h),o===t&&h.length&&g([]),m})(u,h),d.set(u,m)),m};return n(t,!0)}(e,t=t.closest("button,select,input,[role=button],[role=checkbox],[role=radio]")||t),d=h(n||[u(e,t)]),m=e.parseSelector(d);return{selector:d,elements:e.querySelectorAll(m,t.ownerDocument)}}finally{o.clear(),i.clear(),e._evaluator.end()}};var r=n(848);const o=new Map,i=new Map;function s(e){return e.filter((e=>"/"!==e[0].selector[0]))}function c(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:null}function a(e){return/^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(e)?"#"+e:`[id="${e}"]`}function u(e,t){const n=1e7,r=t.ownerDocument,o=[];function i(n){const r=o.slice();n&&r.unshift(n);const i=r.join(" "),s=e.parseSelector(i);return e.querySelector(s,t.ownerDocument,!1)===t?i:void 0}for(let e=t;e&&e!==r;e=c(e)){const t=e.nodeName.toLowerCase();let r="";if(e.id){const t=a(e.id),o=i(t);if(o)return{engine:"css",selector:o,score:n};r=t}const s=e.parentNode,c=[...e.classList];for(let e=0;e<c.length;++e){const t="."+c.slice(0,e+1).join("."),o=i(t);if(o)return{engine:"css",selector:o,score:n};!r&&s&&1===s.querySelectorAll(t).length&&(r=t)}if(s){const o=[...s.children],c=0===o.filter((e=>e.nodeName.toLowerCase()===t)).indexOf(e)?t:`${t}:nth-child(${1+o.indexOf(e)})`,a=i(c);if(a)return{engine:"css",selector:a,score:n};r||(r=c)}else r||(r=t);o.unshift(r)}return{engine:"css",selector:i(),score:n}}function l(e){return`"${e.replace(/"/g,\'\\\\"\').replace(/\\n/g,"\\\\n")}"`}function h(e){const t=[];let n="";for(const{engine:r,selector:o}of e)t.length&&("css"!==n||"css"!==r||o.startsWith(":nth-match("))&&t.push(">>"),n=r,"css"===r?t.push(o):t.push(`${r}=${o}`);return t.join(" ")}function p(e){let t=0;for(let n=0;n<e.length;n++)t+=e[n].score*(e.length-n);return t}function f(e,t,n,r,o){const i=r.map((e=>({tokens:e,score:p(e)})));i.sort(((e,t)=>e.score-t.score));let s=null;for(const{tokens:r}of i){const i=e.parseSelector(h(r)),c=e.querySelectorAll(i,t),a=c.indexOf(n);if(0===a)return r;if(!o||s||-1===a||c.length>5)continue;const u=r.map((e=>"text"!==e.engine?e:e.selector.startsWith("/")&&e.selector.endsWith("/")?{engine:"css",selector:`:text-matches("${e.selector.substring(1,e.selector.length-1)}")`,score:e.score}:{engine:"css",selector:`:text("${e.selector}")`,score:e.score}));s=[{engine:"css",selector:`:nth-match(${h(u)}, ${a+1})`,score:p(u)+1e3}]}return s}},12:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.VueEngine=void 0;var r=n(204);function o(e,t){const n=e.replace(/^[a-zA-Z]:/,"").replace(/\\\\/g,"/");let r=n.substring(n.lastIndexOf("/")+1);return t&&r.endsWith(t)&&(r=r.substring(0,r.length-t.length)),r}function i(e,t){return t?t.toUpperCase():""}const s=/(?:^|[-_/])(\\w)/g,c=e=>e&&e.replace(s,i);function a(e,t,n=[]){t(e)&&n.push(e);for(const r of e.children)a(r,t,n);return n}const u={queryAll(e,t){const{name:n,attributes:i}=(0,r.parseComponentSelector)(t),s=function(){const e=[];for(const t of document.querySelectorAll("[data-v-app]"))t._vnode&&t._vnode.component&&e.push({root:t._vnode.component,version:3});const t=document.createTreeWalker(document,NodeFilter.SHOW_ELEMENT),n=new Set;for(;t.nextNode();){const e=t.currentNode;e&&e.__vue__&&n.add(e.__vue__.$root)}for(const t of n)e.push({version:2,root:t});return e}().map((e=>3===e.version?function(e){function t(e,t){return e.type.__playwright_guessedName=t,t}function n(e){const n=function(e){const t=e.name||e._componentTag||e.__playwright_guessedName;if(t)return t;const n=e.__file;return n?c(o(n,".vue")):void 0}(e.type||{});if(n)return n;if(e.root===e)return"Root";for(const n in null===(r=e.parent)||void 0===r||null===(i=r.type)||void 0===i?void 0:i.components){var r,i,s;if((null===(s=e.parent)||void 0===s?void 0:s.type.components[n])===e.type)return t(e,n)}for(const n in null===(a=e.appContext)||void 0===a?void 0:a.components){var a;if(e.appContext.components[n]===e.type)return t(e,n)}return"Anonymous Component"}function r(e){const t=[];return e.component&&t.push(e.component),e.suspense&&t.push(...r(e.suspense.activeBranch)),Array.isArray(e.children)&&e.children.forEach((e=>{e.component?t.push(e.component):t.push(...r(e))})),t.filter((e=>{var t;return!(function(e){return e._isBeingDestroyed||e.isUnmounted}(e)||null!==(t=e.type.devtools)&&void 0!==t&&t.hide)}))}function i(e){return function(e){return"Symbol(Fragment)"===e.subTree.type.toString()}(e)?function(e){if(!e.children)return[];const t=[];for(let n=0,r=e.children.length;n<r;n++){const r=e.children[n];r.component?t.push(...i(r.component)):r.el&&t.push(r.el)}return t}(e.subTree):[e.subTree.el]}return function e(t){return{name:n(t),children:r(t.subTree).map(e),rootElements:i(t),props:t.props}}(e)}(e.root):function(e){function t(e){return function(e){const t=e.displayName||e.name||e._componentTag;if(t)return t;const n=e.__file;return n?c(o(n,".vue")):void 0}(e.$options||e.fnOptions||{})||(e.$root===e?"Root":"Anonymous Component")}function n(e){return e.$children?e.$children:Array.isArray(e.subTree.children)?e.subTree.children.filter((e=>!!e.component)).map((e=>e.component)):[]}return function e(r){return{name:t(r),children:n(r).map(e),rootElements:[r.$el],props:r._props}}(e)}(e.root))).map((t=>a(t,(t=>{if(n&&t.name!==n)return!1;if(t.rootElements.some((t=>!e.contains(t))))return!1;for(const e of i)if(!(0,r.checkComponentAttribute)(t.props,e))return!1;return!0})))).flat(),u=new Set;for(const e of s)for(const t of e.rootElements)u.add(t);return[...u]}};t.VueEngine=u},530:(e,t)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.XPathEngine=void 0;const n={queryAll(e,t){t.startsWith("/")&&(t="."+t);const n=[],r=e instanceof Document?e:e.ownerDocument;if(!r)return n;const o=r.evaluate(t,e,null,XPathResult.ORDERED_NODE_ITERATOR_TYPE);for(let e=o.iterateNext();e;e=o.iterateNext())e.nodeType===Node.ELEMENT_NODE&&n.push(e);return n}};t.XPathEngine=n}},t={};function n(r){var o=t[r];if(void 0!==o)return o.exports;var i=t[r]={exports:{}};return e[r](i,i.exports,n),i.exports}n.g=function(){if("object"==typeof globalThis)return globalThis;try{return this||new Function("return this")()}catch(e){if("object"==typeof window)return window}}();var r={};(()=>{var e=r;e.default=void 0;var t=n(530),o=n(836),i=n(12),s=n(461),c=n(848),a=n(854);const u=new Set(["AREA","BASE","BR","COL","COMMAND","EMBED","HR","IMG","INPUT","KEYGEN","LINK","MENUITEM","META","PARAM","SOURCE","TRACK","WBR"]),l=new Set(["checked","selected","disabled","readonly","multiple"]);function h(e){return e.replace(/\\n/g,"\u21B5").replace(/\\t/g,"\u21C6")}const p=new Map([["auxclick","mouse"],["click","mouse"],["dblclick","mouse"],["mousedown","mouse"],["mouseeenter","mouse"],["mouseleave","mouse"],["mousemove","mouse"],["mouseout","mouse"],["mouseover","mouse"],["mouseup","mouse"],["mouseleave","mouse"],["mousewheel","mouse"],["keydown","keyboard"],["keyup","keyboard"],["keypress","keyboard"],["textInput","keyboard"],["touchstart","touch"],["touchmove","touch"],["touchend","touch"],["touchcancel","touch"],["pointerover","pointer"],["pointerout","pointer"],["pointerenter","pointer"],["pointerleave","pointer"],["pointerdown","pointer"],["pointerup","pointer"],["pointermove","pointer"],["pointercancel","pointer"],["gotpointercapture","pointer"],["lostpointercapture","pointer"],["focus","focus"],["blur","focus"],["drag","drag"],["dragstart","drag"],["dragend","drag"],["dragover","drag"],["dragenter","drag"],["dragleave","drag"],["dragexit","drag"],["drop","drag"]]);function f(e){if(!e.includes("\\\\"))return e;const t=[];let n=0;for(;n<e.length;)"\\\\"===e[n]&&n+1<e.length&&n++,t.push(e[n++]);return t.join("")}class d{constructor(e){this._string=void 0,this._substring=void 0,this._regex=void 0,this._normalizeWhiteSpace=void 0,this._normalizeWhiteSpace=e.normalizeWhiteSpace,this._string=e.matchSubstring?void 0:this.normalizeWhiteSpace(e.string),this._substring=e.matchSubstring?this.normalizeWhiteSpace(e.string):void 0,this._regex=e.regexSource?new RegExp(e.regexSource,e.regexFlags):void 0}matches(e){return this._normalizeWhiteSpace&&!this._regex&&(e=this.normalizeWhiteSpace(e)),void 0!==this._string?e===this._string:void 0!==this._substring?e.includes(this._substring):!!this._regex&&!!this._regex.test(e)}normalizeWhiteSpace(e){return e&&this._normalizeWhiteSpace?e.trim().replace(/\\s+/g," "):e}}function m(e,t){if(e===t)return!0;if(e&&t&&"object"==typeof e&&"object"==typeof t){if(e.constructor!==t.constructor)return!1;if(Array.isArray(e)){if(e.length!==t.length)return!1;for(let n=0;n<e.length;++n)if(!m(e[n],t[n]))return!1;return!0}if(e instanceof RegExp)return e.source===t.source&&e.flags===t.flags;if(e.valueOf!==Object.prototype.valueOf)return e.valueOf()===t.valueOf();if(e.toString!==Object.prototype.toString)return e.toString()===t.toString();const n=Object.keys(e);if(n.length!==Object.keys(t).length)return!1;for(let e=0;e<n.length;++e)if(!t.hasOwnProperty(n[e]))return!1;for(const r of n)if(!m(e[r],t[r]))return!1;return!0}return isNaN(e)===isNaN(t)}var g=class{constructor(e,n,r,s){this._engines=void 0,this._evaluator=void 0,this._stableRafCount=void 0,this._replaceRafWithTimeout=void 0,this._browserName=void 0,this._evaluator=new c.SelectorEvaluatorImpl(new Map),this._engines=new Map,this._engines.set("xpath",t.XPathEngine),this._engines.set("xpath:light",t.XPathEngine),this._engines.set("_react",o.ReactEngine),this._engines.set("_vue",i.VueEngine),this._engines.set("text",this._createTextEngine(!0)),this._engines.set("text:light",this._createTextEngine(!1)),this._engines.set("id",this._createAttributeEngine("id",!0)),this._engines.set("id:light",this._createAttributeEngine("id",!1)),this._engines.set("data-testid",this._createAttributeEngine("data-testid",!0)),this._engines.set("data-testid:light",this._createAttributeEngine("data-testid",!1)),this._engines.set("data-test-id",this._createAttributeEngine("data-test-id",!0)),this._engines.set("data-test-id:light",this._createAttributeEngine("data-test-id",!1)),this._engines.set("data-test",this._createAttributeEngine("data-test",!0)),this._engines.set("data-test:light",this._createAttributeEngine("data-test",!1)),this._engines.set("css",this._createCSSEngine()),this._engines.set("nth",{queryAll:()=>[]}),this._engines.set("visible",{queryAll:()=>[]});for(const{name:e,engine:t}of s)this._engines.set(e,t);this._stableRafCount=e,this._replaceRafWithTimeout=n,this._browserName=r}eval(e){return n.g.eval(e)}parseSelector(e){const t=(0,s.parseSelector)(e);for(const n of t.parts)if(!this._engines.has(n.name))throw this.createStacklessError(`Unknown engine "${n.name}" while parsing selector ${e}`);return t}querySelector(e,t,n){if(!t.querySelector)throw this.createStacklessError("Node is not queryable.");this._evaluator.begin();try{var r,o;const i=this._querySelectorRecursively([{element:t,capture:void 0}],e,0,new Map);if(n&&i.length>1)throw this.strictModeViolationError(e,i.map((e=>e.element)));return(null===(r=i[0])||void 0===r?void 0:r.capture)||(null===(o=i[0])||void 0===o?void 0:o.element)}finally{this._evaluator.end()}}_querySelectorRecursively(e,t,n,r){if(n===t.parts.length)return e;const o=t.parts[n];if("nth"===o.name){let i=[];if("0"===o.body)i=e.slice(0,1);else if("-1"===o.body)e.length&&(i=e.slice(e.length-1));else{if("number"==typeof t.capture)throw this.createStacklessError("Can\'t query n-th element in a request with the capture.");const n=+o.body,r=new Set;for(const t of e)r.add(t.element),n+1===r.size&&(i=[t])}return this._querySelectorRecursively(i,t,n+1,r)}if("visible"===o.name){const i=Boolean(o.body),s=e.filter((e=>i===(0,c.isVisible)(e.element)));return this._querySelectorRecursively(s,t,n+1,r)}const i=[];for(const o of e){const e=n-1===t.capture?o.element:o.capture;let s=r.get(o.element);s||(s=[],r.set(o.element,s));let c=s[n];c||(c=this._queryEngineAll(t.parts[n],o.element),s[n]=c);for(const t of c){if(!("nodeName"in t))throw this.createStacklessError(`Expected a Node but got ${Object.prototype.toString.call(t)}`);i.push({element:t,capture:e})}}return this._querySelectorRecursively(i,t,n+1,r)}querySelectorAll(e,t){if(!t.querySelectorAll)throw this.createStacklessError("Node is not queryable.");this._evaluator.begin();try{const n=this._querySelectorRecursively([{element:t,capture:void 0}],e,0,new Map),r=new Set;for(const e of n)r.add(e.capture||e.element);return[...r]}finally{this._evaluator.end()}}_queryEngineAll(e,t){return this._engines.get(e.name).queryAll(t,e.body)}_createAttributeEngine(e,t){return{queryAll:(n,r)=>this._evaluator.query({scope:n,pierceShadow:t},(t=>[{simples:[{selector:{css:`[${e}=${JSON.stringify(t)}]`,functions:[]},combinator:""}]}])(r))}}_createCSSEngine(){const e=this._evaluator;return{queryAll:(t,n)=>e.query({scope:t,pierceShadow:!0},n)}}_createTextEngine(e){const t=(t,n)=>{const{matcher:r,kind:o}=function(e){if("/"===e[0]&&e.lastIndexOf("/")>0){const t=e.lastIndexOf("/");return{matcher:(0,c.createRegexTextMatcher)(e.substring(1,t),e.substring(t+1)),kind:"regex"}}let t=!1;return e.length>1&&\'"\'===e[0]&&\'"\'===e[e.length-1]&&(e=f(e.substring(1,e.length-1)),t=!0),e.length>1&&"\'"===e[0]&&"\'"===e[e.length-1]&&(e=f(e.substring(1,e.length-1)),t=!0),{matcher:t?(0,c.createStrictTextMatcher)(e):(0,c.createLaxTextMatcher)(e),kind:t?"strict":"lax"}}(n),i=[];let s=null;const a=e=>{if("lax"===o&&s&&s.contains(e))return!1;const t=(0,c.elementMatchesText)(this._evaluator,e,r);"none"===t&&(s=e),("self"===t||"selfAndChildren"===t&&"strict"===o)&&i.push(e)};t.nodeType===Node.ELEMENT_NODE&&a(t);const u=this._evaluator._queryCSS({scope:t,pierceShadow:e},"*");for(const e of u)a(e);return i};return{queryAll:(e,n)=>t(e,n)}}extend(e,t){return new(n.g.eval(`\\n    (() => {\\n      ${e}\\n      return pwExport;\\n    })()`))(this,t)}isVisible(e){return(0,c.isVisible)(e)}pollRaf(e){return this.poll(e,(e=>requestAnimationFrame(e)))}pollInterval(e,t){return this.poll(t,(t=>setTimeout(t,e)))}pollLogScale(e){const t=[100,250,500];let n=0;return this.poll(e,(e=>setTimeout(e,t[n++]||1e3)))}poll(e,t){return this._runAbortableTask((n=>{let r,o;const i=new Promise(((e,t)=>{r=e,o=t})),s=()=>{if(!n.aborted)try{const o=Symbol("continuePolling"),i=e(n,o);i!==o?r(i):t(s)}catch(e){n.log("  "+e.message),o(e)}};return s(),i}))}_runAbortableTask(e){let t,n=[],r=!1;const o=()=>{t&&(t(n),n=[],t=void 0)};let i,s="";const c={injectedScript:this,aborted:!1,log:e=>{s=e,n.push({message:e}),o()},logRepeating:e=>{e!==s&&c.log(e)},setIntermediateResult:e=>{i!==e&&(i=e,n.push({intermediateResult:e}),o())}};return{takeNextLogs:()=>new Promise((e=>{t=e,(n.length||r)&&o()})),run:()=>{const t=e(c);return t.finally((()=>{r=!0,o()})),t},cancel:()=>{c.aborted=!0},takeLastLogs:()=>n}}getElementBorderWidth(e){if(e.nodeType!==Node.ELEMENT_NODE||!e.ownerDocument||!e.ownerDocument.defaultView)return{left:0,top:0};const t=e.ownerDocument.defaultView.getComputedStyle(e);return{left:parseInt(t.borderLeftWidth||"",10),top:parseInt(t.borderTopWidth||"",10)}}retarget(e,t){let n=e.nodeType===Node.ELEMENT_NODE?e:e.parentElement;return n?(n.matches("input, textarea, select")||(n=n.closest("button, [role=button], [role=checkbox], [role=radio]")||n),"follow-label"===t&&(n.matches("input, textarea, button, select, [role=button], [role=checkbox], [role=radio]")||n.isContentEditable||(n=n.closest("label")||n),"LABEL"===n.nodeName&&(n=n.control||n)),n):null}waitForElementStatesAndPerformAction(e,t,n,r){let o,i=0,s=0,c=0;const a=(a,u)=>{if(n)return a.log("    forcing action"),r(e,a,u);for(const n of t){if("stable"!==n){const t=this.elementState(e,n);if("boolean"!=typeof t)return t;if(!t)return a.logRepeating(`    element is not ${n} - waiting...`),u;continue}const t=this.retarget(e,"no-follow-label");if(!t)return"error:notconnected";if(1==++i)return u;const r=performance.now();if(this._stableRafCount>1&&r-c<15)return u;c=r;const l=t.getBoundingClientRect(),h={x:l.top,y:l.left,width:l.width,height:l.height};o&&h.x===o.x&&h.y===o.y&&h.width===o.width&&h.height===o.height?++s:s=0;const p=s>=this._stableRafCount,f=p||!o;if(o=h,f||a.logRepeating("    element is not stable - waiting..."),!p)return u}return r(e,a,u)};return this._replaceRafWithTimeout?this.pollInterval(16,a):this.pollRaf(a)}elementState(e,t){const n=this.retarget(e,["stable","visible","hidden"].includes(t)?"no-follow-label":"follow-label");if(!n||!n.isConnected)return"hidden"===t||"error:notconnected";if("visible"===t)return this.isVisible(n);if("hidden"===t)return!this.isVisible(n);const r=["BUTTON","INPUT","SELECT","TEXTAREA"].includes(n.nodeName)&&n.hasAttribute("disabled");if("disabled"===t)return r;if("enabled"===t)return!r;const o=!(["INPUT","TEXTAREA","SELECT"].includes(n.nodeName)&&n.hasAttribute("readonly"));if("editable"===t)return!r&&o;if("checked"===t){if(["checkbox","radio"].includes(n.getAttribute("role")||""))return"true"===n.getAttribute("aria-checked");if("INPUT"!==n.nodeName)throw this.createStacklessError("Not a checkbox or radio button");if(!["radio","checkbox"].includes(n.type.toLowerCase()))throw this.createStacklessError("Not a checkbox or radio button");return n.checked}throw this.createStacklessError(`Unexpected element state "${t}"`)}selectOptions(e,t,n,r){const o=this.retarget(t,"follow-label");if(!o)return"error:notconnected";if("select"!==o.nodeName.toLowerCase())throw this.createStacklessError("Element is not a <select> element");const i=o,s=[...i.options],c=[];let a=e.slice();for(let e=0;e<s.length;e++){const t=s[e],n=n=>{if(n instanceof Node)return t===n;let r=!0;return void 0!==n.value&&(r=r&&n.value===t.value),void 0!==n.label&&(r=r&&n.label===t.label),void 0!==n.index&&(r=r&&n.index===e),r};if(a.some(n)){if(c.push(t),!i.multiple){a=[];break}a=a.filter((e=>!n(e)))}}return a.length?(n.logRepeating("    did not find some options - waiting... "),r):(i.value=void 0,c.forEach((e=>e.selected=!0)),n.log("    selected specified option(s)"),i.dispatchEvent(new Event("input",{bubbles:!0})),i.dispatchEvent(new Event("change",{bubbles:!0})),c.map((e=>e.value)))}fill(e,t,n){const r=this.retarget(t,"follow-label");if(!r)return"error:notconnected";if("input"===r.nodeName.toLowerCase()){const t=r,o=t.type.toLowerCase(),i=new Set(["date","time","datetime","datetime-local","month","week"]);if(!new Set(["","email","number","password","search","tel","text","url"]).has(o)&&!i.has(o))throw n.log(`    input of type "${o}" cannot be filled`),this.createStacklessError(`Input of type "${o}" cannot be filled`);if("number"===o&&(e=e.trim(),isNaN(Number(e))))throw this.createStacklessError("Cannot type text into input[type=number]");if(i.has(o)){if(e=e.trim(),t.focus(),t.value=e,t.value!==e)throw this.createStacklessError("Malformed value");return r.dispatchEvent(new Event("input",{bubbles:!0})),r.dispatchEvent(new Event("change",{bubbles:!0})),"done"}}else if("textarea"===r.nodeName.toLowerCase());else if(!r.isContentEditable)throw this.createStacklessError("Element is not an <input>, <textarea> or [contenteditable] element");return this.selectText(r),"needsinput"}selectText(e){const t=this.retarget(e,"follow-label");if(!t)return"error:notconnected";if("input"===t.nodeName.toLowerCase()){const e=t;return e.select(),e.focus(),"done"}if("textarea"===t.nodeName.toLowerCase()){const e=t;return e.selectionStart=0,e.selectionEnd=e.value.length,e.focus(),"done"}const n=t.ownerDocument.createRange();n.selectNodeContents(t);const r=t.ownerDocument.defaultView.getSelection();return r&&(r.removeAllRanges(),r.addRange(n)),t.focus(),"done"}focusNode(e,t){if(!e.isConnected)return"error:notconnected";if(e.nodeType!==Node.ELEMENT_NODE)throw this.createStacklessError("Node is not an element");const n=e.getRootNode().activeElement===e&&e.ownerDocument&&e.ownerDocument.hasFocus();if(e.focus(),t&&!n&&"input"===e.nodeName.toLowerCase())try{e.setSelectionRange(0,0)}catch(e){}return"done"}setInputFiles(e,t){if(e.nodeType!==Node.ELEMENT_NODE)return"Node is not of type HTMLElement";const n=e;if("INPUT"!==n.nodeName)return"Not an <input> element";const r=n;if("file"!==(r.getAttribute("type")||"").toLowerCase())return"Not an input[type=file] element";const o=t.map((e=>{const t=Uint8Array.from(atob(e.buffer),(e=>e.charCodeAt(0)));return new File([t],e.name,{type:e.mimeType})})),i=new DataTransfer;for(const e of o)i.items.add(e);r.files=i.files,r.dispatchEvent(new Event("input",{bubbles:!0})),r.dispatchEvent(new Event("change",{bubbles:!0}))}checkHitTargetAt(e,t){let n=e.nodeType===Node.ELEMENT_NODE?e:e.parentElement;if(!n||!n.isConnected)return"error:notconnected";n=n.closest("button, [role=button]")||n;let r=this.deepElementFromPoint(document,t.x,t.y);const o=[];for(;r&&r!==n;)o.push(r),r=(0,c.parentElementOrShadowHost)(r);if(r===n)return"done";const i=this.previewNode(o[0]);let s;for(;n;){const e=o.indexOf(n);if(-1!==e){e>1&&(s=this.previewNode(o[e-1]));break}n=(0,c.parentElementOrShadowHost)(n)}return s?{hitTargetDescription:`${i} from ${s} subtree`}:{hitTargetDescription:i}}dispatchEvent(e,t,n){let r;switch(n={bubbles:!0,cancelable:!0,composed:!0,...n},p.get(t)){case"mouse":r=new MouseEvent(t,n);break;case"keyboard":r=new KeyboardEvent(t,n);break;case"touch":r=new TouchEvent(t,n);break;case"pointer":r=new PointerEvent(t,n);break;case"focus":r=new FocusEvent(t,n);break;case"drag":r=new DragEvent(t,n);break;default:r=new Event(t,n)}e.dispatchEvent(r)}deepElementFromPoint(e,t,n){let r,o=e;for(;o;){const e=o.elementsFromPoint(t,n)[0];if(!e||r===e)break;r=e,o=r.shadowRoot}return r}previewNode(e){if(e.nodeType===Node.TEXT_NODE)return h(`#text=${e.nodeValue||""}`);if(e.nodeType!==Node.ELEMENT_NODE)return h(`<${e.nodeName.toLowerCase()} />`);const t=e,n=[];for(let e=0;e<t.attributes.length;e++){const{name:r,value:o}=t.attributes[e];"style"===r||r.startsWith("__playwright")||(!o&&l.has(r)?n.push(` ${r}`):n.push(` ${r}="${o}"`))}n.sort(((e,t)=>e.length-t.length));let r=n.join("");if(r.length>50&&(r=r.substring(0,49)+"\u2026"),u.has(t.nodeName))return h(`<${t.nodeName.toLowerCase()}${r}/>`);const o=t.childNodes;let i=!1;if(o.length<=5){i=!0;for(let e=0;e<o.length;e++)i=i&&o[e].nodeType===Node.TEXT_NODE}let s=i?t.textContent||"":o.length?"\u2026":"";return s.length>50&&(s=s.substring(0,49)+"\u2026"),h(`<${t.nodeName.toLowerCase()}${r}>${s}</${t.nodeName.toLowerCase()}>`)}strictModeViolationError(e,t){const n=t.slice(0,10).map((e=>({preview:this.previewNode(e),selector:(0,a.generateSelector)(this,e).selector}))),r=n.map(((e,t)=>`\\n    ${t+1}) ${e.preview} aka playwright.$("${e.selector}")`));return n.length<t.length&&r.push("\\n    ..."),this.createStacklessError(`strict mode violation: "${e.selector}" resolved to ${t.length} elements:${r.join("")}\\n`)}createStacklessError(e){if("firefox"===this._browserName){const t=new Error("Error: "+e);return t.stack="",t}const t=new Error(e);return delete t.stack,t}expect(e,t,n,r){const o=e.injectedScript,i=n.expression;{let n;if("to.be.checked"===i)n=e.injectedScript.elementState(t,"checked");else if("to.be.disabled"===i)n=e.injectedScript.elementState(t,"disabled");else if("to.be.editable"===i)n=e.injectedScript.elementState(t,"editable");else if("to.be.empty"===i){var s;n="INPUT"===t.nodeName||"TEXTAREA"===t.nodeName?!t.value:!(null!==(s=t.textContent)&&void 0!==s&&s.trim())}else"to.be.enabled"===i?n=e.injectedScript.elementState(t,"enabled"):"to.be.focused"===i?n=document.activeElement===t:"to.be.hidden"===i?n=e.injectedScript.elementState(t,"hidden"):"to.be.visible"===i&&(n=e.injectedScript.elementState(t,"visible"));if(void 0!==n){if("error:notcheckbox"===n)throw o.createStacklessError("Element is not a checkbox");if("error:notconnected"===n)throw o.createStacklessError("Element is not connected");return{received:n,matches:n}}}if("to.have.count"===i){const e=r.length;return{received:e,matches:e===n.expectedNumber}}if("to.have.property"===i){const e=t[n.expressionArg];return{received:e,matches:m(e,n.expectedValue)}}{let e;if("to.have.attribute"===i)e=t.getAttribute(n.expressionArg)||"";else if("to.have.class"===i)e=t.className;else if("to.have.css"===i)e=window.getComputedStyle(t)[n.expressionArg];else if("to.have.id"===i)e=t.id;else if("to.have.text"===i)e=n.useInnerText?t.innerText:t.textContent||"";else if("to.have.title"===i)e=document.title;else if("to.have.url"===i)e=document.location.href;else if("to.have.value"===i){if("INPUT"!==t.nodeName&&"TEXTAREA"!==t.nodeName&&"SELECT"!==t.nodeName)throw this.createStacklessError("Not an input element");e=t.value}if(void 0!==e&&n.expectedText)return{received:e,matches:new d(n.expectedText[0]).matches(e)}}{let e;if("to.have.text.array"===i||"to.contain.text.array"===i?e=r.map((e=>n.useInnerText?e.innerText:e.textContent||"")):"to.have.class.array"===i&&(e=r.map((e=>e.className))),e&&n.expectedText){const t="to.contain.text.array"!==i;if(e.length!==n.expectedText.length&&t)return{received:e,matches:!1};let r=0;const o=n.expectedText.map((e=>new d(e)));let s=!0;for(const t of o){for(;r<e.length&&!t.matches(e[r]);)r++;if(r>=e.length){s=!1;break}}return{received:e,matches:s}}}throw this.createStacklessError("Unknown expect matcher: "+n.expression)}};e.default=g})(),pwExport=r.default})();';
     exports.source = source;
   }
 });
@@ -13219,7 +13222,7 @@ var require_utilityScriptSerializers = __commonJS({
       return value;
     }
     function serializeAsCallArgument(value, handleSerializer) {
-      return serialize(value, handleSerializer, /* @__PURE__ */ new Set());
+      return serialize(value, handleSerializer, new Set());
     }
     function serialize(value, handleSerializer, visited) {
       const result = handleSerializer(value);
@@ -13341,7 +13344,6 @@ var require_javascript = __commonJS({
     var utilityScriptSource = _interopRequireWildcard(require_utilityScriptSource());
     var _utilityScriptSerializers = require_utilityScriptSerializers();
     var _instrumentation = require_instrumentation();
-    var _async = require_async();
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -13385,37 +13387,7 @@ var require_javascript = __commonJS({
         super(parent, "execution-context");
         this._delegate = void 0;
         this._utilityScriptPromise = void 0;
-        this._destroyedPromise = new _async.ManualPromise();
         this._delegate = delegate;
-      }
-      contextDestroyed(error) {
-        this._destroyedPromise.resolve(error);
-      }
-      _raceAgainstContextDestroyed(promise) {
-        return Promise.race([this._destroyedPromise.then((e) => {
-          throw e;
-        }), promise]);
-      }
-      rawEvaluateJSON(expression) {
-        return this._raceAgainstContextDestroyed(this._delegate.rawEvaluateJSON(expression));
-      }
-      rawEvaluateHandle(expression) {
-        return this._raceAgainstContextDestroyed(this._delegate.rawEvaluateHandle(expression));
-      }
-      rawCallFunctionNoReply(func, ...args) {
-        this._delegate.rawCallFunctionNoReply(func, ...args);
-      }
-      evaluateWithArguments(expression, returnByValue, utilityScript, values, objectIds) {
-        return this._raceAgainstContextDestroyed(this._delegate.evaluateWithArguments(expression, returnByValue, utilityScript, values, objectIds));
-      }
-      getProperties(context, objectId) {
-        return this._raceAgainstContextDestroyed(this._delegate.getProperties(context, objectId));
-      }
-      createHandle(remoteObject) {
-        return this._delegate.createHandle(this, remoteObject);
-      }
-      releaseHandle(objectId) {
-        return this._delegate.releaseHandle(objectId);
       }
       async waitForSignalsCreatedBy(action) {
         return action();
@@ -13430,9 +13402,15 @@ var require_javascript = __commonJS({
         ${utilityScriptSource.source}
         return new pwExport();
       })();`;
-          this._utilityScriptPromise = this._raceAgainstContextDestroyed(this._delegate.rawEvaluateHandle(source).then((objectId) => new JSHandle(this, "object", void 0, objectId)));
+          this._utilityScriptPromise = this._delegate.rawEvaluateHandle(source).then((objectId) => new JSHandle(this, "object", void 0, objectId));
         }
         return this._utilityScriptPromise;
+      }
+      createHandle(remoteObject) {
+        return this._delegate.createHandle(this, remoteObject);
+      }
+      async rawEvaluateJSON(expression) {
+        return await this._delegate.rawEvaluateJSON(expression);
       }
       async doSlowMo() {
       }
@@ -13455,7 +13433,7 @@ var require_javascript = __commonJS({
         this._preview = this._objectId ? preview || `JSHandle@${this._objectType}` : String(value);
       }
       callFunctionNoReply(func, arg) {
-        this._context.rawCallFunctionNoReply(func, this, arg);
+        this._context._delegate.rawCallFunctionNoReply(func, this, arg);
       }
       async evaluate(pageFunction, arg) {
         return evaluate(this._context, true, pageFunction, this, arg);
@@ -13483,8 +13461,8 @@ var require_javascript = __commonJS({
       }
       async getProperties() {
         if (!this._objectId)
-          return /* @__PURE__ */ new Map();
-        return this._context.getProperties(this._context, this._objectId);
+          return new Map();
+        return this._context._delegate.getProperties(this._context, this._objectId);
       }
       rawValue() {
         return this._value;
@@ -13494,7 +13472,7 @@ var require_javascript = __commonJS({
           return this._value;
         const utilityScript = await this._context.utilityScript();
         const script = `(utilityScript, ...args) => utilityScript.jsonValue(...args)`;
-        return this._context.evaluateWithArguments(script, true, utilityScript, [true], [this._objectId]);
+        return this._context._delegate.evaluateWithArguments(script, true, utilityScript, [true], [this._objectId]);
       }
       asElement() {
         return null;
@@ -13504,7 +13482,7 @@ var require_javascript = __commonJS({
           return;
         this._disposed = true;
         if (this._objectId)
-          this._context.releaseHandle(this._objectId).catch((e) => {
+          this._context._delegate.releaseHandle(this._objectId).catch((e) => {
           });
       }
       toString() {
@@ -13566,7 +13544,7 @@ var require_javascript = __commonJS({
       const utilityScriptValues = [isFunction, returnByValue, expression, args.length, ...args];
       const script = `(utilityScript, ...args) => utilityScript.evaluate(...args)`;
       try {
-        return await context.evaluateWithArguments(script, returnByValue, utilityScript, utilityScriptValues, utilityScriptObjectIds);
+        return await context._delegate.evaluateWithArguments(script, returnByValue, utilityScript, utilityScriptValues, utilityScriptObjectIds);
       } finally {
         toDispose.map((handlePromise) => handlePromise.then((handle) => handle.dispose()));
       }
@@ -13796,6 +13774,11 @@ var require_dom = __commonJS({
       async evaluateExpression(expression, isFunction, arg) {
         return js.evaluateExpression(this, true, expression, isFunction, arg);
       }
+      async evaluateAndWaitForSignals(pageFunction, arg) {
+        return await this.frame._page._frameManager.waitForSignalsCreatedBy(null, false, async () => {
+          return this.evaluate(pageFunction, arg);
+        });
+      }
       async evaluateExpressionAndWaitForSignals(expression, isFunction, arg) {
         return await this.frame._page._frameManager.waitForSignalsCreatedBy(null, false, async () => {
           return this.evaluateExpression(expression, isFunction, arg);
@@ -13823,12 +13806,13 @@ var require_dom = __commonJS({
         ${injectedScriptSource.source}
         return new pwExport(
           ${this.frame._page._delegate.rafCountForStablePosition()},
+          ${!!process.env.PWTEST_USE_TIMEOUT_FOR_RAF},
           "${this.frame._page._browserContext._browser.options.name}",
           [${custom.join(",\n")}]
         );
         })();
       `;
-          this._injectedScriptPromise = this.rawEvaluateHandle(source).then((objectId) => new js.JSHandle(this, "object", void 0, objectId));
+          this._injectedScriptPromise = this._delegate.rawEvaluateHandle(source).then((objectId) => new js.JSHandle(this, "object", void 0, objectId));
         }
         return this._injectedScriptPromise;
       }
@@ -13841,9 +13825,7 @@ var require_dom = __commonJS({
       constructor(context, objectId) {
         super(context, "node", void 0, objectId);
         this._page = void 0;
-        this._frame = void 0;
         this._page = context.frame._page;
-        this._frame = context.frame;
         this._initializePreview().catch((e) => {
         });
       }
@@ -13854,9 +13836,13 @@ var require_dom = __commonJS({
       asElement() {
         return this;
       }
+      async _evaluateInMainAndWaitForSignals(pageFunction, arg) {
+        const main = await this._context.frame._mainContext();
+        return main.evaluateAndWaitForSignals(pageFunction, [await main.injectedScript(), this, arg]);
+      }
       async evaluateInUtility(pageFunction, arg) {
         try {
-          const utility = await this._frame._utilityContext();
+          const utility = await this._context.frame._utilityContext();
           return await utility.evaluate(pageFunction, [await utility.injectedScript(), this, arg]);
         } catch (e) {
           if (js.isJavaScriptErrorInEvaluate(e) || (0, _protocolError.isSessionClosedError)(e))
@@ -13866,20 +13852,8 @@ var require_dom = __commonJS({
       }
       async evaluateHandleInUtility(pageFunction, arg) {
         try {
-          const utility = await this._frame._utilityContext();
+          const utility = await this._context.frame._utilityContext();
           return await utility.evaluateHandle(pageFunction, [await utility.injectedScript(), this, arg]);
-        } catch (e) {
-          if (js.isJavaScriptErrorInEvaluate(e) || (0, _protocolError.isSessionClosedError)(e))
-            throw e;
-          return "error:notconnected";
-        }
-      }
-      async evaluatePoll(progress, pageFunction, arg) {
-        try {
-          const utility = await this._frame._utilityContext();
-          const poll = await utility.evaluateHandle(pageFunction, [await utility.injectedScript(), this, arg]);
-          const pollHandler = new InjectedScriptPollHandler(progress, poll);
-          return await pollHandler.finish();
         } catch (e) {
           if (js.isJavaScriptErrorInEvaluate(e) || (0, _protocolError.isSessionClosedError)(e))
             throw e;
@@ -13900,11 +13874,8 @@ var require_dom = __commonJS({
         }
         return null;
       }
-      async isIframeElement() {
-        return this.evaluateInUtility(([injected, node]) => node && (node.nodeName === "IFRAME" || node.nodeName === "FRAME"), {});
-      }
       async contentFrame() {
-        const isFrameElement = throwRetargetableDOMError(await this.isIframeElement());
+        const isFrameElement = throwRetargetableDOMError(await this.evaluateInUtility(([injected, node]) => node && (node.nodeName === "IFRAME" || node.nodeName === "FRAME"), {}));
         if (!isFrameElement)
           return null;
         return this._page._delegate.getContentFrame(this);
@@ -13959,15 +13930,12 @@ var require_dom = __commonJS({
         }, void 0)).value;
       }
       async dispatchEvent(type, eventInit = {}) {
-        const main = await this._frame._mainContext();
-        await this._page._frameManager.waitForSignalsCreatedBy(null, false, async () => {
-          return main.evaluate(([injected, node, {
-            type: type2,
-            eventInit: eventInit2
-          }]) => injected.dispatchEvent(node, type2, eventInit2), [await main.injectedScript(), this, {
-            type,
-            eventInit
-          }]);
+        await this._evaluateInMainAndWaitForSignals(([injected, node, {
+          type: type2,
+          eventInit: eventInit2
+        }]) => injected.dispatchEvent(node, type2, eventInit2), {
+          type,
+          eventInit
         });
         await this._page._doSlowMo();
       }
@@ -14079,6 +14047,8 @@ var require_dom = __commonJS({
             continue;
           }
           if (typeof result === "object" && "hitTargetDescription" in result) {
+            if (options.force)
+              throw new Error(`Element does not receive pointer events, ${result.hitTargetDescription} intercepts them`);
             progress.log(`  ${result.hitTargetDescription} intercepts pointer events`);
             continue;
           }
@@ -14122,14 +14092,7 @@ var require_dom = __commonJS({
         if (typeof maybePoint === "string")
           return maybePoint;
         const point = roundPoint(maybePoint);
-        progress.metadata.point = point;
-        if (process.env.PLAYWRIGHT_NO_LAYOUT_SHIFT_CHECK)
-          return this._finishPointerAction(progress, actionName, point, options, action);
-        else
-          return this._finishPointerActionDetectLayoutShift(progress, actionName, point, options, action);
-      }
-      async _finishPointerAction(progress, actionName, point, options, action) {
-        if (!options.force) {
+        if (!force) {
           if (options.__testHookBeforeHitTarget)
             await options.__testHookBeforeHitTarget();
           progress.log(`  checking that element receives pointer events at (${point.x},${point.y})`);
@@ -14138,6 +14101,7 @@ var require_dom = __commonJS({
             return hitTargetResult;
           progress.log(`  element does receive pointer events`);
         }
+        progress.metadata.point = point;
         if (options.trial) {
           progress.log(`  trial ${actionName} has finished`);
           return "done";
@@ -14159,60 +14123,6 @@ var require_dom = __commonJS({
           if (restoreModifiers)
             await this._page.keyboard._ensureModifiers(restoreModifiers);
         }, "input");
-        progress.log("  navigations have finished");
-        return "done";
-      }
-      async _finishPointerActionDetectLayoutShift(progress, actionName, point, options, action) {
-        await progress.beforeInputAction(this);
-        let hitTargetInterceptionHandle;
-        if (!options.force) {
-          if (options.__testHookBeforeHitTarget)
-            await options.__testHookBeforeHitTarget();
-          const actionType = actionName === "hover" || actionName === "tap" ? actionName : "mouse";
-          const handle = await this.evaluateHandleInUtility(([injected, node, {
-            actionType: actionType2,
-            trial
-          }]) => injected.setupHitTargetInterceptor(node, actionType2, trial), {
-            actionType,
-            trial: !!options.trial
-          });
-          if (handle === "error:notconnected")
-            return handle;
-          if (!handle._objectId)
-            return handle.rawValue();
-          hitTargetInterceptionHandle = handle;
-          progress.cleanupWhenAborted(() => {
-            hitTargetInterceptionHandle.evaluate((h) => h.stop()).catch((e) => {
-            });
-          });
-        }
-        const actionResult = await this._page._frameManager.waitForSignalsCreatedBy(progress, options.noWaitAfter, async () => {
-          if (options.__testHookBeforePointerAction)
-            await options.__testHookBeforePointerAction();
-          progress.throwIfAborted();
-          let restoreModifiers;
-          if (options && options.modifiers)
-            restoreModifiers = await this._page.keyboard._ensureModifiers(options.modifiers);
-          progress.log(`  performing ${actionName} action`);
-          await action(point);
-          if (restoreModifiers)
-            await this._page.keyboard._ensureModifiers(restoreModifiers);
-          if (hitTargetInterceptionHandle) {
-            const stopHitTargetInterception = hitTargetInterceptionHandle.evaluate((h) => h.stop()).catch((e) => "done");
-            if (!options.noWaitAfter) {
-              const hitTargetResult = await stopHitTargetInterception;
-              if (hitTargetResult !== "done")
-                return hitTargetResult;
-            }
-          }
-          progress.log(`  ${options.trial ? "trial " : ""}${actionName} action done`);
-          progress.log("  waiting for scheduled navigations to finish");
-          if (options.__testHookAfterPointerAction)
-            await options.__testHookAfterPointerAction();
-          return "done";
-        }, "input");
-        if (actionResult !== "done")
-          return actionResult;
         progress.log("  navigations have finished");
         return "done";
       }
@@ -14269,7 +14179,7 @@ var require_dom = __commonJS({
         return this._page._frameManager.waitForSignalsCreatedBy(progress, options.noWaitAfter, async () => {
           progress.throwIfAborted();
           progress.log("  selecting specified option(s)");
-          const result = await this.evaluatePoll(progress, ([injected, node, {
+          const poll = await this.evaluateHandleInUtility(([injected, node, {
             optionsToSelect: optionsToSelect2,
             force
           }]) => {
@@ -14278,6 +14188,10 @@ var require_dom = __commonJS({
             optionsToSelect,
             force: options.force
           });
+          if (poll === "error:notconnected")
+            return poll;
+          const pollHandler = new InjectedScriptPollHandler(progress, poll);
+          const result = await pollHandler.finishMaybeNotConnected();
           await this._page._doSlowMo();
           return result;
         });
@@ -14294,7 +14208,7 @@ var require_dom = __commonJS({
         await progress.beforeInputAction(this);
         return this._page._frameManager.waitForSignalsCreatedBy(progress, options.noWaitAfter, async () => {
           progress.log("  waiting for element to be visible, enabled and editable");
-          const filled = await this.evaluatePoll(progress, ([injected, node, {
+          const poll = await this.evaluateHandleInUtility(([injected, node, {
             value: value2,
             force
           }]) => {
@@ -14303,6 +14217,10 @@ var require_dom = __commonJS({
             value,
             force: options.force
           });
+          if (poll === "error:notconnected")
+            return poll;
+          const pollHandler = new InjectedScriptPollHandler(progress, poll);
+          const filled = await pollHandler.finishMaybeNotConnected();
           progress.throwIfAborted();
           if (filled === "error:notconnected")
             return filled;
@@ -14323,9 +14241,11 @@ var require_dom = __commonJS({
         const controller = new _progress.ProgressController(metadata, this);
         return controller.run(async (progress) => {
           progress.throwIfAborted();
-          const result = await this.evaluatePoll(progress, ([injected, node, force]) => {
+          const poll = await this.evaluateHandleInUtility(([injected, node, force]) => {
             return injected.waitForElementStatesAndPerformAction(node, ["visible"], force, injected.selectText.bind(injected));
           }, options.force);
+          const pollHandler = new InjectedScriptPollHandler(progress, throwRetargetableDOMError(poll));
+          const result = await pollHandler.finishMaybeNotConnected();
           assertDone(throwRetargetableDOMError(result));
         }, this._page._timeoutSettings.timeout(options));
       }
@@ -14341,19 +14261,20 @@ var require_dom = __commonJS({
           if (!payload.mimeType)
             payload.mimeType = mime.getType(payload.name) || "application/octet-stream";
         }
-        const result = await this.evaluateHandleInUtility(([injected, node, multiple]) => {
+        const retargeted = await this.evaluateHandleInUtility(([injected, node, multiple]) => {
           const element = injected.retarget(node, "follow-label");
           if (!element)
-            return;
+            return "error:notconnected";
           if (element.tagName !== "INPUT")
             throw injected.createStacklessError("Node is not an HTMLInputElement");
           if (multiple && !element.multiple)
             throw injected.createStacklessError("Non-multiple file input can only accept single file");
           return element;
         }, files.length > 1);
-        if (result === "error:notconnected" || !result.asElement())
-          return "error:notconnected";
-        const retargeted = result.asElement();
+        if (retargeted === "error:notconnected")
+          return retargeted;
+        if (!retargeted._objectId)
+          return retargeted.rawValue();
         await progress.beforeInputAction(this);
         await this._page._frameManager.waitForSignalsCreatedBy(progress, options.noWaitAfter, async () => {
           progress.throwIfAborted();
@@ -14450,30 +14371,15 @@ var require_dom = __commonJS({
         return controller.run((progress) => this._page._screenshotter.screenshotElement(progress, this, options), this._page._timeoutSettings.timeout(options));
       }
       async querySelector(selector, options) {
-        const pair = await this._frame.resolveFrameForSelectorNoWait(selector, options, this);
-        if (!pair)
-          return null;
-        const {
-          frame,
-          info
-        } = pair;
-        return this._page.selectors.query(frame, info, this._frame === frame ? this : void 0);
+        return this._page.selectors.query(this._context.frame, selector, options, this);
       }
       async querySelectorAll(selector) {
-        const pair = await this._frame.resolveFrameForSelectorNoWait(selector, {}, this);
-        if (!pair)
-          return [];
-        const {
-          frame,
-          info
-        } = pair;
-        return this._page.selectors._queryAll(frame, info, this._frame === frame ? this : void 0, true);
+        return this._page.selectors._queryAll(this._context.frame, selector, this, true);
       }
       async evalOnSelectorAndWaitForSignals(selector, strict, expression, isFunction, arg) {
-        const pair = await this._frame.resolveFrameForSelectorNoWait(selector, {
+        const handle = await this._page.selectors.query(this._context.frame, selector, {
           strict
         }, this);
-        const handle = pair ? await this._page.selectors.query(pair.frame, pair.info, this._frame === pair.frame ? this : void 0) : null;
         if (!handle)
           throw new Error(`Error: failed to find element matching selector "${selector}"`);
         const result = await handle.evaluateExpressionAndWaitForSignals(expression, isFunction, true, arg);
@@ -14481,14 +14387,7 @@ var require_dom = __commonJS({
         return result;
       }
       async evalOnSelectorAllAndWaitForSignals(selector, expression, isFunction, arg) {
-        const pair = await this._frame.resolveFrameForSelectorNoWait(selector, {}, this);
-        if (!pair)
-          throw new Error(`Error: failed to find frame for selector "${selector}"`);
-        const {
-          frame,
-          info
-        } = pair;
-        const arrayHandle = await this._page.selectors._queryArray(frame, info, this._frame === frame ? this : void 0);
+        const arrayHandle = await this._page.selectors._queryArray(this._context.frame, selector, this);
         const result = await arrayHandle.evaluateExpressionAndWaitForSignals(expression, isFunction, true, arg);
         arrayHandle.dispose();
         return result;
@@ -14523,14 +14422,35 @@ var require_dom = __commonJS({
         const controller = new _progress.ProgressController(metadata, this);
         return controller.run(async (progress) => {
           progress.log(`  waiting for element to be ${state}`);
-          const result = await this.evaluatePoll(progress, ([injected, node, state2]) => {
+          const poll = await this.evaluateHandleInUtility(([injected, node, state2]) => {
             return injected.waitForElementStatesAndPerformAction(node, [state2], false, () => "done");
           }, state);
-          assertDone(throwRetargetableDOMError(result));
+          const pollHandler = new InjectedScriptPollHandler(progress, throwRetargetableDOMError(poll));
+          assertDone(throwRetargetableDOMError(await pollHandler.finishMaybeNotConnected()));
         }, this._page._timeoutSettings.timeout(options));
       }
       async waitForSelector(metadata, selector, options = {}) {
-        return this._frame.waitForSelector(metadata, selector, options, this);
+        const {
+          state = "visible"
+        } = options;
+        if (!["attached", "detached", "visible", "hidden"].includes(state))
+          throw new Error(`state: expected one of (attached|detached|visible|hidden)`);
+        const info = this._page.parseSelector(selector, options);
+        const task = waitForSelectorTask(info, state, false, this);
+        const controller = new _progress.ProgressController(metadata, this);
+        return controller.run(async (progress) => {
+          progress.log(`waiting for selector "${selector}"${state === "attached" ? "" : " to be " + state}`);
+          const context = await this._context.frame._context(info.world);
+          const injected = await context.injectedScript();
+          const pollHandler = new InjectedScriptPollHandler(progress, await task(injected));
+          const result = await pollHandler.finishHandle();
+          if (!result.asElement()) {
+            result.dispose();
+            return null;
+          }
+          const handle = result.asElement();
+          return handle._adoptTo(await this._context.frame._mainContext());
+        }, this._page._timeoutSettings.timeout(options));
       }
       async _adoptTo(context) {
         if (this._context !== context) {
@@ -14545,7 +14465,7 @@ var require_dom = __commonJS({
           progress.log(`  waiting for element to be visible, enabled and stable`);
         else
           progress.log(`  waiting for element to be visible and stable`);
-        const result = await this.evaluatePoll(progress, ([injected, node, {
+        const poll = await this.evaluateHandleInUtility(([injected, node, {
           waitForEnabled: waitForEnabled2,
           force: force2
         }]) => {
@@ -14554,8 +14474,10 @@ var require_dom = __commonJS({
           waitForEnabled,
           force
         });
-        if (result === "error:notconnected")
-          return result;
+        if (poll === "error:notconnected")
+          return poll;
+        const pollHandler = new InjectedScriptPollHandler(progress, poll);
+        const result = await pollHandler.finishMaybeNotConnected();
         if (waitForEnabled)
           progress.log("  element is visible, enabled and stable");
         else
@@ -14614,6 +14536,19 @@ var require_dom = __commonJS({
           await this.cancel();
         }
       }
+      async finishMaybeNotConnected() {
+        try {
+          const result = await this._poll.evaluate((poll) => poll.run());
+          await this._finishInternal();
+          return result;
+        } catch (e) {
+          if (js.isJavaScriptErrorInEvaluate(e) || (0, _protocolError.isSessionClosedError)(e))
+            throw e;
+          return "error:notconnected";
+        } finally {
+          await this.cancel();
+        }
+      }
       async _finishInternal() {
         if (!this._poll)
           return;
@@ -14662,7 +14597,7 @@ var require_dom = __commonJS({
         root: root2
       }) => {
         let lastElement;
-        return injected.pollRaf((progress) => {
+        return injected.pollRaf((progress, continuePolling) => {
           const elements = injected.querySelectorAll(parsed, root2 || document);
           let element = elements[0];
           const visible = element ? injected.isVisible(element) : false;
@@ -14684,13 +14619,13 @@ var require_dom = __commonJS({
             element = void 0;
           switch (state2) {
             case "attached":
-              return hasElement ? element : progress.continuePolling;
+              return hasElement ? element : continuePolling;
             case "detached":
-              return !hasElement ? void 0 : progress.continuePolling;
+              return !hasElement ? void 0 : continuePolling;
             case "visible":
-              return visible ? element : progress.continuePolling;
+              return visible ? element : continuePolling;
             case "hidden":
-              return !visible ? void 0 : progress.continuePolling;
+              return !visible ? void 0 : continuePolling;
           }
         });
       }, {
@@ -14761,1395 +14696,16 @@ var require_types2 = __commonJS({
     });
     exports.forcedColors = exports.reducedMotions = exports.colorSchemes = exports.mediaTypes = exports.kLifecycleEvents = void 0;
     var _types = require_types();
-    var kLifecycleEvents = /* @__PURE__ */ new Set(["load", "domcontentloaded", "networkidle", "commit"]);
+    var kLifecycleEvents = new Set(["load", "domcontentloaded", "networkidle"]);
     exports.kLifecycleEvents = kLifecycleEvents;
-    var mediaTypes = /* @__PURE__ */ new Set(["screen", "print"]);
+    var mediaTypes = new Set(["screen", "print"]);
     exports.mediaTypes = mediaTypes;
-    var colorSchemes = /* @__PURE__ */ new Set(["dark", "light", "no-preference"]);
+    var colorSchemes = new Set(["dark", "light", "no-preference"]);
     exports.colorSchemes = colorSchemes;
-    var reducedMotions = /* @__PURE__ */ new Set(["no-preference", "reduce"]);
+    var reducedMotions = new Set(["no-preference", "reduce"]);
     exports.reducedMotions = reducedMotions;
-    var forcedColors = /* @__PURE__ */ new Set(["active", "none"]);
+    var forcedColors = new Set(["active", "none"]);
     exports.forcedColors = forcedColors;
-  }
-});
-
-// node_modules/playwright-core/lib/server/common/cssTokenizer.js
-var require_cssTokenizer = __commonJS({
-  "node_modules/playwright-core/lib/server/common/cssTokenizer.js"(exports) {
-    (function(root, factory) {
-      if (typeof define === "function" && define.amd) {
-        define(["exports"], factory);
-      } else if (typeof exports !== "undefined") {
-        factory(exports);
-      } else {
-        factory(root);
-      }
-    })(exports, function(exports2) {
-      var between = function(num, first, last) {
-        return num >= first && num <= last;
-      };
-      function digit(code) {
-        return between(code, 48, 57);
-      }
-      function hexdigit(code) {
-        return digit(code) || between(code, 65, 70) || between(code, 97, 102);
-      }
-      function uppercaseletter(code) {
-        return between(code, 65, 90);
-      }
-      function lowercaseletter(code) {
-        return between(code, 97, 122);
-      }
-      function letter(code) {
-        return uppercaseletter(code) || lowercaseletter(code);
-      }
-      function nonascii(code) {
-        return code >= 128;
-      }
-      function namestartchar(code) {
-        return letter(code) || nonascii(code) || code == 95;
-      }
-      function namechar(code) {
-        return namestartchar(code) || digit(code) || code == 45;
-      }
-      function nonprintable(code) {
-        return between(code, 0, 8) || code == 11 || between(code, 14, 31) || code == 127;
-      }
-      function newline(code) {
-        return code == 10;
-      }
-      function whitespace(code) {
-        return newline(code) || code == 9 || code == 32;
-      }
-      function badescape(code) {
-        return newline(code) || isNaN(code);
-      }
-      var maximumallowedcodepoint = 1114111;
-      var InvalidCharacterError = function(message) {
-        this.message = message;
-      };
-      InvalidCharacterError.prototype = new Error();
-      InvalidCharacterError.prototype.name = "InvalidCharacterError";
-      function preprocess(str) {
-        var codepoints = [];
-        for (var i = 0; i < str.length; i++) {
-          var code = str.charCodeAt(i);
-          if (code == 13 && str.charCodeAt(i + 1) == 10) {
-            code = 10;
-            i++;
-          }
-          if (code == 13 || code == 12)
-            code = 10;
-          if (code == 0)
-            code = 65533;
-          if (between(code, 55296, 56319) && between(str.charCodeAt(i + 1), 56320, 57343)) {
-            var lead = code - 55296;
-            var trail = str.charCodeAt(i + 1) - 56320;
-            code = Math.pow(2, 16) + lead * Math.pow(2, 10) + trail;
-            i++;
-          }
-          codepoints.push(code);
-        }
-        return codepoints;
-      }
-      function stringFromCode(code) {
-        if (code <= 65535)
-          return String.fromCharCode(code);
-        code -= Math.pow(2, 16);
-        var lead = Math.floor(code / Math.pow(2, 10)) + 55296;
-        var trail = code % Math.pow(2, 10) + 56320;
-        return String.fromCharCode(lead) + String.fromCharCode(trail);
-      }
-      function tokenize(str) {
-        str = preprocess(str);
-        var i = -1;
-        var tokens = [];
-        var code;
-        var line = 0;
-        var column = 0;
-        var lastLineLength = 0;
-        var incrLineno = function() {
-          line += 1;
-          lastLineLength = column;
-          column = 0;
-        };
-        var locStart = { line, column };
-        var codepoint = function(i2) {
-          if (i2 >= str.length) {
-            return -1;
-          }
-          return str[i2];
-        };
-        var next = function(num) {
-          if (num === void 0)
-            num = 1;
-          if (num > 3)
-            throw "Spec Error: no more than three codepoints of lookahead.";
-          return codepoint(i + num);
-        };
-        var consume = function(num) {
-          if (num === void 0)
-            num = 1;
-          i += num;
-          code = codepoint(i);
-          if (newline(code))
-            incrLineno();
-          else
-            column += num;
-          return true;
-        };
-        var reconsume = function() {
-          i -= 1;
-          if (newline(code)) {
-            line -= 1;
-            column = lastLineLength;
-          } else {
-            column -= 1;
-          }
-          locStart.line = line;
-          locStart.column = column;
-          return true;
-        };
-        var eof = function(codepoint2) {
-          if (codepoint2 === void 0)
-            codepoint2 = code;
-          return codepoint2 == -1;
-        };
-        var donothing = function() {
-        };
-        var parseerror = function() {
-          console.log("Parse error at index " + i + ", processing codepoint 0x" + code.toString(16) + ".");
-          return true;
-        };
-        var consumeAToken = function() {
-          consumeComments();
-          consume();
-          if (whitespace(code)) {
-            while (whitespace(next()))
-              consume();
-            return new WhitespaceToken();
-          } else if (code == 34)
-            return consumeAStringToken();
-          else if (code == 35) {
-            if (namechar(next()) || areAValidEscape(next(1), next(2))) {
-              var token = new HashToken();
-              if (wouldStartAnIdentifier(next(1), next(2), next(3)))
-                token.type = "id";
-              token.value = consumeAName();
-              return token;
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 36) {
-            if (next() == 61) {
-              consume();
-              return new SuffixMatchToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 39)
-            return consumeAStringToken();
-          else if (code == 40)
-            return new OpenParenToken();
-          else if (code == 41)
-            return new CloseParenToken();
-          else if (code == 42) {
-            if (next() == 61) {
-              consume();
-              return new SubstringMatchToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 43) {
-            if (startsWithANumber()) {
-              reconsume();
-              return consumeANumericToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 44)
-            return new CommaToken();
-          else if (code == 45) {
-            if (startsWithANumber()) {
-              reconsume();
-              return consumeANumericToken();
-            } else if (next(1) == 45 && next(2) == 62) {
-              consume(2);
-              return new CDCToken();
-            } else if (startsWithAnIdentifier()) {
-              reconsume();
-              return consumeAnIdentlikeToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 46) {
-            if (startsWithANumber()) {
-              reconsume();
-              return consumeANumericToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 58)
-            return new ColonToken();
-          else if (code == 59)
-            return new SemicolonToken();
-          else if (code == 60) {
-            if (next(1) == 33 && next(2) == 45 && next(3) == 45) {
-              consume(3);
-              return new CDOToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 64) {
-            if (wouldStartAnIdentifier(next(1), next(2), next(3))) {
-              return new AtKeywordToken(consumeAName());
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 91)
-            return new OpenSquareToken();
-          else if (code == 92) {
-            if (startsWithAValidEscape()) {
-              reconsume();
-              return consumeAnIdentlikeToken();
-            } else {
-              parseerror();
-              return new DelimToken(code);
-            }
-          } else if (code == 93)
-            return new CloseSquareToken();
-          else if (code == 94) {
-            if (next() == 61) {
-              consume();
-              return new PrefixMatchToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 123)
-            return new OpenCurlyToken();
-          else if (code == 124) {
-            if (next() == 61) {
-              consume();
-              return new DashMatchToken();
-            } else if (next() == 124) {
-              consume();
-              return new ColumnToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (code == 125)
-            return new CloseCurlyToken();
-          else if (code == 126) {
-            if (next() == 61) {
-              consume();
-              return new IncludeMatchToken();
-            } else {
-              return new DelimToken(code);
-            }
-          } else if (digit(code)) {
-            reconsume();
-            return consumeANumericToken();
-          } else if (namestartchar(code)) {
-            reconsume();
-            return consumeAnIdentlikeToken();
-          } else if (eof())
-            return new EOFToken();
-          else
-            return new DelimToken(code);
-        };
-        var consumeComments = function() {
-          while (next(1) == 47 && next(2) == 42) {
-            consume(2);
-            while (true) {
-              consume();
-              if (code == 42 && next() == 47) {
-                consume();
-                break;
-              } else if (eof()) {
-                parseerror();
-                return;
-              }
-            }
-          }
-        };
-        var consumeANumericToken = function() {
-          var num = consumeANumber();
-          if (wouldStartAnIdentifier(next(1), next(2), next(3))) {
-            var token = new DimensionToken();
-            token.value = num.value;
-            token.repr = num.repr;
-            token.type = num.type;
-            token.unit = consumeAName();
-            return token;
-          } else if (next() == 37) {
-            consume();
-            var token = new PercentageToken();
-            token.value = num.value;
-            token.repr = num.repr;
-            return token;
-          } else {
-            var token = new NumberToken();
-            token.value = num.value;
-            token.repr = num.repr;
-            token.type = num.type;
-            return token;
-          }
-        };
-        var consumeAnIdentlikeToken = function() {
-          var str2 = consumeAName();
-          if (str2.toLowerCase() == "url" && next() == 40) {
-            consume();
-            while (whitespace(next(1)) && whitespace(next(2)))
-              consume();
-            if (next() == 34 || next() == 39) {
-              return new FunctionToken(str2);
-            } else if (whitespace(next()) && (next(2) == 34 || next(2) == 39)) {
-              return new FunctionToken(str2);
-            } else {
-              return consumeAURLToken();
-            }
-          } else if (next() == 40) {
-            consume();
-            return new FunctionToken(str2);
-          } else {
-            return new IdentToken(str2);
-          }
-        };
-        var consumeAStringToken = function(endingCodePoint) {
-          if (endingCodePoint === void 0)
-            endingCodePoint = code;
-          var string = "";
-          while (consume()) {
-            if (code == endingCodePoint || eof()) {
-              return new StringToken(string);
-            } else if (newline(code)) {
-              parseerror();
-              reconsume();
-              return new BadStringToken();
-            } else if (code == 92) {
-              if (eof(next())) {
-                donothing();
-              } else if (newline(next())) {
-                consume();
-              } else {
-                string += stringFromCode(consumeEscape());
-              }
-            } else {
-              string += stringFromCode(code);
-            }
-          }
-        };
-        var consumeAURLToken = function() {
-          var token = new URLToken("");
-          while (whitespace(next()))
-            consume();
-          if (eof(next()))
-            return token;
-          while (consume()) {
-            if (code == 41 || eof()) {
-              return token;
-            } else if (whitespace(code)) {
-              while (whitespace(next()))
-                consume();
-              if (next() == 41 || eof(next())) {
-                consume();
-                return token;
-              } else {
-                consumeTheRemnantsOfABadURL();
-                return new BadURLToken();
-              }
-            } else if (code == 34 || code == 39 || code == 40 || nonprintable(code)) {
-              parseerror();
-              consumeTheRemnantsOfABadURL();
-              return new BadURLToken();
-            } else if (code == 92) {
-              if (startsWithAValidEscape()) {
-                token.value += stringFromCode(consumeEscape());
-              } else {
-                parseerror();
-                consumeTheRemnantsOfABadURL();
-                return new BadURLToken();
-              }
-            } else {
-              token.value += stringFromCode(code);
-            }
-          }
-        };
-        var consumeEscape = function() {
-          consume();
-          if (hexdigit(code)) {
-            var digits = [code];
-            for (var total = 0; total < 5; total++) {
-              if (hexdigit(next())) {
-                consume();
-                digits.push(code);
-              } else {
-                break;
-              }
-            }
-            if (whitespace(next()))
-              consume();
-            var value = parseInt(digits.map(function(x) {
-              return String.fromCharCode(x);
-            }).join(""), 16);
-            if (value > maximumallowedcodepoint)
-              value = 65533;
-            return value;
-          } else if (eof()) {
-            return 65533;
-          } else {
-            return code;
-          }
-        };
-        var areAValidEscape = function(c1, c2) {
-          if (c1 != 92)
-            return false;
-          if (newline(c2))
-            return false;
-          return true;
-        };
-        var startsWithAValidEscape = function() {
-          return areAValidEscape(code, next());
-        };
-        var wouldStartAnIdentifier = function(c1, c2, c3) {
-          if (c1 == 45) {
-            return namestartchar(c2) || c2 == 45 || areAValidEscape(c2, c3);
-          } else if (namestartchar(c1)) {
-            return true;
-          } else if (c1 == 92) {
-            return areAValidEscape(c1, c2);
-          } else {
-            return false;
-          }
-        };
-        var startsWithAnIdentifier = function() {
-          return wouldStartAnIdentifier(code, next(1), next(2));
-        };
-        var wouldStartANumber = function(c1, c2, c3) {
-          if (c1 == 43 || c1 == 45) {
-            if (digit(c2))
-              return true;
-            if (c2 == 46 && digit(c3))
-              return true;
-            return false;
-          } else if (c1 == 46) {
-            if (digit(c2))
-              return true;
-            return false;
-          } else if (digit(c1)) {
-            return true;
-          } else {
-            return false;
-          }
-        };
-        var startsWithANumber = function() {
-          return wouldStartANumber(code, next(1), next(2));
-        };
-        var consumeAName = function() {
-          var result = "";
-          while (consume()) {
-            if (namechar(code)) {
-              result += stringFromCode(code);
-            } else if (startsWithAValidEscape()) {
-              result += stringFromCode(consumeEscape());
-            } else {
-              reconsume();
-              return result;
-            }
-          }
-        };
-        var consumeANumber = function() {
-          var repr = [];
-          var type = "integer";
-          if (next() == 43 || next() == 45) {
-            consume();
-            repr += stringFromCode(code);
-          }
-          while (digit(next())) {
-            consume();
-            repr += stringFromCode(code);
-          }
-          if (next(1) == 46 && digit(next(2))) {
-            consume();
-            repr += stringFromCode(code);
-            consume();
-            repr += stringFromCode(code);
-            type = "number";
-            while (digit(next())) {
-              consume();
-              repr += stringFromCode(code);
-            }
-          }
-          var c1 = next(1), c2 = next(2), c3 = next(3);
-          if ((c1 == 69 || c1 == 101) && digit(c2)) {
-            consume();
-            repr += stringFromCode(code);
-            consume();
-            repr += stringFromCode(code);
-            type = "number";
-            while (digit(next())) {
-              consume();
-              repr += stringFromCode(code);
-            }
-          } else if ((c1 == 69 || c1 == 101) && (c2 == 43 || c2 == 45) && digit(c3)) {
-            consume();
-            repr += stringFromCode(code);
-            consume();
-            repr += stringFromCode(code);
-            consume();
-            repr += stringFromCode(code);
-            type = "number";
-            while (digit(next())) {
-              consume();
-              repr += stringFromCode(code);
-            }
-          }
-          var value = convertAStringToANumber(repr);
-          return { type, value, repr };
-        };
-        var convertAStringToANumber = function(string) {
-          return +string;
-        };
-        var consumeTheRemnantsOfABadURL = function() {
-          while (consume()) {
-            if (code == 41 || eof()) {
-              return;
-            } else if (startsWithAValidEscape()) {
-              consumeEscape();
-              donothing();
-            } else {
-              donothing();
-            }
-          }
-        };
-        var iterationCount = 0;
-        while (!eof(next())) {
-          tokens.push(consumeAToken());
-          iterationCount++;
-          if (iterationCount > str.length * 2)
-            return "I'm infinite-looping!";
-        }
-        return tokens;
-      }
-      function CSSParserToken() {
-        throw "Abstract Base Class";
-      }
-      CSSParserToken.prototype.toJSON = function() {
-        return { token: this.tokenType };
-      };
-      CSSParserToken.prototype.toString = function() {
-        return this.tokenType;
-      };
-      CSSParserToken.prototype.toSource = function() {
-        return "" + this;
-      };
-      function BadStringToken() {
-        return this;
-      }
-      BadStringToken.prototype = Object.create(CSSParserToken.prototype);
-      BadStringToken.prototype.tokenType = "BADSTRING";
-      function BadURLToken() {
-        return this;
-      }
-      BadURLToken.prototype = Object.create(CSSParserToken.prototype);
-      BadURLToken.prototype.tokenType = "BADURL";
-      function WhitespaceToken() {
-        return this;
-      }
-      WhitespaceToken.prototype = Object.create(CSSParserToken.prototype);
-      WhitespaceToken.prototype.tokenType = "WHITESPACE";
-      WhitespaceToken.prototype.toString = function() {
-        return "WS";
-      };
-      WhitespaceToken.prototype.toSource = function() {
-        return " ";
-      };
-      function CDOToken() {
-        return this;
-      }
-      CDOToken.prototype = Object.create(CSSParserToken.prototype);
-      CDOToken.prototype.tokenType = "CDO";
-      CDOToken.prototype.toSource = function() {
-        return "<!--";
-      };
-      function CDCToken() {
-        return this;
-      }
-      CDCToken.prototype = Object.create(CSSParserToken.prototype);
-      CDCToken.prototype.tokenType = "CDC";
-      CDCToken.prototype.toSource = function() {
-        return "-->";
-      };
-      function ColonToken() {
-        return this;
-      }
-      ColonToken.prototype = Object.create(CSSParserToken.prototype);
-      ColonToken.prototype.tokenType = ":";
-      function SemicolonToken() {
-        return this;
-      }
-      SemicolonToken.prototype = Object.create(CSSParserToken.prototype);
-      SemicolonToken.prototype.tokenType = ";";
-      function CommaToken() {
-        return this;
-      }
-      CommaToken.prototype = Object.create(CSSParserToken.prototype);
-      CommaToken.prototype.tokenType = ",";
-      function GroupingToken() {
-        throw "Abstract Base Class";
-      }
-      GroupingToken.prototype = Object.create(CSSParserToken.prototype);
-      function OpenCurlyToken() {
-        this.value = "{";
-        this.mirror = "}";
-        return this;
-      }
-      OpenCurlyToken.prototype = Object.create(GroupingToken.prototype);
-      OpenCurlyToken.prototype.tokenType = "{";
-      function CloseCurlyToken() {
-        this.value = "}";
-        this.mirror = "{";
-        return this;
-      }
-      CloseCurlyToken.prototype = Object.create(GroupingToken.prototype);
-      CloseCurlyToken.prototype.tokenType = "}";
-      function OpenSquareToken() {
-        this.value = "[";
-        this.mirror = "]";
-        return this;
-      }
-      OpenSquareToken.prototype = Object.create(GroupingToken.prototype);
-      OpenSquareToken.prototype.tokenType = "[";
-      function CloseSquareToken() {
-        this.value = "]";
-        this.mirror = "[";
-        return this;
-      }
-      CloseSquareToken.prototype = Object.create(GroupingToken.prototype);
-      CloseSquareToken.prototype.tokenType = "]";
-      function OpenParenToken() {
-        this.value = "(";
-        this.mirror = ")";
-        return this;
-      }
-      OpenParenToken.prototype = Object.create(GroupingToken.prototype);
-      OpenParenToken.prototype.tokenType = "(";
-      function CloseParenToken() {
-        this.value = ")";
-        this.mirror = "(";
-        return this;
-      }
-      CloseParenToken.prototype = Object.create(GroupingToken.prototype);
-      CloseParenToken.prototype.tokenType = ")";
-      function IncludeMatchToken() {
-        return this;
-      }
-      IncludeMatchToken.prototype = Object.create(CSSParserToken.prototype);
-      IncludeMatchToken.prototype.tokenType = "~=";
-      function DashMatchToken() {
-        return this;
-      }
-      DashMatchToken.prototype = Object.create(CSSParserToken.prototype);
-      DashMatchToken.prototype.tokenType = "|=";
-      function PrefixMatchToken() {
-        return this;
-      }
-      PrefixMatchToken.prototype = Object.create(CSSParserToken.prototype);
-      PrefixMatchToken.prototype.tokenType = "^=";
-      function SuffixMatchToken() {
-        return this;
-      }
-      SuffixMatchToken.prototype = Object.create(CSSParserToken.prototype);
-      SuffixMatchToken.prototype.tokenType = "$=";
-      function SubstringMatchToken() {
-        return this;
-      }
-      SubstringMatchToken.prototype = Object.create(CSSParserToken.prototype);
-      SubstringMatchToken.prototype.tokenType = "*=";
-      function ColumnToken() {
-        return this;
-      }
-      ColumnToken.prototype = Object.create(CSSParserToken.prototype);
-      ColumnToken.prototype.tokenType = "||";
-      function EOFToken() {
-        return this;
-      }
-      EOFToken.prototype = Object.create(CSSParserToken.prototype);
-      EOFToken.prototype.tokenType = "EOF";
-      EOFToken.prototype.toSource = function() {
-        return "";
-      };
-      function DelimToken(code) {
-        this.value = stringFromCode(code);
-        return this;
-      }
-      DelimToken.prototype = Object.create(CSSParserToken.prototype);
-      DelimToken.prototype.tokenType = "DELIM";
-      DelimToken.prototype.toString = function() {
-        return "DELIM(" + this.value + ")";
-      };
-      DelimToken.prototype.toJSON = function() {
-        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
-        json.value = this.value;
-        return json;
-      };
-      DelimToken.prototype.toSource = function() {
-        if (this.value == "\\")
-          return "\\\n";
-        else
-          return this.value;
-      };
-      function StringValuedToken() {
-        throw "Abstract Base Class";
-      }
-      StringValuedToken.prototype = Object.create(CSSParserToken.prototype);
-      StringValuedToken.prototype.ASCIIMatch = function(str) {
-        return this.value.toLowerCase() == str.toLowerCase();
-      };
-      StringValuedToken.prototype.toJSON = function() {
-        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
-        json.value = this.value;
-        return json;
-      };
-      function IdentToken(val) {
-        this.value = val;
-      }
-      IdentToken.prototype = Object.create(StringValuedToken.prototype);
-      IdentToken.prototype.tokenType = "IDENT";
-      IdentToken.prototype.toString = function() {
-        return "IDENT(" + this.value + ")";
-      };
-      IdentToken.prototype.toSource = function() {
-        return escapeIdent(this.value);
-      };
-      function FunctionToken(val) {
-        this.value = val;
-        this.mirror = ")";
-      }
-      FunctionToken.prototype = Object.create(StringValuedToken.prototype);
-      FunctionToken.prototype.tokenType = "FUNCTION";
-      FunctionToken.prototype.toString = function() {
-        return "FUNCTION(" + this.value + ")";
-      };
-      FunctionToken.prototype.toSource = function() {
-        return escapeIdent(this.value) + "(";
-      };
-      function AtKeywordToken(val) {
-        this.value = val;
-      }
-      AtKeywordToken.prototype = Object.create(StringValuedToken.prototype);
-      AtKeywordToken.prototype.tokenType = "AT-KEYWORD";
-      AtKeywordToken.prototype.toString = function() {
-        return "AT(" + this.value + ")";
-      };
-      AtKeywordToken.prototype.toSource = function() {
-        return "@" + escapeIdent(this.value);
-      };
-      function HashToken(val) {
-        this.value = val;
-        this.type = "unrestricted";
-      }
-      HashToken.prototype = Object.create(StringValuedToken.prototype);
-      HashToken.prototype.tokenType = "HASH";
-      HashToken.prototype.toString = function() {
-        return "HASH(" + this.value + ")";
-      };
-      HashToken.prototype.toJSON = function() {
-        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
-        json.value = this.value;
-        json.type = this.type;
-        return json;
-      };
-      HashToken.prototype.toSource = function() {
-        if (this.type == "id") {
-          return "#" + escapeIdent(this.value);
-        } else {
-          return "#" + escapeHash(this.value);
-        }
-      };
-      function StringToken(val) {
-        this.value = val;
-      }
-      StringToken.prototype = Object.create(StringValuedToken.prototype);
-      StringToken.prototype.tokenType = "STRING";
-      StringToken.prototype.toString = function() {
-        return '"' + escapeString(this.value) + '"';
-      };
-      function URLToken(val) {
-        this.value = val;
-      }
-      URLToken.prototype = Object.create(StringValuedToken.prototype);
-      URLToken.prototype.tokenType = "URL";
-      URLToken.prototype.toString = function() {
-        return "URL(" + this.value + ")";
-      };
-      URLToken.prototype.toSource = function() {
-        return 'url("' + escapeString(this.value) + '")';
-      };
-      function NumberToken() {
-        this.value = null;
-        this.type = "integer";
-        this.repr = "";
-      }
-      NumberToken.prototype = Object.create(CSSParserToken.prototype);
-      NumberToken.prototype.tokenType = "NUMBER";
-      NumberToken.prototype.toString = function() {
-        if (this.type == "integer")
-          return "INT(" + this.value + ")";
-        return "NUMBER(" + this.value + ")";
-      };
-      NumberToken.prototype.toJSON = function() {
-        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
-        json.value = this.value;
-        json.type = this.type;
-        json.repr = this.repr;
-        return json;
-      };
-      NumberToken.prototype.toSource = function() {
-        return this.repr;
-      };
-      function PercentageToken() {
-        this.value = null;
-        this.repr = "";
-      }
-      PercentageToken.prototype = Object.create(CSSParserToken.prototype);
-      PercentageToken.prototype.tokenType = "PERCENTAGE";
-      PercentageToken.prototype.toString = function() {
-        return "PERCENTAGE(" + this.value + ")";
-      };
-      PercentageToken.prototype.toJSON = function() {
-        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
-        json.value = this.value;
-        json.repr = this.repr;
-        return json;
-      };
-      PercentageToken.prototype.toSource = function() {
-        return this.repr + "%";
-      };
-      function DimensionToken() {
-        this.value = null;
-        this.type = "integer";
-        this.repr = "";
-        this.unit = "";
-      }
-      DimensionToken.prototype = Object.create(CSSParserToken.prototype);
-      DimensionToken.prototype.tokenType = "DIMENSION";
-      DimensionToken.prototype.toString = function() {
-        return "DIM(" + this.value + "," + this.unit + ")";
-      };
-      DimensionToken.prototype.toJSON = function() {
-        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
-        json.value = this.value;
-        json.type = this.type;
-        json.repr = this.repr;
-        json.unit = this.unit;
-        return json;
-      };
-      DimensionToken.prototype.toSource = function() {
-        var source = this.repr;
-        var unit = escapeIdent(this.unit);
-        if (unit[0].toLowerCase() == "e" && (unit[1] == "-" || between(unit.charCodeAt(1), 48, 57))) {
-          unit = "\\65 " + unit.slice(1, unit.length);
-        }
-        return source + unit;
-      };
-      function escapeIdent(string) {
-        string = "" + string;
-        var result = "";
-        var firstcode = string.charCodeAt(0);
-        for (var i = 0; i < string.length; i++) {
-          var code = string.charCodeAt(i);
-          if (code == 0) {
-            throw new InvalidCharacterError("Invalid character: the input contains U+0000.");
-          }
-          if (between(code, 1, 31) || code == 127 || i == 0 && between(code, 48, 57) || i == 1 && between(code, 48, 57) && firstcode == 45) {
-            result += "\\" + code.toString(16) + " ";
-          } else if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {
-            result += string[i];
-          } else {
-            result += "\\" + string[i];
-          }
-        }
-        return result;
-      }
-      function escapeHash(string) {
-        string = "" + string;
-        var result = "";
-        var firstcode = string.charCodeAt(0);
-        for (var i = 0; i < string.length; i++) {
-          var code = string.charCodeAt(i);
-          if (code == 0) {
-            throw new InvalidCharacterError("Invalid character: the input contains U+0000.");
-          }
-          if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {
-            result += string[i];
-          } else {
-            result += "\\" + code.toString(16) + " ";
-          }
-        }
-        return result;
-      }
-      function escapeString(string) {
-        string = "" + string;
-        var result = "";
-        for (var i = 0; i < string.length; i++) {
-          var code = string.charCodeAt(i);
-          if (code == 0) {
-            throw new InvalidCharacterError("Invalid character: the input contains U+0000.");
-          }
-          if (between(code, 1, 31) || code == 127) {
-            result += "\\" + code.toString(16) + " ";
-          } else if (code == 34 || code == 92) {
-            result += "\\" + string[i];
-          } else {
-            result += string[i];
-          }
-        }
-        return result;
-      }
-      exports2.tokenize = tokenize;
-      exports2.IdentToken = IdentToken;
-      exports2.FunctionToken = FunctionToken;
-      exports2.AtKeywordToken = AtKeywordToken;
-      exports2.HashToken = HashToken;
-      exports2.StringToken = StringToken;
-      exports2.BadStringToken = BadStringToken;
-      exports2.URLToken = URLToken;
-      exports2.BadURLToken = BadURLToken;
-      exports2.DelimToken = DelimToken;
-      exports2.NumberToken = NumberToken;
-      exports2.PercentageToken = PercentageToken;
-      exports2.DimensionToken = DimensionToken;
-      exports2.IncludeMatchToken = IncludeMatchToken;
-      exports2.DashMatchToken = DashMatchToken;
-      exports2.PrefixMatchToken = PrefixMatchToken;
-      exports2.SuffixMatchToken = SuffixMatchToken;
-      exports2.SubstringMatchToken = SubstringMatchToken;
-      exports2.ColumnToken = ColumnToken;
-      exports2.WhitespaceToken = WhitespaceToken;
-      exports2.CDOToken = CDOToken;
-      exports2.CDCToken = CDCToken;
-      exports2.ColonToken = ColonToken;
-      exports2.SemicolonToken = SemicolonToken;
-      exports2.CommaToken = CommaToken;
-      exports2.OpenParenToken = OpenParenToken;
-      exports2.CloseParenToken = CloseParenToken;
-      exports2.OpenSquareToken = OpenSquareToken;
-      exports2.CloseSquareToken = CloseSquareToken;
-      exports2.OpenCurlyToken = OpenCurlyToken;
-      exports2.CloseCurlyToken = CloseCurlyToken;
-      exports2.EOFToken = EOFToken;
-      exports2.CSSParserToken = CSSParserToken;
-      exports2.GroupingToken = GroupingToken;
-    });
-  }
-});
-
-// node_modules/playwright-core/lib/server/common/cssParser.js
-var require_cssParser = __commonJS({
-  "node_modules/playwright-core/lib/server/common/cssParser.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", {
-      value: true
-    });
-    exports.parseCSS = parseCSS;
-    exports.serializeSelector = serializeSelector;
-    var css = _interopRequireWildcard(require_cssTokenizer());
-    function _getRequireWildcardCache(nodeInterop) {
-      if (typeof WeakMap !== "function")
-        return null;
-      var cacheBabelInterop = new WeakMap();
-      var cacheNodeInterop = new WeakMap();
-      return (_getRequireWildcardCache = function(nodeInterop2) {
-        return nodeInterop2 ? cacheNodeInterop : cacheBabelInterop;
-      })(nodeInterop);
-    }
-    function _interopRequireWildcard(obj, nodeInterop) {
-      if (!nodeInterop && obj && obj.__esModule) {
-        return obj;
-      }
-      if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
-        return { default: obj };
-      }
-      var cache = _getRequireWildcardCache(nodeInterop);
-      if (cache && cache.has(obj)) {
-        return cache.get(obj);
-      }
-      var newObj = {};
-      var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
-      for (var key in obj) {
-        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
-          var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
-          if (desc && (desc.get || desc.set)) {
-            Object.defineProperty(newObj, key, desc);
-          } else {
-            newObj[key] = obj[key];
-          }
-        }
-      }
-      newObj.default = obj;
-      if (cache) {
-        cache.set(obj, newObj);
-      }
-      return newObj;
-    }
-    function parseCSS(selector, customNames) {
-      let tokens;
-      try {
-        tokens = css.tokenize(selector);
-        if (!(tokens[tokens.length - 1] instanceof css.EOFToken))
-          tokens.push(new css.EOFToken());
-      } catch (e) {
-        const newMessage = e.message + ` while parsing selector "${selector}"`;
-        const index = (e.stack || "").indexOf(e.message);
-        if (index !== -1)
-          e.stack = e.stack.substring(0, index) + newMessage + e.stack.substring(index + e.message.length);
-        e.message = newMessage;
-        throw e;
-      }
-      const unsupportedToken = tokens.find((token) => {
-        return token instanceof css.AtKeywordToken || token instanceof css.BadStringToken || token instanceof css.BadURLToken || token instanceof css.ColumnToken || token instanceof css.CDOToken || token instanceof css.CDCToken || token instanceof css.SemicolonToken || token instanceof css.OpenCurlyToken || token instanceof css.CloseCurlyToken || token instanceof css.URLToken || token instanceof css.PercentageToken;
-      });
-      if (unsupportedToken)
-        throw new Error(`Unsupported token "${unsupportedToken.toSource()}" while parsing selector "${selector}"`);
-      let pos = 0;
-      const names = /* @__PURE__ */ new Set();
-      function unexpected() {
-        return new Error(`Unexpected token "${tokens[pos].toSource()}" while parsing selector "${selector}"`);
-      }
-      function skipWhitespace() {
-        while (tokens[pos] instanceof css.WhitespaceToken)
-          pos++;
-      }
-      function isIdent(p = pos) {
-        return tokens[p] instanceof css.IdentToken;
-      }
-      function isString(p = pos) {
-        return tokens[p] instanceof css.StringToken;
-      }
-      function isNumber(p = pos) {
-        return tokens[p] instanceof css.NumberToken;
-      }
-      function isComma(p = pos) {
-        return tokens[p] instanceof css.CommaToken;
-      }
-      function isCloseParen(p = pos) {
-        return tokens[p] instanceof css.CloseParenToken;
-      }
-      function isStar(p = pos) {
-        return tokens[p] instanceof css.DelimToken && tokens[p].value === "*";
-      }
-      function isEOF(p = pos) {
-        return tokens[p] instanceof css.EOFToken;
-      }
-      function isClauseCombinator(p = pos) {
-        return tokens[p] instanceof css.DelimToken && [">", "+", "~"].includes(tokens[p].value);
-      }
-      function isSelectorClauseEnd(p = pos) {
-        return isComma(p) || isCloseParen(p) || isEOF(p) || isClauseCombinator(p) || tokens[p] instanceof css.WhitespaceToken;
-      }
-      function consumeFunctionArguments() {
-        const result2 = [consumeArgument()];
-        while (true) {
-          skipWhitespace();
-          if (!isComma())
-            break;
-          pos++;
-          result2.push(consumeArgument());
-        }
-        return result2;
-      }
-      function consumeArgument() {
-        skipWhitespace();
-        if (isNumber())
-          return tokens[pos++].value;
-        if (isString())
-          return tokens[pos++].value;
-        return consumeComplexSelector();
-      }
-      function consumeComplexSelector() {
-        const result2 = {
-          simples: []
-        };
-        skipWhitespace();
-        if (isClauseCombinator()) {
-          result2.simples.push({
-            selector: {
-              functions: [{
-                name: "scope",
-                args: []
-              }]
-            },
-            combinator: ""
-          });
-        } else {
-          result2.simples.push({
-            selector: consumeSimpleSelector(),
-            combinator: ""
-          });
-        }
-        while (true) {
-          skipWhitespace();
-          if (isClauseCombinator()) {
-            result2.simples[result2.simples.length - 1].combinator = tokens[pos++].value;
-            skipWhitespace();
-          } else if (isSelectorClauseEnd()) {
-            break;
-          }
-          result2.simples.push({
-            combinator: "",
-            selector: consumeSimpleSelector()
-          });
-        }
-        return result2;
-      }
-      function consumeSimpleSelector() {
-        let rawCSSString = "";
-        const functions = [];
-        while (!isSelectorClauseEnd()) {
-          if (isIdent() || isStar()) {
-            rawCSSString += tokens[pos++].toSource();
-          } else if (tokens[pos] instanceof css.HashToken) {
-            rawCSSString += tokens[pos++].toSource();
-          } else if (tokens[pos] instanceof css.DelimToken && tokens[pos].value === ".") {
-            pos++;
-            if (isIdent())
-              rawCSSString += "." + tokens[pos++].toSource();
-            else
-              throw unexpected();
-          } else if (tokens[pos] instanceof css.ColonToken) {
-            pos++;
-            if (isIdent()) {
-              if (!customNames.has(tokens[pos].value.toLowerCase())) {
-                rawCSSString += ":" + tokens[pos++].toSource();
-              } else {
-                const name = tokens[pos++].value.toLowerCase();
-                functions.push({
-                  name,
-                  args: []
-                });
-                names.add(name);
-              }
-            } else if (tokens[pos] instanceof css.FunctionToken) {
-              const name = tokens[pos++].value.toLowerCase();
-              if (!customNames.has(name)) {
-                rawCSSString += `:${name}(${consumeBuiltinFunctionArguments()})`;
-              } else {
-                functions.push({
-                  name,
-                  args: consumeFunctionArguments()
-                });
-                names.add(name);
-              }
-              skipWhitespace();
-              if (!isCloseParen())
-                throw unexpected();
-              pos++;
-            } else {
-              throw unexpected();
-            }
-          } else if (tokens[pos] instanceof css.OpenSquareToken) {
-            rawCSSString += "[";
-            pos++;
-            while (!(tokens[pos] instanceof css.CloseSquareToken) && !isEOF())
-              rawCSSString += tokens[pos++].toSource();
-            if (!(tokens[pos] instanceof css.CloseSquareToken))
-              throw unexpected();
-            rawCSSString += "]";
-            pos++;
-          } else {
-            throw unexpected();
-          }
-        }
-        if (!rawCSSString && !functions.length)
-          throw unexpected();
-        return {
-          css: rawCSSString || void 0,
-          functions
-        };
-      }
-      function consumeBuiltinFunctionArguments() {
-        let s = "";
-        while (!isCloseParen() && !isEOF())
-          s += tokens[pos++].toSource();
-        return s;
-      }
-      const result = consumeFunctionArguments();
-      if (!isEOF())
-        throw new Error(`Error while parsing selector "${selector}"`);
-      if (result.some((arg) => typeof arg !== "object" || !("simples" in arg)))
-        throw new Error(`Error while parsing selector "${selector}"`);
-      return {
-        selector: result,
-        names: Array.from(names)
-      };
-    }
-    function serializeSelector(args) {
-      return args.map((arg) => {
-        if (typeof arg === "string")
-          return `"${arg}"`;
-        if (typeof arg === "number")
-          return String(arg);
-        return arg.simples.map(({
-          selector,
-          combinator
-        }) => {
-          let s = selector.css || "";
-          s = s + selector.functions.map((func) => `:${func.name}(${serializeSelector(func.args)})`).join("");
-          if (combinator)
-            s += " " + combinator;
-          return s;
-        }).join(" ");
-      }).join(", ");
-    }
-  }
-});
-
-// node_modules/playwright-core/lib/server/common/selectorParser.js
-var require_selectorParser = __commonJS({
-  "node_modules/playwright-core/lib/server/common/selectorParser.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", {
-      value: true
-    });
-    exports.parseSelector = parseSelector;
-    exports.splitSelectorByFrame = splitSelectorByFrame;
-    exports.stringifySelector = stringifySelector;
-    exports.customCSSNames = void 0;
-    var _cssParser = require_cssParser();
-    var customCSSNames = /* @__PURE__ */ new Set(["not", "is", "where", "has", "scope", "light", "visible", "text", "text-matches", "text-is", "has-text", "above", "below", "right-of", "left-of", "near", "nth-match"]);
-    exports.customCSSNames = customCSSNames;
-    function parseSelector(selector) {
-      const result = parseSelectorString(selector);
-      const parts = result.parts.map((part) => {
-        if (part.name === "css" || part.name === "css:light") {
-          if (part.name === "css:light")
-            part.body = ":light(" + part.body + ")";
-          const parsedCSS = (0, _cssParser.parseCSS)(part.body, customCSSNames);
-          return {
-            name: "css",
-            body: parsedCSS.selector,
-            source: part.body
-          };
-        }
-        return {
-          ...part,
-          source: part.body
-        };
-      });
-      return {
-        capture: result.capture,
-        parts
-      };
-    }
-    function splitSelectorByFrame(selectorText) {
-      const selector = parseSelector(selectorText);
-      const result = [];
-      let chunk = {
-        parts: []
-      };
-      let chunkStartIndex = 0;
-      for (let i = 0; i < selector.parts.length; ++i) {
-        const part = selector.parts[i];
-        if (part.name === "control" && part.body === "enter-frame") {
-          if (!chunk.parts.length)
-            throw new Error("Selector cannot start with entering frame, select the iframe first");
-          result.push(chunk);
-          chunk = {
-            parts: []
-          };
-          chunkStartIndex = i + 1;
-          continue;
-        }
-        if (selector.capture === i)
-          chunk.capture = i - chunkStartIndex;
-        chunk.parts.push(part);
-      }
-      if (!chunk.parts.length)
-        throw new Error(`Selector cannot end with entering frame, while parsing selector ${selectorText}`);
-      result.push(chunk);
-      if (typeof selector.capture === "number" && typeof result[result.length - 1].capture !== "number")
-        throw new Error(`Can not capture the selector before diving into the frame. Only use * after the last frame has been selected`);
-      return result;
-    }
-    function stringifySelector(selector) {
-      if (typeof selector === "string")
-        return selector;
-      return selector.parts.map((p, i) => {
-        const prefix = p.name === "css" ? "" : p.name + "=";
-        return `${i === selector.capture ? "*" : ""}${prefix}${p.source}`;
-      }).join(" >> ");
-    }
-    function parseSelectorString(selector) {
-      let index = 0;
-      let quote;
-      let start = 0;
-      const result = {
-        parts: []
-      };
-      const append = () => {
-        const part = selector.substring(start, index).trim();
-        const eqIndex = part.indexOf("=");
-        let name;
-        let body;
-        if (eqIndex !== -1 && part.substring(0, eqIndex).trim().match(/^[a-zA-Z_0-9-+:*]+$/)) {
-          name = part.substring(0, eqIndex).trim();
-          body = part.substring(eqIndex + 1);
-        } else if (part.length > 1 && part[0] === '"' && part[part.length - 1] === '"') {
-          name = "text";
-          body = part;
-        } else if (part.length > 1 && part[0] === "'" && part[part.length - 1] === "'") {
-          name = "text";
-          body = part;
-        } else if (/^\(*\/\//.test(part) || part.startsWith("..")) {
-          name = "xpath";
-          body = part;
-        } else {
-          name = "css";
-          body = part;
-        }
-        let capture = false;
-        if (name[0] === "*") {
-          capture = true;
-          name = name.substring(1);
-        }
-        result.parts.push({
-          name,
-          body
-        });
-        if (capture) {
-          if (result.capture !== void 0)
-            throw new Error(`Only one of the selectors can capture using * modifier`);
-          result.capture = result.parts.length - 1;
-        }
-      };
-      if (!selector.includes(">>")) {
-        index = selector.length;
-        append();
-        return result;
-      }
-      while (index < selector.length) {
-        const c = selector[index];
-        if (c === "\\" && index + 1 < selector.length) {
-          index += 2;
-        } else if (c === quote) {
-          quote = void 0;
-          index++;
-        } else if (!quote && (c === '"' || c === "'" || c === "`")) {
-          quote = c;
-          index++;
-        } else if (!quote && c === ">" && selector[index + 1] === ">") {
-          append();
-          index += 2;
-          start = index;
-        } else {
-          index++;
-        }
-      }
-      append();
-      return result;
-    }
   }
 });
 
@@ -16175,7 +14731,6 @@ var require_frames = __commonJS({
     var _debugLogger = require_debugLogger();
     var _instrumentation = require_instrumentation();
     var _protocolError = require_protocolError();
-    var _selectorParser = require_selectorParser();
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -16217,11 +14772,11 @@ var require_frames = __commonJS({
     var FrameManager = class {
       constructor(page) {
         this._page = void 0;
-        this._frames = /* @__PURE__ */ new Map();
+        this._frames = new Map();
         this._mainFrame = void 0;
-        this._consoleMessageTags = /* @__PURE__ */ new Map();
-        this._signalBarriers = /* @__PURE__ */ new Set();
-        this._webSockets = /* @__PURE__ */ new Map();
+        this._consoleMessageTags = new Map();
+        this._signalBarriers = new Set();
+        this._webSockets = new Map();
         this._dialogCounter = 0;
         this._page = page;
         this._mainFrame = void 0;
@@ -16525,24 +15080,24 @@ var require_frames = __commonJS({
       constructor(page, id, parentFrame) {
         super(page, "frame");
         this._id = void 0;
-        this._firedLifecycleEvents = /* @__PURE__ */ new Set();
-        this._subtreeLifecycleEvents = /* @__PURE__ */ new Set();
+        this._firedLifecycleEvents = new Set();
+        this._subtreeLifecycleEvents = new Set();
         this._currentDocument = void 0;
         this._pendingDocument = void 0;
         this._page = void 0;
         this._parentFrame = void 0;
         this._url = "";
         this._detached = false;
-        this._contextData = /* @__PURE__ */ new Map();
-        this._childFrames = /* @__PURE__ */ new Set();
+        this._contextData = new Map();
+        this._childFrames = new Set();
         this._name = "";
-        this._inflightRequests = /* @__PURE__ */ new Set();
+        this._inflightRequests = new Set();
         this._networkIdleTimer = void 0;
         this._setContentCounter = 0;
         this._detachedPromise = void 0;
         this._detachedCallback = () => {
         };
-        this._nonStallingEvaluations = /* @__PURE__ */ new Set();
+        this._nonStallingEvaluations = new Set();
         this.attribution.frame = this;
         this._id = id;
         this._page = page;
@@ -16553,24 +15108,25 @@ var require_frames = __commonJS({
         };
         this._detachedPromise = new Promise((x) => this._detachedCallback = x);
         this._contextData.set("main", {
-          contextPromise: new _async.ManualPromise(),
+          contextPromise: new Promise(() => {
+          }),
+          contextResolveCallback: () => {
+          },
           context: null,
-          rerunnableTasks: /* @__PURE__ */ new Set()
+          rerunnableTasks: new Set()
         });
         this._contextData.set("utility", {
-          contextPromise: new _async.ManualPromise(),
+          contextPromise: new Promise(() => {
+          }),
+          contextResolveCallback: () => {
+          },
           context: null,
-          rerunnableTasks: /* @__PURE__ */ new Set()
+          rerunnableTasks: new Set()
         });
         this._setContext("main", null);
         this._setContext("utility", null);
         if (this._parentFrame)
           this._parentFrame._childFrames.add(this);
-        this._firedLifecycleEvents.add("commit");
-        this._subtreeLifecycleEvents.add("commit");
-      }
-      isDetached() {
-        return this._detached;
       }
       _onLifecycleEvent(event) {
         if (this._firedLifecycleEvents.has(event))
@@ -16585,7 +15141,6 @@ var require_frames = __commonJS({
         this._stopNetworkIdleTimer();
         if (this._inflightRequests.size === 0)
           this._startNetworkIdleTimer();
-        this._onLifecycleEvent("commit");
       }
       setPendingDocument(documentInfo) {
         this._pendingDocument = documentInfo;
@@ -16740,11 +15295,9 @@ var require_frames = __commonJS({
         return this._page._delegate.getFrameElement(this);
       }
       _context(world) {
-        return this._contextData.get(world).contextPromise.then((contextOrError) => {
-          if (contextOrError instanceof js.ExecutionContext)
-            return contextOrError;
-          throw contextOrError;
-        });
+        if (this._detached)
+          throw new Error(`Execution Context is not available in detached frame "${this.url()}" (are you trying to evaluate?)`);
+        return this._contextData.get(world).contextPromise;
       }
       _mainContext() {
         return this._context("main");
@@ -16779,12 +15332,9 @@ var require_frames = __commonJS({
       }
       async querySelector(selector, options) {
         _debugLogger.debugLogger.log("api", `    finding element using the selector "${selector}"`);
-        const result = await this.resolveFrameForSelectorNoWait(selector, options);
-        if (!result)
-          return null;
-        return this._page.selectors.query(result.frame, result.info);
+        return this._page.selectors.query(this, selector, options);
       }
-      async waitForSelector(metadata, selector, options, scope) {
+      async waitForSelector(metadata, selector, options = {}) {
         const controller = new _progress.ProgressController(metadata, this);
         if (options.visibility)
           throw new Error("options.visibility is not supported, did you mean options.state?");
@@ -16795,29 +15345,29 @@ var require_frames = __commonJS({
         } = options;
         if (!["attached", "detached", "visible", "hidden"].includes(state))
           throw new Error(`state: expected one of (attached|detached|visible|hidden)`);
+        const info = this._page.parseSelector(selector, options);
+        const task = dom.waitForSelectorTask(info, state, options.omitReturnValue);
         return controller.run(async (progress) => {
           progress.log(`waiting for selector "${selector}"${state === "attached" ? "" : " to be " + state}`);
-          return this.retryWithProgress(progress, selector, options, async (selectorInFrame, continuePolling) => {
-            const {
-              frame,
-              info
-            } = selectorInFrame;
-            const actualScope = this === frame ? scope : void 0;
-            const task = dom.waitForSelectorTask(info, state, options.omitReturnValue, actualScope);
-            const result = actualScope ? await frame._runWaitForSelectorTaskOnce(progress, (0, _selectorParser.stringifySelector)(info.parsed), info.world, task) : await frame._scheduleRerunnableHandleTask(progress, info.world, task);
+          while (progress.isRunning()) {
+            const result = await this._scheduleRerunnableHandleTask(progress, info.world, task);
             if (!result.asElement()) {
               result.dispose();
               return null;
             }
             if (options.__testHookBeforeAdoptNode)
               await options.__testHookBeforeAdoptNode();
-            const handle = result.asElement();
             try {
-              return await handle._adoptTo(await frame._mainContext());
+              const handle = result.asElement();
+              const adopted = await handle._adoptTo(await this._mainContext());
+              return adopted;
             } catch (e) {
-              return continuePolling;
+              if (js.isJavaScriptErrorInEvaluate(e))
+                throw e;
+              result.dispose();
             }
-          }, scope);
+          }
+          return null;
         }, this._page._timeoutSettings.timeout(options));
       }
       async dispatchEvent(metadata, selector, type, eventInit = {}, options = {}) {
@@ -16833,10 +15383,9 @@ var require_frames = __commonJS({
         await this._page._doSlowMo();
       }
       async evalOnSelectorAndWaitForSignals(selector, strict, expression, isFunction, arg) {
-        const pair = await this.resolveFrameForSelectorNoWait(selector, {
+        const handle = await this.querySelector(selector, {
           strict
         });
-        const handle = pair ? await this._page.selectors.query(pair.frame, pair.info) : null;
         if (!handle)
           throw new Error(`Error: failed to find element matching selector "${selector}"`);
         const result = await handle.evaluateExpressionAndWaitForSignals(expression, isFunction, true, arg);
@@ -16844,19 +15393,13 @@ var require_frames = __commonJS({
         return result;
       }
       async evalOnSelectorAllAndWaitForSignals(selector, expression, isFunction, arg) {
-        const pair = await this.resolveFrameForSelectorNoWait(selector, {});
-        if (!pair)
-          throw new Error(`Error: failed to find frame for selector "${selector}"`);
-        const arrayHandle = await this._page.selectors._queryArray(pair.frame, pair.info);
+        const arrayHandle = await this._page.selectors._queryArray(this, selector);
         const result = await arrayHandle.evaluateExpressionAndWaitForSignals(expression, isFunction, true, arg);
         arrayHandle.dispose();
         return result;
       }
       async querySelectorAll(selector) {
-        const pair = await this.resolveFrameForSelectorNoWait(selector, {});
-        if (!pair)
-          return [];
-        return this._page.selectors._queryAll(pair.frame, pair.info, void 0, true);
+        return this._page.selectors._queryAll(this, selector, void 0, true);
       }
       async content() {
         try {
@@ -17025,59 +15568,32 @@ var require_frames = __commonJS({
           throw error;
         return result;
       }
-      async retryWithProgress(progress, selector, options, action, scope) {
-        const continuePolling = Symbol("continuePolling");
+      async _retryWithProgressIfNotConnected(progress, selector, strict, action) {
+        const info = this._page.parseSelector(selector, {
+          strict
+        });
         while (progress.isRunning()) {
-          let selectorInFrame;
-          if (options.omitAttached) {
-            selectorInFrame = await this.resolveFrameForSelectorNoWait(selector, options, scope);
-          } else {
-            selectorInFrame = await this._resolveFrameForSelector(progress, selector, options, scope);
-            if (!selectorInFrame) {
-              await new Promise((f) => setTimeout(f, 100));
-              continue;
-            }
+          progress.log(`waiting for selector "${selector}"`);
+          const task = dom.waitForSelectorTask(info, "attached");
+          const handle = await this._scheduleRerunnableHandleTask(progress, info.world, task);
+          const element = handle.asElement();
+          progress.cleanupWhenAborted(() => {
+            element.dispose();
+          });
+          const result = await action(element);
+          element.dispose();
+          if (result === "error:notconnected") {
+            progress.log("element was detached from the DOM, retrying");
+            continue;
           }
-          try {
-            const result = await action(selectorInFrame, continuePolling);
-            if (result === continuePolling)
-              continue;
-            return result;
-          } catch (e) {
-            var _selectorInFrame, _selectorInFrame2;
-            if (js.isJavaScriptErrorInEvaluate(e) || (0, _protocolError.isSessionClosedError)(e))
-              throw e;
-            if (((_selectorInFrame = selectorInFrame) === null || _selectorInFrame === void 0 ? void 0 : _selectorInFrame.frame) !== this && (_selectorInFrame2 = selectorInFrame) !== null && _selectorInFrame2 !== void 0 && _selectorInFrame2.frame.isDetached())
-              continue;
-            throw e;
-          }
+          return result;
         }
-        progress.throwIfAborted();
         return void 0;
       }
-      async _retryWithProgressIfNotConnected(progress, selector, strict, action) {
-        return this.retryWithProgress(progress, selector, {
-          strict
-        }, async (selectorInFrame, continuePolling) => {
-          const {
-            frame,
-            info
-          } = selectorInFrame;
-          const task = dom.waitForSelectorTask(info, "attached");
-          progress.log(`waiting for selector "${selector}"`);
-          const handle = await frame._scheduleRerunnableHandleTask(progress, info.world, task);
-          const element = handle.asElement();
-          try {
-            const result = await action(element);
-            if (result === "error:notconnected") {
-              progress.log("element was detached from the DOM, retrying");
-              return continuePolling;
-            }
-            return result;
-          } finally {
-            element === null || element === void 0 ? void 0 : element.dispose();
-          }
-        });
+      async _retryWithSelectorIfNotConnected(controller, selector, options, action) {
+        return controller.run(async (progress) => {
+          return this._retryWithProgressIfNotConnected(progress, selector, options.strict, (handle) => action(progress, handle));
+        }, this._page._timeoutSettings.timeout(options));
       }
       async click(metadata, selector, options) {
         const controller = new _progress.ProgressController(metadata, this);
@@ -17094,7 +15610,7 @@ var require_frames = __commonJS({
       async dragAndDrop(metadata, source, target, options = {}) {
         const controller = new _progress.ProgressController(metadata, this);
         await controller.run(async (progress) => {
-          dom.assertDone(await this._retryWithProgressIfNotConnected(progress, source, options.strict, async (handle) => {
+          await dom.assertDone(await this._retryWithProgressIfNotConnected(progress, source, options.strict, async (handle) => {
             return handle._retryPointerAction(progress, "move and down", false, async (point) => {
               await this._page.mouse.move(point.x, point.y);
               await this._page.mouse.down();
@@ -17104,7 +15620,7 @@ var require_frames = __commonJS({
               timeout: progress.timeUntilDeadline()
             });
           }));
-          dom.assertDone(await this._retryWithProgressIfNotConnected(progress, target, options.strict, async (handle) => {
+          await dom.assertDone(await this._retryWithProgressIfNotConnected(progress, target, options.strict, async (handle) => {
             return handle._retryPointerAction(progress, "move and up", false, async (point) => {
               await this._page.mouse.move(point.x, point.y);
               await this._page.mouse.up();
@@ -17130,10 +15646,8 @@ var require_frames = __commonJS({
       }
       async focus(metadata, selector, options = {}) {
         const controller = new _progress.ProgressController(metadata, this);
-        await controller.run(async (progress) => {
-          dom.assertDone(await this._retryWithProgressIfNotConnected(progress, selector, void 0, (handle) => handle._focus(progress)));
-          await this._page._doSlowMo();
-        }, this._page._timeoutSettings.timeout(options));
+        await this._retryWithSelectorIfNotConnected(controller, selector, options, (progress, handle) => handle._focus(progress));
+        await this._page._doSlowMo();
       }
       async textContent(metadata, selector, options = {}) {
         return this._scheduleRerunnableTask(metadata, selector, (progress, element) => element.textContent, void 0, options);
@@ -17173,10 +15687,7 @@ var require_frames = __commonJS({
         const controller = new _progress.ProgressController(metadata, this);
         return controller.run(async (progress) => {
           progress.log(`  checking visibility of "${selector}"`);
-          const pair = await this.resolveFrameForSelectorNoWait(selector, options);
-          if (!pair)
-            return false;
-          const element = await this._page.selectors.query(pair.frame, pair.info);
+          const element = await this.querySelector(selector, options);
           return element ? await element.isVisible() : false;
         }, this._page._timeoutSettings.timeout({}));
       }
@@ -17245,54 +15756,51 @@ var require_frames = __commonJS({
       }
       async expect(metadata, selector, options) {
         const controller = new _progress.ProgressController(metadata, this);
-        const isArray = options.expression === "to.have.count" || options.expression.endsWith(".array");
+        const querySelectorAll = options.expression === "to.have.count" || options.expression.endsWith(".array");
         const mainWorld = options.expression === "to.have.property";
-        let omitAttached = false;
-        if (!options.isNot && options.expression === "to.be.hidden")
-          omitAttached = true;
-        else if (options.isNot && options.expression === "to.be.visible")
-          omitAttached = true;
-        else if (!options.isNot && options.expression === "to.have.count" && options.expectedNumber === 0)
-          omitAttached = true;
-        else if (options.isNot && options.expression === "to.have.count" && options.expectedNumber !== 0)
-          omitAttached = true;
-        else if (!options.isNot && options.expression.endsWith(".array") && options.expectedText.length === 0)
-          omitAttached = true;
-        else if (options.isNot && options.expression.endsWith(".array") && options.expectedText.length > 0)
-          omitAttached = true;
-        return await this._scheduleRerunnableTaskWithController(controller, selector, (progress, element, options2, elements) => {
-          let result;
-          if (options2.isArray) {
-            result = progress.injectedScript.expectArray(elements, options2);
-          } else {
-            if (!element) {
-              if (!options2.isNot && options2.expression === "to.be.hidden")
-                return {
-                  matches: true
-                };
-              if (options2.isNot && options2.expression === "to.be.visible")
-                return {
-                  matches: false
-                };
-              return progress.continuePolling;
-            }
-            result = progress.injectedScript.expectSingleElement(progress, element, options2);
+        return await this._scheduleRerunnableTaskWithController(controller, selector, (progress, element, options2, elements, continuePolling) => {
+          if (!element) {
+            var _options$expectedText;
+            if (!options2.isNot && options2.expression === "to.be.hidden")
+              return {
+                matches: true
+              };
+            if (options2.isNot && options2.expression === "to.be.visible")
+              return {
+                matches: false
+              };
+            const expectsEmptyList = ((_options$expectedText = options2.expectedText) === null || _options$expectedText === void 0 ? void 0 : _options$expectedText.length) === 0;
+            if (options2.expression.endsWith(".array") && expectsEmptyList !== options2.isNot)
+              return {
+                matches: expectsEmptyList
+              };
+            const expectsEmptyCount = options2.expectedNumber === 0;
+            if (options2.expression === "to.have.count" && expectsEmptyCount !== options2.isNot)
+              return {
+                matches: expectsEmptyCount,
+                received: 0
+              };
+            return continuePolling;
           }
-          if (result.matches === options2.isNot) {
-            progress.setIntermediateResult(result.received);
-            if (!Array.isArray(result.received))
-              progress.log(`  unexpected value "${result.received}"`);
-            return progress.continuePolling;
+          const {
+            matches,
+            received
+          } = progress.injectedScript.expect(progress, element, options2, elements);
+          if (matches === options2.isNot) {
+            progress.setIntermediateResult(received);
+            if (!Array.isArray(received))
+              progress.log(`  unexpected value "${received}"`);
+            return continuePolling;
           }
-          return result;
-        }, {
-          ...options,
-          isArray
-        }, {
+          return {
+            matches,
+            received
+          };
+        }, options, {
           strict: true,
-          querySelectorAll: isArray,
+          querySelectorAll,
           mainWorld,
-          omitAttached,
+          omitAttached: true,
           logScale: true,
           ...options
         }).catch((e) => {
@@ -17329,8 +15837,8 @@ var require_frames = __commonJS({
             return result;
           };
           if (typeof polling !== "number")
-            return injectedScript2.pollRaf((progress) => predicate(arg2) || progress.continuePolling);
-          return injectedScript2.pollInterval(polling, (progress) => predicate(arg2) || progress.continuePolling);
+            return injectedScript2.pollRaf((progress, continuePolling) => predicate(arg2) || continuePolling);
+          return injectedScript2.pollInterval(polling, (progress, continuePolling) => predicate(arg2) || continuePolling);
         }, {
           expression,
           isFunction,
@@ -17359,13 +15867,9 @@ var require_frames = __commonJS({
         this._stopNetworkIdleTimer();
         this._detached = true;
         this._detachedCallback();
-        const error = new Error("Frame was detached");
         for (const data of this._contextData.values()) {
-          if (data.context)
-            data.context.contextDestroyed(error);
-          data.contextPromise.resolve(error);
           for (const rerunnableTask of data.rerunnableTasks)
-            rerunnableTask.terminate(error);
+            rerunnableTask.terminate(new Error("waitForFunction failed: frame got detached."));
         }
         if (this._parentFrame)
           this._parentFrame._childFrames.delete(this);
@@ -17376,35 +15880,11 @@ var require_frames = __commonJS({
         return this._scheduleRerunnableTaskWithController(controller, selector, body, taskData, options);
       }
       async _scheduleRerunnableTaskWithController(controller, selector, body, taskData, options = {}) {
+        const info = this._page.parseSelector(selector, options);
         const callbackText = body.toString();
-        return controller.run(async (progress) => {
-          return this.retryWithProgress(progress, selector, options, async (selectorInFrame) => {
-            progress.log(`waiting for selector "${selector}"`);
-            const {
-              frame,
-              info
-            } = selectorInFrame || {
-              frame: this,
-              info: {
-                parsed: {
-                  parts: [{
-                    name: "control",
-                    body: "return-empty",
-                    source: "control=return-empty"
-                  }]
-                },
-                world: "utility",
-                strict: !!options.strict
-              }
-            };
-            return await frame._scheduleRerunnableTaskInFrame(progress, info, callbackText, taskData, options);
-          });
-        }, this._page._timeoutSettings.timeout(options));
-      }
-      async _scheduleRerunnableTaskInFrame(progress, info, callbackText, taskData, options) {
-        progress.throwIfAborted();
         const data = this._contextData.get(options.mainWorld ? "main" : info.world);
-        {
+        return controller.run(async (progress) => {
+          progress.log(`waiting for selector "${selector}"`);
           const rerunnableTask = new RerunnableTask(data, progress, (injectedScript) => {
             return injectedScript.evaluateHandle((injected, {
               info: info2,
@@ -17417,8 +15897,8 @@ var require_frames = __commonJS({
             }) => {
               const callback = injected.eval(callbackText2);
               const poller = logScale ? injected.pollLogScale.bind(injected) : injected.pollRaf.bind(injected);
-              let markedElements = /* @__PURE__ */ new Set();
-              return poller((progress2) => {
+              let markedElements = new Set();
+              return poller((progress2, continuePolling) => {
                 let element;
                 let elements = [];
                 if (querySelectorAll) {
@@ -17432,7 +15912,7 @@ var require_frames = __commonJS({
                     progress2.logRepeating(`  selector resolved to ${injected.previewNode(element)}`);
                 }
                 if (!element && !omitAttached)
-                  return progress2.continuePolling;
+                  return continuePolling;
                 if (snapshotName) {
                   const previouslyMarkedElements = markedElements;
                   markedElements = new Set(elements);
@@ -17445,7 +15925,7 @@ var require_frames = __commonJS({
                       e.setAttribute("__playwright_target__", snapshotName);
                   }
                 }
-                return callback(progress2, element, taskData2, elements);
+                return callback(progress2, element, taskData2, elements, continuePolling);
               });
             }, {
               info,
@@ -17462,7 +15942,7 @@ var require_frames = __commonJS({
           if (data.context)
             rerunnableTask.rerun(data.context);
           return await rerunnableTask.promise;
-        }
+        }, this._page._timeoutSettings.timeout(options));
       }
       _scheduleRerunnableHandleTask(progress, world, task) {
         const data = this._contextData.get(world);
@@ -17477,25 +15957,22 @@ var require_frames = __commonJS({
         const data = this._contextData.get(world);
         data.context = context;
         if (context) {
-          data.contextPromise.resolve(context);
+          data.contextResolveCallback.call(null, context);
           for (const rerunnableTask of data.rerunnableTasks)
             rerunnableTask.rerun(context);
         } else {
-          data.contextPromise = new _async.ManualPromise();
+          data.contextPromise = new Promise((fulfill) => {
+            data.contextResolveCallback = fulfill;
+          });
         }
       }
       _contextCreated(world, context) {
         const data = this._contextData.get(world);
-        if (data.context) {
-          data.context.contextDestroyed(new Error("Execution context was destroyed, most likely because of a navigation"));
+        if (data.context)
           this._setContext(world, null);
-        }
         this._setContext(world, context);
       }
       _contextDestroyed(context) {
-        if (this._detached)
-          return;
-        context.contextDestroyed(new Error("Execution context was destroyed, most likely because of a navigation"));
         for (const [world, data] of this._contextData) {
           if (data.context === context)
             this._setContext(world, null);
@@ -17524,65 +16001,6 @@ var require_frames = __commonJS({
           source,
           arg
         });
-      }
-      async _resolveFrameForSelector(progress, selector, options, scope) {
-        const elementPath = [];
-        progress.cleanupWhenAborted(() => {
-          for (const element of elementPath)
-            element.dispose();
-        });
-        let frame = this;
-        const frameChunks = (0, _selectorParser.splitSelectorByFrame)(selector);
-        for (let i = 0; i < frameChunks.length - 1 && progress.isRunning(); ++i) {
-          const info = this._page.parseSelector(frameChunks[i], options);
-          const task = dom.waitForSelectorTask(info, "attached", false, i === 0 ? scope : void 0);
-          progress.log(`  waiting for frame "${(0, _selectorParser.stringifySelector)(frameChunks[i])}"`);
-          const handle = i === 0 && scope ? await frame._runWaitForSelectorTaskOnce(progress, (0, _selectorParser.stringifySelector)(info.parsed), info.world, task) : await frame._scheduleRerunnableHandleTask(progress, info.world, task);
-          const element = handle.asElement();
-          const isIframe = await element.isIframeElement();
-          if (isIframe === "error:notconnected")
-            return null;
-          if (!isIframe)
-            throw new Error(`Selector "${(0, _selectorParser.stringifySelector)(info.parsed)}" resolved to ${element.preview()}, <iframe> was expected`);
-          frame = await element.contentFrame();
-          element.dispose();
-          if (!frame)
-            return null;
-        }
-        return {
-          frame,
-          info: this._page.parseSelector(frameChunks[frameChunks.length - 1], options)
-        };
-      }
-      async resolveFrameForSelectorNoWait(selector, options, scope) {
-        let frame = this;
-        const frameChunks = (0, _selectorParser.splitSelectorByFrame)(selector);
-        for (let i = 0; i < frameChunks.length - 1; ++i) {
-          const info = this._page.parseSelector(frameChunks[i], options);
-          const element = await this._page.selectors.query(frame, info, i === 0 ? scope : void 0);
-          if (!element)
-            return null;
-          frame = await element.contentFrame();
-          element.dispose();
-          if (!frame)
-            throw new Error(`Selector "${(0, _selectorParser.stringifySelector)(info.parsed)}" resolved to ${element.preview()}, <iframe> was expected`);
-        }
-        return {
-          frame,
-          info: this._page.parseSelector(frameChunks[frameChunks.length - 1], options)
-        };
-      }
-      async _runWaitForSelectorTaskOnce(progress, selector, world, task) {
-        const context = await this._context(world);
-        const injected = await context.injectedScript();
-        try {
-          const pollHandler = new dom.InjectedScriptPollHandler(progress, await task(injected));
-          const result = await pollHandler.finishHandle();
-          progress.cleanupWhenAborted(() => result.dispose());
-          return result;
-        } catch (e) {
-          throw new Error(`Error: frame navigated while waiting for selector "${selector}"`);
-        }
       }
     };
     exports.Frame = Frame;
@@ -17678,7 +16096,7 @@ var require_frames = __commonJS({
       if (waitUntil === "networkidle0")
         waitUntil = "networkidle";
       if (!types.kLifecycleEvents.has(waitUntil))
-        throw new Error(`${name}: expected one of (load|domcontentloaded|networkidle|commit)`);
+        throw new Error(`${name}: expected one of (load|domcontentloaded|networkidle)`);
       return waitUntil;
     }
   }
@@ -18274,8 +16692,8 @@ var require_input = __commonJS({
     var kModifiers = ["Alt", "Control", "Meta", "Shift"];
     var Keyboard = class {
       constructor(raw, page) {
-        this._pressedModifiers = /* @__PURE__ */ new Set();
-        this._pressedKeys = /* @__PURE__ */ new Set();
+        this._pressedModifiers = new Set();
+        this._pressedKeys = new Set();
         this._raw = void 0;
         this._page = void 0;
         this._raw = raw;
@@ -18388,7 +16806,7 @@ var require_input = __commonJS({
         this._x = 0;
         this._y = 0;
         this._lastButton = "none";
-        this._buttons = /* @__PURE__ */ new Set();
+        this._buttons = new Set();
         this._raw = void 0;
         this._page = void 0;
         this._raw = raw;
@@ -18478,10 +16896,10 @@ var require_input = __commonJS({
       }
     };
     exports.Mouse = Mouse;
-    var aliases = /* @__PURE__ */ new Map([["ShiftLeft", ["Shift"]], ["ControlLeft", ["Control"]], ["AltLeft", ["Alt"]], ["MetaLeft", ["Meta"]], ["Enter", ["\n", "\r"]]]);
+    var aliases = new Map([["ShiftLeft", ["Shift"]], ["ControlLeft", ["Control"]], ["AltLeft", ["Alt"]], ["MetaLeft", ["Meta"]], ["Enter", ["\n", "\r"]]]);
     var usKeyboardLayout = buildLayoutClosure(keyboardLayout.USKeyboardLayout);
     function buildLayoutClosure(layout) {
-      const result = /* @__PURE__ */ new Map();
+      const result = new Map();
       for (const code in layout) {
         const definition = layout[code];
         const description = {
@@ -18831,7 +17249,7 @@ var require_accessibility = __commonJS({
             return needle && serializeTree(needle)[0];
           return serializeTree(tree)[0];
         }
-        const interestingNodes = /* @__PURE__ */ new Set();
+        const interestingNodes = new Set();
         collectInterestingNodes(interestingNodes, tree, false);
         if (root && (!needle || !interestingNodes.has(needle)))
           return null;
@@ -18970,12 +17388,12 @@ var require_page = __commonJS({
         this._timeoutSettings = void 0;
         this._delegate = void 0;
         this._state = void 0;
-        this._pageBindings = /* @__PURE__ */ new Map();
+        this._pageBindings = new Map();
         this._evaluateOnNewDocumentSources = [];
         this._screenshotter = void 0;
         this._frameManager = void 0;
         this.accessibility = void 0;
-        this._workers = /* @__PURE__ */ new Map();
+        this._workers = new Map();
         this.pdf = void 0;
         this.coverage = void 0;
         this._clientRequestInterceptor = void 0;
@@ -18985,7 +17403,6 @@ var require_page = __commonJS({
         this._pageIsError = void 0;
         this._video = null;
         this._opener = void 0;
-        this._frameThrottler = new FrameThrottler(10, 200);
         this.attribution.page = this;
         this._delegate = delegate;
         this._browserContext = browserContext;
@@ -19041,7 +17458,6 @@ var require_page = __commonJS({
       }
       _didClose() {
         this._frameManager.dispose();
-        this._frameThrottler.setEnabled(false);
         (0, _utils.assert)(this._closedState !== "closed", "Page closed twice");
         this._closedState = "closed";
         this.emit(Page.Events.Close);
@@ -19049,13 +17465,11 @@ var require_page = __commonJS({
       }
       _didCrash() {
         this._frameManager.dispose();
-        this._frameThrottler.setEnabled(false);
         this.emit(Page.Events.Crash);
         this._crashedPromise.resolve(new Error("Page crashed"));
       }
       _didDisconnect() {
         this._frameManager.dispose();
-        this._frameThrottler.setEnabled(false);
         (0, _utils.assert)(!this._disconnected, "Page disconnected twice");
         this._disconnected = true;
         this._disconnectedPromise.resolve(new Error("Page closed"));
@@ -19258,12 +17672,12 @@ var require_page = __commonJS({
         const worker = this._workers.get(workerId);
         if (!worker)
           return;
-        worker.didClose();
+        worker.emit(Worker.Events.Close, worker);
         this._workers.delete(workerId);
       }
       _clearWorkers() {
         for (const [workerId, worker] of this._workers) {
-          worker.didClose();
+          worker.emit(Worker.Events.Close, worker);
           this._workers.delete(workerId);
         }
       }
@@ -19287,13 +17701,6 @@ var require_page = __commonJS({
       }
       setScreencastOptions(options) {
         this._delegate.setScreencastOptions(options).catch((e) => _debugLogger.debugLogger.log("error", e));
-        this._frameThrottler.setEnabled(!!options);
-      }
-      throttleScreencastFrameAck(ack) {
-        this._frameThrottler.ack(ack);
-      }
-      temporarlyDisableTracingScreencastThrottling() {
-        this._frameThrottler.recharge();
       }
       firePageError(error) {
         this.emit(Page.Events.PageError, error);
@@ -19340,11 +17747,6 @@ var require_page = __commonJS({
       }
       url() {
         return this._url;
-      }
-      didClose() {
-        if (this._existingExecutionContext)
-          this._existingExecutionContext.contextDestroyed(new Error("Worker was closed"));
-        this.emit(Worker.Events.Close, this);
       }
       async evaluateExpression(expression, isFunction, arg) {
         return js.evaluateExpression(await this._executionContextPromise, true, expression, isFunction, arg);
@@ -19447,14 +17849,14 @@ var require_page = __commonJS({
           throw new Error(`exposeBindingHandle supports a single argument, ${args.length} received`);
         let callbacks = me["callbacks"];
         if (!callbacks) {
-          callbacks = /* @__PURE__ */ new Map();
+          callbacks = new Map();
           me["callbacks"] = callbacks;
         }
         const seq = (me["lastSeq"] || 0) + 1;
         me["lastSeq"] = seq;
         let handles = me["handles"];
         if (!handles) {
-          handles = /* @__PURE__ */ new Map();
+          handles = new Map();
           me["handles"] = handles;
         }
         const promise = new Promise((resolve, reject) => callbacks.set(seq, {
@@ -19478,49 +17880,6 @@ var require_page = __commonJS({
       };
       globalThis[bindingName].__installed = true;
     }
-    var FrameThrottler = class {
-      constructor(nonThrottledFrames, interval) {
-        this._acks = [];
-        this._interval = void 0;
-        this._nonThrottledFrames = void 0;
-        this._budget = void 0;
-        this._intervalId = void 0;
-        this._nonThrottledFrames = nonThrottledFrames;
-        this._budget = nonThrottledFrames;
-        this._interval = interval;
-      }
-      setEnabled(enabled) {
-        if (enabled) {
-          if (this._intervalId)
-            clearInterval(this._intervalId);
-          this._intervalId = setInterval(() => this._tick(), this._interval);
-        } else if (this._intervalId) {
-          clearInterval(this._intervalId);
-          this._intervalId = void 0;
-        }
-      }
-      recharge() {
-        for (const ack of this._acks)
-          ack();
-        this._acks = [];
-        this._budget = this._nonThrottledFrames;
-      }
-      ack(ack) {
-        if (!this._intervalId) {
-          ack();
-          return;
-        }
-        if (--this._budget > 0) {
-          ack();
-          return;
-        }
-        this._acks.push(ack);
-      }
-      _tick() {
-        var _this$_acks$shift;
-        (_this$_acks$shift = this._acks.shift()) === null || _this$_acks$shift === void 0 ? void 0 : _this$_acks$shift();
-      }
-    };
   }
 });
 
@@ -19532,9 +17891,9 @@ var require_channels = __commonJS({
       value: true
     });
     exports.pausesBeforeInputActions = exports.commandsWithTracingSnapshots = void 0;
-    var commandsWithTracingSnapshots = /* @__PURE__ */ new Set(["EventTarget.waitForEventInfo", "BrowserContext.waitForEventInfo", "Page.waitForEventInfo", "WebSocket.waitForEventInfo", "ElectronApplication.waitForEventInfo", "AndroidDevice.waitForEventInfo", "Page.goBack", "Page.goForward", "Page.reload", "Page.setViewportSize", "Page.keyboardDown", "Page.keyboardUp", "Page.keyboardInsertText", "Page.keyboardType", "Page.keyboardPress", "Page.mouseMove", "Page.mouseDown", "Page.mouseUp", "Page.mouseClick", "Page.mouseWheel", "Page.touchscreenTap", "Frame.evalOnSelector", "Frame.evalOnSelectorAll", "Frame.addScriptTag", "Frame.addStyleTag", "Frame.check", "Frame.click", "Frame.dragAndDrop", "Frame.dblclick", "Frame.dispatchEvent", "Frame.evaluateExpression", "Frame.evaluateExpressionHandle", "Frame.fill", "Frame.focus", "Frame.getAttribute", "Frame.goto", "Frame.hover", "Frame.innerHTML", "Frame.innerText", "Frame.inputValue", "Frame.isChecked", "Frame.isDisabled", "Frame.isEnabled", "Frame.isHidden", "Frame.isVisible", "Frame.isEditable", "Frame.press", "Frame.selectOption", "Frame.setContent", "Frame.setInputFiles", "Frame.tap", "Frame.textContent", "Frame.type", "Frame.uncheck", "Frame.waitForTimeout", "Frame.waitForFunction", "Frame.waitForSelector", "Frame.expect", "JSHandle.evaluateExpression", "ElementHandle.evaluateExpression", "JSHandle.evaluateExpressionHandle", "ElementHandle.evaluateExpressionHandle", "ElementHandle.evalOnSelector", "ElementHandle.evalOnSelectorAll", "ElementHandle.check", "ElementHandle.click", "ElementHandle.dblclick", "ElementHandle.dispatchEvent", "ElementHandle.fill", "ElementHandle.hover", "ElementHandle.innerHTML", "ElementHandle.innerText", "ElementHandle.inputValue", "ElementHandle.isChecked", "ElementHandle.isDisabled", "ElementHandle.isEditable", "ElementHandle.isEnabled", "ElementHandle.isHidden", "ElementHandle.isVisible", "ElementHandle.press", "ElementHandle.scrollIntoViewIfNeeded", "ElementHandle.selectOption", "ElementHandle.selectText", "ElementHandle.setInputFiles", "ElementHandle.tap", "ElementHandle.textContent", "ElementHandle.type", "ElementHandle.uncheck", "ElementHandle.waitForElementState", "ElementHandle.waitForSelector"]);
+    var commandsWithTracingSnapshots = new Set(["EventTarget.waitForEventInfo", "BrowserContext.waitForEventInfo", "Page.waitForEventInfo", "WebSocket.waitForEventInfo", "ElectronApplication.waitForEventInfo", "AndroidDevice.waitForEventInfo", "Page.goBack", "Page.goForward", "Page.reload", "Page.setViewportSize", "Page.keyboardDown", "Page.keyboardUp", "Page.keyboardInsertText", "Page.keyboardType", "Page.keyboardPress", "Page.mouseMove", "Page.mouseDown", "Page.mouseUp", "Page.mouseClick", "Page.mouseWheel", "Page.touchscreenTap", "Frame.evalOnSelector", "Frame.evalOnSelectorAll", "Frame.addScriptTag", "Frame.addStyleTag", "Frame.check", "Frame.click", "Frame.dragAndDrop", "Frame.dblclick", "Frame.dispatchEvent", "Frame.evaluateExpression", "Frame.evaluateExpressionHandle", "Frame.fill", "Frame.focus", "Frame.getAttribute", "Frame.goto", "Frame.hover", "Frame.innerHTML", "Frame.innerText", "Frame.inputValue", "Frame.isChecked", "Frame.isDisabled", "Frame.isEnabled", "Frame.isHidden", "Frame.isVisible", "Frame.isEditable", "Frame.press", "Frame.selectOption", "Frame.setContent", "Frame.setInputFiles", "Frame.tap", "Frame.textContent", "Frame.type", "Frame.uncheck", "Frame.waitForTimeout", "Frame.waitForFunction", "Frame.waitForSelector", "Frame.expect", "JSHandle.evaluateExpression", "ElementHandle.evaluateExpression", "JSHandle.evaluateExpressionHandle", "ElementHandle.evaluateExpressionHandle", "ElementHandle.evalOnSelector", "ElementHandle.evalOnSelectorAll", "ElementHandle.check", "ElementHandle.click", "ElementHandle.dblclick", "ElementHandle.dispatchEvent", "ElementHandle.fill", "ElementHandle.hover", "ElementHandle.innerHTML", "ElementHandle.innerText", "ElementHandle.inputValue", "ElementHandle.isChecked", "ElementHandle.isDisabled", "ElementHandle.isEditable", "ElementHandle.isEnabled", "ElementHandle.isHidden", "ElementHandle.isVisible", "ElementHandle.press", "ElementHandle.scrollIntoViewIfNeeded", "ElementHandle.selectOption", "ElementHandle.selectText", "ElementHandle.setInputFiles", "ElementHandle.tap", "ElementHandle.textContent", "ElementHandle.type", "ElementHandle.uncheck", "ElementHandle.waitForElementState", "ElementHandle.waitForSelector"]);
     exports.commandsWithTracingSnapshots = commandsWithTracingSnapshots;
-    var pausesBeforeInputActions = /* @__PURE__ */ new Set(["Frame.check", "Frame.click", "Frame.dragAndDrop", "Frame.dblclick", "Frame.fill", "Frame.hover", "Frame.press", "Frame.selectOption", "Frame.setInputFiles", "Frame.tap", "Frame.type", "Frame.uncheck", "ElementHandle.check", "ElementHandle.click", "ElementHandle.dblclick", "ElementHandle.fill", "ElementHandle.hover", "ElementHandle.press", "ElementHandle.selectOption", "ElementHandle.setInputFiles", "ElementHandle.tap", "ElementHandle.type", "ElementHandle.uncheck"]);
+    var pausesBeforeInputActions = new Set(["Frame.check", "Frame.click", "Frame.dragAndDrop", "Frame.dblclick", "Frame.fill", "Frame.hover", "Frame.press", "Frame.selectOption", "Frame.setInputFiles", "Frame.tap", "Frame.type", "Frame.uncheck", "ElementHandle.check", "ElementHandle.click", "ElementHandle.dblclick", "ElementHandle.fill", "ElementHandle.hover", "ElementHandle.press", "ElementHandle.selectOption", "ElementHandle.setInputFiles", "ElementHandle.tap", "ElementHandle.type", "ElementHandle.uncheck"]);
     exports.pausesBeforeInputActions = pausesBeforeInputActions;
   }
 });
@@ -19556,7 +17915,7 @@ var require_debugger = __commonJS({
       constructor(context) {
         super();
         this._pauseOnNextStatement = false;
-        this._pausedCallsMetadata = /* @__PURE__ */ new Map();
+        this._pausedCallsMetadata = new Map();
         this._enabled = void 0;
         this._context = void 0;
         this._muted = false;
@@ -20730,7 +19089,7 @@ var require_snapshotterInjected = __commonJS({
         constructor() {
           this._removeNoScript = true;
           this._lastSnapshotNumber = 0;
-          this._staleStyleSheets = /* @__PURE__ */ new Set();
+          this._staleStyleSheets = new Set();
           this._readingStyleSheet = false;
           this._fakeBase = void 0;
           this._observer = void 0;
@@ -20890,12 +19249,6 @@ var require_snapshotterInjected = __commonJS({
               return;
             if (nodeName === "SCRIPT")
               return;
-            if (nodeName === "LINK" && nodeType === Node.ELEMENT_NODE) {
-              var _getAttribute;
-              const rel = (_getAttribute = node.getAttribute("rel")) === null || _getAttribute === void 0 ? void 0 : _getAttribute.toLowerCase();
-              if (rel === "preload" || rel === "prefetch")
-                return;
-            }
             if (this._removeNoScript && nodeName === "NOSCRIPT")
               return;
             if (nodeName === "META" && node.httpEquiv.toLowerCase() === "content-security-policy")
@@ -21356,10 +19709,10 @@ var require_harTracer = __commonJS({
     var HarTracer = class {
       constructor(context, delegate, options) {
         this._context = void 0;
-        this._barrierPromises = /* @__PURE__ */ new Set();
+        this._barrierPromises = new Set();
         this._delegate = void 0;
         this._options = void 0;
-        this._pageEntries = /* @__PURE__ */ new Map();
+        this._pageEntries = new Map();
         this._eventListeners = [];
         this._started = false;
         this._entrySymbol = void 0;
@@ -21758,7 +20111,6 @@ var require_tracing = __commonJS({
     var _snapshotter = require_snapshotter();
     var _harTracer = require_harTracer();
     var _traceEvents = require_traceEvents();
-    var _async = require_async();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -21773,13 +20125,13 @@ var require_tracing = __commonJS({
         this._snapshotter = void 0;
         this._harTracer = void 0;
         this._screencastListeners = [];
-        this._pendingCalls = /* @__PURE__ */ new Map();
+        this._pendingCalls = new Map();
         this._context = void 0;
         this._resourcesDir = void 0;
         this._state = void 0;
         this._isStopping = false;
         this._tracesDir = void 0;
-        this._allResources = /* @__PURE__ */ new Set();
+        this._allResources = new Set();
         this._contextCreatedEvent = void 0;
         this._context = context;
         this._tracesDir = context._browser.options.tracesDir;
@@ -21794,9 +20146,7 @@ var require_tracing = __commonJS({
           version: _traceEvents.VERSION,
           type: "context-options",
           browserName: this._context._browser.options.name,
-          options: this._context._options,
-          platform: process.platform,
-          wallTime: 0
+          options: this._context._options
         };
       }
       start(options) {
@@ -21817,7 +20167,7 @@ var require_tracing = __commonJS({
           traceFile,
           networkFile,
           filesCount: 0,
-          sha1s: /* @__PURE__ */ new Set(),
+          sha1s: new Set(),
           recording: false
         };
         this._writeChain = _fs.default.promises.mkdir(this._resourcesDir, {
@@ -21826,9 +20176,9 @@ var require_tracing = __commonJS({
         if (options.snapshots)
           this._harTracer.start();
       }
-      async startChunk(options = {}) {
+      async startChunk() {
         if (this._state && this._state.recording)
-          await this.stopChunk(false, false);
+          await this.stopChunk(false);
         if (!this._state)
           throw new Error("Must start tracing before starting a new chunk");
         if (this._isStopping)
@@ -21840,11 +20190,7 @@ var require_tracing = __commonJS({
         state.recording = true;
         this._appendTraceOperation(async () => {
           await (0, _utils.mkdirIfNeeded)(state.traceFile);
-          await _fs.default.promises.appendFile(state.traceFile, JSON.stringify({
-            ...this._contextCreatedEvent,
-            title: options.title,
-            wallTime: Date.now()
-          }) + "\n");
+          await _fs.default.promises.appendFile(state.traceFile, JSON.stringify(this._contextCreatedEvent) + "\n");
         });
         this._context.instrumentation.addListener(this);
         if (state.options.screenshots)
@@ -21877,24 +20223,10 @@ var require_tracing = __commonJS({
         this._snapshotter.dispose();
         await this._writeChain;
       }
-      async stopChunk(save, skipCompress) {
-        var _this$_state;
+      async stopChunk(save) {
         if (this._isStopping)
           throw new Error(`Tracing is already stopping`);
         this._isStopping = true;
-        if (!this._state || !this._state.recording) {
-          this._isStopping = false;
-          if (save)
-            throw new Error(`Must start tracing before stopping`);
-          return {
-            artifact: null,
-            entries: []
-          };
-        }
-        const state = this._state;
-        this._context.instrumentation.removeListener(this);
-        if ((_this$_state = this._state) !== null && _this$_state !== void 0 && _this$_state.options.screenshots)
-          this._stopScreencast();
         for (const {
           sdkObject,
           metadata,
@@ -21917,56 +20249,43 @@ var require_tracing = __commonJS({
           }
           await this.onAfterCall(sdkObject, callMetadata);
         }
+        if (!this._state || !this._state.recording) {
+          this._isStopping = false;
+          if (save)
+            throw new Error(`Must start tracing before stopping`);
+          return null;
+        }
+        const state = this._state;
+        this._context.instrumentation.removeListener(this);
+        if (state.options.screenshots)
+          this._stopScreencast();
         if (state.options.snapshots)
           await this._snapshotter.stop();
         return await this._appendTraceOperation(async () => {
-          this._isStopping = false;
-          state.recording = false;
-          if (!save)
-            return {
-              artifact: null,
-              entries: []
-            };
-          const networkFile = _path.default.join(state.networkFile, "..", (0, _utils.createGuid)());
-          await _fs.default.promises.copyFile(state.networkFile, networkFile);
-          const entries = [];
-          entries.push({
-            name: "trace.trace",
-            value: state.traceFile
+          const result = save ? this._export(state) : Promise.resolve(null);
+          return result.finally(async () => {
+            this._isStopping = false;
+            state.recording = false;
           });
-          entries.push({
-            name: "trace.network",
-            value: networkFile
-          });
-          for (const sha1 of state.sha1s)
-            entries.push({
-              name: _path.default.join("resources", sha1),
-              value: _path.default.join(this._resourcesDir, sha1)
-            });
-          const zipArtifact = skipCompress ? null : await this._exportZip(entries, state).catch(() => null);
-          return {
-            artifact: zipArtifact,
-            entries
-          };
-        }) || {
-          artifact: null,
-          entries: []
-        };
-      }
-      async _exportZip(entries, state) {
-        const zipFile = new _yazl.default.ZipFile();
-        const result = new _async.ManualPromise();
-        zipFile.on("error", (error) => result.reject(error));
-        for (const entry of entries)
-          zipFile.addFile(entry.value, entry.name);
-        zipFile.end();
-        const zipFileName = state.traceFile + ".zip";
-        zipFile.outputStream.pipe(_fs.default.createWriteStream(zipFileName)).on("close", () => {
-          const artifact = new _artifact.Artifact(this._context, zipFileName);
-          artifact.reportFinished();
-          result.resolve(artifact);
         });
-        return result;
+      }
+      async _export(state) {
+        const zipFile = new _yazl.default.ZipFile();
+        const failedPromise = new Promise((_, reject) => zipFile.on("error", reject));
+        const succeededPromise = new Promise((fulfill) => {
+          zipFile.addFile(state.traceFile, "trace.trace");
+          zipFile.addFile(state.networkFile, "trace.network");
+          const zipFileName = state.traceFile + ".zip";
+          for (const sha1 of state.sha1s)
+            zipFile.addFile(_path.default.join(this._resourcesDir, sha1), _path.default.join("resources", sha1));
+          zipFile.end();
+          zipFile.outputStream.pipe(_fs.default.createWriteStream(zipFileName)).on("close", () => {
+            const artifact = new _artifact.Artifact(this._context, zipFileName);
+            artifact.reportFinished();
+            fulfill(artifact);
+          });
+        });
+        return Promise.race([failedPromise, succeededPromise]);
       }
       async _captureSnapshot(name, sdkObject, metadata, element) {
         if (!sdkObject.attribution.page)
@@ -21986,8 +20305,6 @@ var require_tracing = __commonJS({
         });
       }
       async onBeforeCall(sdkObject, metadata) {
-        var _sdkObject$attributio;
-        (_sdkObject$attributio = sdkObject.attribution.page) === null || _sdkObject$attributio === void 0 ? void 0 : _sdkObject$attributio.temporarlyDisableTracingScreencastThrottling();
         metadata.afterSnapshot = `after@${metadata.id}`;
         const beforeSnapshot = this._captureSnapshot("before", sdkObject, metadata);
         this._pendingCalls.set(metadata.id, {
@@ -21998,15 +20315,11 @@ var require_tracing = __commonJS({
         await beforeSnapshot;
       }
       async onBeforeInputAction(sdkObject, metadata, element) {
-        var _sdkObject$attributio2;
-        (_sdkObject$attributio2 = sdkObject.attribution.page) === null || _sdkObject$attributio2 === void 0 ? void 0 : _sdkObject$attributio2.temporarlyDisableTracingScreencastThrottling();
         const actionSnapshot = this._captureSnapshot("action", sdkObject, metadata, element);
         this._pendingCalls.get(metadata.id).actionSnapshot = actionSnapshot;
         await actionSnapshot;
       }
       async onAfterCall(sdkObject, metadata) {
-        var _sdkObject$attributio3;
-        (_sdkObject$attributio3 = sdkObject.attribution.page) === null || _sdkObject$attributio3 === void 0 ? void 0 : _sdkObject$attributio3.temporarlyDisableTracingScreencastThrottling();
         const pendingCall = this._pendingCalls.get(metadata.id);
         if (!pendingCall || pendingCall.afterSnapshot)
           return;
@@ -22099,8 +20412,6 @@ var require_tracing = __commonJS({
         let error;
         let result;
         this._writeChain = this._writeChain.then(async () => {
-          if (!this._context._browser.isConnected())
-            return;
           try {
             result = await cb();
           } catch (e) {
@@ -22634,7 +20945,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "Galaxy S5": {
-        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 640
@@ -22645,7 +20956,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S5 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 360
@@ -22656,7 +20967,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S8": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 740
@@ -22667,7 +20978,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S8 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 740,
           height: 360
@@ -22678,7 +20989,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S9+": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 320,
           height: 658
@@ -22689,7 +21000,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S9+ landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 658,
           height: 320
@@ -22700,7 +21011,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy Tab S4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         viewport: {
           width: 712,
           height: 1138
@@ -22711,7 +21022,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy Tab S4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         viewport: {
           width: 1138,
           height: 712
@@ -23308,7 +21619,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "JioPhone 2": {
-        userAgent: "Mozilla/5.0 (Mobile; LYF/F300B/LYF-F300B-001-01-15-130718-i;Android; rv:94.0.1) Gecko/48.0 Firefox/94.0.1 KAIOS/2.5",
+        userAgent: "Mozilla/5.0 (Mobile; LYF/F300B/LYF-F300B-001-01-15-130718-i;Android; rv:89.0 Gecko/48.0 Firefox/93.0 KAIOS/2.5",
         viewport: {
           width: 240,
           height: 320
@@ -23319,7 +21630,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "firefox"
       },
       "JioPhone 2 landscape": {
-        userAgent: "Mozilla/5.0 (Mobile; LYF/F300B/LYF-F300B-001-01-15-130718-i;Android; rv:94.0.1) Gecko/48.0 Firefox/94.0.1 KAIOS/2.5",
+        userAgent: "Mozilla/5.0 (Mobile; LYF/F300B/LYF-F300B-001-01-15-130718-i;Android; rv:89.0 Gecko/48.0 Firefox/93.0 KAIOS/2.5",
         viewport: {
           width: 320,
           height: 240
@@ -23352,7 +21663,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "LG Optimus L70": {
-        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 384,
           height: 640
@@ -23363,7 +21674,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "LG Optimus L70 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 384
@@ -23374,7 +21685,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 550": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 640,
           height: 360
@@ -23385,7 +21696,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 550 landscape": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 360,
           height: 640
@@ -23396,7 +21707,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 950": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 360,
           height: 640
@@ -23407,7 +21718,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 950 landscape": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 640,
           height: 360
@@ -23418,7 +21729,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 10": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         viewport: {
           width: 800,
           height: 1280
@@ -23429,7 +21740,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 10 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         viewport: {
           width: 1280,
           height: 800
@@ -23440,7 +21751,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 384,
           height: 640
@@ -23451,7 +21762,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 384
@@ -23462,7 +21773,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 640
@@ -23473,7 +21784,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 360
@@ -23484,7 +21795,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5X": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 412,
           height: 732
@@ -23495,7 +21806,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5X landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 732,
           height: 412
@@ -23506,7 +21817,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 412,
           height: 732
@@ -23517,7 +21828,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 732,
           height: 412
@@ -23528,7 +21839,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6P": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 412,
           height: 732
@@ -23539,7 +21850,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6P landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 732,
           height: 412
@@ -23550,7 +21861,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 7": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         viewport: {
           width: 600,
           height: 960
@@ -23561,7 +21872,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 7 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         viewport: {
           width: 960,
           height: 600
@@ -23616,7 +21927,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "Pixel 2": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 411,
           height: 731
@@ -23627,7 +21938,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 2 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 731,
           height: 411
@@ -23638,7 +21949,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 2 XL": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 411,
           height: 823
@@ -23649,7 +21960,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 2 XL landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 823,
           height: 411
@@ -23660,7 +21971,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 3": {
-        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 393,
           height: 786
@@ -23671,7 +21982,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 3 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 786,
           height: 393
@@ -23682,7 +21993,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 353,
           height: 745
@@ -23693,7 +22004,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 745,
           height: 353
@@ -23704,7 +22015,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4a (5G)": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         screen: {
           width: 412,
           height: 892
@@ -23719,7 +22030,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4a (5G) landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         screen: {
           height: 892,
           width: 412
@@ -23734,7 +22045,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 5": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         screen: {
           width: 393,
           height: 851
@@ -23749,7 +22060,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 5 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         screen: {
           width: 851,
           height: 393
@@ -23764,7 +22075,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Moto G4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 640
@@ -23775,7 +22086,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Moto G4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 360
@@ -23786,7 +22097,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Chrome HiDPI": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         screen: {
           width: 1792,
           height: 1120
@@ -23801,7 +22112,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Edge HiDPI": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36 Edg/98.0.4695.0",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36 Edg/97.0.4666.0",
         screen: {
           width: 1792,
           height: 1120
@@ -23816,7 +22127,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Firefox HiDPI": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0.1) Gecko/20100101 Firefox/94.0.1",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0 Gecko/20100101 Firefox/93.0",
         screen: {
           width: 1792,
           height: 1120
@@ -23846,7 +22157,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "Desktop Chrome": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36",
         screen: {
           width: 1920,
           height: 1080
@@ -23861,7 +22172,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Edge": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4695.0 Safari/537.36 Edg/98.0.4695.0",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4666.0 Safari/537.36 Edg/97.0.4666.0",
         screen: {
           width: 1920,
           height: 1080
@@ -23876,7 +22187,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Firefox": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0.1) Gecko/20100101 Firefox/94.0.1",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:90.0 Gecko/20100101 Firefox/93.0",
         screen: {
           width: 1920,
           height: 1080
@@ -24039,7 +22350,7 @@ var require_javascript2 = __commonJS({
         const formatter = new JavaScriptFormatter();
         const useText = formatContextOptions(options.contextOptions, options.deviceName);
         formatter.add(`
-      import { test, expect${options.deviceName ? ", devices" : ""} } from '@playwright/test';
+      const { test, expect${options.deviceName ? ", devices" : ""} } = require('@playwright/test');
 ${useText ? "\ntest.use(" + useText + ");\n" : ""}
       test('test', async ({ page }) => {`);
         return formatter.format();
@@ -24891,7 +23202,7 @@ var require_recorderSource = __commonJS({
       value: true
     });
     exports.source = void 0;
-    var source = 'var pwExport;(()=>{"use strict";var e={317:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseCSS=function(e,t){let n;try{n=o.tokenize(e),n[n.length-1]instanceof o.EOFToken||n.push(new o.EOFToken)}catch(t){const n=t.message+` while parsing selector "${e}"`,o=(t.stack||"").indexOf(t.message);throw-1!==o&&(t.stack=t.stack.substring(0,o)+n+t.stack.substring(o+t.message.length)),t.message=n,t}const r=n.find((e=>e instanceof o.AtKeywordToken||e instanceof o.BadStringToken||e instanceof o.BadURLToken||e instanceof o.ColumnToken||e instanceof o.CDOToken||e instanceof o.CDCToken||e instanceof o.SemicolonToken||e instanceof o.OpenCurlyToken||e instanceof o.CloseCurlyToken||e instanceof o.URLToken||e instanceof o.PercentageToken));if(r)throw new Error(`Unsupported token "${r.toSource()}" while parsing selector "${e}"`);let i=0;const s=new Set;function c(){return new Error(`Unexpected token "${n[i].toSource()}" while parsing selector "${e}"`)}function a(){for(;n[i]instanceof o.WhitespaceToken;)i++}function l(e=i){return n[e]instanceof o.IdentToken}function h(e=i){return n[e]instanceof o.CommaToken}function u(e=i){return n[e]instanceof o.CloseParenToken}function p(e=i){return n[e]instanceof o.DelimToken&&"*"===n[e].value}function f(e=i){return n[e]instanceof o.EOFToken}function d(e=i){return n[e]instanceof o.DelimToken&&[">","+","~"].includes(n[e].value)}function m(e=i){return h(e)||u(e)||f(e)||d(e)||n[e]instanceof o.WhitespaceToken}function g(){const e=[y()];for(;a(),h();)i++,e.push(y());return e}function y(){return a(),function(e=i){return n[e]instanceof o.NumberToken}()||function(e=i){return n[e]instanceof o.StringToken}()?n[i++].value:function(){const e={simples:[]};for(a(),d()?e.simples.push({selector:{functions:[{name:"scope",args:[]}]},combinator:""}):e.simples.push({selector:_(),combinator:""});;){if(a(),d())e.simples[e.simples.length-1].combinator=n[i++].value,a();else if(m())break;e.simples.push({combinator:"",selector:_()})}return e}()}function _(){let e="";const r=[];for(;!m();)if(l()||p())e+=n[i++].toSource();else if(n[i]instanceof o.HashToken)e+=n[i++].toSource();else if(n[i]instanceof o.DelimToken&&"."===n[i].value){if(i++,!l())throw c();e+="."+n[i++].toSource()}else if(n[i]instanceof o.ColonToken)if(i++,l())if(t.has(n[i].value.toLowerCase())){const e=n[i++].value.toLowerCase();r.push({name:e,args:[]}),s.add(e)}else e+=":"+n[i++].toSource();else{if(!(n[i]instanceof o.FunctionToken))throw c();{const o=n[i++].value.toLowerCase();if(t.has(o)?(r.push({name:o,args:g()}),s.add(o)):e+=`:${o}(${v()})`,a(),!u())throw c();i++}}else{if(!(n[i]instanceof o.OpenSquareToken))throw c();for(e+="[",i++;!(n[i]instanceof o.CloseSquareToken||f());)e+=n[i++].toSource();if(!(n[i]instanceof o.CloseSquareToken))throw c();e+="]",i++}if(!e&&!r.length)throw c();return{css:e||void 0,functions:r}}function v(){let e="";for(;!u()&&!f();)e+=n[i++].toSource();return e}const w=g();if(!f())throw new Error(`Error while parsing selector "${e}"`);if(w.some((e=>"object"!=typeof e||!("simples"in e))))throw new Error(`Error while parsing selector "${e}"`);return{selector:w,names:Array.from(s)}},t.serializeSelector=function e(t){return t.map((t=>"string"==typeof t?`"${t}"`:"number"==typeof t?String(t):t.simples.map((({selector:t,combinator:n})=>{let o=t.css||"";return o+=t.functions.map((t=>`:${t.name}(${e(t.args)})`)).join(""),n&&(o+=" "+n),o})).join(" "))).join(", ")};var o=function(e,t){if(e&&e.__esModule)return e;if(null===e||"object"!=typeof e&&"function"!=typeof e)return{default:e};var n=r(t);if(n&&n.has(e))return n.get(e);var o={},i=Object.defineProperty&&Object.getOwnPropertyDescriptor;for(var s in e)if("default"!==s&&Object.prototype.hasOwnProperty.call(e,s)){var c=i?Object.getOwnPropertyDescriptor(e,s):null;c&&(c.get||c.set)?Object.defineProperty(o,s,c):o[s]=e[s]}return o.default=e,n&&n.set(e,o),o}(n(503));function r(e){if("function"!=typeof WeakMap)return null;var t=new WeakMap,n=new WeakMap;return(r=function(e){return e?n:t})(e)}},503:(e,t)=>{var n,o;n=function(e){var t=function(e,t,n){return e>=t&&e<=n};function n(e){return t(e,48,57)}function o(e){return n(e)||t(e,65,70)||t(e,97,102)}function r(e){return function(e){return t(e,65,90)}(e)||function(e){return t(e,97,122)}(e)}function i(e){return r(e)||function(e){return e>=128}(e)||95==e}function s(e){return i(e)||n(e)||45==e}function c(e){return t(e,0,8)||11==e||t(e,14,31)||127==e}function a(e){return 10==e}function l(e){return a(e)||9==e||32==e}var h=function(e){this.message=e};function u(e){if(e<=65535)return String.fromCharCode(e);e-=Math.pow(2,16);var t=Math.floor(e/Math.pow(2,10))+55296,n=e%Math.pow(2,10)+56320;return String.fromCharCode(t)+String.fromCharCode(n)}function p(){throw"Abstract Base Class"}function f(){return this}function d(){return this}function m(){return this}function g(){return this}function y(){return this}function _(){return this}function v(){return this}function w(){return this}function E(){throw"Abstract Base Class"}function S(){return this.value="{",this.mirror="}",this}function T(){return this.value="}",this.mirror="{",this}function b(){return this.value="[",this.mirror="]",this}function k(){return this.value="]",this.mirror="[",this}function M(){return this.value="(",this.mirror=")",this}function x(){return this.value=")",this.mirror="(",this}function C(){return this}function P(){return this}function A(){return this}function N(){return this}function O(){return this}function R(){return this}function j(){return this}function I(e){return this.value=u(e),this}function D(){throw"Abstract Base Class"}function L(e){this.value=e}function $(e){this.value=e,this.mirror=")"}function U(e){this.value=e}function q(e){this.value=e,this.type="unrestricted"}function G(e){this.value=e}function F(e){this.value=e}function H(){this.value=null,this.type="integer",this.repr=""}function K(){this.value=null,this.repr=""}function B(){this.value=null,this.type="integer",this.repr="",this.unit=""}function W(e){for(var n="",o=(e=""+e).charCodeAt(0),r=0;r<e.length;r++){var i=e.charCodeAt(r);if(0==i)throw new h("Invalid character: the input contains U+0000.");t(i,1,31)||127==i||0==r&&t(i,48,57)||1==r&&t(i,48,57)&&45==o?n+="\\\\"+i.toString(16)+" ":i>=128||45==i||95==i||t(i,48,57)||t(i,65,90)||t(i,97,122)?n+=e[r]:n+="\\\\"+e[r]}return n}function J(e){e=""+e;for(var n="",o=0;o<e.length;o++){var r=e.charCodeAt(o);if(0==r)throw new h("Invalid character: the input contains U+0000.");t(r,1,31)||127==r?n+="\\\\"+r.toString(16)+" ":n+=34==r||92==r?"\\\\"+e[o]:e[o]}return n}(h.prototype=new Error).name="InvalidCharacterError",p.prototype.toJSON=function(){return{token:this.tokenType}},p.prototype.toString=function(){return this.tokenType},p.prototype.toSource=function(){return""+this},f.prototype=Object.create(p.prototype),f.prototype.tokenType="BADSTRING",d.prototype=Object.create(p.prototype),d.prototype.tokenType="BADURL",m.prototype=Object.create(p.prototype),m.prototype.tokenType="WHITESPACE",m.prototype.toString=function(){return"WS"},m.prototype.toSource=function(){return" "},g.prototype=Object.create(p.prototype),g.prototype.tokenType="CDO",g.prototype.toSource=function(){return"\\x3c!--"},y.prototype=Object.create(p.prototype),y.prototype.tokenType="CDC",y.prototype.toSource=function(){return"--\\x3e"},_.prototype=Object.create(p.prototype),_.prototype.tokenType=":",v.prototype=Object.create(p.prototype),v.prototype.tokenType=";",w.prototype=Object.create(p.prototype),w.prototype.tokenType=",",E.prototype=Object.create(p.prototype),S.prototype=Object.create(E.prototype),S.prototype.tokenType="{",T.prototype=Object.create(E.prototype),T.prototype.tokenType="}",b.prototype=Object.create(E.prototype),b.prototype.tokenType="[",k.prototype=Object.create(E.prototype),k.prototype.tokenType="]",M.prototype=Object.create(E.prototype),M.prototype.tokenType="(",x.prototype=Object.create(E.prototype),x.prototype.tokenType=")",C.prototype=Object.create(p.prototype),C.prototype.tokenType="~=",P.prototype=Object.create(p.prototype),P.prototype.tokenType="|=",A.prototype=Object.create(p.prototype),A.prototype.tokenType="^=",N.prototype=Object.create(p.prototype),N.prototype.tokenType="$=",O.prototype=Object.create(p.prototype),O.prototype.tokenType="*=",R.prototype=Object.create(p.prototype),R.prototype.tokenType="||",j.prototype=Object.create(p.prototype),j.prototype.tokenType="EOF",j.prototype.toSource=function(){return""},I.prototype=Object.create(p.prototype),I.prototype.tokenType="DELIM",I.prototype.toString=function(){return"DELIM("+this.value+")"},I.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},I.prototype.toSource=function(){return"\\\\"==this.value?"\\\\\\n":this.value},D.prototype=Object.create(p.prototype),D.prototype.ASCIIMatch=function(e){return this.value.toLowerCase()==e.toLowerCase()},D.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},L.prototype=Object.create(D.prototype),L.prototype.tokenType="IDENT",L.prototype.toString=function(){return"IDENT("+this.value+")"},L.prototype.toSource=function(){return W(this.value)},$.prototype=Object.create(D.prototype),$.prototype.tokenType="FUNCTION",$.prototype.toString=function(){return"FUNCTION("+this.value+")"},$.prototype.toSource=function(){return W(this.value)+"("},U.prototype=Object.create(D.prototype),U.prototype.tokenType="AT-KEYWORD",U.prototype.toString=function(){return"AT("+this.value+")"},U.prototype.toSource=function(){return"@"+W(this.value)},q.prototype=Object.create(D.prototype),q.prototype.tokenType="HASH",q.prototype.toString=function(){return"HASH("+this.value+")"},q.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e},q.prototype.toSource=function(){return"id"==this.type?"#"+W(this.value):"#"+function(e){for(var n="",o=((e=""+e).charCodeAt(0),0);o<e.length;o++){var r=e.charCodeAt(o);if(0==r)throw new h("Invalid character: the input contains U+0000.");r>=128||45==r||95==r||t(r,48,57)||t(r,65,90)||t(r,97,122)?n+=e[o]:n+="\\\\"+r.toString(16)+" "}return n}(this.value)},G.prototype=Object.create(D.prototype),G.prototype.tokenType="STRING",G.prototype.toString=function(){return\'"\'+J(this.value)+\'"\'},F.prototype=Object.create(D.prototype),F.prototype.tokenType="URL",F.prototype.toString=function(){return"URL("+this.value+")"},F.prototype.toSource=function(){return\'url("\'+J(this.value)+\'")\'},H.prototype=Object.create(p.prototype),H.prototype.tokenType="NUMBER",H.prototype.toString=function(){return"integer"==this.type?"INT("+this.value+")":"NUMBER("+this.value+")"},H.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e},H.prototype.toSource=function(){return this.repr},K.prototype=Object.create(p.prototype),K.prototype.tokenType="PERCENTAGE",K.prototype.toString=function(){return"PERCENTAGE("+this.value+")"},K.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.repr=this.repr,e},K.prototype.toSource=function(){return this.repr+"%"},B.prototype=Object.create(p.prototype),B.prototype.tokenType="DIMENSION",B.prototype.toString=function(){return"DIM("+this.value+","+this.unit+")"},B.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e.unit=this.unit,e},B.prototype.toSource=function(){var e=this.repr,n=W(this.unit);return"e"!=n[0].toLowerCase()||"-"!=n[1]&&!t(n.charCodeAt(1),48,57)||(n="\\\\65 "+n.slice(1,n.length)),e+n},e.tokenize=function(e){e=function(e){for(var n=[],o=0;o<e.length;o++){var r=e.charCodeAt(o);if(13==r&&10==e.charCodeAt(o+1)&&(r=10,o++),13!=r&&12!=r||(r=10),0==r&&(r=65533),t(r,55296,56319)&&t(e.charCodeAt(o+1),56320,57343)){var i=r-55296,s=e.charCodeAt(o+1)-56320;r=Math.pow(2,16)+i*Math.pow(2,10)+s,o++}n.push(r)}return n}(e);for(var r,h=-1,p=[],E=0,D=0,W=0,J={line:E,column:D},Q=function(t){return t>=e.length?-1:e[t]},z=function(e){if(void 0===e&&(e=1),e>3)throw"Spec Error: no more than three codepoints of lookahead.";return Q(h+e)},V=function(e){return void 0===e&&(e=1),a(r=Q(h+=e))?(E+=1,W=D,D=0):D+=e,!0},X=function(){return h-=1,a(r)?(E-=1,D=W):D-=1,J.line=E,J.column=D,!0},Y=function(e){return void 0===e&&(e=r),-1==e},Z=function(){return console.log("Parse error at index "+h+", processing codepoint 0x"+r.toString(16)+"."),!0},ee=function(){if(te(),V(),l(r)){for(;l(z());)V();return new m}if(34==r)return re();if(35==r){if(s(z())||ce(z(1),z(2))){var e=new q;return le(z(1),z(2),z(3))&&(e.type="id"),e.value=pe(),e}return new I(r)}return 36==r?61==z()?(V(),new N):new I(r):39==r?re():40==r?new M:41==r?new x:42==r?61==z()?(V(),new O):new I(r):43==r?ue()?(X(),ne()):new I(r):44==r?new w:45==r?ue()?(X(),ne()):45==z(1)&&62==z(2)?(V(2),new y):he()?(X(),oe()):new I(r):46==r?ue()?(X(),ne()):new I(r):58==r?new _:59==r?new v:60==r?33==z(1)&&45==z(2)&&45==z(3)?(V(3),new g):new I(r):64==r?le(z(1),z(2),z(3))?new U(pe()):new I(r):91==r?new b:92==r?ae()?(X(),oe()):(Z(),new I(r)):93==r?new k:94==r?61==z()?(V(),new A):new I(r):123==r?new S:124==r?61==z()?(V(),new P):124==z()?(V(),new R):new I(r):125==r?new T:126==r?61==z()?(V(),new C):new I(r):n(r)?(X(),ne()):i(r)?(X(),oe()):Y()?new j:new I(r)},te=function(){for(;47==z(1)&&42==z(2);)for(V(2);;){if(V(),42==r&&47==z()){V();break}if(Y())return void Z()}},ne=function(){var e,t=fe();return le(z(1),z(2),z(3))?((e=new B).value=t.value,e.repr=t.repr,e.type=t.type,e.unit=pe(),e):37==z()?(V(),(e=new K).value=t.value,e.repr=t.repr,e):((e=new H).value=t.value,e.repr=t.repr,e.type=t.type,e)},oe=function(){var e=pe();if("url"==e.toLowerCase()&&40==z()){for(V();l(z(1))&&l(z(2));)V();return 34==z()||39==z()?new $(e):!l(z())||34!=z(2)&&39!=z(2)?ie():new $(e)}return 40==z()?(V(),new $(e)):new L(e)},re=function(e){void 0===e&&(e=r);for(var t="";V();){if(r==e||Y())return new G(t);if(a(r))return Z(),X(),new f;92==r?Y(z())||(a(z())?V():t+=u(se())):t+=u(r)}},ie=function(){for(var e=new F("");l(z());)V();if(Y(z()))return e;for(;V();){if(41==r||Y())return e;if(l(r)){for(;l(z());)V();return 41==z()||Y(z())?(V(),e):(me(),new d)}if(34==r||39==r||40==r||c(r))return Z(),me(),new d;if(92==r){if(!ae())return Z(),me(),new d;e.value+=u(se())}else e.value+=u(r)}},se=function(){if(V(),o(r)){for(var e=[r],t=0;t<5&&o(z());t++)V(),e.push(r);l(z())&&V();var n=parseInt(e.map((function(e){return String.fromCharCode(e)})).join(""),16);return n>1114111&&(n=65533),n}return Y()?65533:r},ce=function(e,t){return 92==e&&!a(t)},ae=function(){return ce(r,z())},le=function(e,t,n){return 45==e?i(t)||45==t||ce(t,n):!!i(e)||92==e&&ce(e,t)},he=function(){return le(r,z(1),z(2))},ue=function(){return e=r,t=z(1),o=z(2),43==e||45==e?!!n(t)||!(46!=t||!n(o)):46==e?!!n(t):!!n(e);var e,t,o},pe=function(){for(var e="";V();)if(s(r))e+=u(r);else{if(!ae())return X(),e;e+=u(se())}},fe=function(){var e=[],t="integer";for(43!=z()&&45!=z()||(V(),e+=u(r));n(z());)V(),e+=u(r);if(46==z(1)&&n(z(2)))for(V(),e+=u(r),V(),e+=u(r),t="number";n(z());)V(),e+=u(r);var o=z(1),i=z(2),s=z(3);if(69!=o&&101!=o||!n(i)){if((69==o||101==o)&&(43==i||45==i)&&n(s))for(V(),e+=u(r),V(),e+=u(r),V(),e+=u(r),t="number";n(z());)V(),e+=u(r)}else for(V(),e+=u(r),V(),e+=u(r),t="number";n(z());)V(),e+=u(r);return{type:t,value:de(e),repr:e}},de=function(e){return+e},me=function(){for(;V();){if(41==r||Y())return;ae()&&se()}},ge=0;!Y(z());)if(p.push(ee()),++ge>2*e.length)return"I\'m infinite-looping!";return p},e.IdentToken=L,e.FunctionToken=$,e.AtKeywordToken=U,e.HashToken=q,e.StringToken=G,e.BadStringToken=f,e.URLToken=F,e.BadURLToken=d,e.DelimToken=I,e.NumberToken=H,e.PercentageToken=K,e.DimensionToken=B,e.IncludeMatchToken=C,e.DashMatchToken=P,e.PrefixMatchToken=A,e.SuffixMatchToken=N,e.SubstringMatchToken=O,e.ColumnToken=R,e.WhitespaceToken=m,e.CDOToken=g,e.CDCToken=y,e.ColonToken=_,e.SemicolonToken=v,e.CommaToken=w,e.OpenParenToken=M,e.CloseParenToken=x,e.OpenSquareToken=b,e.CloseSquareToken=k,e.OpenCurlyToken=S,e.CloseCurlyToken=T,e.EOFToken=j,e.CSSParserToken=p,e.GroupingToken=E},void 0===(o=n.apply(t,[t]))||(e.exports=o)},461:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseSelector=i,t.splitSelectorByFrame=function(e){const t=i(e),n=[];let o={parts:[]},r=0;for(let e=0;e<t.parts.length;++e){const i=t.parts[e];if("control"!==i.name||"enter-frame"!==i.body)t.capture===e&&(o.capture=e-r),o.parts.push(i);else{if(!o.parts.length)throw new Error("Selector cannot start with entering frame, select the iframe first");n.push(o),o={parts:[]},r=e+1}}if(!o.parts.length)throw new Error(`Selector cannot end with entering frame, while parsing selector ${e}`);if(n.push(o),"number"==typeof t.capture&&"number"!=typeof n[n.length-1].capture)throw new Error("Can not capture the selector before diving into the frame. Only use * after the last frame has been selected");return n},t.stringifySelector=function(e){return"string"==typeof e?e:e.parts.map(((t,n)=>{const o="css"===t.name?"":t.name+"=";return`${n===e.capture?"*":""}${o}${t.source}`})).join(" >> ")},t.customCSSNames=void 0;var o=n(317);const r=new Set(["not","is","where","has","scope","light","visible","text","text-matches","text-is","has-text","above","below","right-of","left-of","near","nth-match"]);function i(e){const t=function(e){let t,n=0,o=0;const r={parts:[]},i=()=>{const t=e.substring(o,n).trim(),i=t.indexOf("=");let s,c;-1!==i&&t.substring(0,i).trim().match(/^[a-zA-Z_0-9-+:*]+$/)?(s=t.substring(0,i).trim(),c=t.substring(i+1)):t.length>1&&\'"\'===t[0]&&\'"\'===t[t.length-1]||t.length>1&&"\'"===t[0]&&"\'"===t[t.length-1]?(s="text",c=t):/^\\(*\\/\\//.test(t)||t.startsWith("..")?(s="xpath",c=t):(s="css",c=t);let a=!1;if("*"===s[0]&&(a=!0,s=s.substring(1)),r.parts.push({name:s,body:c}),a){if(void 0!==r.capture)throw new Error("Only one of the selectors can capture using * modifier");r.capture=r.parts.length-1}};if(!e.includes(">>"))return n=e.length,i(),r;for(;n<e.length;){const r=e[n];"\\\\"===r&&n+1<e.length?n+=2:r===t?(t=void 0,n++):t||\'"\'!==r&&"\'"!==r&&"`"!==r?t||">"!==r||">"!==e[n+1]?n++:(i(),n+=2,o=n):(t=r,n++)}return i(),r}(e),n=t.parts.map((e=>"css"===e.name||"css:light"===e.name?("css:light"===e.name&&(e.body=":light("+e.body+")"),{name:"css",body:(0,o.parseCSS)(e.body,r).selector,source:e.body}):{...e,source:e.body}));return{capture:t.capture,parts:n}}t.customCSSNames=r},848:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.createLaxTextMatcher=d,t.createStrictTextMatcher=m,t.createRegexTextMatcher=g,t.elementText=_,t.elementMatchesText=v,t.parentElementOrShadowHost=x,t.isVisible=A,t.SelectorEvaluatorImpl=void 0;var o=n(461);t.SelectorEvaluatorImpl=class{constructor(e){this._engines=new Map,this._cacheQueryCSS=new Map,this._cacheMatches=new Map,this._cacheQuery=new Map,this._cacheMatchesSimple=new Map,this._cacheMatchesParents=new Map,this._cacheCallMatches=new Map,this._cacheCallQuery=new Map,this._cacheQuerySimple=new Map,this._cacheText=new Map,this._scoreMap=void 0,this._retainCacheCounter=0;for(const[t,n]of e)this._engines.set(t,n);this._engines.set("not",c),this._engines.set("is",r),this._engines.set("where",r),this._engines.set("has",i),this._engines.set("scope",s),this._engines.set("light",a),this._engines.set("visible",l),this._engines.set("text",h),this._engines.set("text-is",u),this._engines.set("text-matches",p),this._engines.set("has-text",f),this._engines.set("right-of",k("right-of",w)),this._engines.set("left-of",k("left-of",E)),this._engines.set("above",k("above",S)),this._engines.set("below",k("below",T)),this._engines.set("near",k("near",b)),this._engines.set("nth-match",M);const t=[...this._engines.keys()];t.sort();const n=[...o.customCSSNames];if(n.sort(),t.join("|")!==n.join("|"))throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${t.join("|")} vs ${n.join("|")}`)}begin(){++this._retainCacheCounter}end(){--this._retainCacheCounter,this._retainCacheCounter||(this._cacheQueryCSS.clear(),this._cacheMatches.clear(),this._cacheQuery.clear(),this._cacheMatchesSimple.clear(),this._cacheMatchesParents.clear(),this._cacheCallMatches.clear(),this._cacheCallQuery.clear(),this._cacheQuerySimple.clear(),this._cacheText.clear())}_cached(e,t,n,o){e.has(t)||e.set(t,[]);const r=e.get(t),i=r.find((e=>n.every(((t,n)=>e.rest[n]===t))));if(i)return i.result;const s=o();return r.push({rest:n,result:s}),s}_checkSelector(e){if("object"!=typeof e||!e||!(Array.isArray(e)||"simples"in e&&e.simples.length))throw new Error(`Malformed selector "${e}"`);return e}matches(e,t,n){const o=this._checkSelector(t);this.begin();try{return this._cached(this._cacheMatches,e,[o,n.scope,n.pierceShadow],(()=>Array.isArray(o)?this._matchesEngine(r,e,o,n):!!this._matchesSimple(e,o.simples[o.simples.length-1].selector,n)&&this._matchesParents(e,o,o.simples.length-2,n)))}finally{this.end()}}query(e,t){const n=this._checkSelector(t);this.begin();try{return this._cached(this._cacheQuery,n,[e.scope,e.pierceShadow],(()=>{if(Array.isArray(n))return this._queryEngine(r,e,n);const t=this._scoreMap;this._scoreMap=new Map;let o=this._querySimple(e,n.simples[n.simples.length-1].selector);return o=o.filter((t=>this._matchesParents(t,n,n.simples.length-2,e))),this._scoreMap.size&&o.sort(((e,t)=>{const n=this._scoreMap.get(e),o=this._scoreMap.get(t);return n===o?0:void 0===n?1:void 0===o?-1:n-o})),this._scoreMap=t,o}))}finally{this.end()}}_markScore(e,t){this._scoreMap&&this._scoreMap.set(e,t)}_matchesSimple(e,t,n){return this._cached(this._cacheMatchesSimple,e,[t,n.scope,n.pierceShadow],(()=>{if(!t.functions.some((e=>"scope"===e.name||"is"===e.name))&&e===n.scope)return!1;if(t.css&&!this._matchesCSS(e,t.css))return!1;for(const o of t.functions)if(!this._matchesEngine(this._getEngine(o.name),e,o.args,n))return!1;return!0}))}_querySimple(e,t){return t.functions.length?this._cached(this._cacheQuerySimple,t,[e.scope,e.pierceShadow],(()=>{let n=t.css;const o=t.functions;let r;"*"===n&&o.length&&(n=void 0);let i=-1;void 0!==n?r=this._queryCSS(e,n):(i=o.findIndex((e=>void 0!==this._getEngine(e.name).query)),-1===i&&(i=0),r=this._queryEngine(this._getEngine(o[i].name),e,o[i].args));for(let t=0;t<o.length;t++){if(t===i)continue;const n=this._getEngine(o[t].name);void 0!==n.matches&&(r=r.filter((r=>this._matchesEngine(n,r,o[t].args,e))))}for(let t=0;t<o.length;t++){if(t===i)continue;const n=this._getEngine(o[t].name);void 0===n.matches&&(r=r.filter((r=>this._matchesEngine(n,r,o[t].args,e))))}return r})):this._queryCSS(e,t.css||"*")}_matchesParents(e,t,n,o){return n<0||this._cached(this._cacheMatchesParents,e,[t,n,o.scope,o.pierceShadow],(()=>{const{selector:r,combinator:i}=t.simples[n];if(">"===i){const i=C(e,o);return!(!i||!this._matchesSimple(i,r,o))&&this._matchesParents(i,t,n-1,o)}if("+"===i){const i=P(e,o);return!(!i||!this._matchesSimple(i,r,o))&&this._matchesParents(i,t,n-1,o)}if(""===i){let i=C(e,o);for(;i;){if(this._matchesSimple(i,r,o)){if(this._matchesParents(i,t,n-1,o))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,o)}return!1}if("~"===i){let i=P(e,o);for(;i;){if(this._matchesSimple(i,r,o)){if(this._matchesParents(i,t,n-1,o))return!0;if("~"===t.simples[n-1].combinator)break}i=P(i,o)}return!1}if(">="===i){let i=e;for(;i;){if(this._matchesSimple(i,r,o)){if(this._matchesParents(i,t,n-1,o))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,o)}return!1}throw new Error(`Unsupported combinator "${i}"`)}))}_matchesEngine(e,t,n,o){if(e.matches)return this._callMatches(e,t,n,o);if(e.query)return this._callQuery(e,n,o).includes(t);throw new Error(\'Selector engine should implement "matches" or "query"\')}_queryEngine(e,t,n){if(e.query)return this._callQuery(e,n,t);if(e.matches)return this._queryCSS(t,"*").filter((o=>this._callMatches(e,o,n,t)));throw new Error(\'Selector engine should implement "matches" or "query"\')}_callMatches(e,t,n,o){return this._cached(this._cacheCallMatches,t,[e,o.scope,o.pierceShadow,...n],(()=>e.matches(t,n,o,this)))}_callQuery(e,t,n){return this._cached(this._cacheCallQuery,e,[n.scope,n.pierceShadow,...t],(()=>e.query(n,t,this)))}_matchesCSS(e,t){return e.matches(t)}_queryCSS(e,t){return this._cached(this._cacheQueryCSS,t,[e.scope,e.pierceShadow],(()=>{let n=[];return function o(r){if(n=n.concat([...r.querySelectorAll(t)]),e.pierceShadow){r.shadowRoot&&o(r.shadowRoot);for(const e of r.querySelectorAll("*"))e.shadowRoot&&o(e.shadowRoot)}}(e.scope),n}))}_getEngine(e){const t=this._engines.get(e);if(!t)throw new Error(`Unknown selector engine "${e}"`);return t}};const r={matches(e,t,n,o){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');return t.some((t=>o.matches(e,t,n)))},query(e,t,n){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');let o=[];for(const r of t)o=o.concat(n.query(e,r));return 1===t.length?o:function(e){const t=new Map,n=[],o=[];function r(e){let o=t.get(e);if(o)return o;const i=x(e);return i?r(i).children.push(e):n.push(e),o={children:[],taken:!1},t.set(e,o),o}return e.forEach((e=>r(e).taken=!0)),n.forEach((function e(n){const r=t.get(n);if(r.taken&&o.push(n),r.children.length>1){const e=new Set(r.children);r.children=[];let t=n.firstElementChild;for(;t&&r.children.length<e.size;)e.has(t)&&r.children.push(t),t=t.nextElementSibling;for(t=n.shadowRoot?n.shadowRoot.firstElementChild:null;t&&r.children.length<e.size;)e.has(t)&&r.children.push(t),t=t.nextElementSibling}r.children.forEach(e)})),o}(o)}},i={matches(e,t,n,o){if(0===t.length)throw new Error(\'"has" engine expects non-empty selector list\');return o.query({...n,scope:e},t).length>0}},s={matches(e,t,n,o){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');return 9===n.scope.nodeType?e===n.scope.documentElement:e===n.scope},query(e,t,n){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');if(9===e.scope.nodeType){const t=e.scope.documentElement;return t?[t]:[]}return 1===e.scope.nodeType?[e.scope]:[]}},c={matches(e,t,n,o){if(0===t.length)throw new Error(\'"not" engine expects non-empty selector list\');return!o.matches(e,t,n)}},a={query:(e,t,n)=>n.query({...e,pierceShadow:!1},t),matches:(e,t,n,o)=>o.matches(e,t,{...n,pierceShadow:!1})},l={matches(e,t,n,o){if(t.length)throw new Error(\'"visible" engine expects no arguments\');return A(e)}},h={matches(e,t,n,o){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text" engine expects a single string\');return"self"===v(o,e,d(t[0]))}},u={matches(e,t,n,o){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text-is" engine expects a single string\');return"none"!==v(o,e,m(t[0]))}},p={matches(e,t,n,o){if(0===t.length||"string"!=typeof t[0]||t.length>2||2===t.length&&"string"!=typeof t[1])throw new Error(\'"text-matches" engine expects a regexp body and optional regexp flags\');return"self"===v(o,e,g(t[0],2===t.length?t[1]:void 0))}},f={matches(e,t,n,o){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"has-text" engine expects a single string\');return!y(e)&&d(t[0])(_(o,e))}};function d(e){return e=e.trim().replace(/\\s+/g," ").toLowerCase(),t=>t.full.trim().replace(/\\s+/g," ").toLowerCase().includes(e)}function m(e){return e=e.trim().replace(/\\s+/g," "),t=>!e&&!t.immediate.length||t.immediate.some((t=>t.trim().replace(/\\s+/g," ")===e))}function g(e,t){const n=new RegExp(e,t);return e=>n.test(e.full)}function y(e){return"SCRIPT"===e.nodeName||"STYLE"===e.nodeName||document.head&&document.head.contains(e)}function _(e,t){let n=e._cacheText.get(t);if(void 0===n){if(n={full:"",immediate:[]},!y(t)){let o="";if(t instanceof HTMLInputElement&&("submit"===t.type||"button"===t.type))n={full:t.value,immediate:[t.value]};else{for(let r=t.firstChild;r;r=r.nextSibling)r.nodeType===Node.TEXT_NODE?(n.full+=r.nodeValue||"",o+=r.nodeValue||""):(o&&n.immediate.push(o),o="",r.nodeType===Node.ELEMENT_NODE&&(n.full+=_(e,r).full));o&&n.immediate.push(o),t.shadowRoot&&(n.full+=_(e,t.shadowRoot).full)}}e._cacheText.set(t,n)}return n}function v(e,t,n){if(y(t))return"none";if(!n(_(e,t)))return"none";for(let o=t.firstChild;o;o=o.nextSibling)if(o.nodeType===Node.ELEMENT_NODE&&n(_(e,o)))return"selfAndChildren";return t.shadowRoot&&n(_(e,t.shadowRoot))?"selfAndChildren":"self"}function w(e,t,n){const o=e.left-t.right;if(!(o<0||void 0!==n&&o>n))return o+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function E(e,t,n){const o=t.left-e.right;if(!(o<0||void 0!==n&&o>n))return o+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function S(e,t,n){const o=t.top-e.bottom;if(!(o<0||void 0!==n&&o>n))return o+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function T(e,t,n){const o=e.top-t.bottom;if(!(o<0||void 0!==n&&o>n))return o+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function b(e,t,n){const o=void 0===n?50:n;let r=0;return e.left-t.right>=0&&(r+=e.left-t.right),t.left-e.right>=0&&(r+=t.left-e.right),t.top-e.bottom>=0&&(r+=t.top-e.bottom),e.top-t.bottom>=0&&(r+=e.top-t.bottom),r>o?void 0:r}function k(e,t){return{matches(n,o,r,i){const s=o.length&&"number"==typeof o[o.length-1]?o[o.length-1]:void 0,c=void 0===s?o:o.slice(0,o.length-1);if(o.length<1+(void 0===s?0:1))throw new Error(`"${e}" engine expects a selector list and optional maximum distance in pixels`);const a=n.getBoundingClientRect();let l;for(const e of i.query(r,c)){if(e===n)continue;const o=t(a,e.getBoundingClientRect(),s);void 0!==o&&(void 0===l||o<l)&&(l=o)}return void 0!==l&&(i._markScore(n,l),!0)}}}const M={query(e,t,n){let o=t[t.length-1];if(t.length<2)throw new Error(\'"nth-match" engine expects non-empty selector list and an index argument\');if("number"!=typeof o||o<1)throw new Error(\'"nth-match" engine expects a one-based index as the last argument\');const i=r.query(e,t.slice(0,t.length-1),n);return o--,o<i.length?[i[o]]:[]}};function x(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:void 0}function C(e,t){if(e!==t.scope)return t.pierceShadow?x(e):e.parentElement||void 0}function P(e,t){if(e!==t.scope)return e.previousElementSibling||void 0}function A(e){if(!e.ownerDocument||!e.ownerDocument.defaultView)return!0;const t=e.ownerDocument.defaultView.getComputedStyle(e);if(!t||"hidden"===t.visibility)return!1;const n=e.getBoundingClientRect();return n.width>0&&n.height>0}},854:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.querySelector=function(e,t,n){try{const o=e.parseSelector(t);return{selector:t,elements:e.querySelectorAll(o,n)}}catch(e){return{selector:t,elements:[]}}},t.generateSelector=function(e,t){e._evaluator.begin();try{const n=function(e,t){if(t.ownerDocument.documentElement===t)return[{engine:"css",selector:"html",score:1}];const n=(l,u)=>{const d=u?r:i;let m=d.get(l);return void 0===m&&(m=((r,i)=>{const l=r===t;let u=i?function(e,t,n){if("SELECT"===t.nodeName)return[];const r=(0,o.elementText)(e._evaluator,t).full.trim().replace(/\\s+/g," ").substring(0,80);if(!r)return[];const i=[];let s=r;if((r.includes(\'"\')||r.includes(">>")||"/"===r[0])&&(s=`/.*${function(e){return e.replace(/[.*+?^>${}()|[\\]\\\\]/g,"\\\\$&")}(r)}.*/`),i.push({engine:"text",selector:s,score:10}),n&&s===r){let e=t.nodeName.toLocaleLowerCase();t.hasAttribute("role")&&(e+=`[role=${h(t.getAttribute("role"))}]`),i.push({engine:"css",selector:`${e}:has-text("${r}")`,score:30})}return i}(e,r,r===t).map((e=>[e])):[];r!==t&&(u=s(u));const d=function(e,t){const n=[];for(const e of["data-testid","data-test-id","data-test"])t.hasAttribute(e)&&n.push({engine:"css",selector:`[${e}=${h(t.getAttribute(e))}]`,score:1});if("INPUT"===t.nodeName){const e=t;e.placeholder&&n.push({engine:"css",selector:`[placeholder=${h(e.placeholder)}]`,score:10})}t.hasAttribute("aria-label")&&n.push({engine:"css",selector:`[aria-label=${h(t.getAttribute("aria-label"))}]`,score:10}),t.getAttribute("alt")&&["APPLET","AREA","IMG","INPUT"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[alt=${h(t.getAttribute("alt"))}]`,score:10}),t.hasAttribute("role")&&n.push({engine:"css",selector:`${t.nodeName.toLocaleLowerCase()}[role=${h(t.getAttribute("role"))}]`,score:50}),t.getAttribute("name")&&["BUTTON","FORM","FIELDSET","IFRAME","INPUT","KEYGEN","OBJECT","OUTPUT","SELECT","TEXTAREA","MAP","META","PARAM"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[name=${h(t.getAttribute("name"))}]`,score:50}),["INPUT","TEXTAREA"].includes(t.nodeName)&&"hidden"!==t.getAttribute("type")&&t.getAttribute("type")&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[type=${h(t.getAttribute("type"))}]`,score:50}),["INPUT","TEXTAREA","SELECT"].includes(t.nodeName)&&n.push({engine:"css",selector:t.nodeName.toLowerCase(),score:50});const o=t.getAttribute("id");return o&&!function(e){let t,n=0;for(let o=0;o<e.length;++o){const r=e[o];let i;"-"!==r&&"_"!==r&&(i=r>="a"&&r<="z"?"lower":r>="A"&&r<="Z"?"upper":r>="0"&&r<="9"?"digit":"other","lower"!==i||"upper"!==t?(t&&t!==i&&++n,t=i):t=i)}return n>=e.length/4}(o)&&n.push({engine:"css",selector:a(o),score:100}),n.push({engine:"css",selector:t.nodeName.toLocaleLowerCase(),score:200}),n}(0,r).map((e=>[e]));let m=f(e,t.ownerDocument,r,[...u,...d],l);u=s(u);const g=t=>{const o=i&&!t.length,s=[...t,...d].filter((e=>!m||p(e)<p(m)));let a=s[0];if(a)for(let t=c(r);t;t=c(t)){const i=n(t,o);if(!i)continue;if(m&&p([...i,...a])>=p(m))continue;if(a=f(e,t,r,s,l),!a)return;const c=[...i,...a];(!m||p(c)<p(m))&&(m=c)}};return g(u),r===t&&u.length&&g([]),m})(l,u),d.set(l,m)),m};return n(t,!0)}(e,t=t.closest("button,select,input,[role=button],[role=checkbox],[role=radio]")||t),d=u(n||[l(e,t)]),m=e.parseSelector(d);return{selector:d,elements:e.querySelectorAll(m,t.ownerDocument)}}finally{r.clear(),i.clear(),e._evaluator.end()}};var o=n(848);const r=new Map,i=new Map;function s(e){return e.filter((e=>"/"!==e[0].selector[0]))}function c(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:null}function a(e){return/^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(e)?"#"+e:`[id="${e}"]`}function l(e,t){const n=1e7,o=t.ownerDocument,r=[];function i(n){const o=r.slice();n&&o.unshift(n);const i=o.join(" "),s=e.parseSelector(i);return e.querySelector(s,t.ownerDocument,!1)===t?i:void 0}for(let e=t;e&&e!==o;e=c(e)){const t=e.nodeName.toLowerCase();let o="";if(e.id){const t=a(e.id),r=i(t);if(r)return{engine:"css",selector:r,score:n};o=t}const s=e.parentNode,c=[...e.classList];for(let e=0;e<c.length;++e){const t="."+c.slice(0,e+1).join("."),r=i(t);if(r)return{engine:"css",selector:r,score:n};!o&&s&&1===s.querySelectorAll(t).length&&(o=t)}if(s){const r=[...s.children],c=0===r.filter((e=>e.nodeName.toLowerCase()===t)).indexOf(e)?t:`${t}:nth-child(${1+r.indexOf(e)})`,a=i(c);if(a)return{engine:"css",selector:a,score:n};o||(o=c)}else o||(o=t);r.unshift(o)}return{engine:"css",selector:i(),score:n}}function h(e){return`"${e.replace(/"/g,\'\\\\"\').replace(/\\n/g,"\\\\n")}"`}function u(e){const t=[];let n="";for(const{engine:o,selector:r}of e)t.length&&("css"!==n||"css"!==o||r.startsWith(":nth-match("))&&t.push(">>"),n=o,"css"===o?t.push(r):t.push(`${o}=${r}`);return t.join(" ")}function p(e){let t=0;for(let n=0;n<e.length;n++)t+=e[n].score*(e.length-n);return t}function f(e,t,n,o,r){const i=o.map((e=>({tokens:e,score:p(e)})));i.sort(((e,t)=>e.score-t.score));let s=null;for(const{tokens:o}of i){const i=e.parseSelector(u(o)),c=e.querySelectorAll(i,t),a=c.indexOf(n);if(0===a)return o;if(!r||s||-1===a||c.length>5)continue;const l=o.map((e=>"text"!==e.engine?e:e.selector.startsWith("/")&&e.selector.endsWith("/")?{engine:"css",selector:`:text-matches("${e.selector.substring(1,e.selector.length-1)}")`,score:e.score}:{engine:"css",selector:`:text("${e.selector}")`,score:e.score}));s=[{engine:"css",selector:`:nth-match(${u(l)}, ${a+1})`,score:p(l)+1e3}]}return s}}},t={};function n(o){var r=t[o];if(void 0!==r)return r.exports;var i=t[o]={exports:{}};return e[o](i,i.exports,n),i.exports}var o={};(()=>{var e=o;e.default=void 0;var t=n(854);function r(e){return(e.altKey?1:0)|(e.ctrlKey?2:0)|(e.metaKey?4:0)|(e.shiftKey?8:0)}function i(e){switch(e.which){case 1:return"left";case 2:return"middle";case 3:return"right"}return"left"}function s(e){if("CANVAS"===e.target.nodeName)return{x:e.offsetX,y:e.offsetY}}function c(e){e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation()}function a(e){if(!e||"INPUT"!==e.nodeName)return null;const t=e;return"checkbox"===t.type?t:null}function l(e,t,n,o){return e.addEventListener(t,n,o),()=>{e.removeEventListener(t,n,o)}}var h=class{constructor(e,t){this._injectedScript=void 0,this._performingAction=!1,this._outerGlassPaneElement=void 0,this._glassPaneShadow=void 0,this._innerGlassPaneElement=void 0,this._highlightElements=[],this._tooltipElement=void 0,this._listeners=[],this._hoveredModel=null,this._hoveredElement=null,this._activeModel=null,this._expectProgrammaticKeyUp=!1,this._pollRecorderModeTimer=void 0,this._mode="none",this._actionPointElement=void 0,this._actionPoint=void 0,this._actionSelector=void 0,this._params=void 0,this._params=t,this._injectedScript=e,this._outerGlassPaneElement=document.createElement("x-pw-glass"),this._outerGlassPaneElement.style.position="fixed",this._outerGlassPaneElement.style.top="0",this._outerGlassPaneElement.style.right="0",this._outerGlassPaneElement.style.bottom="0",this._outerGlassPaneElement.style.left="0",this._outerGlassPaneElement.style.zIndex="2147483647",this._outerGlassPaneElement.style.pointerEvents="none",this._outerGlassPaneElement.style.display="flex",this._tooltipElement=document.createElement("x-pw-tooltip"),this._actionPointElement=document.createElement("x-pw-action-point"),this._actionPointElement.setAttribute("hidden","true"),this._innerGlassPaneElement=document.createElement("x-pw-glass-inner"),this._innerGlassPaneElement.style.flex="auto",this._innerGlassPaneElement.appendChild(this._tooltipElement),this._glassPaneShadow=this._outerGlassPaneElement.attachShadow({mode:this._params.isUnderTest?"open":"closed"}),this._glassPaneShadow.appendChild(this._innerGlassPaneElement),this._glassPaneShadow.appendChild(this._actionPointElement);const n=document.createElement("style");n.textContent="\\n        x-pw-tooltip {\\n          align-items: center;\\n          backdrop-filter: blur(5px);\\n          background-color: rgba(0, 0, 0, 0.7);\\n          border-radius: 2px;\\n          box-shadow: rgba(0, 0, 0, 0.1) 0px 3.6px 3.7px,\\n                      rgba(0, 0, 0, 0.15) 0px 12.1px 12.3px,\\n                      rgba(0, 0, 0, 0.1) 0px -2px 4px,\\n                      rgba(0, 0, 0, 0.15) 0px -12.1px 24px,\\n                      rgba(0, 0, 0, 0.25) 0px 54px 55px;\\n          color: rgb(204, 204, 204);\\n          display: none;\\n          font-family: \'Dank Mono\', \'Operator Mono\', Inconsolata, \'Fira Mono\',\\n                       \'SF Mono\', Monaco, \'Droid Sans Mono\', \'Source Code Pro\', monospace;\\n          font-size: 12.8px;\\n          font-weight: normal;\\n          left: 0;\\n          line-height: 1.5;\\n          max-width: 600px;\\n          padding: 3.2px 5.12px 3.2px;\\n          position: absolute;\\n          top: 0;\\n        }\\n        x-pw-action-point {\\n          position: absolute;\\n          width: 20px;\\n          height: 20px;\\n          background: red;\\n          border-radius: 10px;\\n          pointer-events: none;\\n          margin: -10px 0 0 -10px;\\n          z-index: 2;\\n        }\\n        *[hidden] {\\n          display: none !important;\\n        }\\n    ",this._glassPaneShadow.appendChild(n),this._refreshListenersIfNeeded(),e.onGlobalListenersRemoved.add((()=>this._refreshListenersIfNeeded())),globalThis._playwrightRefreshOverlay=()=>{this._pollRecorderMode().catch((e=>console.log(e)))},globalThis._playwrightRefreshOverlay(),t.isUnderTest&&console.error("Recorder script ready for test")}_refreshListenersIfNeeded(){(this._outerGlassPaneElement.parentElement!==document.documentElement||this._outerGlassPaneElement.nextElementSibling)&&(function(e){for(const t of e)t();e.splice(0,e.length)}(this._listeners),this._listeners=[l(document,"click",(e=>this._onClick(e)),!0),l(document,"auxclick",(e=>this._onClick(e)),!0),l(document,"input",(e=>this._onInput(e)),!0),l(document,"keydown",(e=>this._onKeyDown(e)),!0),l(document,"keyup",(e=>this._onKeyUp(e)),!0),l(document,"mousedown",(e=>this._onMouseDown(e)),!0),l(document,"mouseup",(e=>this._onMouseUp(e)),!0),l(document,"mousemove",(e=>this._onMouseMove(e)),!0),l(document,"mouseleave",(e=>this._onMouseLeave(e)),!0),l(document,"focus",(()=>this._onFocus()),!0),l(document,"scroll",(()=>{this._hoveredModel=null,this._actionPointElement.hidden=!0,this._updateHighlight()}),!0)],document.documentElement.appendChild(this._outerGlassPaneElement))}async _pollRecorderMode(){var e;this._pollRecorderModeTimer&&clearTimeout(this._pollRecorderModeTimer);const n=await globalThis._playwrightRecorderState().catch((e=>null));if(!n)return void(this._pollRecorderModeTimer=setTimeout((()=>this._pollRecorderMode()),1e3));const{mode:o,actionPoint:r,actionSelector:i}=n;o!==this._mode&&(this._mode=o,this._clearHighlight()),r&&this._actionPoint&&r.x===this._actionPoint.x&&r.y===this._actionPoint.y||(r||this._actionPoint)&&(r?(this._actionPointElement.style.top=r.y+"px",this._actionPointElement.style.left=r.x+"px",this._actionPointElement.hidden=!1):this._actionPointElement.hidden=!0,this._actionPoint=r),!this._actionSelector||null!==(e=this._hoveredModel)&&void 0!==e&&e.elements.length||(this._actionSelector=void 0),i!==this._actionSelector&&(this._hoveredModel=i?(0,t.querySelector)(this._injectedScript,i,document):null,this._updateHighlight(),this._actionSelector=i),this._pollRecorderModeTimer=setTimeout((()=>this._pollRecorderMode()),1e3)}_clearHighlight(){this._hoveredModel=null,this._activeModel=null,this._updateHighlight()}_actionInProgress(e){return!!this._performingAction||(c(e),!1)}_consumedDueToNoModel(e,t){return!t&&(c(e),!0)}_consumedDueWrongTarget(e){return!(this._activeModel&&this._activeModel.elements[0]===this._deepEventTarget(e)||(c(e),0))}_onClick(e){if("inspecting"===this._mode&&globalThis._playwrightRecorderSetSelector(this._hoveredModel?this._hoveredModel.selector:""),this._shouldIgnoreMouseEvent(e))return;if(this._actionInProgress(e))return;if(this._consumedDueToNoModel(e,this._hoveredModel))return;const t=a(this._deepEventTarget(e));t?this._performAction({name:t.checked?"check":"uncheck",selector:this._hoveredModel.selector,signals:[]}):this._performAction({name:"click",selector:this._hoveredModel.selector,position:s(e),signals:[],button:i(e),modifiers:r(e),clickCount:e.detail})}_shouldIgnoreMouseEvent(e){const t=this._deepEventTarget(e);if("none"===this._mode)return!0;if("inspecting"===this._mode)return c(e),!0;const n=t.nodeName;return"SELECT"===n||!("INPUT"!==n||!["date"].includes(t.type))}_onMouseDown(e){this._shouldIgnoreMouseEvent(e)||(this._performingAction||c(e),this._activeModel=this._hoveredModel)}_onMouseUp(e){this._shouldIgnoreMouseEvent(e)||this._performingAction||c(e)}_onMouseMove(e){if("none"===this._mode)return;const t=this._deepEventTarget(e);this._hoveredElement!==t&&(this._hoveredElement=t,this._updateModelForHoveredElement())}_onMouseLeave(e){this._deepEventTarget(e).nodeType===Node.DOCUMENT_NODE&&(this._hoveredElement=null,this._updateModelForHoveredElement())}_onFocus(){const e=this._deepActiveElement(document),n=e?(0,t.generateSelector)(this._injectedScript,e):null;this._activeModel=n&&n.selector?n:null,this._params.isUnderTest&&console.error("Highlight updated for test: "+(n?n.selector:null))}_updateModelForHoveredElement(){if(!this._hoveredElement)return this._hoveredModel=null,void this._updateHighlight();const e=this._hoveredElement,{selector:n,elements:o}=(0,t.generateSelector)(this._injectedScript,e);this._hoveredModel&&this._hoveredModel.selector===n||this._hoveredElement!==e||(this._hoveredModel=n?{selector:n,elements:o}:null,this._updateHighlight(),this._params.isUnderTest&&console.error("Highlight updated for test: "+n))}_updateHighlight(){const e=this._hoveredModel?this._hoveredModel.elements:[];this._tooltipElement.textContent=this._hoveredModel?this._hoveredModel.selector:"",this._tooltipElement.style.top="0",this._tooltipElement.style.left="0",this._tooltipElement.style.display="flex";const t=e.map((e=>e.getBoundingClientRect())),n=this._tooltipElement.offsetWidth,o=this._tooltipElement.offsetHeight,r=this._innerGlassPaneElement.offsetWidth,i=this._innerGlassPaneElement.offsetHeight;if(t.length){const e=t[0];let s=e.left;s+n>r-5&&(s=r-n-5);let c=e.bottom+5;c+o>i-5&&(c=e.top>o+5?e.top-o-5:i-5-o),this._tooltipElement.style.top=c+"px",this._tooltipElement.style.left=s+"px"}else this._tooltipElement.style.display="none";const s=this._highlightElements;this._highlightElements=[];for(const e of t){const t=s.length?s.shift():this._createHighlightElement(),n="recording"===this._mode?"#dc6f6f7f":"#6fa8dc7f";t.style.backgroundColor=this._highlightElements.length?"#f6b26b7f":n,t.style.left=e.x+"px",t.style.top=e.y+"px",t.style.width=e.width+"px",t.style.height=e.height+"px",t.style.display="block",this._highlightElements.push(t)}for(const e of s)e.style.display="none",this._highlightElements.push(e)}_createHighlightElement(){const e=document.createElement("x-pw-highlight");return e.style.position="absolute",e.style.top="0",e.style.left="0",e.style.width="0",e.style.height="0",e.style.boxSizing="border-box",this._glassPaneShadow.appendChild(e),e}_onInput(e){if("recording"!==this._mode)return!0;const t=this._deepEventTarget(e);if(["INPUT","TEXTAREA"].includes(t.nodeName)){const n=t,o=(n.type||"").toLowerCase();if("checkbox"===o)return;if("file"===o)return void globalThis._playwrightRecorderRecordAction({name:"setInputFiles",selector:this._activeModel.selector,signals:[],files:[...n.files||[]].map((e=>e.name))});if(this._consumedDueWrongTarget(e))return;globalThis._playwrightRecorderRecordAction({name:"fill",selector:this._activeModel.selector,signals:[],text:n.value})}if("SELECT"===t.nodeName){const n=t;if(this._actionInProgress(e))return;this._performAction({name:"select",selector:this._hoveredModel.selector,options:[...n.selectedOptions].map((e=>e.value)),signals:[]})}}_shouldGenerateKeyPressFor(e){if(["Backspace","Delete","AltGraph"].includes(e.key))return!1;if("@"===e.key&&"KeyL"===e.code)return!1;if(navigator.platform.includes("Mac")){if("v"===e.key&&e.metaKey)return!1}else{if("v"===e.key&&e.ctrlKey)return!1;if("Insert"===e.key&&e.shiftKey)return!1}if(["Shift","Control","Meta","Alt"].includes(e.key))return!1;const t=e.ctrlKey||e.altKey||e.metaKey;return!(1===e.key.length&&!t&&!a(this._deepEventTarget(e)))}_onKeyDown(e){if("inspecting"!==this._mode){if("recording"!==this._mode)return!0;if(this._shouldGenerateKeyPressFor(e))if(this._actionInProgress(e))this._expectProgrammaticKeyUp=!0;else if(!this._consumedDueWrongTarget(e)){if(" "===e.key){const t=a(this._deepEventTarget(e));if(t)return void this._performAction({name:t.checked?"uncheck":"check",selector:this._activeModel.selector,signals:[]})}this._performAction({name:"press",selector:this._activeModel.selector,signals:[],key:e.key,modifiers:r(e)})}}else c(e)}_onKeyUp(e){this._shouldGenerateKeyPressFor(e)&&(this._expectProgrammaticKeyUp?this._expectProgrammaticKeyUp=!1:c(e))}async _performAction(e){this._performingAction=!0,await globalThis._playwrightRecorderPerformAction(e).catch((()=>{})),this._performingAction=!1,this._updateModelForHoveredElement(),this._onFocus(),this._params.isUnderTest&&console.error("Action performed for test: "+JSON.stringify({hovered:this._hoveredModel?this._hoveredModel.selector:null,active:this._activeModel?this._activeModel.selector:null}))}_deepEventTarget(e){return e.composedPath()[0]}_deepActiveElement(e){let t=e.activeElement;for(;t&&t.shadowRoot&&t.shadowRoot.activeElement;)t=t.shadowRoot.activeElement;return t}};e.default=h})(),pwExport=o.default})();';
+    var source = 'var pwExport;(()=>{"use strict";var e={317:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseCSS=function(e,t){let n;try{n=o.tokenize(e),n[n.length-1]instanceof o.EOFToken||n.push(new o.EOFToken)}catch(t){const n=t.message+` while parsing selector "${e}"`,o=(t.stack||"").indexOf(t.message);throw-1!==o&&(t.stack=t.stack.substring(0,o)+n+t.stack.substring(o+t.message.length)),t.message=n,t}const r=n.find((e=>e instanceof o.AtKeywordToken||e instanceof o.BadStringToken||e instanceof o.BadURLToken||e instanceof o.ColumnToken||e instanceof o.CDOToken||e instanceof o.CDCToken||e instanceof o.SemicolonToken||e instanceof o.OpenCurlyToken||e instanceof o.CloseCurlyToken||e instanceof o.URLToken||e instanceof o.PercentageToken));if(r)throw new Error(`Unsupported token "${r.toSource()}" while parsing selector "${e}"`);let i=0;const s=new Set;function c(){return new Error(`Unexpected token "${n[i].toSource()}" while parsing selector "${e}"`)}function l(){for(;n[i]instanceof o.WhitespaceToken;)i++}function a(e=i){return n[e]instanceof o.IdentToken}function h(e=i){return n[e]instanceof o.CommaToken}function u(e=i){return n[e]instanceof o.CloseParenToken}function p(e=i){return n[e]instanceof o.DelimToken&&"*"===n[e].value}function f(e=i){return n[e]instanceof o.EOFToken}function d(e=i){return n[e]instanceof o.DelimToken&&[">","+","~"].includes(n[e].value)}function m(e=i){return h(e)||u(e)||f(e)||d(e)||n[e]instanceof o.WhitespaceToken}function g(){const e=[y()];for(;l(),h();)i++,e.push(y());return e}function y(){return l(),function(e=i){return n[e]instanceof o.NumberToken}()||function(e=i){return n[e]instanceof o.StringToken}()?n[i++].value:function(){const e={simples:[]};for(l(),d()?e.simples.push({selector:{functions:[{name:"scope",args:[]}]},combinator:""}):e.simples.push({selector:_(),combinator:""});;){if(l(),d())e.simples[e.simples.length-1].combinator=n[i++].value,l();else if(m())break;e.simples.push({combinator:"",selector:_()})}return e}()}function _(){let e="";const r=[];for(;!m();)if(a()||p())e+=n[i++].toSource();else if(n[i]instanceof o.HashToken)e+=n[i++].toSource();else if(n[i]instanceof o.DelimToken&&"."===n[i].value){if(i++,!a())throw c();e+="."+n[i++].toSource()}else if(n[i]instanceof o.ColonToken)if(i++,a())if(t.has(n[i].value.toLowerCase())){const e=n[i++].value.toLowerCase();r.push({name:e,args:[]}),s.add(e)}else e+=":"+n[i++].toSource();else{if(!(n[i]instanceof o.FunctionToken))throw c();{const o=n[i++].value.toLowerCase();if(t.has(o)?(r.push({name:o,args:g()}),s.add(o)):e+=`:${o}(${v()})`,l(),!u())throw c();i++}}else{if(!(n[i]instanceof o.OpenSquareToken))throw c();for(e+="[",i++;!(n[i]instanceof o.CloseSquareToken||f());)e+=n[i++].toSource();if(!(n[i]instanceof o.CloseSquareToken))throw c();e+="]",i++}if(!e&&!r.length)throw c();return{css:e||void 0,functions:r}}function v(){let e="";for(;!u()&&!f();)e+=n[i++].toSource();return e}const w=g();if(!f())throw new Error(`Error while parsing selector "${e}"`);if(w.some((e=>"object"!=typeof e||!("simples"in e))))throw new Error(`Error while parsing selector "${e}"`);return{selector:w,names:Array.from(s)}},t.serializeSelector=function e(t){return t.map((t=>"string"==typeof t?`"${t}"`:"number"==typeof t?String(t):t.simples.map((({selector:t,combinator:n})=>{let o=t.css||"";return o+=t.functions.map((t=>`:${t.name}(${e(t.args)})`)).join(""),n&&(o+=" "+n),o})).join(" "))).join(", ")};var o=function(e,t){if(e&&e.__esModule)return e;if(null===e||"object"!=typeof e&&"function"!=typeof e)return{default:e};var n=r(t);if(n&&n.has(e))return n.get(e);var o={},i=Object.defineProperty&&Object.getOwnPropertyDescriptor;for(var s in e)if("default"!==s&&Object.prototype.hasOwnProperty.call(e,s)){var c=i?Object.getOwnPropertyDescriptor(e,s):null;c&&(c.get||c.set)?Object.defineProperty(o,s,c):o[s]=e[s]}return o.default=e,n&&n.set(e,o),o}(n(503));function r(e){if("function"!=typeof WeakMap)return null;var t=new WeakMap,n=new WeakMap;return(r=function(e){return e?n:t})(e)}},503:(e,t)=>{var n,o;n=function(e){var t=function(e,t,n){return e>=t&&e<=n};function n(e){return t(e,48,57)}function o(e){return n(e)||t(e,65,70)||t(e,97,102)}function r(e){return function(e){return t(e,65,90)}(e)||function(e){return t(e,97,122)}(e)}function i(e){return r(e)||function(e){return e>=128}(e)||95==e}function s(e){return i(e)||n(e)||45==e}function c(e){return t(e,0,8)||11==e||t(e,14,31)||127==e}function l(e){return 10==e}function a(e){return l(e)||9==e||32==e}var h=function(e){this.message=e};function u(e){if(e<=65535)return String.fromCharCode(e);e-=Math.pow(2,16);var t=Math.floor(e/Math.pow(2,10))+55296,n=e%Math.pow(2,10)+56320;return String.fromCharCode(t)+String.fromCharCode(n)}function p(){throw"Abstract Base Class"}function f(){return this}function d(){return this}function m(){return this}function g(){return this}function y(){return this}function _(){return this}function v(){return this}function w(){return this}function E(){throw"Abstract Base Class"}function S(){return this.value="{",this.mirror="}",this}function T(){return this.value="}",this.mirror="{",this}function b(){return this.value="[",this.mirror="]",this}function k(){return this.value="]",this.mirror="[",this}function M(){return this.value="(",this.mirror=")",this}function x(){return this.value=")",this.mirror="(",this}function C(){return this}function P(){return this}function A(){return this}function N(){return this}function O(){return this}function R(){return this}function j(){return this}function I(e){return this.value=u(e),this}function D(){throw"Abstract Base Class"}function L(e){this.value=e}function $(e){this.value=e,this.mirror=")"}function U(e){this.value=e}function q(e){this.value=e,this.type="unrestricted"}function G(e){this.value=e}function F(e){this.value=e}function H(){this.value=null,this.type="integer",this.repr=""}function K(){this.value=null,this.repr=""}function B(){this.value=null,this.type="integer",this.repr="",this.unit=""}function W(e){for(var n="",o=(e=""+e).charCodeAt(0),r=0;r<e.length;r++){var i=e.charCodeAt(r);if(0==i)throw new h("Invalid character: the input contains U+0000.");t(i,1,31)||127==i||0==r&&t(i,48,57)||1==r&&t(i,48,57)&&45==o?n+="\\\\"+i.toString(16)+" ":i>=128||45==i||95==i||t(i,48,57)||t(i,65,90)||t(i,97,122)?n+=e[r]:n+="\\\\"+e[r]}return n}function J(e){e=""+e;for(var n="",o=0;o<e.length;o++){var r=e.charCodeAt(o);if(0==r)throw new h("Invalid character: the input contains U+0000.");t(r,1,31)||127==r?n+="\\\\"+r.toString(16)+" ":n+=34==r||92==r?"\\\\"+e[o]:e[o]}return n}(h.prototype=new Error).name="InvalidCharacterError",p.prototype.toJSON=function(){return{token:this.tokenType}},p.prototype.toString=function(){return this.tokenType},p.prototype.toSource=function(){return""+this},f.prototype=Object.create(p.prototype),f.prototype.tokenType="BADSTRING",d.prototype=Object.create(p.prototype),d.prototype.tokenType="BADURL",m.prototype=Object.create(p.prototype),m.prototype.tokenType="WHITESPACE",m.prototype.toString=function(){return"WS"},m.prototype.toSource=function(){return" "},g.prototype=Object.create(p.prototype),g.prototype.tokenType="CDO",g.prototype.toSource=function(){return"\\x3c!--"},y.prototype=Object.create(p.prototype),y.prototype.tokenType="CDC",y.prototype.toSource=function(){return"--\\x3e"},_.prototype=Object.create(p.prototype),_.prototype.tokenType=":",v.prototype=Object.create(p.prototype),v.prototype.tokenType=";",w.prototype=Object.create(p.prototype),w.prototype.tokenType=",",E.prototype=Object.create(p.prototype),S.prototype=Object.create(E.prototype),S.prototype.tokenType="{",T.prototype=Object.create(E.prototype),T.prototype.tokenType="}",b.prototype=Object.create(E.prototype),b.prototype.tokenType="[",k.prototype=Object.create(E.prototype),k.prototype.tokenType="]",M.prototype=Object.create(E.prototype),M.prototype.tokenType="(",x.prototype=Object.create(E.prototype),x.prototype.tokenType=")",C.prototype=Object.create(p.prototype),C.prototype.tokenType="~=",P.prototype=Object.create(p.prototype),P.prototype.tokenType="|=",A.prototype=Object.create(p.prototype),A.prototype.tokenType="^=",N.prototype=Object.create(p.prototype),N.prototype.tokenType="$=",O.prototype=Object.create(p.prototype),O.prototype.tokenType="*=",R.prototype=Object.create(p.prototype),R.prototype.tokenType="||",j.prototype=Object.create(p.prototype),j.prototype.tokenType="EOF",j.prototype.toSource=function(){return""},I.prototype=Object.create(p.prototype),I.prototype.tokenType="DELIM",I.prototype.toString=function(){return"DELIM("+this.value+")"},I.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},I.prototype.toSource=function(){return"\\\\"==this.value?"\\\\\\n":this.value},D.prototype=Object.create(p.prototype),D.prototype.ASCIIMatch=function(e){return this.value.toLowerCase()==e.toLowerCase()},D.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},L.prototype=Object.create(D.prototype),L.prototype.tokenType="IDENT",L.prototype.toString=function(){return"IDENT("+this.value+")"},L.prototype.toSource=function(){return W(this.value)},$.prototype=Object.create(D.prototype),$.prototype.tokenType="FUNCTION",$.prototype.toString=function(){return"FUNCTION("+this.value+")"},$.prototype.toSource=function(){return W(this.value)+"("},U.prototype=Object.create(D.prototype),U.prototype.tokenType="AT-KEYWORD",U.prototype.toString=function(){return"AT("+this.value+")"},U.prototype.toSource=function(){return"@"+W(this.value)},q.prototype=Object.create(D.prototype),q.prototype.tokenType="HASH",q.prototype.toString=function(){return"HASH("+this.value+")"},q.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e},q.prototype.toSource=function(){return"id"==this.type?"#"+W(this.value):"#"+function(e){for(var n="",o=((e=""+e).charCodeAt(0),0);o<e.length;o++){var r=e.charCodeAt(o);if(0==r)throw new h("Invalid character: the input contains U+0000.");r>=128||45==r||95==r||t(r,48,57)||t(r,65,90)||t(r,97,122)?n+=e[o]:n+="\\\\"+r.toString(16)+" "}return n}(this.value)},G.prototype=Object.create(D.prototype),G.prototype.tokenType="STRING",G.prototype.toString=function(){return\'"\'+J(this.value)+\'"\'},F.prototype=Object.create(D.prototype),F.prototype.tokenType="URL",F.prototype.toString=function(){return"URL("+this.value+")"},F.prototype.toSource=function(){return\'url("\'+J(this.value)+\'")\'},H.prototype=Object.create(p.prototype),H.prototype.tokenType="NUMBER",H.prototype.toString=function(){return"integer"==this.type?"INT("+this.value+")":"NUMBER("+this.value+")"},H.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e},H.prototype.toSource=function(){return this.repr},K.prototype=Object.create(p.prototype),K.prototype.tokenType="PERCENTAGE",K.prototype.toString=function(){return"PERCENTAGE("+this.value+")"},K.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.repr=this.repr,e},K.prototype.toSource=function(){return this.repr+"%"},B.prototype=Object.create(p.prototype),B.prototype.tokenType="DIMENSION",B.prototype.toString=function(){return"DIM("+this.value+","+this.unit+")"},B.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e.unit=this.unit,e},B.prototype.toSource=function(){var e=this.repr,n=W(this.unit);return"e"!=n[0].toLowerCase()||"-"!=n[1]&&!t(n.charCodeAt(1),48,57)||(n="\\\\65 "+n.slice(1,n.length)),e+n},e.tokenize=function(e){e=function(e){for(var n=[],o=0;o<e.length;o++){var r=e.charCodeAt(o);if(13==r&&10==e.charCodeAt(o+1)&&(r=10,o++),13!=r&&12!=r||(r=10),0==r&&(r=65533),t(r,55296,56319)&&t(e.charCodeAt(o+1),56320,57343)){var i=r-55296,s=e.charCodeAt(o+1)-56320;r=Math.pow(2,16)+i*Math.pow(2,10)+s,o++}n.push(r)}return n}(e);for(var r,h=-1,p=[],E=0,D=0,W=0,J={line:E,column:D},Q=function(t){return t>=e.length?-1:e[t]},z=function(e){if(void 0===e&&(e=1),e>3)throw"Spec Error: no more than three codepoints of lookahead.";return Q(h+e)},V=function(e){return void 0===e&&(e=1),l(r=Q(h+=e))?(E+=1,W=D,D=0):D+=e,!0},X=function(){return h-=1,l(r)?(E-=1,D=W):D-=1,J.line=E,J.column=D,!0},Y=function(e){return void 0===e&&(e=r),-1==e},Z=function(){return console.log("Parse error at index "+h+", processing codepoint 0x"+r.toString(16)+"."),!0},ee=function(){if(te(),V(),a(r)){for(;a(z());)V();return new m}if(34==r)return re();if(35==r){if(s(z())||ce(z(1),z(2))){var e=new q;return ae(z(1),z(2),z(3))&&(e.type="id"),e.value=pe(),e}return new I(r)}return 36==r?61==z()?(V(),new N):new I(r):39==r?re():40==r?new M:41==r?new x:42==r?61==z()?(V(),new O):new I(r):43==r?ue()?(X(),ne()):new I(r):44==r?new w:45==r?ue()?(X(),ne()):45==z(1)&&62==z(2)?(V(2),new y):he()?(X(),oe()):new I(r):46==r?ue()?(X(),ne()):new I(r):58==r?new _:59==r?new v:60==r?33==z(1)&&45==z(2)&&45==z(3)?(V(3),new g):new I(r):64==r?ae(z(1),z(2),z(3))?new U(pe()):new I(r):91==r?new b:92==r?le()?(X(),oe()):(Z(),new I(r)):93==r?new k:94==r?61==z()?(V(),new A):new I(r):123==r?new S:124==r?61==z()?(V(),new P):124==z()?(V(),new R):new I(r):125==r?new T:126==r?61==z()?(V(),new C):new I(r):n(r)?(X(),ne()):i(r)?(X(),oe()):Y()?new j:new I(r)},te=function(){for(;47==z(1)&&42==z(2);)for(V(2);;){if(V(),42==r&&47==z()){V();break}if(Y())return void Z()}},ne=function(){var e,t=fe();return ae(z(1),z(2),z(3))?((e=new B).value=t.value,e.repr=t.repr,e.type=t.type,e.unit=pe(),e):37==z()?(V(),(e=new K).value=t.value,e.repr=t.repr,e):((e=new H).value=t.value,e.repr=t.repr,e.type=t.type,e)},oe=function(){var e=pe();if("url"==e.toLowerCase()&&40==z()){for(V();a(z(1))&&a(z(2));)V();return 34==z()||39==z()?new $(e):!a(z())||34!=z(2)&&39!=z(2)?ie():new $(e)}return 40==z()?(V(),new $(e)):new L(e)},re=function(e){void 0===e&&(e=r);for(var t="";V();){if(r==e||Y())return new G(t);if(l(r))return Z(),X(),new f;92==r?Y(z())||(l(z())?V():t+=u(se())):t+=u(r)}},ie=function(){for(var e=new F("");a(z());)V();if(Y(z()))return e;for(;V();){if(41==r||Y())return e;if(a(r)){for(;a(z());)V();return 41==z()||Y(z())?(V(),e):(me(),new d)}if(34==r||39==r||40==r||c(r))return Z(),me(),new d;if(92==r){if(!le())return Z(),me(),new d;e.value+=u(se())}else e.value+=u(r)}},se=function(){if(V(),o(r)){for(var e=[r],t=0;t<5&&o(z());t++)V(),e.push(r);a(z())&&V();var n=parseInt(e.map((function(e){return String.fromCharCode(e)})).join(""),16);return n>1114111&&(n=65533),n}return Y()?65533:r},ce=function(e,t){return 92==e&&!l(t)},le=function(){return ce(r,z())},ae=function(e,t,n){return 45==e?i(t)||45==t||ce(t,n):!!i(e)||92==e&&ce(e,t)},he=function(){return ae(r,z(1),z(2))},ue=function(){return e=r,t=z(1),o=z(2),43==e||45==e?!!n(t)||!(46!=t||!n(o)):46==e?!!n(t):!!n(e);var e,t,o},pe=function(){for(var e="";V();)if(s(r))e+=u(r);else{if(!le())return X(),e;e+=u(se())}},fe=function(){var e=[],t="integer";for(43!=z()&&45!=z()||(V(),e+=u(r));n(z());)V(),e+=u(r);if(46==z(1)&&n(z(2)))for(V(),e+=u(r),V(),e+=u(r),t="number";n(z());)V(),e+=u(r);var o=z(1),i=z(2),s=z(3);if(69!=o&&101!=o||!n(i)){if((69==o||101==o)&&(43==i||45==i)&&n(s))for(V(),e+=u(r),V(),e+=u(r),V(),e+=u(r),t="number";n(z());)V(),e+=u(r)}else for(V(),e+=u(r),V(),e+=u(r),t="number";n(z());)V(),e+=u(r);return{type:t,value:de(e),repr:e}},de=function(e){return+e},me=function(){for(;V();){if(41==r||Y())return;le()&&se()}},ge=0;!Y(z());)if(p.push(ee()),++ge>2*e.length)return"I\'m infinite-looping!";return p},e.IdentToken=L,e.FunctionToken=$,e.AtKeywordToken=U,e.HashToken=q,e.StringToken=G,e.BadStringToken=f,e.URLToken=F,e.BadURLToken=d,e.DelimToken=I,e.NumberToken=H,e.PercentageToken=K,e.DimensionToken=B,e.IncludeMatchToken=C,e.DashMatchToken=P,e.PrefixMatchToken=A,e.SuffixMatchToken=N,e.SubstringMatchToken=O,e.ColumnToken=R,e.WhitespaceToken=m,e.CDOToken=g,e.CDCToken=y,e.ColonToken=_,e.SemicolonToken=v,e.CommaToken=w,e.OpenParenToken=M,e.CloseParenToken=x,e.OpenSquareToken=b,e.CloseSquareToken=k,e.OpenCurlyToken=S,e.CloseCurlyToken=T,e.EOFToken=j,e.CSSParserToken=p,e.GroupingToken=E},void 0===(o=n.apply(t,[t]))||(e.exports=o)},461:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseSelector=function(e){const t=function(e){let t,n=0,o=0;const r={parts:[]},i=()=>{const t=e.substring(o,n).trim(),i=t.indexOf("=");let s,c;-1!==i&&t.substring(0,i).trim().match(/^[a-zA-Z_0-9-+:*]+$/)?(s=t.substring(0,i).trim(),c=t.substring(i+1)):t.length>1&&\'"\'===t[0]&&\'"\'===t[t.length-1]||t.length>1&&"\'"===t[0]&&"\'"===t[t.length-1]?(s="text",c=t):/^\\(*\\/\\//.test(t)||t.startsWith("..")?(s="xpath",c=t):(s="css",c=t);let l=!1;if("*"===s[0]&&(l=!0,s=s.substring(1)),r.parts.push({name:s,body:c}),l){if(void 0!==r.capture)throw new Error("Only one of the selectors can capture using * modifier");r.capture=r.parts.length-1}};if(!e.includes(">>"))return n=e.length,i(),r;for(;n<e.length;){const r=e[n];"\\\\"===r&&n+1<e.length?n+=2:r===t?(t=void 0,n++):t||\'"\'!==r&&"\'"!==r&&"`"!==r?t||">"!==r||">"!==e[n+1]?n++:(i(),n+=2,o=n):(t=r,n++)}return i(),r}(e),n=t.parts.map((e=>"css"===e.name||"css:light"===e.name?("css:light"===e.name&&(e.body=":light("+e.body+")"),{name:"css",body:(0,o.parseCSS)(e.body,r).selector}):e));return{selector:e,capture:t.capture,parts:n}},t.customCSSNames=void 0;var o=n(317);const r=new Set(["not","is","where","has","scope","light","visible","text","text-matches","text-is","has-text","above","below","right-of","left-of","near","nth-match"]);t.customCSSNames=r},848:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.createLaxTextMatcher=d,t.createStrictTextMatcher=m,t.createRegexTextMatcher=g,t.elementText=_,t.elementMatchesText=v,t.parentElementOrShadowHost=x,t.isVisible=A,t.SelectorEvaluatorImpl=void 0;var o=n(461);t.SelectorEvaluatorImpl=class{constructor(e){this._engines=new Map,this._cacheQueryCSS=new Map,this._cacheMatches=new Map,this._cacheQuery=new Map,this._cacheMatchesSimple=new Map,this._cacheMatchesParents=new Map,this._cacheCallMatches=new Map,this._cacheCallQuery=new Map,this._cacheQuerySimple=new Map,this._cacheText=new Map,this._scoreMap=void 0,this._retainCacheCounter=0;for(const[t,n]of e)this._engines.set(t,n);this._engines.set("not",c),this._engines.set("is",r),this._engines.set("where",r),this._engines.set("has",i),this._engines.set("scope",s),this._engines.set("light",l),this._engines.set("visible",a),this._engines.set("text",h),this._engines.set("text-is",u),this._engines.set("text-matches",p),this._engines.set("has-text",f),this._engines.set("right-of",k("right-of",w)),this._engines.set("left-of",k("left-of",E)),this._engines.set("above",k("above",S)),this._engines.set("below",k("below",T)),this._engines.set("near",k("near",b)),this._engines.set("nth-match",M);const t=[...this._engines.keys()];t.sort();const n=[...o.customCSSNames];if(n.sort(),t.join("|")!==n.join("|"))throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${t.join("|")} vs ${n.join("|")}`)}begin(){++this._retainCacheCounter}end(){--this._retainCacheCounter,this._retainCacheCounter||(this._cacheQueryCSS.clear(),this._cacheMatches.clear(),this._cacheQuery.clear(),this._cacheMatchesSimple.clear(),this._cacheMatchesParents.clear(),this._cacheCallMatches.clear(),this._cacheCallQuery.clear(),this._cacheQuerySimple.clear(),this._cacheText.clear())}_cached(e,t,n,o){e.has(t)||e.set(t,[]);const r=e.get(t),i=r.find((e=>n.every(((t,n)=>e.rest[n]===t))));if(i)return i.result;const s=o();return r.push({rest:n,result:s}),s}_checkSelector(e){if("object"!=typeof e||!e||!(Array.isArray(e)||"simples"in e&&e.simples.length))throw new Error(`Malformed selector "${e}"`);return e}matches(e,t,n){const o=this._checkSelector(t);this.begin();try{return this._cached(this._cacheMatches,e,[o,n.scope,n.pierceShadow],(()=>Array.isArray(o)?this._matchesEngine(r,e,o,n):!!this._matchesSimple(e,o.simples[o.simples.length-1].selector,n)&&this._matchesParents(e,o,o.simples.length-2,n)))}finally{this.end()}}query(e,t){const n=this._checkSelector(t);this.begin();try{return this._cached(this._cacheQuery,n,[e.scope,e.pierceShadow],(()=>{if(Array.isArray(n))return this._queryEngine(r,e,n);const t=this._scoreMap;this._scoreMap=new Map;let o=this._querySimple(e,n.simples[n.simples.length-1].selector);return o=o.filter((t=>this._matchesParents(t,n,n.simples.length-2,e))),this._scoreMap.size&&o.sort(((e,t)=>{const n=this._scoreMap.get(e),o=this._scoreMap.get(t);return n===o?0:void 0===n?1:void 0===o?-1:n-o})),this._scoreMap=t,o}))}finally{this.end()}}_markScore(e,t){this._scoreMap&&this._scoreMap.set(e,t)}_matchesSimple(e,t,n){return this._cached(this._cacheMatchesSimple,e,[t,n.scope,n.pierceShadow],(()=>{if(!t.functions.some((e=>"scope"===e.name||"is"===e.name))&&e===n.scope)return!1;if(t.css&&!this._matchesCSS(e,t.css))return!1;for(const o of t.functions)if(!this._matchesEngine(this._getEngine(o.name),e,o.args,n))return!1;return!0}))}_querySimple(e,t){return t.functions.length?this._cached(this._cacheQuerySimple,t,[e.scope,e.pierceShadow],(()=>{let n=t.css;const o=t.functions;let r;"*"===n&&o.length&&(n=void 0);let i=-1;void 0!==n?r=this._queryCSS(e,n):(i=o.findIndex((e=>void 0!==this._getEngine(e.name).query)),-1===i&&(i=0),r=this._queryEngine(this._getEngine(o[i].name),e,o[i].args));for(let t=0;t<o.length;t++){if(t===i)continue;const n=this._getEngine(o[t].name);void 0!==n.matches&&(r=r.filter((r=>this._matchesEngine(n,r,o[t].args,e))))}for(let t=0;t<o.length;t++){if(t===i)continue;const n=this._getEngine(o[t].name);void 0===n.matches&&(r=r.filter((r=>this._matchesEngine(n,r,o[t].args,e))))}return r})):this._queryCSS(e,t.css||"*")}_matchesParents(e,t,n,o){return n<0||this._cached(this._cacheMatchesParents,e,[t,n,o.scope,o.pierceShadow],(()=>{const{selector:r,combinator:i}=t.simples[n];if(">"===i){const i=C(e,o);return!(!i||!this._matchesSimple(i,r,o))&&this._matchesParents(i,t,n-1,o)}if("+"===i){const i=P(e,o);return!(!i||!this._matchesSimple(i,r,o))&&this._matchesParents(i,t,n-1,o)}if(""===i){let i=C(e,o);for(;i;){if(this._matchesSimple(i,r,o)){if(this._matchesParents(i,t,n-1,o))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,o)}return!1}if("~"===i){let i=P(e,o);for(;i;){if(this._matchesSimple(i,r,o)){if(this._matchesParents(i,t,n-1,o))return!0;if("~"===t.simples[n-1].combinator)break}i=P(i,o)}return!1}if(">="===i){let i=e;for(;i;){if(this._matchesSimple(i,r,o)){if(this._matchesParents(i,t,n-1,o))return!0;if(""===t.simples[n-1].combinator)break}i=C(i,o)}return!1}throw new Error(`Unsupported combinator "${i}"`)}))}_matchesEngine(e,t,n,o){if(e.matches)return this._callMatches(e,t,n,o);if(e.query)return this._callQuery(e,n,o).includes(t);throw new Error(\'Selector engine should implement "matches" or "query"\')}_queryEngine(e,t,n){if(e.query)return this._callQuery(e,n,t);if(e.matches)return this._queryCSS(t,"*").filter((o=>this._callMatches(e,o,n,t)));throw new Error(\'Selector engine should implement "matches" or "query"\')}_callMatches(e,t,n,o){return this._cached(this._cacheCallMatches,t,[e,o.scope,o.pierceShadow,...n],(()=>e.matches(t,n,o,this)))}_callQuery(e,t,n){return this._cached(this._cacheCallQuery,e,[n.scope,n.pierceShadow,...t],(()=>e.query(n,t,this)))}_matchesCSS(e,t){return e.matches(t)}_queryCSS(e,t){return this._cached(this._cacheQueryCSS,t,[e.scope,e.pierceShadow],(()=>{let n=[];return function o(r){if(n=n.concat([...r.querySelectorAll(t)]),e.pierceShadow){r.shadowRoot&&o(r.shadowRoot);for(const e of r.querySelectorAll("*"))e.shadowRoot&&o(e.shadowRoot)}}(e.scope),n}))}_getEngine(e){const t=this._engines.get(e);if(!t)throw new Error(`Unknown selector engine "${e}"`);return t}};const r={matches(e,t,n,o){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');return t.some((t=>o.matches(e,t,n)))},query(e,t,n){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');let o=[];for(const r of t)o=o.concat(n.query(e,r));return 1===t.length?o:function(e){const t=new Map,n=[],o=[];function r(e){let o=t.get(e);if(o)return o;const i=x(e);return i?r(i).children.push(e):n.push(e),o={children:[],taken:!1},t.set(e,o),o}return e.forEach((e=>r(e).taken=!0)),n.forEach((function e(n){const r=t.get(n);if(r.taken&&o.push(n),r.children.length>1){const e=new Set(r.children);r.children=[];let t=n.firstElementChild;for(;t&&r.children.length<e.size;)e.has(t)&&r.children.push(t),t=t.nextElementSibling;for(t=n.shadowRoot?n.shadowRoot.firstElementChild:null;t&&r.children.length<e.size;)e.has(t)&&r.children.push(t),t=t.nextElementSibling}r.children.forEach(e)})),o}(o)}},i={matches(e,t,n,o){if(0===t.length)throw new Error(\'"has" engine expects non-empty selector list\');return o.query({...n,scope:e},t).length>0}},s={matches(e,t,n,o){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');return 9===n.scope.nodeType?e===n.scope.documentElement:e===n.scope},query(e,t,n){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');if(9===e.scope.nodeType){const t=e.scope.documentElement;return t?[t]:[]}return 1===e.scope.nodeType?[e.scope]:[]}},c={matches(e,t,n,o){if(0===t.length)throw new Error(\'"not" engine expects non-empty selector list\');return!o.matches(e,t,n)}},l={query:(e,t,n)=>n.query({...e,pierceShadow:!1},t),matches:(e,t,n,o)=>o.matches(e,t,{...n,pierceShadow:!1})},a={matches(e,t,n,o){if(t.length)throw new Error(\'"visible" engine expects no arguments\');return A(e)}},h={matches(e,t,n,o){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text" engine expects a single string\');return"self"===v(o,e,d(t[0]))}},u={matches(e,t,n,o){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text-is" engine expects a single string\');return"none"!==v(o,e,m(t[0]))}},p={matches(e,t,n,o){if(0===t.length||"string"!=typeof t[0]||t.length>2||2===t.length&&"string"!=typeof t[1])throw new Error(\'"text-matches" engine expects a regexp body and optional regexp flags\');return"self"===v(o,e,g(t[0],2===t.length?t[1]:void 0))}},f={matches(e,t,n,o){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"has-text" engine expects a single string\');return!y(e)&&d(t[0])(_(o,e))}};function d(e){return e=e.trim().replace(/\\s+/g," ").toLowerCase(),t=>t.full.trim().replace(/\\s+/g," ").toLowerCase().includes(e)}function m(e){return e=e.trim().replace(/\\s+/g," "),t=>!e&&!t.immediate.length||t.immediate.some((t=>t.trim().replace(/\\s+/g," ")===e))}function g(e,t){const n=new RegExp(e,t);return e=>n.test(e.full)}function y(e){return"SCRIPT"===e.nodeName||"STYLE"===e.nodeName||document.head&&document.head.contains(e)}function _(e,t){let n=e._cacheText.get(t);if(void 0===n){if(n={full:"",immediate:[]},!y(t)){let o="";if(t instanceof HTMLInputElement&&("submit"===t.type||"button"===t.type))n={full:t.value,immediate:[t.value]};else{for(let r=t.firstChild;r;r=r.nextSibling)r.nodeType===Node.TEXT_NODE?(n.full+=r.nodeValue||"",o+=r.nodeValue||""):(o&&n.immediate.push(o),o="",r.nodeType===Node.ELEMENT_NODE&&(n.full+=_(e,r).full));o&&n.immediate.push(o),t.shadowRoot&&(n.full+=_(e,t.shadowRoot).full)}}e._cacheText.set(t,n)}return n}function v(e,t,n){if(y(t))return"none";if(!n(_(e,t)))return"none";for(let o=t.firstChild;o;o=o.nextSibling)if(o.nodeType===Node.ELEMENT_NODE&&n(_(e,o)))return"selfAndChildren";return t.shadowRoot&&n(_(e,t.shadowRoot))?"selfAndChildren":"self"}function w(e,t,n){const o=e.left-t.right;if(!(o<0||void 0!==n&&o>n))return o+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function E(e,t,n){const o=t.left-e.right;if(!(o<0||void 0!==n&&o>n))return o+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function S(e,t,n){const o=t.top-e.bottom;if(!(o<0||void 0!==n&&o>n))return o+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function T(e,t,n){const o=e.top-t.bottom;if(!(o<0||void 0!==n&&o>n))return o+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function b(e,t,n){const o=void 0===n?50:n;let r=0;return e.left-t.right>=0&&(r+=e.left-t.right),t.left-e.right>=0&&(r+=t.left-e.right),t.top-e.bottom>=0&&(r+=t.top-e.bottom),e.top-t.bottom>=0&&(r+=e.top-t.bottom),r>o?void 0:r}function k(e,t){return{matches(n,o,r,i){const s=o.length&&"number"==typeof o[o.length-1]?o[o.length-1]:void 0,c=void 0===s?o:o.slice(0,o.length-1);if(o.length<1+(void 0===s?0:1))throw new Error(`"${e}" engine expects a selector list and optional maximum distance in pixels`);const l=n.getBoundingClientRect();let a;for(const e of i.query(r,c)){if(e===n)continue;const o=t(l,e.getBoundingClientRect(),s);void 0!==o&&(void 0===a||o<a)&&(a=o)}return void 0!==a&&(i._markScore(n,a),!0)}}}const M={query(e,t,n){let o=t[t.length-1];if(t.length<2)throw new Error(\'"nth-match" engine expects non-empty selector list and an index argument\');if("number"!=typeof o||o<1)throw new Error(\'"nth-match" engine expects a one-based index as the last argument\');const i=r.query(e,t.slice(0,t.length-1),n);return o--,o<i.length?[i[o]]:[]}};function x(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:void 0}function C(e,t){if(e!==t.scope)return t.pierceShadow?x(e):e.parentElement||void 0}function P(e,t){if(e!==t.scope)return e.previousElementSibling||void 0}function A(e){if(!e.ownerDocument||!e.ownerDocument.defaultView)return!0;const t=e.ownerDocument.defaultView.getComputedStyle(e);if(!t||"hidden"===t.visibility)return!1;const n=e.getBoundingClientRect();return n.width>0&&n.height>0}},854:(e,t,n)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.querySelector=function(e,t,n){try{const o=e.parseSelector(t);return{selector:t,elements:e.querySelectorAll(o,n)}}catch(e){return{selector:t,elements:[]}}},t.generateSelector=function(e,t){e._evaluator.begin();try{const n=function(e,t){if(t.ownerDocument.documentElement===t)return[{engine:"css",selector:"html",score:1}];const n=(a,u)=>{const d=u?r:i;let m=d.get(a);return void 0===m&&(m=((r,i)=>{const a=r===t;let u=i?function(e,t,n){if("SELECT"===t.nodeName)return[];const r=(0,o.elementText)(e._evaluator,t).full.trim().replace(/\\s+/g," ").substring(0,80);if(!r)return[];const i=[];let s=r;if((r.includes(\'"\')||r.includes(">>")||"/"===r[0])&&(s=`/.*${function(e){return e.replace(/[.*+?^>${}()|[\\]\\\\]/g,"\\\\$&")}(r)}.*/`),i.push({engine:"text",selector:s,score:10}),n&&s===r){let e=t.nodeName.toLocaleLowerCase();t.hasAttribute("role")&&(e+=`[role=${h(t.getAttribute("role"))}]`),i.push({engine:"css",selector:`${e}:has-text("${r}")`,score:30})}return i}(e,r,r===t).map((e=>[e])):[];r!==t&&(u=s(u));const d=function(e,t){const n=[];for(const e of["data-testid","data-test-id","data-test"])t.hasAttribute(e)&&n.push({engine:"css",selector:`[${e}=${h(t.getAttribute(e))}]`,score:1});if("INPUT"===t.nodeName){const e=t;e.placeholder&&n.push({engine:"css",selector:`[placeholder=${h(e.placeholder)}]`,score:10})}t.hasAttribute("aria-label")&&n.push({engine:"css",selector:`[aria-label=${h(t.getAttribute("aria-label"))}]`,score:10}),t.getAttribute("alt")&&["APPLET","AREA","IMG","INPUT"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[alt=${h(t.getAttribute("alt"))}]`,score:10}),t.hasAttribute("role")&&n.push({engine:"css",selector:`${t.nodeName.toLocaleLowerCase()}[role=${h(t.getAttribute("role"))}]`,score:50}),t.getAttribute("name")&&["BUTTON","FORM","FIELDSET","IFRAME","INPUT","KEYGEN","OBJECT","OUTPUT","SELECT","TEXTAREA","MAP","META","PARAM"].includes(t.nodeName)&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[name=${h(t.getAttribute("name"))}]`,score:50}),["INPUT","TEXTAREA"].includes(t.nodeName)&&"hidden"!==t.getAttribute("type")&&t.getAttribute("type")&&n.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[type=${h(t.getAttribute("type"))}]`,score:50}),["INPUT","TEXTAREA","SELECT"].includes(t.nodeName)&&n.push({engine:"css",selector:t.nodeName.toLowerCase(),score:50});const o=t.getAttribute("id");return o&&!function(e){let t,n=0;for(let o=0;o<e.length;++o){const r=e[o];let i;"-"!==r&&"_"!==r&&(i=r>="a"&&r<="z"?"lower":r>="A"&&r<="Z"?"upper":r>="0"&&r<="9"?"digit":"other","lower"!==i||"upper"!==t?(t&&t!==i&&++n,t=i):t=i)}return n>=e.length/4}(o)&&n.push({engine:"css",selector:l(o),score:100}),n.push({engine:"css",selector:t.nodeName.toLocaleLowerCase(),score:200}),n}(0,r).map((e=>[e]));let m=f(e,t.ownerDocument,r,[...u,...d],a);u=s(u);const g=t=>{const o=i&&!t.length,s=[...t,...d].filter((e=>!m||p(e)<p(m)));let l=s[0];if(l)for(let t=c(r);t;t=c(t)){const i=n(t,o);if(!i)continue;if(m&&p([...i,...l])>=p(m))continue;if(l=f(e,t,r,s,a),!l)return;const c=[...i,...l];(!m||p(c)<p(m))&&(m=c)}};return g(u),r===t&&u.length&&g([]),m})(a,u),d.set(a,m)),m};return n(t,!0)}(e,t=t.closest("button,select,input,[role=button],[role=checkbox],[role=radio]")||t),d=u(n||[a(e,t)]),m=e.parseSelector(d);return{selector:d,elements:e.querySelectorAll(m,t.ownerDocument)}}finally{r.clear(),i.clear(),e._evaluator.end()}};var o=n(848);const r=new Map,i=new Map;function s(e){return e.filter((e=>"/"!==e[0].selector[0]))}function c(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:null}function l(e){return/^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(e)?"#"+e:`[id="${e}"]`}function a(e,t){const n=1e7,o=t.ownerDocument,r=[];function i(n){const o=r.slice();n&&o.unshift(n);const i=o.join(" "),s=e.parseSelector(i);return e.querySelector(s,t.ownerDocument,!1)===t?i:void 0}for(let e=t;e&&e!==o;e=c(e)){const t=e.nodeName.toLowerCase();let o="";if(e.id){const t=l(e.id),r=i(t);if(r)return{engine:"css",selector:r,score:n};o=t}const s=e.parentNode,c=[...e.classList];for(let e=0;e<c.length;++e){const t="."+c.slice(0,e+1).join("."),r=i(t);if(r)return{engine:"css",selector:r,score:n};!o&&s&&1===s.querySelectorAll(t).length&&(o=t)}if(s){const r=[...s.children],c=0===r.filter((e=>e.nodeName.toLowerCase()===t)).indexOf(e)?t:`${t}:nth-child(${1+r.indexOf(e)})`,l=i(c);if(l)return{engine:"css",selector:l,score:n};o||(o=c)}else o||(o=t);r.unshift(o)}return{engine:"css",selector:i(),score:n}}function h(e){return`"${e.replace(/"/g,\'\\\\"\').replace(/\\n/g,"\\\\n")}"`}function u(e){const t=[];let n="";for(const{engine:o,selector:r}of e)t.length&&("css"!==n||"css"!==o||r.startsWith(":nth-match("))&&t.push(">>"),n=o,"css"===o?t.push(r):t.push(`${o}=${r}`);return t.join(" ")}function p(e){let t=0;for(let n=0;n<e.length;n++)t+=e[n].score*(e.length-n);return t}function f(e,t,n,o,r){const i=o.map((e=>({tokens:e,score:p(e)})));i.sort(((e,t)=>e.score-t.score));let s=null;for(const{tokens:o}of i){const i=e.parseSelector(u(o)),c=e.querySelectorAll(i,t),l=c.indexOf(n);if(0===l)return o;if(!r||s||-1===l||c.length>5)continue;const a=o.map((e=>"text"!==e.engine?e:e.selector.startsWith("/")&&e.selector.endsWith("/")?{engine:"css",selector:`:text-matches("${e.selector.substring(1,e.selector.length-1)}")`,score:e.score}:{engine:"css",selector:`:text("${e.selector}")`,score:e.score}));s=[{engine:"css",selector:`:nth-match(${u(a)}, ${l+1})`,score:p(a)+1e3}]}return s}}},t={};function n(o){var r=t[o];if(void 0!==r)return r.exports;var i=t[o]={exports:{}};return e[o](i,i.exports,n),i.exports}var o={};(()=>{var e=o;e.default=void 0;var t=n(854);function r(e){return(e.altKey?1:0)|(e.ctrlKey?2:0)|(e.metaKey?4:0)|(e.shiftKey?8:0)}function i(e){switch(e.which){case 1:return"left";case 2:return"middle";case 3:return"right"}return"left"}function s(e){if("CANVAS"===e.target.nodeName)return{x:e.offsetX,y:e.offsetY}}function c(e){e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation()}function l(e){if(!e||"INPUT"!==e.nodeName)return null;const t=e;return"checkbox"===t.type?t:null}function a(e,t,n,o){return e.addEventListener(t,n,o),()=>{e.removeEventListener(t,n,o)}}var h=class{constructor(e,t){this._injectedScript=void 0,this._performingAction=!1,this._outerGlassPaneElement=void 0,this._glassPaneShadow=void 0,this._innerGlassPaneElement=void 0,this._highlightElements=[],this._tooltipElement=void 0,this._listeners=[],this._hoveredModel=null,this._hoveredElement=null,this._activeModel=null,this._expectProgrammaticKeyUp=!1,this._pollRecorderModeTimer=void 0,this._mode="none",this._actionPointElement=void 0,this._actionPoint=void 0,this._actionSelector=void 0,this._params=void 0,this._params=t,this._injectedScript=e,this._outerGlassPaneElement=document.createElement("x-pw-glass"),this._outerGlassPaneElement.style.position="fixed",this._outerGlassPaneElement.style.top="0",this._outerGlassPaneElement.style.right="0",this._outerGlassPaneElement.style.bottom="0",this._outerGlassPaneElement.style.left="0",this._outerGlassPaneElement.style.zIndex="2147483647",this._outerGlassPaneElement.style.pointerEvents="none",this._outerGlassPaneElement.style.display="flex",this._tooltipElement=document.createElement("x-pw-tooltip"),this._actionPointElement=document.createElement("x-pw-action-point"),this._actionPointElement.setAttribute("hidden","true"),this._innerGlassPaneElement=document.createElement("x-pw-glass-inner"),this._innerGlassPaneElement.style.flex="auto",this._innerGlassPaneElement.appendChild(this._tooltipElement),this._glassPaneShadow=this._outerGlassPaneElement.attachShadow({mode:this._params.isUnderTest?"open":"closed"}),this._glassPaneShadow.appendChild(this._innerGlassPaneElement),this._glassPaneShadow.appendChild(this._actionPointElement);const n=document.createElement("style");n.textContent="\\n        x-pw-tooltip {\\n          align-items: center;\\n          backdrop-filter: blur(5px);\\n          background-color: rgba(0, 0, 0, 0.7);\\n          border-radius: 2px;\\n          box-shadow: rgba(0, 0, 0, 0.1) 0px 3.6px 3.7px,\\n                      rgba(0, 0, 0, 0.15) 0px 12.1px 12.3px,\\n                      rgba(0, 0, 0, 0.1) 0px -2px 4px,\\n                      rgba(0, 0, 0, 0.15) 0px -12.1px 24px,\\n                      rgba(0, 0, 0, 0.25) 0px 54px 55px;\\n          color: rgb(204, 204, 204);\\n          display: none;\\n          font-family: \'Dank Mono\', \'Operator Mono\', Inconsolata, \'Fira Mono\',\\n                       \'SF Mono\', Monaco, \'Droid Sans Mono\', \'Source Code Pro\', monospace;\\n          font-size: 12.8px;\\n          font-weight: normal;\\n          left: 0;\\n          line-height: 1.5;\\n          max-width: 600px;\\n          padding: 3.2px 5.12px 3.2px;\\n          position: absolute;\\n          top: 0;\\n        }\\n        x-pw-action-point {\\n          position: absolute;\\n          width: 20px;\\n          height: 20px;\\n          background: red;\\n          border-radius: 10px;\\n          pointer-events: none;\\n          margin: -10px 0 0 -10px;\\n          z-index: 2;\\n        }\\n        *[hidden] {\\n          display: none !important;\\n        }\\n    ",this._glassPaneShadow.appendChild(n),this._refreshListenersIfNeeded(),setInterval((()=>{this._refreshListenersIfNeeded(),t.isUnderTest&&!this._reportedReadyForTest&&(this._reportedReadyForTest=!0,console.error("Recorder script ready for test"))}),500),globalThis._playwrightRefreshOverlay=()=>{this._pollRecorderMode().catch((e=>console.log(e)))},globalThis._playwrightRefreshOverlay()}_refreshListenersIfNeeded(){(this._outerGlassPaneElement.parentElement!==document.documentElement||this._outerGlassPaneElement.nextElementSibling)&&(function(e){for(const t of e)t();e.splice(0,e.length)}(this._listeners),this._listeners=[a(document,"click",(e=>this._onClick(e)),!0),a(document,"auxclick",(e=>this._onClick(e)),!0),a(document,"input",(e=>this._onInput(e)),!0),a(document,"keydown",(e=>this._onKeyDown(e)),!0),a(document,"keyup",(e=>this._onKeyUp(e)),!0),a(document,"mousedown",(e=>this._onMouseDown(e)),!0),a(document,"mouseup",(e=>this._onMouseUp(e)),!0),a(document,"mousemove",(e=>this._onMouseMove(e)),!0),a(document,"mouseleave",(e=>this._onMouseLeave(e)),!0),a(document,"focus",(()=>this._onFocus()),!0),a(document,"scroll",(()=>{this._hoveredModel=null,this._actionPointElement.hidden=!0,this._updateHighlight()}),!0)],document.documentElement.appendChild(this._outerGlassPaneElement))}async _pollRecorderMode(){var e;this._pollRecorderModeTimer&&clearTimeout(this._pollRecorderModeTimer);const n=await globalThis._playwrightRecorderState().catch((e=>null));if(!n)return void(this._pollRecorderModeTimer=setTimeout((()=>this._pollRecorderMode()),1e3));const{mode:o,actionPoint:r,actionSelector:i}=n;o!==this._mode&&(this._mode=o,this._clearHighlight()),r&&this._actionPoint&&r.x===this._actionPoint.x&&r.y===this._actionPoint.y||(r||this._actionPoint)&&(r?(this._actionPointElement.style.top=r.y+"px",this._actionPointElement.style.left=r.x+"px",this._actionPointElement.hidden=!1):this._actionPointElement.hidden=!0,this._actionPoint=r),!this._actionSelector||null!==(e=this._hoveredModel)&&void 0!==e&&e.elements.length||(this._actionSelector=void 0),i!==this._actionSelector&&(this._hoveredModel=i?(0,t.querySelector)(this._injectedScript,i,document):null,this._updateHighlight(),this._actionSelector=i),this._pollRecorderModeTimer=setTimeout((()=>this._pollRecorderMode()),1e3)}_clearHighlight(){this._hoveredModel=null,this._activeModel=null,this._updateHighlight()}_actionInProgress(e){return!!this._performingAction||(c(e),!1)}_consumedDueToNoModel(e,t){return!t&&(c(e),!0)}_consumedDueWrongTarget(e){return!(this._activeModel&&this._activeModel.elements[0]===this._deepEventTarget(e)||(c(e),0))}_onClick(e){if("inspecting"===this._mode&&globalThis._playwrightRecorderSetSelector(this._hoveredModel?this._hoveredModel.selector:""),this._shouldIgnoreMouseEvent(e))return;if(this._actionInProgress(e))return;if(this._consumedDueToNoModel(e,this._hoveredModel))return;const t=l(this._deepEventTarget(e));t?this._performAction({name:t.checked?"check":"uncheck",selector:this._hoveredModel.selector,signals:[]}):this._performAction({name:"click",selector:this._hoveredModel.selector,position:s(e),signals:[],button:i(e),modifiers:r(e),clickCount:e.detail})}_shouldIgnoreMouseEvent(e){const t=this._deepEventTarget(e);if("none"===this._mode)return!0;if("inspecting"===this._mode)return c(e),!0;const n=t.nodeName;return"SELECT"===n||!("INPUT"!==n||!["date"].includes(t.type))}_onMouseDown(e){this._shouldIgnoreMouseEvent(e)||(this._performingAction||c(e),this._activeModel=this._hoveredModel)}_onMouseUp(e){this._shouldIgnoreMouseEvent(e)||this._performingAction||c(e)}_onMouseMove(e){if("none"===this._mode)return;const t=this._deepEventTarget(e);this._hoveredElement!==t&&(this._hoveredElement=t,this._updateModelForHoveredElement())}_onMouseLeave(e){this._deepEventTarget(e).nodeType===Node.DOCUMENT_NODE&&(this._hoveredElement=null,this._updateModelForHoveredElement())}_onFocus(){const e=this._deepActiveElement(document),n=e?(0,t.generateSelector)(this._injectedScript,e):null;this._activeModel=n&&n.selector?n:null,this._params.isUnderTest&&console.error("Highlight updated for test: "+(n?n.selector:null))}_updateModelForHoveredElement(){if(!this._hoveredElement)return this._hoveredModel=null,void this._updateHighlight();const e=this._hoveredElement,{selector:n,elements:o}=(0,t.generateSelector)(this._injectedScript,e);this._hoveredModel&&this._hoveredModel.selector===n||this._hoveredElement!==e||(this._hoveredModel=n?{selector:n,elements:o}:null,this._updateHighlight(),this._params.isUnderTest&&console.error("Highlight updated for test: "+n))}_updateHighlight(){const e=this._hoveredModel?this._hoveredModel.elements:[];this._tooltipElement.textContent=this._hoveredModel?this._hoveredModel.selector:"",this._tooltipElement.style.top="0",this._tooltipElement.style.left="0",this._tooltipElement.style.display="flex";const t=e.map((e=>e.getBoundingClientRect())),n=this._tooltipElement.offsetWidth,o=this._tooltipElement.offsetHeight,r=this._innerGlassPaneElement.offsetWidth,i=this._innerGlassPaneElement.offsetHeight;if(t.length){const e=t[0];let s=e.left;s+n>r-5&&(s=r-n-5);let c=e.bottom+5;c+o>i-5&&(c=e.top>o+5?e.top-o-5:i-5-o),this._tooltipElement.style.top=c+"px",this._tooltipElement.style.left=s+"px"}else this._tooltipElement.style.display="none";const s=this._highlightElements;this._highlightElements=[];for(const e of t){const t=s.length?s.shift():this._createHighlightElement(),n="recording"===this._mode?"#dc6f6f7f":"#6fa8dc7f";t.style.backgroundColor=this._highlightElements.length?"#f6b26b7f":n,t.style.left=e.x+"px",t.style.top=e.y+"px",t.style.width=e.width+"px",t.style.height=e.height+"px",t.style.display="block",this._highlightElements.push(t)}for(const e of s)e.style.display="none",this._highlightElements.push(e)}_createHighlightElement(){const e=document.createElement("x-pw-highlight");return e.style.position="absolute",e.style.top="0",e.style.left="0",e.style.width="0",e.style.height="0",e.style.boxSizing="border-box",this._glassPaneShadow.appendChild(e),e}_onInput(e){if("recording"!==this._mode)return!0;const t=this._deepEventTarget(e);if(["INPUT","TEXTAREA"].includes(t.nodeName)){const n=t,o=(n.type||"").toLowerCase();if("checkbox"===o)return;if("file"===o)return void globalThis._playwrightRecorderRecordAction({name:"setInputFiles",selector:this._activeModel.selector,signals:[],files:[...n.files||[]].map((e=>e.name))});if(this._consumedDueWrongTarget(e))return;globalThis._playwrightRecorderRecordAction({name:"fill",selector:this._activeModel.selector,signals:[],text:n.value})}if("SELECT"===t.nodeName){const n=t;if(this._actionInProgress(e))return;this._performAction({name:"select",selector:this._hoveredModel.selector,options:[...n.selectedOptions].map((e=>e.value)),signals:[]})}}_shouldGenerateKeyPressFor(e){if(["Backspace","Delete","AltGraph"].includes(e.key))return!1;if("@"===e.key&&"KeyL"===e.code)return!1;if(navigator.platform.includes("Mac")){if("v"===e.key&&e.metaKey)return!1}else{if("v"===e.key&&e.ctrlKey)return!1;if("Insert"===e.key&&e.shiftKey)return!1}if(["Shift","Control","Meta","Alt"].includes(e.key))return!1;const t=e.ctrlKey||e.altKey||e.metaKey;return!(1===e.key.length&&!t&&!l(this._deepEventTarget(e)))}_onKeyDown(e){if("inspecting"!==this._mode){if("recording"!==this._mode)return!0;if(this._shouldGenerateKeyPressFor(e))if(this._actionInProgress(e))this._expectProgrammaticKeyUp=!0;else if(!this._consumedDueWrongTarget(e)){if(" "===e.key){const t=l(this._deepEventTarget(e));if(t)return void this._performAction({name:t.checked?"uncheck":"check",selector:this._activeModel.selector,signals:[]})}this._performAction({name:"press",selector:this._activeModel.selector,signals:[],key:e.key,modifiers:r(e)})}}else c(e)}_onKeyUp(e){this._shouldGenerateKeyPressFor(e)&&(this._expectProgrammaticKeyUp?this._expectProgrammaticKeyUp=!1:c(e))}async _performAction(e){this._performingAction=!0,await globalThis._playwrightRecorderPerformAction(e).catch((()=>{})),this._performingAction=!1,this._updateModelForHoveredElement(),this._onFocus(),this._params.isUnderTest&&console.error("Action performed for test: "+JSON.stringify({hovered:this._hoveredModel?this._hoveredModel.selector:null,active:this._activeModel?this._activeModel.selector:null}))}_deepEventTarget(e){return e.composedPath()[0]}_deepActiveElement(e){let t=e.activeElement;for(;t&&t.shadowRoot&&t.shadowRoot.activeElement;)t=t.shadowRoot.activeElement;return t}};e.default=h})(),pwExport=o.default})();';
     exports.source = source;
   }
 });
@@ -24904,7 +23215,7 @@ var require_consoleApiSource = __commonJS({
       value: true
     });
     exports.source = void 0;
-    var source = 'var pwExport;(()=>{"use strict";var e={317:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseCSS=function(e,t){let r;try{r=n.tokenize(e),r[r.length-1]instanceof n.EOFToken||r.push(new n.EOFToken)}catch(t){const r=t.message+` while parsing selector "${e}"`,n=(t.stack||"").indexOf(t.message);throw-1!==n&&(t.stack=t.stack.substring(0,n)+r+t.stack.substring(n+t.message.length)),t.message=r,t}const o=r.find((e=>e instanceof n.AtKeywordToken||e instanceof n.BadStringToken||e instanceof n.BadURLToken||e instanceof n.ColumnToken||e instanceof n.CDOToken||e instanceof n.CDCToken||e instanceof n.SemicolonToken||e instanceof n.OpenCurlyToken||e instanceof n.CloseCurlyToken||e instanceof n.URLToken||e instanceof n.PercentageToken));if(o)throw new Error(`Unsupported token "${o.toSource()}" while parsing selector "${e}"`);let i=0;const s=new Set;function c(){return new Error(`Unexpected token "${r[i].toSource()}" while parsing selector "${e}"`)}function a(){for(;r[i]instanceof n.WhitespaceToken;)i++}function u(e=i){return r[e]instanceof n.IdentToken}function p(e=i){return r[e]instanceof n.CommaToken}function l(e=i){return r[e]instanceof n.CloseParenToken}function h(e=i){return r[e]instanceof n.DelimToken&&"*"===r[e].value}function f(e=i){return r[e]instanceof n.EOFToken}function y(e=i){return r[e]instanceof n.DelimToken&&[">","+","~"].includes(r[e].value)}function g(e=i){return p(e)||l(e)||f(e)||y(e)||r[e]instanceof n.WhitespaceToken}function m(){const e=[d()];for(;a(),p();)i++,e.push(d());return e}function d(){return a(),function(e=i){return r[e]instanceof n.NumberToken}()||function(e=i){return r[e]instanceof n.StringToken}()?r[i++].value:function(){const e={simples:[]};for(a(),y()?e.simples.push({selector:{functions:[{name:"scope",args:[]}]},combinator:""}):e.simples.push({selector:w(),combinator:""});;){if(a(),y())e.simples[e.simples.length-1].combinator=r[i++].value,a();else if(g())break;e.simples.push({combinator:"",selector:w()})}return e}()}function w(){let e="";const o=[];for(;!g();)if(u()||h())e+=r[i++].toSource();else if(r[i]instanceof n.HashToken)e+=r[i++].toSource();else if(r[i]instanceof n.DelimToken&&"."===r[i].value){if(i++,!u())throw c();e+="."+r[i++].toSource()}else if(r[i]instanceof n.ColonToken)if(i++,u())if(t.has(r[i].value.toLowerCase())){const e=r[i++].value.toLowerCase();o.push({name:e,args:[]}),s.add(e)}else e+=":"+r[i++].toSource();else{if(!(r[i]instanceof n.FunctionToken))throw c();{const n=r[i++].value.toLowerCase();if(t.has(n)?(o.push({name:n,args:m()}),s.add(n)):e+=`:${n}(${S()})`,a(),!l())throw c();i++}}else{if(!(r[i]instanceof n.OpenSquareToken))throw c();for(e+="[",i++;!(r[i]instanceof n.CloseSquareToken||f());)e+=r[i++].toSource();if(!(r[i]instanceof n.CloseSquareToken))throw c();e+="]",i++}if(!e&&!o.length)throw c();return{css:e||void 0,functions:o}}function S(){let e="";for(;!l()&&!f();)e+=r[i++].toSource();return e}const v=m();if(!f())throw new Error(`Error while parsing selector "${e}"`);if(v.some((e=>"object"!=typeof e||!("simples"in e))))throw new Error(`Error while parsing selector "${e}"`);return{selector:v,names:Array.from(s)}},t.serializeSelector=function e(t){return t.map((t=>"string"==typeof t?`"${t}"`:"number"==typeof t?String(t):t.simples.map((({selector:t,combinator:r})=>{let n=t.css||"";return n+=t.functions.map((t=>`:${t.name}(${e(t.args)})`)).join(""),r&&(n+=" "+r),n})).join(" "))).join(", ")};var n=function(e,t){if(e&&e.__esModule)return e;if(null===e||"object"!=typeof e&&"function"!=typeof e)return{default:e};var r=o(t);if(r&&r.has(e))return r.get(e);var n={},i=Object.defineProperty&&Object.getOwnPropertyDescriptor;for(var s in e)if("default"!==s&&Object.prototype.hasOwnProperty.call(e,s)){var c=i?Object.getOwnPropertyDescriptor(e,s):null;c&&(c.get||c.set)?Object.defineProperty(n,s,c):n[s]=e[s]}return n.default=e,r&&r.set(e,n),n}(r(503));function o(e){if("function"!=typeof WeakMap)return null;var t=new WeakMap,r=new WeakMap;return(o=function(e){return e?r:t})(e)}},503:(e,t)=>{var r,n;r=function(e){var t=function(e,t,r){return e>=t&&e<=r};function r(e){return t(e,48,57)}function n(e){return r(e)||t(e,65,70)||t(e,97,102)}function o(e){return function(e){return t(e,65,90)}(e)||function(e){return t(e,97,122)}(e)}function i(e){return o(e)||function(e){return e>=128}(e)||95==e}function s(e){return i(e)||r(e)||45==e}function c(e){return t(e,0,8)||11==e||t(e,14,31)||127==e}function a(e){return 10==e}function u(e){return a(e)||9==e||32==e}var p=function(e){this.message=e};function l(e){if(e<=65535)return String.fromCharCode(e);e-=Math.pow(2,16);var t=Math.floor(e/Math.pow(2,10))+55296,r=e%Math.pow(2,10)+56320;return String.fromCharCode(t)+String.fromCharCode(r)}function h(){throw"Abstract Base Class"}function f(){return this}function y(){return this}function g(){return this}function m(){return this}function d(){return this}function w(){return this}function S(){return this}function v(){return this}function _(){throw"Abstract Base Class"}function T(){return this.value="{",this.mirror="}",this}function b(){return this.value="}",this.mirror="{",this}function E(){return this.value="[",this.mirror="]",this}function k(){return this.value="]",this.mirror="[",this}function C(){return this.value="(",this.mirror=")",this}function O(){return this.value=")",this.mirror="(",this}function M(){return this}function x(){return this}function N(){return this}function A(){return this}function j(){return this}function $(){return this}function q(){return this}function P(e){return this.value=l(e),this}function L(){throw"Abstract Base Class"}function R(e){this.value=e}function D(e){this.value=e,this.mirror=")"}function I(e){this.value=e}function U(e){this.value=e,this.type="unrestricted"}function B(e){this.value=e}function F(e){this.value=e}function Q(){this.value=null,this.type="integer",this.repr=""}function J(){this.value=null,this.repr=""}function W(){this.value=null,this.type="integer",this.repr="",this.unit=""}function z(e){for(var r="",n=(e=""+e).charCodeAt(0),o=0;o<e.length;o++){var i=e.charCodeAt(o);if(0==i)throw new p("Invalid character: the input contains U+0000.");t(i,1,31)||127==i||0==o&&t(i,48,57)||1==o&&t(i,48,57)&&45==n?r+="\\\\"+i.toString(16)+" ":i>=128||45==i||95==i||t(i,48,57)||t(i,65,90)||t(i,97,122)?r+=e[o]:r+="\\\\"+e[o]}return r}function G(e){e=""+e;for(var r="",n=0;n<e.length;n++){var o=e.charCodeAt(n);if(0==o)throw new p("Invalid character: the input contains U+0000.");t(o,1,31)||127==o?r+="\\\\"+o.toString(16)+" ":r+=34==o||92==o?"\\\\"+e[n]:e[n]}return r}(p.prototype=new Error).name="InvalidCharacterError",h.prototype.toJSON=function(){return{token:this.tokenType}},h.prototype.toString=function(){return this.tokenType},h.prototype.toSource=function(){return""+this},f.prototype=Object.create(h.prototype),f.prototype.tokenType="BADSTRING",y.prototype=Object.create(h.prototype),y.prototype.tokenType="BADURL",g.prototype=Object.create(h.prototype),g.prototype.tokenType="WHITESPACE",g.prototype.toString=function(){return"WS"},g.prototype.toSource=function(){return" "},m.prototype=Object.create(h.prototype),m.prototype.tokenType="CDO",m.prototype.toSource=function(){return"\\x3c!--"},d.prototype=Object.create(h.prototype),d.prototype.tokenType="CDC",d.prototype.toSource=function(){return"--\\x3e"},w.prototype=Object.create(h.prototype),w.prototype.tokenType=":",S.prototype=Object.create(h.prototype),S.prototype.tokenType=";",v.prototype=Object.create(h.prototype),v.prototype.tokenType=",",_.prototype=Object.create(h.prototype),T.prototype=Object.create(_.prototype),T.prototype.tokenType="{",b.prototype=Object.create(_.prototype),b.prototype.tokenType="}",E.prototype=Object.create(_.prototype),E.prototype.tokenType="[",k.prototype=Object.create(_.prototype),k.prototype.tokenType="]",C.prototype=Object.create(_.prototype),C.prototype.tokenType="(",O.prototype=Object.create(_.prototype),O.prototype.tokenType=")",M.prototype=Object.create(h.prototype),M.prototype.tokenType="~=",x.prototype=Object.create(h.prototype),x.prototype.tokenType="|=",N.prototype=Object.create(h.prototype),N.prototype.tokenType="^=",A.prototype=Object.create(h.prototype),A.prototype.tokenType="$=",j.prototype=Object.create(h.prototype),j.prototype.tokenType="*=",$.prototype=Object.create(h.prototype),$.prototype.tokenType="||",q.prototype=Object.create(h.prototype),q.prototype.tokenType="EOF",q.prototype.toSource=function(){return""},P.prototype=Object.create(h.prototype),P.prototype.tokenType="DELIM",P.prototype.toString=function(){return"DELIM("+this.value+")"},P.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},P.prototype.toSource=function(){return"\\\\"==this.value?"\\\\\\n":this.value},L.prototype=Object.create(h.prototype),L.prototype.ASCIIMatch=function(e){return this.value.toLowerCase()==e.toLowerCase()},L.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},R.prototype=Object.create(L.prototype),R.prototype.tokenType="IDENT",R.prototype.toString=function(){return"IDENT("+this.value+")"},R.prototype.toSource=function(){return z(this.value)},D.prototype=Object.create(L.prototype),D.prototype.tokenType="FUNCTION",D.prototype.toString=function(){return"FUNCTION("+this.value+")"},D.prototype.toSource=function(){return z(this.value)+"("},I.prototype=Object.create(L.prototype),I.prototype.tokenType="AT-KEYWORD",I.prototype.toString=function(){return"AT("+this.value+")"},I.prototype.toSource=function(){return"@"+z(this.value)},U.prototype=Object.create(L.prototype),U.prototype.tokenType="HASH",U.prototype.toString=function(){return"HASH("+this.value+")"},U.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e},U.prototype.toSource=function(){return"id"==this.type?"#"+z(this.value):"#"+function(e){for(var r="",n=((e=""+e).charCodeAt(0),0);n<e.length;n++){var o=e.charCodeAt(n);if(0==o)throw new p("Invalid character: the input contains U+0000.");o>=128||45==o||95==o||t(o,48,57)||t(o,65,90)||t(o,97,122)?r+=e[n]:r+="\\\\"+o.toString(16)+" "}return r}(this.value)},B.prototype=Object.create(L.prototype),B.prototype.tokenType="STRING",B.prototype.toString=function(){return\'"\'+G(this.value)+\'"\'},F.prototype=Object.create(L.prototype),F.prototype.tokenType="URL",F.prototype.toString=function(){return"URL("+this.value+")"},F.prototype.toSource=function(){return\'url("\'+G(this.value)+\'")\'},Q.prototype=Object.create(h.prototype),Q.prototype.tokenType="NUMBER",Q.prototype.toString=function(){return"integer"==this.type?"INT("+this.value+")":"NUMBER("+this.value+")"},Q.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e},Q.prototype.toSource=function(){return this.repr},J.prototype=Object.create(h.prototype),J.prototype.tokenType="PERCENTAGE",J.prototype.toString=function(){return"PERCENTAGE("+this.value+")"},J.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.repr=this.repr,e},J.prototype.toSource=function(){return this.repr+"%"},W.prototype=Object.create(h.prototype),W.prototype.tokenType="DIMENSION",W.prototype.toString=function(){return"DIM("+this.value+","+this.unit+")"},W.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e.unit=this.unit,e},W.prototype.toSource=function(){var e=this.repr,r=z(this.unit);return"e"!=r[0].toLowerCase()||"-"!=r[1]&&!t(r.charCodeAt(1),48,57)||(r="\\\\65 "+r.slice(1,r.length)),e+r},e.tokenize=function(e){e=function(e){for(var r=[],n=0;n<e.length;n++){var o=e.charCodeAt(n);if(13==o&&10==e.charCodeAt(n+1)&&(o=10,n++),13!=o&&12!=o||(o=10),0==o&&(o=65533),t(o,55296,56319)&&t(e.charCodeAt(n+1),56320,57343)){var i=o-55296,s=e.charCodeAt(n+1)-56320;o=Math.pow(2,16)+i*Math.pow(2,10)+s,n++}r.push(o)}return r}(e);for(var o,p=-1,h=[],_=0,L=0,z=0,G={line:_,column:L},H=function(t){return t>=e.length?-1:e[t]},V=function(e){if(void 0===e&&(e=1),e>3)throw"Spec Error: no more than three codepoints of lookahead.";return H(p+e)},K=function(e){return void 0===e&&(e=1),a(o=H(p+=e))?(_+=1,z=L,L=0):L+=e,!0},X=function(){return p-=1,a(o)?(_-=1,L=z):L-=1,G.line=_,G.column=L,!0},Z=function(e){return void 0===e&&(e=o),-1==e},Y=function(){return console.log("Parse error at index "+p+", processing codepoint 0x"+o.toString(16)+"."),!0},ee=function(){if(te(),K(),u(o)){for(;u(V());)K();return new g}if(34==o)return oe();if(35==o){if(s(V())||ce(V(1),V(2))){var e=new U;return ue(V(1),V(2),V(3))&&(e.type="id"),e.value=he(),e}return new P(o)}return 36==o?61==V()?(K(),new A):new P(o):39==o?oe():40==o?new C:41==o?new O:42==o?61==V()?(K(),new j):new P(o):43==o?le()?(X(),re()):new P(o):44==o?new v:45==o?le()?(X(),re()):45==V(1)&&62==V(2)?(K(2),new d):pe()?(X(),ne()):new P(o):46==o?le()?(X(),re()):new P(o):58==o?new w:59==o?new S:60==o?33==V(1)&&45==V(2)&&45==V(3)?(K(3),new m):new P(o):64==o?ue(V(1),V(2),V(3))?new I(he()):new P(o):91==o?new E:92==o?ae()?(X(),ne()):(Y(),new P(o)):93==o?new k:94==o?61==V()?(K(),new N):new P(o):123==o?new T:124==o?61==V()?(K(),new x):124==V()?(K(),new $):new P(o):125==o?new b:126==o?61==V()?(K(),new M):new P(o):r(o)?(X(),re()):i(o)?(X(),ne()):Z()?new q:new P(o)},te=function(){for(;47==V(1)&&42==V(2);)for(K(2);;){if(K(),42==o&&47==V()){K();break}if(Z())return void Y()}},re=function(){var e,t=fe();return ue(V(1),V(2),V(3))?((e=new W).value=t.value,e.repr=t.repr,e.type=t.type,e.unit=he(),e):37==V()?(K(),(e=new J).value=t.value,e.repr=t.repr,e):((e=new Q).value=t.value,e.repr=t.repr,e.type=t.type,e)},ne=function(){var e=he();if("url"==e.toLowerCase()&&40==V()){for(K();u(V(1))&&u(V(2));)K();return 34==V()||39==V()?new D(e):!u(V())||34!=V(2)&&39!=V(2)?ie():new D(e)}return 40==V()?(K(),new D(e)):new R(e)},oe=function(e){void 0===e&&(e=o);for(var t="";K();){if(o==e||Z())return new B(t);if(a(o))return Y(),X(),new f;92==o?Z(V())||(a(V())?K():t+=l(se())):t+=l(o)}},ie=function(){for(var e=new F("");u(V());)K();if(Z(V()))return e;for(;K();){if(41==o||Z())return e;if(u(o)){for(;u(V());)K();return 41==V()||Z(V())?(K(),e):(ge(),new y)}if(34==o||39==o||40==o||c(o))return Y(),ge(),new y;if(92==o){if(!ae())return Y(),ge(),new y;e.value+=l(se())}else e.value+=l(o)}},se=function(){if(K(),n(o)){for(var e=[o],t=0;t<5&&n(V());t++)K(),e.push(o);u(V())&&K();var r=parseInt(e.map((function(e){return String.fromCharCode(e)})).join(""),16);return r>1114111&&(r=65533),r}return Z()?65533:o},ce=function(e,t){return 92==e&&!a(t)},ae=function(){return ce(o,V())},ue=function(e,t,r){return 45==e?i(t)||45==t||ce(t,r):!!i(e)||92==e&&ce(e,t)},pe=function(){return ue(o,V(1),V(2))},le=function(){return e=o,t=V(1),n=V(2),43==e||45==e?!!r(t)||!(46!=t||!r(n)):46==e?!!r(t):!!r(e);var e,t,n},he=function(){for(var e="";K();)if(s(o))e+=l(o);else{if(!ae())return X(),e;e+=l(se())}},fe=function(){var e=[],t="integer";for(43!=V()&&45!=V()||(K(),e+=l(o));r(V());)K(),e+=l(o);if(46==V(1)&&r(V(2)))for(K(),e+=l(o),K(),e+=l(o),t="number";r(V());)K(),e+=l(o);var n=V(1),i=V(2),s=V(3);if(69!=n&&101!=n||!r(i)){if((69==n||101==n)&&(43==i||45==i)&&r(s))for(K(),e+=l(o),K(),e+=l(o),K(),e+=l(o),t="number";r(V());)K(),e+=l(o)}else for(K(),e+=l(o),K(),e+=l(o),t="number";r(V());)K(),e+=l(o);return{type:t,value:ye(e),repr:e}},ye=function(e){return+e},ge=function(){for(;K();){if(41==o||Z())return;ae()&&se()}},me=0;!Z(V());)if(h.push(ee()),++me>2*e.length)return"I\'m infinite-looping!";return h},e.IdentToken=R,e.FunctionToken=D,e.AtKeywordToken=I,e.HashToken=U,e.StringToken=B,e.BadStringToken=f,e.URLToken=F,e.BadURLToken=y,e.DelimToken=P,e.NumberToken=Q,e.PercentageToken=J,e.DimensionToken=W,e.IncludeMatchToken=M,e.DashMatchToken=x,e.PrefixMatchToken=N,e.SuffixMatchToken=A,e.SubstringMatchToken=j,e.ColumnToken=$,e.WhitespaceToken=g,e.CDOToken=m,e.CDCToken=d,e.ColonToken=w,e.SemicolonToken=S,e.CommaToken=v,e.OpenParenToken=C,e.CloseParenToken=O,e.OpenSquareToken=E,e.CloseSquareToken=k,e.OpenCurlyToken=T,e.CloseCurlyToken=b,e.EOFToken=q,e.CSSParserToken=h,e.GroupingToken=_},void 0===(n=r.apply(t,[t]))||(e.exports=n)},461:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseSelector=i,t.splitSelectorByFrame=function(e){const t=i(e),r=[];let n={parts:[]},o=0;for(let e=0;e<t.parts.length;++e){const i=t.parts[e];if("control"!==i.name||"enter-frame"!==i.body)t.capture===e&&(n.capture=e-o),n.parts.push(i);else{if(!n.parts.length)throw new Error("Selector cannot start with entering frame, select the iframe first");r.push(n),n={parts:[]},o=e+1}}if(!n.parts.length)throw new Error(`Selector cannot end with entering frame, while parsing selector ${e}`);if(r.push(n),"number"==typeof t.capture&&"number"!=typeof r[r.length-1].capture)throw new Error("Can not capture the selector before diving into the frame. Only use * after the last frame has been selected");return r},t.stringifySelector=function(e){return"string"==typeof e?e:e.parts.map(((t,r)=>{const n="css"===t.name?"":t.name+"=";return`${r===e.capture?"*":""}${n}${t.source}`})).join(" >> ")},t.customCSSNames=void 0;var n=r(317);const o=new Set(["not","is","where","has","scope","light","visible","text","text-matches","text-is","has-text","above","below","right-of","left-of","near","nth-match"]);function i(e){const t=function(e){let t,r=0,n=0;const o={parts:[]},i=()=>{const t=e.substring(n,r).trim(),i=t.indexOf("=");let s,c;-1!==i&&t.substring(0,i).trim().match(/^[a-zA-Z_0-9-+:*]+$/)?(s=t.substring(0,i).trim(),c=t.substring(i+1)):t.length>1&&\'"\'===t[0]&&\'"\'===t[t.length-1]||t.length>1&&"\'"===t[0]&&"\'"===t[t.length-1]?(s="text",c=t):/^\\(*\\/\\//.test(t)||t.startsWith("..")?(s="xpath",c=t):(s="css",c=t);let a=!1;if("*"===s[0]&&(a=!0,s=s.substring(1)),o.parts.push({name:s,body:c}),a){if(void 0!==o.capture)throw new Error("Only one of the selectors can capture using * modifier");o.capture=o.parts.length-1}};if(!e.includes(">>"))return r=e.length,i(),o;for(;r<e.length;){const o=e[r];"\\\\"===o&&r+1<e.length?r+=2:o===t?(t=void 0,r++):t||\'"\'!==o&&"\'"!==o&&"`"!==o?t||">"!==o||">"!==e[r+1]?r++:(i(),r+=2,n=r):(t=o,r++)}return i(),o}(e),r=t.parts.map((e=>"css"===e.name||"css:light"===e.name?("css:light"===e.name&&(e.body=":light("+e.body+")"),{name:"css",body:(0,n.parseCSS)(e.body,o).selector,source:e.body}):{...e,source:e.body}));return{capture:t.capture,parts:r}}t.customCSSNames=o},848:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.createLaxTextMatcher=y,t.createStrictTextMatcher=g,t.createRegexTextMatcher=m,t.elementText=w,t.elementMatchesText=S,t.parentElementOrShadowHost=O,t.isVisible=N,t.SelectorEvaluatorImpl=void 0;var n=r(461);t.SelectorEvaluatorImpl=class{constructor(e){this._engines=new Map,this._cacheQueryCSS=new Map,this._cacheMatches=new Map,this._cacheQuery=new Map,this._cacheMatchesSimple=new Map,this._cacheMatchesParents=new Map,this._cacheCallMatches=new Map,this._cacheCallQuery=new Map,this._cacheQuerySimple=new Map,this._cacheText=new Map,this._scoreMap=void 0,this._retainCacheCounter=0;for(const[t,r]of e)this._engines.set(t,r);this._engines.set("not",c),this._engines.set("is",o),this._engines.set("where",o),this._engines.set("has",i),this._engines.set("scope",s),this._engines.set("light",a),this._engines.set("visible",u),this._engines.set("text",p),this._engines.set("text-is",l),this._engines.set("text-matches",h),this._engines.set("has-text",f),this._engines.set("right-of",k("right-of",v)),this._engines.set("left-of",k("left-of",_)),this._engines.set("above",k("above",T)),this._engines.set("below",k("below",b)),this._engines.set("near",k("near",E)),this._engines.set("nth-match",C);const t=[...this._engines.keys()];t.sort();const r=[...n.customCSSNames];if(r.sort(),t.join("|")!==r.join("|"))throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${t.join("|")} vs ${r.join("|")}`)}begin(){++this._retainCacheCounter}end(){--this._retainCacheCounter,this._retainCacheCounter||(this._cacheQueryCSS.clear(),this._cacheMatches.clear(),this._cacheQuery.clear(),this._cacheMatchesSimple.clear(),this._cacheMatchesParents.clear(),this._cacheCallMatches.clear(),this._cacheCallQuery.clear(),this._cacheQuerySimple.clear(),this._cacheText.clear())}_cached(e,t,r,n){e.has(t)||e.set(t,[]);const o=e.get(t),i=o.find((e=>r.every(((t,r)=>e.rest[r]===t))));if(i)return i.result;const s=n();return o.push({rest:r,result:s}),s}_checkSelector(e){if("object"!=typeof e||!e||!(Array.isArray(e)||"simples"in e&&e.simples.length))throw new Error(`Malformed selector "${e}"`);return e}matches(e,t,r){const n=this._checkSelector(t);this.begin();try{return this._cached(this._cacheMatches,e,[n,r.scope,r.pierceShadow],(()=>Array.isArray(n)?this._matchesEngine(o,e,n,r):!!this._matchesSimple(e,n.simples[n.simples.length-1].selector,r)&&this._matchesParents(e,n,n.simples.length-2,r)))}finally{this.end()}}query(e,t){const r=this._checkSelector(t);this.begin();try{return this._cached(this._cacheQuery,r,[e.scope,e.pierceShadow],(()=>{if(Array.isArray(r))return this._queryEngine(o,e,r);const t=this._scoreMap;this._scoreMap=new Map;let n=this._querySimple(e,r.simples[r.simples.length-1].selector);return n=n.filter((t=>this._matchesParents(t,r,r.simples.length-2,e))),this._scoreMap.size&&n.sort(((e,t)=>{const r=this._scoreMap.get(e),n=this._scoreMap.get(t);return r===n?0:void 0===r?1:void 0===n?-1:r-n})),this._scoreMap=t,n}))}finally{this.end()}}_markScore(e,t){this._scoreMap&&this._scoreMap.set(e,t)}_matchesSimple(e,t,r){return this._cached(this._cacheMatchesSimple,e,[t,r.scope,r.pierceShadow],(()=>{if(!t.functions.some((e=>"scope"===e.name||"is"===e.name))&&e===r.scope)return!1;if(t.css&&!this._matchesCSS(e,t.css))return!1;for(const n of t.functions)if(!this._matchesEngine(this._getEngine(n.name),e,n.args,r))return!1;return!0}))}_querySimple(e,t){return t.functions.length?this._cached(this._cacheQuerySimple,t,[e.scope,e.pierceShadow],(()=>{let r=t.css;const n=t.functions;let o;"*"===r&&n.length&&(r=void 0);let i=-1;void 0!==r?o=this._queryCSS(e,r):(i=n.findIndex((e=>void 0!==this._getEngine(e.name).query)),-1===i&&(i=0),o=this._queryEngine(this._getEngine(n[i].name),e,n[i].args));for(let t=0;t<n.length;t++){if(t===i)continue;const r=this._getEngine(n[t].name);void 0!==r.matches&&(o=o.filter((o=>this._matchesEngine(r,o,n[t].args,e))))}for(let t=0;t<n.length;t++){if(t===i)continue;const r=this._getEngine(n[t].name);void 0===r.matches&&(o=o.filter((o=>this._matchesEngine(r,o,n[t].args,e))))}return o})):this._queryCSS(e,t.css||"*")}_matchesParents(e,t,r,n){return r<0||this._cached(this._cacheMatchesParents,e,[t,r,n.scope,n.pierceShadow],(()=>{const{selector:o,combinator:i}=t.simples[r];if(">"===i){const i=M(e,n);return!(!i||!this._matchesSimple(i,o,n))&&this._matchesParents(i,t,r-1,n)}if("+"===i){const i=x(e,n);return!(!i||!this._matchesSimple(i,o,n))&&this._matchesParents(i,t,r-1,n)}if(""===i){let i=M(e,n);for(;i;){if(this._matchesSimple(i,o,n)){if(this._matchesParents(i,t,r-1,n))return!0;if(""===t.simples[r-1].combinator)break}i=M(i,n)}return!1}if("~"===i){let i=x(e,n);for(;i;){if(this._matchesSimple(i,o,n)){if(this._matchesParents(i,t,r-1,n))return!0;if("~"===t.simples[r-1].combinator)break}i=x(i,n)}return!1}if(">="===i){let i=e;for(;i;){if(this._matchesSimple(i,o,n)){if(this._matchesParents(i,t,r-1,n))return!0;if(""===t.simples[r-1].combinator)break}i=M(i,n)}return!1}throw new Error(`Unsupported combinator "${i}"`)}))}_matchesEngine(e,t,r,n){if(e.matches)return this._callMatches(e,t,r,n);if(e.query)return this._callQuery(e,r,n).includes(t);throw new Error(\'Selector engine should implement "matches" or "query"\')}_queryEngine(e,t,r){if(e.query)return this._callQuery(e,r,t);if(e.matches)return this._queryCSS(t,"*").filter((n=>this._callMatches(e,n,r,t)));throw new Error(\'Selector engine should implement "matches" or "query"\')}_callMatches(e,t,r,n){return this._cached(this._cacheCallMatches,t,[e,n.scope,n.pierceShadow,...r],(()=>e.matches(t,r,n,this)))}_callQuery(e,t,r){return this._cached(this._cacheCallQuery,e,[r.scope,r.pierceShadow,...t],(()=>e.query(r,t,this)))}_matchesCSS(e,t){return e.matches(t)}_queryCSS(e,t){return this._cached(this._cacheQueryCSS,t,[e.scope,e.pierceShadow],(()=>{let r=[];return function n(o){if(r=r.concat([...o.querySelectorAll(t)]),e.pierceShadow){o.shadowRoot&&n(o.shadowRoot);for(const e of o.querySelectorAll("*"))e.shadowRoot&&n(e.shadowRoot)}}(e.scope),r}))}_getEngine(e){const t=this._engines.get(e);if(!t)throw new Error(`Unknown selector engine "${e}"`);return t}};const o={matches(e,t,r,n){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');return t.some((t=>n.matches(e,t,r)))},query(e,t,r){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');let n=[];for(const o of t)n=n.concat(r.query(e,o));return 1===t.length?n:function(e){const t=new Map,r=[],n=[];function o(e){let n=t.get(e);if(n)return n;const i=O(e);return i?o(i).children.push(e):r.push(e),n={children:[],taken:!1},t.set(e,n),n}return e.forEach((e=>o(e).taken=!0)),r.forEach((function e(r){const o=t.get(r);if(o.taken&&n.push(r),o.children.length>1){const e=new Set(o.children);o.children=[];let t=r.firstElementChild;for(;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling;for(t=r.shadowRoot?r.shadowRoot.firstElementChild:null;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling}o.children.forEach(e)})),n}(n)}},i={matches(e,t,r,n){if(0===t.length)throw new Error(\'"has" engine expects non-empty selector list\');return n.query({...r,scope:e},t).length>0}},s={matches(e,t,r,n){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');return 9===r.scope.nodeType?e===r.scope.documentElement:e===r.scope},query(e,t,r){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');if(9===e.scope.nodeType){const t=e.scope.documentElement;return t?[t]:[]}return 1===e.scope.nodeType?[e.scope]:[]}},c={matches(e,t,r,n){if(0===t.length)throw new Error(\'"not" engine expects non-empty selector list\');return!n.matches(e,t,r)}},a={query:(e,t,r)=>r.query({...e,pierceShadow:!1},t),matches:(e,t,r,n)=>n.matches(e,t,{...r,pierceShadow:!1})},u={matches(e,t,r,n){if(t.length)throw new Error(\'"visible" engine expects no arguments\');return N(e)}},p={matches(e,t,r,n){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text" engine expects a single string\');return"self"===S(n,e,y(t[0]))}},l={matches(e,t,r,n){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text-is" engine expects a single string\');return"none"!==S(n,e,g(t[0]))}},h={matches(e,t,r,n){if(0===t.length||"string"!=typeof t[0]||t.length>2||2===t.length&&"string"!=typeof t[1])throw new Error(\'"text-matches" engine expects a regexp body and optional regexp flags\');return"self"===S(n,e,m(t[0],2===t.length?t[1]:void 0))}},f={matches(e,t,r,n){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"has-text" engine expects a single string\');return!d(e)&&y(t[0])(w(n,e))}};function y(e){return e=e.trim().replace(/\\s+/g," ").toLowerCase(),t=>t.full.trim().replace(/\\s+/g," ").toLowerCase().includes(e)}function g(e){return e=e.trim().replace(/\\s+/g," "),t=>!e&&!t.immediate.length||t.immediate.some((t=>t.trim().replace(/\\s+/g," ")===e))}function m(e,t){const r=new RegExp(e,t);return e=>r.test(e.full)}function d(e){return"SCRIPT"===e.nodeName||"STYLE"===e.nodeName||document.head&&document.head.contains(e)}function w(e,t){let r=e._cacheText.get(t);if(void 0===r){if(r={full:"",immediate:[]},!d(t)){let n="";if(t instanceof HTMLInputElement&&("submit"===t.type||"button"===t.type))r={full:t.value,immediate:[t.value]};else{for(let o=t.firstChild;o;o=o.nextSibling)o.nodeType===Node.TEXT_NODE?(r.full+=o.nodeValue||"",n+=o.nodeValue||""):(n&&r.immediate.push(n),n="",o.nodeType===Node.ELEMENT_NODE&&(r.full+=w(e,o).full));n&&r.immediate.push(n),t.shadowRoot&&(r.full+=w(e,t.shadowRoot).full)}}e._cacheText.set(t,r)}return r}function S(e,t,r){if(d(t))return"none";if(!r(w(e,t)))return"none";for(let n=t.firstChild;n;n=n.nextSibling)if(n.nodeType===Node.ELEMENT_NODE&&r(w(e,n)))return"selfAndChildren";return t.shadowRoot&&r(w(e,t.shadowRoot))?"selfAndChildren":"self"}function v(e,t,r){const n=e.left-t.right;if(!(n<0||void 0!==r&&n>r))return n+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function _(e,t,r){const n=t.left-e.right;if(!(n<0||void 0!==r&&n>r))return n+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function T(e,t,r){const n=t.top-e.bottom;if(!(n<0||void 0!==r&&n>r))return n+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function b(e,t,r){const n=e.top-t.bottom;if(!(n<0||void 0!==r&&n>r))return n+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function E(e,t,r){const n=void 0===r?50:r;let o=0;return e.left-t.right>=0&&(o+=e.left-t.right),t.left-e.right>=0&&(o+=t.left-e.right),t.top-e.bottom>=0&&(o+=t.top-e.bottom),e.top-t.bottom>=0&&(o+=e.top-t.bottom),o>n?void 0:o}function k(e,t){return{matches(r,n,o,i){const s=n.length&&"number"==typeof n[n.length-1]?n[n.length-1]:void 0,c=void 0===s?n:n.slice(0,n.length-1);if(n.length<1+(void 0===s?0:1))throw new Error(`"${e}" engine expects a selector list and optional maximum distance in pixels`);const a=r.getBoundingClientRect();let u;for(const e of i.query(o,c)){if(e===r)continue;const n=t(a,e.getBoundingClientRect(),s);void 0!==n&&(void 0===u||n<u)&&(u=n)}return void 0!==u&&(i._markScore(r,u),!0)}}}const C={query(e,t,r){let n=t[t.length-1];if(t.length<2)throw new Error(\'"nth-match" engine expects non-empty selector list and an index argument\');if("number"!=typeof n||n<1)throw new Error(\'"nth-match" engine expects a one-based index as the last argument\');const i=o.query(e,t.slice(0,t.length-1),r);return n--,n<i.length?[i[n]]:[]}};function O(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:void 0}function M(e,t){if(e!==t.scope)return t.pierceShadow?O(e):e.parentElement||void 0}function x(e,t){if(e!==t.scope)return e.previousElementSibling||void 0}function N(e){if(!e.ownerDocument||!e.ownerDocument.defaultView)return!0;const t=e.ownerDocument.defaultView.getComputedStyle(e);if(!t||"hidden"===t.visibility)return!1;const r=e.getBoundingClientRect();return r.width>0&&r.height>0}},854:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.querySelector=function(e,t,r){try{const n=e.parseSelector(t);return{selector:t,elements:e.querySelectorAll(n,r)}}catch(e){return{selector:t,elements:[]}}},t.generateSelector=function(e,t){e._evaluator.begin();try{const r=function(e,t){if(t.ownerDocument.documentElement===t)return[{engine:"css",selector:"html",score:1}];const r=(u,l)=>{const y=l?o:i;let g=y.get(u);return void 0===g&&(g=((o,i)=>{const u=o===t;let l=i?function(e,t,r){if("SELECT"===t.nodeName)return[];const o=(0,n.elementText)(e._evaluator,t).full.trim().replace(/\\s+/g," ").substring(0,80);if(!o)return[];const i=[];let s=o;if((o.includes(\'"\')||o.includes(">>")||"/"===o[0])&&(s=`/.*${function(e){return e.replace(/[.*+?^>${}()|[\\]\\\\]/g,"\\\\$&")}(o)}.*/`),i.push({engine:"text",selector:s,score:10}),r&&s===o){let e=t.nodeName.toLocaleLowerCase();t.hasAttribute("role")&&(e+=`[role=${p(t.getAttribute("role"))}]`),i.push({engine:"css",selector:`${e}:has-text("${o}")`,score:30})}return i}(e,o,o===t).map((e=>[e])):[];o!==t&&(l=s(l));const y=function(e,t){const r=[];for(const e of["data-testid","data-test-id","data-test"])t.hasAttribute(e)&&r.push({engine:"css",selector:`[${e}=${p(t.getAttribute(e))}]`,score:1});if("INPUT"===t.nodeName){const e=t;e.placeholder&&r.push({engine:"css",selector:`[placeholder=${p(e.placeholder)}]`,score:10})}t.hasAttribute("aria-label")&&r.push({engine:"css",selector:`[aria-label=${p(t.getAttribute("aria-label"))}]`,score:10}),t.getAttribute("alt")&&["APPLET","AREA","IMG","INPUT"].includes(t.nodeName)&&r.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[alt=${p(t.getAttribute("alt"))}]`,score:10}),t.hasAttribute("role")&&r.push({engine:"css",selector:`${t.nodeName.toLocaleLowerCase()}[role=${p(t.getAttribute("role"))}]`,score:50}),t.getAttribute("name")&&["BUTTON","FORM","FIELDSET","IFRAME","INPUT","KEYGEN","OBJECT","OUTPUT","SELECT","TEXTAREA","MAP","META","PARAM"].includes(t.nodeName)&&r.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[name=${p(t.getAttribute("name"))}]`,score:50}),["INPUT","TEXTAREA"].includes(t.nodeName)&&"hidden"!==t.getAttribute("type")&&t.getAttribute("type")&&r.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[type=${p(t.getAttribute("type"))}]`,score:50}),["INPUT","TEXTAREA","SELECT"].includes(t.nodeName)&&r.push({engine:"css",selector:t.nodeName.toLowerCase(),score:50});const n=t.getAttribute("id");return n&&!function(e){let t,r=0;for(let n=0;n<e.length;++n){const o=e[n];let i;"-"!==o&&"_"!==o&&(i=o>="a"&&o<="z"?"lower":o>="A"&&o<="Z"?"upper":o>="0"&&o<="9"?"digit":"other","lower"!==i||"upper"!==t?(t&&t!==i&&++r,t=i):t=i)}return r>=e.length/4}(n)&&r.push({engine:"css",selector:a(n),score:100}),r.push({engine:"css",selector:t.nodeName.toLocaleLowerCase(),score:200}),r}(0,o).map((e=>[e]));let g=f(e,t.ownerDocument,o,[...l,...y],u);l=s(l);const m=t=>{const n=i&&!t.length,s=[...t,...y].filter((e=>!g||h(e)<h(g)));let a=s[0];if(a)for(let t=c(o);t;t=c(t)){const i=r(t,n);if(!i)continue;if(g&&h([...i,...a])>=h(g))continue;if(a=f(e,t,o,s,u),!a)return;const c=[...i,...a];(!g||h(c)<h(g))&&(g=c)}};return m(l),o===t&&l.length&&m([]),g})(u,l),y.set(u,g)),g};return r(t,!0)}(e,t=t.closest("button,select,input,[role=button],[role=checkbox],[role=radio]")||t),y=l(r||[u(e,t)]),g=e.parseSelector(y);return{selector:y,elements:e.querySelectorAll(g,t.ownerDocument)}}finally{o.clear(),i.clear(),e._evaluator.end()}};var n=r(848);const o=new Map,i=new Map;function s(e){return e.filter((e=>"/"!==e[0].selector[0]))}function c(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:null}function a(e){return/^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(e)?"#"+e:`[id="${e}"]`}function u(e,t){const r=1e7,n=t.ownerDocument,o=[];function i(r){const n=o.slice();r&&n.unshift(r);const i=n.join(" "),s=e.parseSelector(i);return e.querySelector(s,t.ownerDocument,!1)===t?i:void 0}for(let e=t;e&&e!==n;e=c(e)){const t=e.nodeName.toLowerCase();let n="";if(e.id){const t=a(e.id),o=i(t);if(o)return{engine:"css",selector:o,score:r};n=t}const s=e.parentNode,c=[...e.classList];for(let e=0;e<c.length;++e){const t="."+c.slice(0,e+1).join("."),o=i(t);if(o)return{engine:"css",selector:o,score:r};!n&&s&&1===s.querySelectorAll(t).length&&(n=t)}if(s){const o=[...s.children],c=0===o.filter((e=>e.nodeName.toLowerCase()===t)).indexOf(e)?t:`${t}:nth-child(${1+o.indexOf(e)})`,a=i(c);if(a)return{engine:"css",selector:a,score:r};n||(n=c)}else n||(n=t);o.unshift(n)}return{engine:"css",selector:i(),score:r}}function p(e){return`"${e.replace(/"/g,\'\\\\"\').replace(/\\n/g,"\\\\n")}"`}function l(e){const t=[];let r="";for(const{engine:n,selector:o}of e)t.length&&("css"!==r||"css"!==n||o.startsWith(":nth-match("))&&t.push(">>"),r=n,"css"===n?t.push(o):t.push(`${n}=${o}`);return t.join(" ")}function h(e){let t=0;for(let r=0;r<e.length;r++)t+=e[r].score*(e.length-r);return t}function f(e,t,r,n,o){const i=n.map((e=>({tokens:e,score:h(e)})));i.sort(((e,t)=>e.score-t.score));let s=null;for(const{tokens:n}of i){const i=e.parseSelector(l(n)),c=e.querySelectorAll(i,t),a=c.indexOf(r);if(0===a)return n;if(!o||s||-1===a||c.length>5)continue;const u=n.map((e=>"text"!==e.engine?e:e.selector.startsWith("/")&&e.selector.endsWith("/")?{engine:"css",selector:`:text-matches("${e.selector.substring(1,e.selector.length-1)}")`,score:e.score}:{engine:"css",selector:`:text("${e.selector}")`,score:e.score}));s=[{engine:"css",selector:`:nth-match(${l(u)}, ${a+1})`,score:h(u)+1e3}]}return s}}},t={};function r(n){var o=t[n];if(void 0!==o)return o.exports;var i=t[n]={exports:{}};return e[n](i,i.exports,r),i.exports}var n={};(()=>{var e=n;e.default=void 0;var t=r(854);var o=class{constructor(e){this._injectedScript=void 0,this._injectedScript=e,window.playwright||(window.playwright={$:(e,t)=>this._querySelector(e,!!t),$$:e=>this._querySelectorAll(e),inspect:e=>this._inspect(e),selector:e=>this._selector(e),resume:()=>this._resume()})}_querySelector(e,t){if("string"!=typeof e)throw new Error("Usage: playwright.query(\'Playwright >> selector\').");const r=this._injectedScript.parseSelector(e);return this._injectedScript.querySelector(r,document,t)}_querySelectorAll(e){if("string"!=typeof e)throw new Error("Usage: playwright.$$(\'Playwright >> selector\').");const t=this._injectedScript.parseSelector(e);return this._injectedScript.querySelectorAll(t,document)}_inspect(e){if("string"!=typeof e)throw new Error("Usage: playwright.inspect(\'Playwright >> selector\').");window.inspect(this._querySelector(e,!1))}_selector(e){if(!(e instanceof Element))throw new Error("Usage: playwright.selector(element).");return(0,t.generateSelector)(this._injectedScript,e).selector}_resume(){window._playwrightResume().catch((()=>{}))}};e.default=o})(),pwExport=n.default})();';
+    var source = 'var pwExport;(()=>{"use strict";var e={317:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseCSS=function(e,t){let r;try{r=n.tokenize(e),r[r.length-1]instanceof n.EOFToken||r.push(new n.EOFToken)}catch(t){const r=t.message+` while parsing selector "${e}"`,n=(t.stack||"").indexOf(t.message);throw-1!==n&&(t.stack=t.stack.substring(0,n)+r+t.stack.substring(n+t.message.length)),t.message=r,t}const o=r.find((e=>e instanceof n.AtKeywordToken||e instanceof n.BadStringToken||e instanceof n.BadURLToken||e instanceof n.ColumnToken||e instanceof n.CDOToken||e instanceof n.CDCToken||e instanceof n.SemicolonToken||e instanceof n.OpenCurlyToken||e instanceof n.CloseCurlyToken||e instanceof n.URLToken||e instanceof n.PercentageToken));if(o)throw new Error(`Unsupported token "${o.toSource()}" while parsing selector "${e}"`);let i=0;const s=new Set;function c(){return new Error(`Unexpected token "${r[i].toSource()}" while parsing selector "${e}"`)}function a(){for(;r[i]instanceof n.WhitespaceToken;)i++}function u(e=i){return r[e]instanceof n.IdentToken}function p(e=i){return r[e]instanceof n.CommaToken}function l(e=i){return r[e]instanceof n.CloseParenToken}function h(e=i){return r[e]instanceof n.DelimToken&&"*"===r[e].value}function f(e=i){return r[e]instanceof n.EOFToken}function y(e=i){return r[e]instanceof n.DelimToken&&[">","+","~"].includes(r[e].value)}function g(e=i){return p(e)||l(e)||f(e)||y(e)||r[e]instanceof n.WhitespaceToken}function m(){const e=[d()];for(;a(),p();)i++,e.push(d());return e}function d(){return a(),function(e=i){return r[e]instanceof n.NumberToken}()||function(e=i){return r[e]instanceof n.StringToken}()?r[i++].value:function(){const e={simples:[]};for(a(),y()?e.simples.push({selector:{functions:[{name:"scope",args:[]}]},combinator:""}):e.simples.push({selector:w(),combinator:""});;){if(a(),y())e.simples[e.simples.length-1].combinator=r[i++].value,a();else if(g())break;e.simples.push({combinator:"",selector:w()})}return e}()}function w(){let e="";const o=[];for(;!g();)if(u()||h())e+=r[i++].toSource();else if(r[i]instanceof n.HashToken)e+=r[i++].toSource();else if(r[i]instanceof n.DelimToken&&"."===r[i].value){if(i++,!u())throw c();e+="."+r[i++].toSource()}else if(r[i]instanceof n.ColonToken)if(i++,u())if(t.has(r[i].value.toLowerCase())){const e=r[i++].value.toLowerCase();o.push({name:e,args:[]}),s.add(e)}else e+=":"+r[i++].toSource();else{if(!(r[i]instanceof n.FunctionToken))throw c();{const n=r[i++].value.toLowerCase();if(t.has(n)?(o.push({name:n,args:m()}),s.add(n)):e+=`:${n}(${S()})`,a(),!l())throw c();i++}}else{if(!(r[i]instanceof n.OpenSquareToken))throw c();for(e+="[",i++;!(r[i]instanceof n.CloseSquareToken||f());)e+=r[i++].toSource();if(!(r[i]instanceof n.CloseSquareToken))throw c();e+="]",i++}if(!e&&!o.length)throw c();return{css:e||void 0,functions:o}}function S(){let e="";for(;!l()&&!f();)e+=r[i++].toSource();return e}const v=m();if(!f())throw new Error(`Error while parsing selector "${e}"`);if(v.some((e=>"object"!=typeof e||!("simples"in e))))throw new Error(`Error while parsing selector "${e}"`);return{selector:v,names:Array.from(s)}},t.serializeSelector=function e(t){return t.map((t=>"string"==typeof t?`"${t}"`:"number"==typeof t?String(t):t.simples.map((({selector:t,combinator:r})=>{let n=t.css||"";return n+=t.functions.map((t=>`:${t.name}(${e(t.args)})`)).join(""),r&&(n+=" "+r),n})).join(" "))).join(", ")};var n=function(e,t){if(e&&e.__esModule)return e;if(null===e||"object"!=typeof e&&"function"!=typeof e)return{default:e};var r=o(t);if(r&&r.has(e))return r.get(e);var n={},i=Object.defineProperty&&Object.getOwnPropertyDescriptor;for(var s in e)if("default"!==s&&Object.prototype.hasOwnProperty.call(e,s)){var c=i?Object.getOwnPropertyDescriptor(e,s):null;c&&(c.get||c.set)?Object.defineProperty(n,s,c):n[s]=e[s]}return n.default=e,r&&r.set(e,n),n}(r(503));function o(e){if("function"!=typeof WeakMap)return null;var t=new WeakMap,r=new WeakMap;return(o=function(e){return e?r:t})(e)}},503:(e,t)=>{var r,n;r=function(e){var t=function(e,t,r){return e>=t&&e<=r};function r(e){return t(e,48,57)}function n(e){return r(e)||t(e,65,70)||t(e,97,102)}function o(e){return function(e){return t(e,65,90)}(e)||function(e){return t(e,97,122)}(e)}function i(e){return o(e)||function(e){return e>=128}(e)||95==e}function s(e){return i(e)||r(e)||45==e}function c(e){return t(e,0,8)||11==e||t(e,14,31)||127==e}function a(e){return 10==e}function u(e){return a(e)||9==e||32==e}var p=function(e){this.message=e};function l(e){if(e<=65535)return String.fromCharCode(e);e-=Math.pow(2,16);var t=Math.floor(e/Math.pow(2,10))+55296,r=e%Math.pow(2,10)+56320;return String.fromCharCode(t)+String.fromCharCode(r)}function h(){throw"Abstract Base Class"}function f(){return this}function y(){return this}function g(){return this}function m(){return this}function d(){return this}function w(){return this}function S(){return this}function v(){return this}function _(){throw"Abstract Base Class"}function T(){return this.value="{",this.mirror="}",this}function b(){return this.value="}",this.mirror="{",this}function E(){return this.value="[",this.mirror="]",this}function k(){return this.value="]",this.mirror="[",this}function C(){return this.value="(",this.mirror=")",this}function O(){return this.value=")",this.mirror="(",this}function M(){return this}function x(){return this}function N(){return this}function A(){return this}function j(){return this}function $(){return this}function q(){return this}function P(e){return this.value=l(e),this}function L(){throw"Abstract Base Class"}function R(e){this.value=e}function D(e){this.value=e,this.mirror=")"}function I(e){this.value=e}function U(e){this.value=e,this.type="unrestricted"}function B(e){this.value=e}function Q(e){this.value=e}function F(){this.value=null,this.type="integer",this.repr=""}function J(){this.value=null,this.repr=""}function W(){this.value=null,this.type="integer",this.repr="",this.unit=""}function z(e){for(var r="",n=(e=""+e).charCodeAt(0),o=0;o<e.length;o++){var i=e.charCodeAt(o);if(0==i)throw new p("Invalid character: the input contains U+0000.");t(i,1,31)||127==i||0==o&&t(i,48,57)||1==o&&t(i,48,57)&&45==n?r+="\\\\"+i.toString(16)+" ":i>=128||45==i||95==i||t(i,48,57)||t(i,65,90)||t(i,97,122)?r+=e[o]:r+="\\\\"+e[o]}return r}function G(e){e=""+e;for(var r="",n=0;n<e.length;n++){var o=e.charCodeAt(n);if(0==o)throw new p("Invalid character: the input contains U+0000.");t(o,1,31)||127==o?r+="\\\\"+o.toString(16)+" ":r+=34==o||92==o?"\\\\"+e[n]:e[n]}return r}(p.prototype=new Error).name="InvalidCharacterError",h.prototype.toJSON=function(){return{token:this.tokenType}},h.prototype.toString=function(){return this.tokenType},h.prototype.toSource=function(){return""+this},f.prototype=Object.create(h.prototype),f.prototype.tokenType="BADSTRING",y.prototype=Object.create(h.prototype),y.prototype.tokenType="BADURL",g.prototype=Object.create(h.prototype),g.prototype.tokenType="WHITESPACE",g.prototype.toString=function(){return"WS"},g.prototype.toSource=function(){return" "},m.prototype=Object.create(h.prototype),m.prototype.tokenType="CDO",m.prototype.toSource=function(){return"\\x3c!--"},d.prototype=Object.create(h.prototype),d.prototype.tokenType="CDC",d.prototype.toSource=function(){return"--\\x3e"},w.prototype=Object.create(h.prototype),w.prototype.tokenType=":",S.prototype=Object.create(h.prototype),S.prototype.tokenType=";",v.prototype=Object.create(h.prototype),v.prototype.tokenType=",",_.prototype=Object.create(h.prototype),T.prototype=Object.create(_.prototype),T.prototype.tokenType="{",b.prototype=Object.create(_.prototype),b.prototype.tokenType="}",E.prototype=Object.create(_.prototype),E.prototype.tokenType="[",k.prototype=Object.create(_.prototype),k.prototype.tokenType="]",C.prototype=Object.create(_.prototype),C.prototype.tokenType="(",O.prototype=Object.create(_.prototype),O.prototype.tokenType=")",M.prototype=Object.create(h.prototype),M.prototype.tokenType="~=",x.prototype=Object.create(h.prototype),x.prototype.tokenType="|=",N.prototype=Object.create(h.prototype),N.prototype.tokenType="^=",A.prototype=Object.create(h.prototype),A.prototype.tokenType="$=",j.prototype=Object.create(h.prototype),j.prototype.tokenType="*=",$.prototype=Object.create(h.prototype),$.prototype.tokenType="||",q.prototype=Object.create(h.prototype),q.prototype.tokenType="EOF",q.prototype.toSource=function(){return""},P.prototype=Object.create(h.prototype),P.prototype.tokenType="DELIM",P.prototype.toString=function(){return"DELIM("+this.value+")"},P.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},P.prototype.toSource=function(){return"\\\\"==this.value?"\\\\\\n":this.value},L.prototype=Object.create(h.prototype),L.prototype.ASCIIMatch=function(e){return this.value.toLowerCase()==e.toLowerCase()},L.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e},R.prototype=Object.create(L.prototype),R.prototype.tokenType="IDENT",R.prototype.toString=function(){return"IDENT("+this.value+")"},R.prototype.toSource=function(){return z(this.value)},D.prototype=Object.create(L.prototype),D.prototype.tokenType="FUNCTION",D.prototype.toString=function(){return"FUNCTION("+this.value+")"},D.prototype.toSource=function(){return z(this.value)+"("},I.prototype=Object.create(L.prototype),I.prototype.tokenType="AT-KEYWORD",I.prototype.toString=function(){return"AT("+this.value+")"},I.prototype.toSource=function(){return"@"+z(this.value)},U.prototype=Object.create(L.prototype),U.prototype.tokenType="HASH",U.prototype.toString=function(){return"HASH("+this.value+")"},U.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e},U.prototype.toSource=function(){return"id"==this.type?"#"+z(this.value):"#"+function(e){for(var r="",n=((e=""+e).charCodeAt(0),0);n<e.length;n++){var o=e.charCodeAt(n);if(0==o)throw new p("Invalid character: the input contains U+0000.");o>=128||45==o||95==o||t(o,48,57)||t(o,65,90)||t(o,97,122)?r+=e[n]:r+="\\\\"+o.toString(16)+" "}return r}(this.value)},B.prototype=Object.create(L.prototype),B.prototype.tokenType="STRING",B.prototype.toString=function(){return\'"\'+G(this.value)+\'"\'},Q.prototype=Object.create(L.prototype),Q.prototype.tokenType="URL",Q.prototype.toString=function(){return"URL("+this.value+")"},Q.prototype.toSource=function(){return\'url("\'+G(this.value)+\'")\'},F.prototype=Object.create(h.prototype),F.prototype.tokenType="NUMBER",F.prototype.toString=function(){return"integer"==this.type?"INT("+this.value+")":"NUMBER("+this.value+")"},F.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e},F.prototype.toSource=function(){return this.repr},J.prototype=Object.create(h.prototype),J.prototype.tokenType="PERCENTAGE",J.prototype.toString=function(){return"PERCENTAGE("+this.value+")"},J.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.repr=this.repr,e},J.prototype.toSource=function(){return this.repr+"%"},W.prototype=Object.create(h.prototype),W.prototype.tokenType="DIMENSION",W.prototype.toString=function(){return"DIM("+this.value+","+this.unit+")"},W.prototype.toJSON=function(){var e=this.constructor.prototype.constructor.prototype.toJSON.call(this);return e.value=this.value,e.type=this.type,e.repr=this.repr,e.unit=this.unit,e},W.prototype.toSource=function(){var e=this.repr,r=z(this.unit);return"e"!=r[0].toLowerCase()||"-"!=r[1]&&!t(r.charCodeAt(1),48,57)||(r="\\\\65 "+r.slice(1,r.length)),e+r},e.tokenize=function(e){e=function(e){for(var r=[],n=0;n<e.length;n++){var o=e.charCodeAt(n);if(13==o&&10==e.charCodeAt(n+1)&&(o=10,n++),13!=o&&12!=o||(o=10),0==o&&(o=65533),t(o,55296,56319)&&t(e.charCodeAt(n+1),56320,57343)){var i=o-55296,s=e.charCodeAt(n+1)-56320;o=Math.pow(2,16)+i*Math.pow(2,10)+s,n++}r.push(o)}return r}(e);for(var o,p=-1,h=[],_=0,L=0,z=0,G={line:_,column:L},H=function(t){return t>=e.length?-1:e[t]},V=function(e){if(void 0===e&&(e=1),e>3)throw"Spec Error: no more than three codepoints of lookahead.";return H(p+e)},K=function(e){return void 0===e&&(e=1),a(o=H(p+=e))?(_+=1,z=L,L=0):L+=e,!0},X=function(){return p-=1,a(o)?(_-=1,L=z):L-=1,G.line=_,G.column=L,!0},Z=function(e){return void 0===e&&(e=o),-1==e},Y=function(){return console.log("Parse error at index "+p+", processing codepoint 0x"+o.toString(16)+"."),!0},ee=function(){if(te(),K(),u(o)){for(;u(V());)K();return new g}if(34==o)return oe();if(35==o){if(s(V())||ce(V(1),V(2))){var e=new U;return ue(V(1),V(2),V(3))&&(e.type="id"),e.value=he(),e}return new P(o)}return 36==o?61==V()?(K(),new A):new P(o):39==o?oe():40==o?new C:41==o?new O:42==o?61==V()?(K(),new j):new P(o):43==o?le()?(X(),re()):new P(o):44==o?new v:45==o?le()?(X(),re()):45==V(1)&&62==V(2)?(K(2),new d):pe()?(X(),ne()):new P(o):46==o?le()?(X(),re()):new P(o):58==o?new w:59==o?new S:60==o?33==V(1)&&45==V(2)&&45==V(3)?(K(3),new m):new P(o):64==o?ue(V(1),V(2),V(3))?new I(he()):new P(o):91==o?new E:92==o?ae()?(X(),ne()):(Y(),new P(o)):93==o?new k:94==o?61==V()?(K(),new N):new P(o):123==o?new T:124==o?61==V()?(K(),new x):124==V()?(K(),new $):new P(o):125==o?new b:126==o?61==V()?(K(),new M):new P(o):r(o)?(X(),re()):i(o)?(X(),ne()):Z()?new q:new P(o)},te=function(){for(;47==V(1)&&42==V(2);)for(K(2);;){if(K(),42==o&&47==V()){K();break}if(Z())return void Y()}},re=function(){var e,t=fe();return ue(V(1),V(2),V(3))?((e=new W).value=t.value,e.repr=t.repr,e.type=t.type,e.unit=he(),e):37==V()?(K(),(e=new J).value=t.value,e.repr=t.repr,e):((e=new F).value=t.value,e.repr=t.repr,e.type=t.type,e)},ne=function(){var e=he();if("url"==e.toLowerCase()&&40==V()){for(K();u(V(1))&&u(V(2));)K();return 34==V()||39==V()?new D(e):!u(V())||34!=V(2)&&39!=V(2)?ie():new D(e)}return 40==V()?(K(),new D(e)):new R(e)},oe=function(e){void 0===e&&(e=o);for(var t="";K();){if(o==e||Z())return new B(t);if(a(o))return Y(),X(),new f;92==o?Z(V())||(a(V())?K():t+=l(se())):t+=l(o)}},ie=function(){for(var e=new Q("");u(V());)K();if(Z(V()))return e;for(;K();){if(41==o||Z())return e;if(u(o)){for(;u(V());)K();return 41==V()||Z(V())?(K(),e):(ge(),new y)}if(34==o||39==o||40==o||c(o))return Y(),ge(),new y;if(92==o){if(!ae())return Y(),ge(),new y;e.value+=l(se())}else e.value+=l(o)}},se=function(){if(K(),n(o)){for(var e=[o],t=0;t<5&&n(V());t++)K(),e.push(o);u(V())&&K();var r=parseInt(e.map((function(e){return String.fromCharCode(e)})).join(""),16);return r>1114111&&(r=65533),r}return Z()?65533:o},ce=function(e,t){return 92==e&&!a(t)},ae=function(){return ce(o,V())},ue=function(e,t,r){return 45==e?i(t)||45==t||ce(t,r):!!i(e)||92==e&&ce(e,t)},pe=function(){return ue(o,V(1),V(2))},le=function(){return e=o,t=V(1),n=V(2),43==e||45==e?!!r(t)||!(46!=t||!r(n)):46==e?!!r(t):!!r(e);var e,t,n},he=function(){for(var e="";K();)if(s(o))e+=l(o);else{if(!ae())return X(),e;e+=l(se())}},fe=function(){var e=[],t="integer";for(43!=V()&&45!=V()||(K(),e+=l(o));r(V());)K(),e+=l(o);if(46==V(1)&&r(V(2)))for(K(),e+=l(o),K(),e+=l(o),t="number";r(V());)K(),e+=l(o);var n=V(1),i=V(2),s=V(3);if(69!=n&&101!=n||!r(i)){if((69==n||101==n)&&(43==i||45==i)&&r(s))for(K(),e+=l(o),K(),e+=l(o),K(),e+=l(o),t="number";r(V());)K(),e+=l(o)}else for(K(),e+=l(o),K(),e+=l(o),t="number";r(V());)K(),e+=l(o);return{type:t,value:ye(e),repr:e}},ye=function(e){return+e},ge=function(){for(;K();){if(41==o||Z())return;ae()&&se()}},me=0;!Z(V());)if(h.push(ee()),++me>2*e.length)return"I\'m infinite-looping!";return h},e.IdentToken=R,e.FunctionToken=D,e.AtKeywordToken=I,e.HashToken=U,e.StringToken=B,e.BadStringToken=f,e.URLToken=Q,e.BadURLToken=y,e.DelimToken=P,e.NumberToken=F,e.PercentageToken=J,e.DimensionToken=W,e.IncludeMatchToken=M,e.DashMatchToken=x,e.PrefixMatchToken=N,e.SuffixMatchToken=A,e.SubstringMatchToken=j,e.ColumnToken=$,e.WhitespaceToken=g,e.CDOToken=m,e.CDCToken=d,e.ColonToken=w,e.SemicolonToken=S,e.CommaToken=v,e.OpenParenToken=C,e.CloseParenToken=O,e.OpenSquareToken=E,e.CloseSquareToken=k,e.OpenCurlyToken=T,e.CloseCurlyToken=b,e.EOFToken=q,e.CSSParserToken=h,e.GroupingToken=_},void 0===(n=r.apply(t,[t]))||(e.exports=n)},461:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.parseSelector=function(e){const t=function(e){let t,r=0,n=0;const o={parts:[]},i=()=>{const t=e.substring(n,r).trim(),i=t.indexOf("=");let s,c;-1!==i&&t.substring(0,i).trim().match(/^[a-zA-Z_0-9-+:*]+$/)?(s=t.substring(0,i).trim(),c=t.substring(i+1)):t.length>1&&\'"\'===t[0]&&\'"\'===t[t.length-1]||t.length>1&&"\'"===t[0]&&"\'"===t[t.length-1]?(s="text",c=t):/^\\(*\\/\\//.test(t)||t.startsWith("..")?(s="xpath",c=t):(s="css",c=t);let a=!1;if("*"===s[0]&&(a=!0,s=s.substring(1)),o.parts.push({name:s,body:c}),a){if(void 0!==o.capture)throw new Error("Only one of the selectors can capture using * modifier");o.capture=o.parts.length-1}};if(!e.includes(">>"))return r=e.length,i(),o;for(;r<e.length;){const o=e[r];"\\\\"===o&&r+1<e.length?r+=2:o===t?(t=void 0,r++):t||\'"\'!==o&&"\'"!==o&&"`"!==o?t||">"!==o||">"!==e[r+1]?r++:(i(),r+=2,n=r):(t=o,r++)}return i(),o}(e),r=t.parts.map((e=>"css"===e.name||"css:light"===e.name?("css:light"===e.name&&(e.body=":light("+e.body+")"),{name:"css",body:(0,n.parseCSS)(e.body,o).selector}):e));return{selector:e,capture:t.capture,parts:r}},t.customCSSNames=void 0;var n=r(317);const o=new Set(["not","is","where","has","scope","light","visible","text","text-matches","text-is","has-text","above","below","right-of","left-of","near","nth-match"]);t.customCSSNames=o},848:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.createLaxTextMatcher=y,t.createStrictTextMatcher=g,t.createRegexTextMatcher=m,t.elementText=w,t.elementMatchesText=S,t.parentElementOrShadowHost=O,t.isVisible=N,t.SelectorEvaluatorImpl=void 0;var n=r(461);t.SelectorEvaluatorImpl=class{constructor(e){this._engines=new Map,this._cacheQueryCSS=new Map,this._cacheMatches=new Map,this._cacheQuery=new Map,this._cacheMatchesSimple=new Map,this._cacheMatchesParents=new Map,this._cacheCallMatches=new Map,this._cacheCallQuery=new Map,this._cacheQuerySimple=new Map,this._cacheText=new Map,this._scoreMap=void 0,this._retainCacheCounter=0;for(const[t,r]of e)this._engines.set(t,r);this._engines.set("not",c),this._engines.set("is",o),this._engines.set("where",o),this._engines.set("has",i),this._engines.set("scope",s),this._engines.set("light",a),this._engines.set("visible",u),this._engines.set("text",p),this._engines.set("text-is",l),this._engines.set("text-matches",h),this._engines.set("has-text",f),this._engines.set("right-of",k("right-of",v)),this._engines.set("left-of",k("left-of",_)),this._engines.set("above",k("above",T)),this._engines.set("below",k("below",b)),this._engines.set("near",k("near",E)),this._engines.set("nth-match",C);const t=[...this._engines.keys()];t.sort();const r=[...n.customCSSNames];if(r.sort(),t.join("|")!==r.join("|"))throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${t.join("|")} vs ${r.join("|")}`)}begin(){++this._retainCacheCounter}end(){--this._retainCacheCounter,this._retainCacheCounter||(this._cacheQueryCSS.clear(),this._cacheMatches.clear(),this._cacheQuery.clear(),this._cacheMatchesSimple.clear(),this._cacheMatchesParents.clear(),this._cacheCallMatches.clear(),this._cacheCallQuery.clear(),this._cacheQuerySimple.clear(),this._cacheText.clear())}_cached(e,t,r,n){e.has(t)||e.set(t,[]);const o=e.get(t),i=o.find((e=>r.every(((t,r)=>e.rest[r]===t))));if(i)return i.result;const s=n();return o.push({rest:r,result:s}),s}_checkSelector(e){if("object"!=typeof e||!e||!(Array.isArray(e)||"simples"in e&&e.simples.length))throw new Error(`Malformed selector "${e}"`);return e}matches(e,t,r){const n=this._checkSelector(t);this.begin();try{return this._cached(this._cacheMatches,e,[n,r.scope,r.pierceShadow],(()=>Array.isArray(n)?this._matchesEngine(o,e,n,r):!!this._matchesSimple(e,n.simples[n.simples.length-1].selector,r)&&this._matchesParents(e,n,n.simples.length-2,r)))}finally{this.end()}}query(e,t){const r=this._checkSelector(t);this.begin();try{return this._cached(this._cacheQuery,r,[e.scope,e.pierceShadow],(()=>{if(Array.isArray(r))return this._queryEngine(o,e,r);const t=this._scoreMap;this._scoreMap=new Map;let n=this._querySimple(e,r.simples[r.simples.length-1].selector);return n=n.filter((t=>this._matchesParents(t,r,r.simples.length-2,e))),this._scoreMap.size&&n.sort(((e,t)=>{const r=this._scoreMap.get(e),n=this._scoreMap.get(t);return r===n?0:void 0===r?1:void 0===n?-1:r-n})),this._scoreMap=t,n}))}finally{this.end()}}_markScore(e,t){this._scoreMap&&this._scoreMap.set(e,t)}_matchesSimple(e,t,r){return this._cached(this._cacheMatchesSimple,e,[t,r.scope,r.pierceShadow],(()=>{if(!t.functions.some((e=>"scope"===e.name||"is"===e.name))&&e===r.scope)return!1;if(t.css&&!this._matchesCSS(e,t.css))return!1;for(const n of t.functions)if(!this._matchesEngine(this._getEngine(n.name),e,n.args,r))return!1;return!0}))}_querySimple(e,t){return t.functions.length?this._cached(this._cacheQuerySimple,t,[e.scope,e.pierceShadow],(()=>{let r=t.css;const n=t.functions;let o;"*"===r&&n.length&&(r=void 0);let i=-1;void 0!==r?o=this._queryCSS(e,r):(i=n.findIndex((e=>void 0!==this._getEngine(e.name).query)),-1===i&&(i=0),o=this._queryEngine(this._getEngine(n[i].name),e,n[i].args));for(let t=0;t<n.length;t++){if(t===i)continue;const r=this._getEngine(n[t].name);void 0!==r.matches&&(o=o.filter((o=>this._matchesEngine(r,o,n[t].args,e))))}for(let t=0;t<n.length;t++){if(t===i)continue;const r=this._getEngine(n[t].name);void 0===r.matches&&(o=o.filter((o=>this._matchesEngine(r,o,n[t].args,e))))}return o})):this._queryCSS(e,t.css||"*")}_matchesParents(e,t,r,n){return r<0||this._cached(this._cacheMatchesParents,e,[t,r,n.scope,n.pierceShadow],(()=>{const{selector:o,combinator:i}=t.simples[r];if(">"===i){const i=M(e,n);return!(!i||!this._matchesSimple(i,o,n))&&this._matchesParents(i,t,r-1,n)}if("+"===i){const i=x(e,n);return!(!i||!this._matchesSimple(i,o,n))&&this._matchesParents(i,t,r-1,n)}if(""===i){let i=M(e,n);for(;i;){if(this._matchesSimple(i,o,n)){if(this._matchesParents(i,t,r-1,n))return!0;if(""===t.simples[r-1].combinator)break}i=M(i,n)}return!1}if("~"===i){let i=x(e,n);for(;i;){if(this._matchesSimple(i,o,n)){if(this._matchesParents(i,t,r-1,n))return!0;if("~"===t.simples[r-1].combinator)break}i=x(i,n)}return!1}if(">="===i){let i=e;for(;i;){if(this._matchesSimple(i,o,n)){if(this._matchesParents(i,t,r-1,n))return!0;if(""===t.simples[r-1].combinator)break}i=M(i,n)}return!1}throw new Error(`Unsupported combinator "${i}"`)}))}_matchesEngine(e,t,r,n){if(e.matches)return this._callMatches(e,t,r,n);if(e.query)return this._callQuery(e,r,n).includes(t);throw new Error(\'Selector engine should implement "matches" or "query"\')}_queryEngine(e,t,r){if(e.query)return this._callQuery(e,r,t);if(e.matches)return this._queryCSS(t,"*").filter((n=>this._callMatches(e,n,r,t)));throw new Error(\'Selector engine should implement "matches" or "query"\')}_callMatches(e,t,r,n){return this._cached(this._cacheCallMatches,t,[e,n.scope,n.pierceShadow,...r],(()=>e.matches(t,r,n,this)))}_callQuery(e,t,r){return this._cached(this._cacheCallQuery,e,[r.scope,r.pierceShadow,...t],(()=>e.query(r,t,this)))}_matchesCSS(e,t){return e.matches(t)}_queryCSS(e,t){return this._cached(this._cacheQueryCSS,t,[e.scope,e.pierceShadow],(()=>{let r=[];return function n(o){if(r=r.concat([...o.querySelectorAll(t)]),e.pierceShadow){o.shadowRoot&&n(o.shadowRoot);for(const e of o.querySelectorAll("*"))e.shadowRoot&&n(e.shadowRoot)}}(e.scope),r}))}_getEngine(e){const t=this._engines.get(e);if(!t)throw new Error(`Unknown selector engine "${e}"`);return t}};const o={matches(e,t,r,n){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');return t.some((t=>n.matches(e,t,r)))},query(e,t,r){if(0===t.length)throw new Error(\'"is" engine expects non-empty selector list\');let n=[];for(const o of t)n=n.concat(r.query(e,o));return 1===t.length?n:function(e){const t=new Map,r=[],n=[];function o(e){let n=t.get(e);if(n)return n;const i=O(e);return i?o(i).children.push(e):r.push(e),n={children:[],taken:!1},t.set(e,n),n}return e.forEach((e=>o(e).taken=!0)),r.forEach((function e(r){const o=t.get(r);if(o.taken&&n.push(r),o.children.length>1){const e=new Set(o.children);o.children=[];let t=r.firstElementChild;for(;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling;for(t=r.shadowRoot?r.shadowRoot.firstElementChild:null;t&&o.children.length<e.size;)e.has(t)&&o.children.push(t),t=t.nextElementSibling}o.children.forEach(e)})),n}(n)}},i={matches(e,t,r,n){if(0===t.length)throw new Error(\'"has" engine expects non-empty selector list\');return n.query({...r,scope:e},t).length>0}},s={matches(e,t,r,n){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');return 9===r.scope.nodeType?e===r.scope.documentElement:e===r.scope},query(e,t,r){if(0!==t.length)throw new Error(\'"scope" engine expects no arguments\');if(9===e.scope.nodeType){const t=e.scope.documentElement;return t?[t]:[]}return 1===e.scope.nodeType?[e.scope]:[]}},c={matches(e,t,r,n){if(0===t.length)throw new Error(\'"not" engine expects non-empty selector list\');return!n.matches(e,t,r)}},a={query:(e,t,r)=>r.query({...e,pierceShadow:!1},t),matches:(e,t,r,n)=>n.matches(e,t,{...r,pierceShadow:!1})},u={matches(e,t,r,n){if(t.length)throw new Error(\'"visible" engine expects no arguments\');return N(e)}},p={matches(e,t,r,n){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text" engine expects a single string\');return"self"===S(n,e,y(t[0]))}},l={matches(e,t,r,n){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"text-is" engine expects a single string\');return"none"!==S(n,e,g(t[0]))}},h={matches(e,t,r,n){if(0===t.length||"string"!=typeof t[0]||t.length>2||2===t.length&&"string"!=typeof t[1])throw new Error(\'"text-matches" engine expects a regexp body and optional regexp flags\');return"self"===S(n,e,m(t[0],2===t.length?t[1]:void 0))}},f={matches(e,t,r,n){if(1!==t.length||"string"!=typeof t[0])throw new Error(\'"has-text" engine expects a single string\');return!d(e)&&y(t[0])(w(n,e))}};function y(e){return e=e.trim().replace(/\\s+/g," ").toLowerCase(),t=>t.full.trim().replace(/\\s+/g," ").toLowerCase().includes(e)}function g(e){return e=e.trim().replace(/\\s+/g," "),t=>!e&&!t.immediate.length||t.immediate.some((t=>t.trim().replace(/\\s+/g," ")===e))}function m(e,t){const r=new RegExp(e,t);return e=>r.test(e.full)}function d(e){return"SCRIPT"===e.nodeName||"STYLE"===e.nodeName||document.head&&document.head.contains(e)}function w(e,t){let r=e._cacheText.get(t);if(void 0===r){if(r={full:"",immediate:[]},!d(t)){let n="";if(t instanceof HTMLInputElement&&("submit"===t.type||"button"===t.type))r={full:t.value,immediate:[t.value]};else{for(let o=t.firstChild;o;o=o.nextSibling)o.nodeType===Node.TEXT_NODE?(r.full+=o.nodeValue||"",n+=o.nodeValue||""):(n&&r.immediate.push(n),n="",o.nodeType===Node.ELEMENT_NODE&&(r.full+=w(e,o).full));n&&r.immediate.push(n),t.shadowRoot&&(r.full+=w(e,t.shadowRoot).full)}}e._cacheText.set(t,r)}return r}function S(e,t,r){if(d(t))return"none";if(!r(w(e,t)))return"none";for(let n=t.firstChild;n;n=n.nextSibling)if(n.nodeType===Node.ELEMENT_NODE&&r(w(e,n)))return"selfAndChildren";return t.shadowRoot&&r(w(e,t.shadowRoot))?"selfAndChildren":"self"}function v(e,t,r){const n=e.left-t.right;if(!(n<0||void 0!==r&&n>r))return n+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function _(e,t,r){const n=t.left-e.right;if(!(n<0||void 0!==r&&n>r))return n+Math.max(t.bottom-e.bottom,0)+Math.max(e.top-t.top,0)}function T(e,t,r){const n=t.top-e.bottom;if(!(n<0||void 0!==r&&n>r))return n+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function b(e,t,r){const n=e.top-t.bottom;if(!(n<0||void 0!==r&&n>r))return n+Math.max(e.left-t.left,0)+Math.max(t.right-e.right,0)}function E(e,t,r){const n=void 0===r?50:r;let o=0;return e.left-t.right>=0&&(o+=e.left-t.right),t.left-e.right>=0&&(o+=t.left-e.right),t.top-e.bottom>=0&&(o+=t.top-e.bottom),e.top-t.bottom>=0&&(o+=e.top-t.bottom),o>n?void 0:o}function k(e,t){return{matches(r,n,o,i){const s=n.length&&"number"==typeof n[n.length-1]?n[n.length-1]:void 0,c=void 0===s?n:n.slice(0,n.length-1);if(n.length<1+(void 0===s?0:1))throw new Error(`"${e}" engine expects a selector list and optional maximum distance in pixels`);const a=r.getBoundingClientRect();let u;for(const e of i.query(o,c)){if(e===r)continue;const n=t(a,e.getBoundingClientRect(),s);void 0!==n&&(void 0===u||n<u)&&(u=n)}return void 0!==u&&(i._markScore(r,u),!0)}}}const C={query(e,t,r){let n=t[t.length-1];if(t.length<2)throw new Error(\'"nth-match" engine expects non-empty selector list and an index argument\');if("number"!=typeof n||n<1)throw new Error(\'"nth-match" engine expects a one-based index as the last argument\');const i=o.query(e,t.slice(0,t.length-1),r);return n--,n<i.length?[i[n]]:[]}};function O(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:void 0}function M(e,t){if(e!==t.scope)return t.pierceShadow?O(e):e.parentElement||void 0}function x(e,t){if(e!==t.scope)return e.previousElementSibling||void 0}function N(e){if(!e.ownerDocument||!e.ownerDocument.defaultView)return!0;const t=e.ownerDocument.defaultView.getComputedStyle(e);if(!t||"hidden"===t.visibility)return!1;const r=e.getBoundingClientRect();return r.width>0&&r.height>0}},854:(e,t,r)=>{Object.defineProperty(t,"__esModule",{value:!0}),t.querySelector=function(e,t,r){try{const n=e.parseSelector(t);return{selector:t,elements:e.querySelectorAll(n,r)}}catch(e){return{selector:t,elements:[]}}},t.generateSelector=function(e,t){e._evaluator.begin();try{const r=function(e,t){if(t.ownerDocument.documentElement===t)return[{engine:"css",selector:"html",score:1}];const r=(u,l)=>{const y=l?o:i;let g=y.get(u);return void 0===g&&(g=((o,i)=>{const u=o===t;let l=i?function(e,t,r){if("SELECT"===t.nodeName)return[];const o=(0,n.elementText)(e._evaluator,t).full.trim().replace(/\\s+/g," ").substring(0,80);if(!o)return[];const i=[];let s=o;if((o.includes(\'"\')||o.includes(">>")||"/"===o[0])&&(s=`/.*${function(e){return e.replace(/[.*+?^>${}()|[\\]\\\\]/g,"\\\\$&")}(o)}.*/`),i.push({engine:"text",selector:s,score:10}),r&&s===o){let e=t.nodeName.toLocaleLowerCase();t.hasAttribute("role")&&(e+=`[role=${p(t.getAttribute("role"))}]`),i.push({engine:"css",selector:`${e}:has-text("${o}")`,score:30})}return i}(e,o,o===t).map((e=>[e])):[];o!==t&&(l=s(l));const y=function(e,t){const r=[];for(const e of["data-testid","data-test-id","data-test"])t.hasAttribute(e)&&r.push({engine:"css",selector:`[${e}=${p(t.getAttribute(e))}]`,score:1});if("INPUT"===t.nodeName){const e=t;e.placeholder&&r.push({engine:"css",selector:`[placeholder=${p(e.placeholder)}]`,score:10})}t.hasAttribute("aria-label")&&r.push({engine:"css",selector:`[aria-label=${p(t.getAttribute("aria-label"))}]`,score:10}),t.getAttribute("alt")&&["APPLET","AREA","IMG","INPUT"].includes(t.nodeName)&&r.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[alt=${p(t.getAttribute("alt"))}]`,score:10}),t.hasAttribute("role")&&r.push({engine:"css",selector:`${t.nodeName.toLocaleLowerCase()}[role=${p(t.getAttribute("role"))}]`,score:50}),t.getAttribute("name")&&["BUTTON","FORM","FIELDSET","IFRAME","INPUT","KEYGEN","OBJECT","OUTPUT","SELECT","TEXTAREA","MAP","META","PARAM"].includes(t.nodeName)&&r.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[name=${p(t.getAttribute("name"))}]`,score:50}),["INPUT","TEXTAREA"].includes(t.nodeName)&&"hidden"!==t.getAttribute("type")&&t.getAttribute("type")&&r.push({engine:"css",selector:`${t.nodeName.toLowerCase()}[type=${p(t.getAttribute("type"))}]`,score:50}),["INPUT","TEXTAREA","SELECT"].includes(t.nodeName)&&r.push({engine:"css",selector:t.nodeName.toLowerCase(),score:50});const n=t.getAttribute("id");return n&&!function(e){let t,r=0;for(let n=0;n<e.length;++n){const o=e[n];let i;"-"!==o&&"_"!==o&&(i=o>="a"&&o<="z"?"lower":o>="A"&&o<="Z"?"upper":o>="0"&&o<="9"?"digit":"other","lower"!==i||"upper"!==t?(t&&t!==i&&++r,t=i):t=i)}return r>=e.length/4}(n)&&r.push({engine:"css",selector:a(n),score:100}),r.push({engine:"css",selector:t.nodeName.toLocaleLowerCase(),score:200}),r}(0,o).map((e=>[e]));let g=f(e,t.ownerDocument,o,[...l,...y],u);l=s(l);const m=t=>{const n=i&&!t.length,s=[...t,...y].filter((e=>!g||h(e)<h(g)));let a=s[0];if(a)for(let t=c(o);t;t=c(t)){const i=r(t,n);if(!i)continue;if(g&&h([...i,...a])>=h(g))continue;if(a=f(e,t,o,s,u),!a)return;const c=[...i,...a];(!g||h(c)<h(g))&&(g=c)}};return m(l),o===t&&l.length&&m([]),g})(u,l),y.set(u,g)),g};return r(t,!0)}(e,t=t.closest("button,select,input,[role=button],[role=checkbox],[role=radio]")||t),y=l(r||[u(e,t)]),g=e.parseSelector(y);return{selector:y,elements:e.querySelectorAll(g,t.ownerDocument)}}finally{o.clear(),i.clear(),e._evaluator.end()}};var n=r(848);const o=new Map,i=new Map;function s(e){return e.filter((e=>"/"!==e[0].selector[0]))}function c(e){return e.parentElement?e.parentElement:e.parentNode&&e.parentNode.nodeType===Node.DOCUMENT_FRAGMENT_NODE&&e.parentNode.host?e.parentNode.host:null}function a(e){return/^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(e)?"#"+e:`[id="${e}"]`}function u(e,t){const r=1e7,n=t.ownerDocument,o=[];function i(r){const n=o.slice();r&&n.unshift(r);const i=n.join(" "),s=e.parseSelector(i);return e.querySelector(s,t.ownerDocument,!1)===t?i:void 0}for(let e=t;e&&e!==n;e=c(e)){const t=e.nodeName.toLowerCase();let n="";if(e.id){const t=a(e.id),o=i(t);if(o)return{engine:"css",selector:o,score:r};n=t}const s=e.parentNode,c=[...e.classList];for(let e=0;e<c.length;++e){const t="."+c.slice(0,e+1).join("."),o=i(t);if(o)return{engine:"css",selector:o,score:r};!n&&s&&1===s.querySelectorAll(t).length&&(n=t)}if(s){const o=[...s.children],c=0===o.filter((e=>e.nodeName.toLowerCase()===t)).indexOf(e)?t:`${t}:nth-child(${1+o.indexOf(e)})`,a=i(c);if(a)return{engine:"css",selector:a,score:r};n||(n=c)}else n||(n=t);o.unshift(n)}return{engine:"css",selector:i(),score:r}}function p(e){return`"${e.replace(/"/g,\'\\\\"\').replace(/\\n/g,"\\\\n")}"`}function l(e){const t=[];let r="";for(const{engine:n,selector:o}of e)t.length&&("css"!==r||"css"!==n||o.startsWith(":nth-match("))&&t.push(">>"),r=n,"css"===n?t.push(o):t.push(`${n}=${o}`);return t.join(" ")}function h(e){let t=0;for(let r=0;r<e.length;r++)t+=e[r].score*(e.length-r);return t}function f(e,t,r,n,o){const i=n.map((e=>({tokens:e,score:h(e)})));i.sort(((e,t)=>e.score-t.score));let s=null;for(const{tokens:n}of i){const i=e.parseSelector(l(n)),c=e.querySelectorAll(i,t),a=c.indexOf(r);if(0===a)return n;if(!o||s||-1===a||c.length>5)continue;const u=n.map((e=>"text"!==e.engine?e:e.selector.startsWith("/")&&e.selector.endsWith("/")?{engine:"css",selector:`:text-matches("${e.selector.substring(1,e.selector.length-1)}")`,score:e.score}:{engine:"css",selector:`:text("${e.selector}")`,score:e.score}));s=[{engine:"css",selector:`:nth-match(${l(u)}, ${a+1})`,score:h(u)+1e3}]}return s}}},t={};function r(n){var o=t[n];if(void 0!==o)return o.exports;var i=t[n]={exports:{}};return e[n](i,i.exports,r),i.exports}var n={};(()=>{var e=n;e.default=void 0;var t=r(854);var o=class{constructor(e){this._injectedScript=void 0,this._injectedScript=e,window.playwright||(window.playwright={$:(e,t)=>this._querySelector(e,!!t),$$:e=>this._querySelectorAll(e),inspect:e=>this._inspect(e),selector:e=>this._selector(e),resume:()=>this._resume()})}_querySelector(e,t){if("string"!=typeof e)throw new Error("Usage: playwright.query(\'Playwright >> selector\').");const r=this._injectedScript.parseSelector(e);return this._injectedScript.querySelector(r,document,t)}_querySelectorAll(e){if("string"!=typeof e)throw new Error("Usage: playwright.$$(\'Playwright >> selector\').");const t=this._injectedScript.parseSelector(e);return this._injectedScript.querySelectorAll(t,document)}_inspect(e){if("string"!=typeof e)throw new Error("Usage: playwright.inspect(\'Playwright >> selector\').");window.inspect(this._querySelector(e,!1))}_selector(e){if(!(e instanceof Element))throw new Error("Usage: playwright.selector(element).");return(0,t.generateSelector)(this._injectedScript,e).selector}_resume(){window._playwrightResume().catch((()=>{}))}};e.default=o})(),pwExport=n.default})();';
     exports.source = source;
   }
 });
@@ -25954,10 +24265,7 @@ var require_signals = __commonJS({
 var require_signal_exit = __commonJS({
   "node_modules/signal-exit/index.js"(exports, module) {
     var process2 = global.process;
-    var processOk = function(process3) {
-      return process3 && typeof process3 === "object" && typeof process3.removeListener === "function" && typeof process3.emit === "function" && typeof process3.reallyExit === "function" && typeof process3.listeners === "function" && typeof process3.kill === "function" && typeof process3.pid === "number" && typeof process3.on === "function";
-    };
-    if (!processOk(process2)) {
+    if (typeof process2 !== "object" || !process2) {
       module.exports = function() {
       };
     } else {
@@ -25980,7 +24288,7 @@ var require_signal_exit = __commonJS({
         emitter.infinite = true;
       }
       module.exports = function(cb, opts) {
-        if (!processOk(global.process)) {
+        if (global.process !== process2) {
           return;
         }
         assert.equal(typeof cb, "function", "a callback must be provided for exit handler");
@@ -26001,7 +24309,7 @@ var require_signal_exit = __commonJS({
         return remove;
       };
       unload = function unload2() {
-        if (!loaded || !processOk(global.process)) {
+        if (!loaded || global.process !== process2) {
           return;
         }
         loaded = false;
@@ -26026,7 +24334,7 @@ var require_signal_exit = __commonJS({
       sigListeners = {};
       signals.forEach(function(sig) {
         sigListeners[sig] = function listener() {
-          if (!processOk(global.process)) {
+          if (process2 !== global.process) {
             return;
           }
           var listeners = process2.listeners(sig);
@@ -26046,7 +24354,7 @@ var require_signal_exit = __commonJS({
       };
       loaded = false;
       load = function load2() {
-        if (loaded || !processOk(global.process)) {
+        if (loaded || process2 !== global.process) {
           return;
         }
         loaded = true;
@@ -26065,7 +24373,7 @@ var require_signal_exit = __commonJS({
       module.exports.load = load;
       originalProcessReallyExit = process2.reallyExit;
       processReallyExit = function processReallyExit2(code) {
-        if (!processOk(global.process)) {
+        if (process2 !== global.process) {
           return;
         }
         process2.exitCode = code || 0;
@@ -26075,7 +24383,7 @@ var require_signal_exit = __commonJS({
       };
       originalProcessEmit = process2.emit;
       processEmit = function processEmit2(ev, arg) {
-        if (ev === "exit" && processOk(global.process)) {
+        if (ev === "exit" && process2 === global.process) {
           if (arg !== void 0) {
             process2.exitCode = arg;
           }
@@ -26478,304 +24786,35 @@ var require_proper_lockfile = __commonJS({
   }
 });
 
-// node_modules/playwright-core/lib/utils/nativeDeps.js
+// node_modules/playwright-core/lib/nativeDeps.js
 var require_nativeDeps = __commonJS({
-  "node_modules/playwright-core/lib/utils/nativeDeps.js"(exports) {
+  "node_modules/playwright-core/lib/nativeDeps.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
     exports.deps = void 0;
     var deps = {
-      "ubuntu18.04": {
+      bionic: {
         tools: ["xvfb", "fonts-noto-color-emoji", "ttf-unifont", "libfontconfig", "libfreetype6", "xfonts-cyrillic", "xfonts-scalable", "fonts-liberation", "fonts-ipafont-gothic", "fonts-wqy-zenhei", "fonts-tlwg-loma-otf", "ttf-ubuntu-font-family"],
         chromium: ["fonts-liberation", "libasound2", "libatk-bridge2.0-0", "libatk1.0-0", "libatspi2.0-0", "libcairo2", "libcups2", "libdbus-1-3", "libdrm2", "libegl1", "libgbm1", "libglib2.0-0", "libgtk-3-0", "libnspr4", "libnss3", "libpango-1.0-0", "libx11-6", "libx11-xcb1", "libxcb1", "libxcomposite1", "libxdamage1", "libxext6", "libxfixes3", "libxrandr2", "libxshmfence1"],
         firefox: ["ffmpeg", "libatk1.0-0", "libcairo-gobject2", "libcairo2", "libdbus-1-3", "libdbus-glib-1-2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libglib2.0-0", "libgtk-3-0", "libpango-1.0-0", "libpangocairo-1.0-0", "libpangoft2-1.0-0", "libx11-6", "libx11-xcb1", "libxcb-shm0", "libxcb1", "libxcomposite1", "libxcursor1", "libxdamage1", "libxext6", "libxfixes3", "libxi6", "libxrender1", "libxt6"],
-        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libbrotli1", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu60", "libjpeg-turbo8", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libvpx5", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1"],
-        lib2package: {
-          "libasound.so.2": "libasound2",
-          "libatk-1.0.so.0": "libatk1.0-0",
-          "libatk-bridge-2.0.so.0": "libatk-bridge2.0-0",
-          "libatspi.so.0": "libatspi2.0-0",
-          "libbrotlidec.so.1": "libbrotli1",
-          "libcairo-gobject.so.2": "libcairo-gobject2",
-          "libcairo.so.2": "libcairo2",
-          "libcups.so.2": "libcups2",
-          "libdbus-1.so.3": "libdbus-1-3",
-          "libdbus-glib-1.so.2": "libdbus-glib-1-2",
-          "libdrm.so.2": "libdrm2",
-          "libEGL.so.1": "libegl1",
-          "libenchant.so.1": "libenchant1c2a",
-          "libepoxy.so.0": "libepoxy0",
-          "libevent-2.1.so.6": "libevent-2.1-6",
-          "libevdev.so.2": "libevdev2",
-          "libfontconfig.so.1": "libfontconfig1",
-          "libfreetype.so.6": "libfreetype6",
-          "libgbm.so.1": "libgbm1",
-          "libgdk_pixbuf-2.0.so.0": "libgdk-pixbuf2.0-0",
-          "libgdk-3.so.0": "libgtk-3-0",
-          "libgdk-x11-2.0.so.0": "libgtk2.0-0",
-          "libgio-2.0.so.0": "libglib2.0-0",
-          "libGL.so.1": "libgl1",
-          "libGLESv2.so.2": "libgles2",
-          "libglib-2.0.so.0": "libglib2.0-0",
-          "libgmodule-2.0.so.0": "libglib2.0-0",
-          "libgobject-2.0.so.0": "libglib2.0-0",
-          "libgstapp-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstaudio-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstbase-1.0.so.0": "libgstreamer1.0-0",
-          "libgstcodecparsers-1.0.so.0": "gstreamer1.0-plugins-bad",
-          "libgstfft-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstgl-1.0.so.0": "libgstreamer-gl1.0-0",
-          "libgstpbutils-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstreamer-1.0.so.0": "libgstreamer1.0-0",
-          "libgsttag-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstvideo-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgthread-2.0.so.0": "libglib2.0-0",
-          "libgtk-3.so.0": "libgtk-3-0",
-          "libgtk-x11-2.0.so.0": "libgtk2.0-0",
-          "libharfbuzz-icu.so.0": "libharfbuzz-icu0",
-          "libharfbuzz.so.0": "libharfbuzz0b",
-          "libhyphen.so.0": "libhyphen0",
-          "libicudata.so.60": "libicu60",
-          "libicui18n.so.60": "libicu60",
-          "libicuuc.so.60": "libicu60",
-          "libjpeg.so.8": "libjpeg-turbo8",
-          "libnotify.so.4": "libnotify4",
-          "libnspr4.so": "libnspr4",
-          "libnss3.so": "libnss3",
-          "libnssutil3.so": "libnss3",
-          "libopenjp2.so.7": "libopenjp2-7",
-          "libopus.so.0": "libopus0",
-          "libpango-1.0.so.0": "libpango-1.0-0",
-          "libpangocairo-1.0.so.0": "libpangocairo-1.0-0",
-          "libpangoft2-1.0.so.0": "libpangoft2-1.0-0",
-          "libpng16.so.16": "libpng16-16",
-          "libsecret-1.so.0": "libsecret-1-0",
-          "libsmime3.so": "libnss3",
-          "libvpx.so.5": "libvpx5",
-          "libwayland-client.so.0": "libwayland-client0",
-          "libwayland-egl.so.1": "libwayland-egl1",
-          "libwayland-server.so.0": "libwayland-server0",
-          "libwebp.so.6": "libwebp6",
-          "libwebpdemux.so.2": "libwebpdemux2",
-          "libwoff2dec.so.1.0.2": "libwoff1",
-          "libX11-xcb.so.1": "libx11-xcb1",
-          "libX11.so.6": "libx11-6",
-          "libxcb-dri3.so.0": "libxcb-dri3-0",
-          "libxcb-shm.so.0": "libxcb-shm0",
-          "libxcb.so.1": "libxcb1",
-          "libXcomposite.so.1": "libxcomposite1",
-          "libXcursor.so.1": "libxcursor1",
-          "libXdamage.so.1": "libxdamage1",
-          "libXext.so.6": "libxext6",
-          "libXfixes.so.3": "libxfixes3",
-          "libXi.so.6": "libxi6",
-          "libxkbcommon.so.0": "libxkbcommon0",
-          "libxml2.so.2": "libxml2",
-          "libXrandr.so.2": "libxrandr2",
-          "libXrender.so.1": "libxrender1",
-          "libxslt.so.1": "libxslt1.1",
-          "libXt.so.6": "libxt6",
-          "libXtst.so.6": "libxtst6"
-        }
+        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libbrotli1", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu60", "libjpeg-turbo8", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libvpx5", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1"]
       },
-      "ubuntu20.04": {
+      focal: {
         tools: ["xvfb", "fonts-noto-color-emoji", "ttf-unifont", "libfontconfig", "libfreetype6", "xfonts-cyrillic", "xfonts-scalable", "fonts-liberation", "fonts-ipafont-gothic", "fonts-wqy-zenhei", "fonts-tlwg-loma-otf", "ttf-ubuntu-font-family"],
         chromium: ["fonts-liberation", "libasound2", "libatk-bridge2.0-0", "libatk1.0-0", "libatspi2.0-0", "libcairo2", "libcups2", "libdbus-1-3", "libdrm2", "libegl1", "libgbm1", "libglib2.0-0", "libgtk-3-0", "libnspr4", "libnss3", "libpango-1.0-0", "libx11-6", "libx11-xcb1", "libxcb1", "libxcomposite1", "libxdamage1", "libxext6", "libxfixes3", "libxrandr2", "libxshmfence1"],
         firefox: ["ffmpeg", "libatk1.0-0", "libcairo-gobject2", "libcairo2", "libdbus-1-3", "libdbus-glib-1-2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libglib2.0-0", "libgtk-3-0", "libpango-1.0-0", "libpangocairo-1.0-0", "libpangoft2-1.0-0", "libx11-6", "libx11-xcb1", "libxcb-shm0", "libxcb1", "libxcomposite1", "libxcursor1", "libxdamage1", "libxext6", "libxfixes3", "libxi6", "libxrender1", "libxt6"],
-        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu66", "libjpeg-turbo8", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libsoup2.4-1", "libvpx6", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1"],
-        lib2package: {
-          "libasound.so.2": "libasound2",
-          "libatk-1.0.so.0": "libatk1.0-0",
-          "libatk-bridge-2.0.so.0": "libatk-bridge2.0-0",
-          "libatspi.so.0": "libatspi2.0-0",
-          "libcairo-gobject.so.2": "libcairo-gobject2",
-          "libcairo.so.2": "libcairo2",
-          "libcups.so.2": "libcups2",
-          "libdbus-1.so.3": "libdbus-1-3",
-          "libdbus-glib-1.so.2": "libdbus-glib-1-2",
-          "libdrm.so.2": "libdrm2",
-          "libEGL.so.1": "libegl1",
-          "libenchant.so.1": "libenchant1c2a",
-          "libevdev.so.2": "libevdev2",
-          "libepoxy.so.0": "libepoxy0",
-          "libfontconfig.so.1": "libfontconfig1",
-          "libfreetype.so.6": "libfreetype6",
-          "libgbm.so.1": "libgbm1",
-          "libgdk_pixbuf-2.0.so.0": "libgdk-pixbuf2.0-0",
-          "libgdk-3.so.0": "libgtk-3-0",
-          "libgdk-x11-2.0.so.0": "libgtk2.0-0",
-          "libgio-2.0.so.0": "libglib2.0-0",
-          "libGL.so.1": "libgl1",
-          "libGLESv2.so.2": "libgles2",
-          "libglib-2.0.so.0": "libglib2.0-0",
-          "libgmodule-2.0.so.0": "libglib2.0-0",
-          "libgobject-2.0.so.0": "libglib2.0-0",
-          "libgstapp-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstaudio-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstbase-1.0.so.0": "libgstreamer1.0-0",
-          "libgstcodecparsers-1.0.so.0": "gstreamer1.0-plugins-bad",
-          "libgstfft-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstgl-1.0.so.0": "libgstreamer-gl1.0-0",
-          "libgstpbutils-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstreamer-1.0.so.0": "libgstreamer1.0-0",
-          "libgsttag-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgstvideo-1.0.so.0": "gstreamer1.0-plugins-base",
-          "libgthread-2.0.so.0": "libglib2.0-0",
-          "libgtk-3.so.0": "libgtk-3-0",
-          "libgtk-x11-2.0.so.0": "libgtk2.0-0",
-          "libharfbuzz-icu.so.0": "libharfbuzz-icu0",
-          "libharfbuzz.so.0": "libharfbuzz0b",
-          "libhyphen.so.0": "libhyphen0",
-          "libicui18n.so.66": "libicu66",
-          "libicuuc.so.66": "libicu66",
-          "libjpeg.so.8": "libjpeg-turbo8",
-          "libnotify.so.4": "libnotify4",
-          "libnspr4.so": "libnspr4",
-          "libnss3.so": "libnss3",
-          "libnssutil3.so": "libnss3",
-          "libopenjp2.so.7": "libopenjp2-7",
-          "libopus.so.0": "libopus0",
-          "libpango-1.0.so.0": "libpango-1.0-0",
-          "libpangocairo-1.0.so.0": "libpangocairo-1.0-0",
-          "libpangoft2-1.0.so.0": "libpangoft2-1.0-0",
-          "libpng16.so.16": "libpng16-16",
-          "libsecret-1.so.0": "libsecret-1-0",
-          "libsmime3.so": "libnss3",
-          "libsoup-2.4.so.1": "libsoup2.4-1",
-          "libvpx.so.6": "libvpx6",
-          "libwayland-client.so.0": "libwayland-client0",
-          "libwayland-egl.so.1": "libwayland-egl1",
-          "libwayland-server.so.0": "libwayland-server0",
-          "libwebp.so.6": "libwebp6",
-          "libwebpdemux.so.2": "libwebpdemux2",
-          "libwoff2dec.so.1.0.2": "libwoff1",
-          "libX11-xcb.so.1": "libx11-xcb1",
-          "libX11.so.6": "libx11-6",
-          "libxcb-dri3.so.0": "libxcb-dri3-0",
-          "libxcb-shm.so.0": "libxcb-shm0",
-          "libxcb.so.1": "libxcb1",
-          "libXcomposite.so.1": "libxcomposite1",
-          "libXcursor.so.1": "libxcursor1",
-          "libXdamage.so.1": "libxdamage1",
-          "libXext.so.6": "libxext6",
-          "libXfixes.so.3": "libxfixes3",
-          "libXi.so.6": "libxi6",
-          "libxkbcommon.so.0": "libxkbcommon0",
-          "libxml2.so.2": "libxml2",
-          "libXrandr.so.2": "libxrandr2",
-          "libXrender.so.1": "libxrender1",
-          "libxslt.so.1": "libxslt1.1",
-          "libXt.so.6": "libxt6",
-          "libXtst.so.6": "libxtst6",
-          "libxshmfence.so.1": "libxshmfence1"
-        }
+        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu66", "libjpeg-turbo8", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libsoup2.4-1", "libvpx6", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1"]
       },
-      "ubuntu21.04": {
+      hirsute: {
         tools: ["xvfb", "fonts-noto-color-emoji", "ttf-unifont", "libfontconfig", "libfreetype6", "xfonts-cyrillic", "xfonts-scalable", "fonts-liberation", "fonts-ipafont-gothic", "fonts-wqy-zenhei", "fonts-tlwg-loma-otf", "ttf-ubuntu-font-family"],
         chromium: ["libasound2", "libatk-bridge2.0-0", "libatk1.0-0", "libatspi2.0-0", "libcairo2", "libcups2", "libdbus-1-3", "libdrm2", "libgbm1", "libglib2.0-0", "libnspr4", "libnss3", "libpango-1.0-0", "libx11-6", "libxcb1", "libxcomposite1", "libxdamage1", "libxext6", "libxfixes3", "libxkbcommon0", "libxrandr2", "libxshmfence1"],
         firefox: ["ffmpeg", "libatk1.0-0", "libcairo-gobject2", "libcairo2", "libdbus-1-3", "libdbus-glib-1-2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf-2.0-0", "libglib2.0-0", "libgtk-3-0", "libgtk2.0-0", "libharfbuzz0b", "libpango-1.0-0", "libpangocairo-1.0-0", "libpangoft2-1.0-0", "libx11-6", "libx11-xcb1", "libxcb-shm0", "libxcb1", "libxcomposite1", "libxcursor1", "libxdamage1", "libxext6", "libxfixes3", "libxi6", "libxrender1", "libxt6"],
-        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libegl1", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf-2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer-plugins-bad1.0-0", "libgstreamer-plugins-base1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libjavascriptcoregtk-4.0-18", "libjpeg-turbo8", "liblcms2-2", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libsoup2.4-1", "libvpx6", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebkit2gtk-4.0-37", "libwebp6", "libwebpdemux2", "libwoff1", "libwpe-1.0-1", "libwpebackend-fdo-1.0-1", "libwpewebkit-1.0-3", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1"],
-        lib2package: {
-          "libasound.so.2": "libasound2",
-          "libatk-1.0.so.0": "libatk1.0-0",
-          "libatk-bridge-2.0.so.0": "libatk-bridge2.0-0",
-          "libatspi.so.0": "libatspi2.0-0",
-          "libcairo-gobject.so.2": "libcairo-gobject2",
-          "libcairo.so.2": "libcairo2",
-          "libcups.so.2": "libcups2",
-          "libdbus-1.so.3": "libdbus-1-3",
-          "libdbus-glib-1.so.2": "libdbus-glib-1-2",
-          "libdrm.so.2": "libdrm2",
-          "libEGL.so.1": "libegl1",
-          "libepoxy.so.0": "libepoxy0",
-          "libfontconfig.so.1": "libfontconfig1",
-          "libfreetype.so.6": "libfreetype6",
-          "libgbm.so.1": "libgbm1",
-          "libgdk_pixbuf-2.0.so.0": "libgdk-pixbuf-2.0-0",
-          "libgdk-3.so.0": "libgtk-3-0",
-          "libgdk-x11-2.0.so.0": "libgtk2.0-0",
-          "libgio-2.0.so.0": "libglib2.0-0",
-          "libGL.so.1": "libgl1",
-          "libGLESv2.so.2": "libgles2",
-          "libglib-2.0.so.0": "libglib2.0-0",
-          "libgmodule-2.0.so.0": "libglib2.0-0",
-          "libgobject-2.0.so.0": "libglib2.0-0",
-          "libgstapp-1.0.so.0": "libgstreamer-plugins-base1.0-0",
-          "libgstaudio-1.0.so.0": "libgstreamer-plugins-base1.0-0",
-          "libgstbase-1.0.so.0": "libgstreamer1.0-0",
-          "libgstcodecparsers-1.0.so.0": "libgstreamer-plugins-bad1.0-0",
-          "libgstfft-1.0.so.0": "libgstreamer-plugins-base1.0-0",
-          "libgstgl-1.0.so.0": "libgstreamer-gl1.0-0",
-          "libgstpbutils-1.0.so.0": "libgstreamer-plugins-base1.0-0",
-          "libgstreamer-1.0.so.0": "libgstreamer1.0-0",
-          "libgsttag-1.0.so.0": "libgstreamer-plugins-base1.0-0",
-          "libgstvideo-1.0.so.0": "libgstreamer-plugins-base1.0-0",
-          "libgthread-2.0.so.0": "libglib2.0-0",
-          "libgtk-3.so.0": "libgtk-3-0",
-          "libgtk-x11-2.0.so.0": "libgtk2.0-0",
-          "libharfbuzz-icu.so.0": "libharfbuzz-icu0",
-          "libharfbuzz.so.0": "libharfbuzz0b",
-          "libhyphen.so.0": "libhyphen0",
-          "libjavascriptcoregtk-4.0.so.18": "libjavascriptcoregtk-4.0-18",
-          "libjpeg.so.8": "libjpeg-turbo8",
-          "liblcms2.so.2": "liblcms2-2",
-          "libnotify.so.4": "libnotify4",
-          "libnspr4.so": "libnspr4",
-          "libnss3.so": "libnss3",
-          "libnssutil3.so": "libnss3",
-          "libopenjp2.so.7": "libopenjp2-7",
-          "libopus.so.0": "libopus0",
-          "libpango-1.0.so.0": "libpango-1.0-0",
-          "libpangocairo-1.0.so.0": "libpangocairo-1.0-0",
-          "libpangoft2-1.0.so.0": "libpangoft2-1.0-0",
-          "libpng16.so.16": "libpng16-16",
-          "libsecret-1.so.0": "libsecret-1-0",
-          "libsmime3.so": "libnss3",
-          "libsoup-2.4.so.1": "libsoup2.4-1",
-          "libvpx.so.6": "libvpx6",
-          "libwayland-client.so.0": "libwayland-client0",
-          "libwayland-egl.so.1": "libwayland-egl1",
-          "libwayland-server.so.0": "libwayland-server0",
-          "libwebkit2gtk-4.0.so.37": "libwebkit2gtk-4.0-37",
-          "libwebp.so.6": "libwebp6",
-          "libwebpdemux.so.2": "libwebpdemux2",
-          "libwoff2dec.so.1.0.2": "libwoff1",
-          "libwpe-1.0.so.1": "libwpe-1.0-1",
-          "libWPEBackend-fdo-1.0.so.1": "libwpebackend-fdo-1.0-1",
-          "libWPEWebKit-1.0.so.3": "libwpewebkit-1.0-3",
-          "libX11-xcb.so.1": "libx11-xcb1",
-          "libX11.so.6": "libx11-6",
-          "libxcb-shm.so.0": "libxcb-shm0",
-          "libxcb.so.1": "libxcb1",
-          "libXcomposite.so.1": "libxcomposite1",
-          "libXcursor.so.1": "libxcursor1",
-          "libXdamage.so.1": "libxdamage1",
-          "libXext.so.6": "libxext6",
-          "libXfixes.so.3": "libxfixes3",
-          "libXi.so.6": "libxi6",
-          "libxkbcommon.so.0": "libxkbcommon0",
-          "libxml2.so.2": "libxml2",
-          "libXrandr.so.2": "libxrandr2",
-          "libXrender.so.1": "libxrender1",
-          "libxshmfence.so.1": "libxshmfence1",
-          "libxslt.so.1": "libxslt1.1",
-          "libXt.so.6": "libxt6"
-        }
+        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libegl1", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf-2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer-plugins-bad1.0-0", "libgstreamer-plugins-base1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libjavascriptcoregtk-4.0-18", "libjpeg-turbo8", "liblcms2-2", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libsoup2.4-1", "libvpx6", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebkit2gtk-4.0-37", "libwebp6", "libwebpdemux2", "libwoff1", "libwpe-1.0-1", "libwpebackend-fdo-1.0-1", "libwpewebkit-1.0-3", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1"]
       }
     };
     exports.deps = deps;
-    deps["ubuntu20.04-arm64"] = {
-      tools: [...deps["ubuntu20.04"].tools],
-      chromium: [...deps["ubuntu20.04"].chromium],
-      firefox: [...deps["ubuntu20.04"].firefox],
-      webkit: [...deps["ubuntu20.04"].webkit, "libevent-2.1-7"],
-      lib2package: {
-        ...deps["ubuntu20.04"].lib2package,
-        "libevent-2.1.so.7": "libevent-2.1.so.7"
-      }
-    };
   }
 });
 
@@ -26794,9 +24833,8 @@ var require_dependencies = __commonJS({
     var _path = _interopRequireDefault(__require("path"));
     var os = _interopRequireWildcard(__require("os"));
     var _child_process = _interopRequireDefault(__require("child_process"));
+    var _ubuntuVersion = require_ubuntuVersion();
     var utils = _interopRequireWildcard(require_utils());
-    var _registry = require_registry();
-    var _nativeDeps = require_nativeDeps();
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -26850,7 +24888,7 @@ var require_dependencies = __commonJS({
       if (targets.has("chromium")) {
         const {
           code
-        } = await utils.spawnAsync("powershell.exe", ["-ExecutionPolicy", "Bypass", "-File", _path.default.join(BIN_DIRECTORY, "install_media_pack.ps1")], {
+        } = await utils.spawnAsync("powershell.exe", ["-File", _path.default.join(BIN_DIRECTORY, "install_media_pack.ps1")], {
           cwd: BIN_DIRECTORY,
           stdio: "inherit"
         });
@@ -26859,14 +24897,22 @@ var require_dependencies = __commonJS({
       }
     }
     async function installDependenciesLinux(targets) {
+      const ubuntuVersion = await (0, _ubuntuVersion.getUbuntuVersion)();
+      if (ubuntuVersion !== "18.04" && ubuntuVersion !== "20.04" && ubuntuVersion !== "21.04") {
+        console.warn("Cannot install dependencies for this linux distribution!");
+        return;
+      }
       const libraries = [];
+      const {
+        deps
+      } = require_nativeDeps();
       for (const target of targets) {
-        const info = _nativeDeps.deps[utils.hostPlatform];
-        if (!info) {
-          console.warn("Cannot install dependencies for this linux distribution!");
-          return;
-        }
-        libraries.push(...info[target]);
+        if (ubuntuVersion === "18.04")
+          libraries.push(...deps["bionic"][target]);
+        else if (ubuntuVersion === "20.04")
+          libraries.push(...deps["focal"][target]);
+        else if (ubuntuVersion === "21.04")
+          libraries.push(...deps["hirsute"][target]);
       }
       const uniqueLibraries = Array.from(new Set(libraries));
       console.log("Installing Ubuntu dependencies...");
@@ -26897,7 +24943,7 @@ var require_dependencies = __commonJS({
       for (const directoryPath of directoryPaths)
         lddPaths.push(...await executablesOrSharedLibraries(directoryPath));
       const allMissingDeps = await Promise.all(lddPaths.map((lddPath) => missingFileDependenciesWindows(lddPath)));
-      const missingDeps = /* @__PURE__ */ new Set();
+      const missingDeps = new Set();
       for (const deps of allMissingDeps) {
         for (const dep of deps)
           missingDeps.add(dep);
@@ -26930,14 +24976,13 @@ ${details.join("\n")}`;
         console.warn(message);
       }
     }
-    async function validateDependenciesLinux(sdkLanguage, linuxLddDirectories, dlOpenLibraries) {
-      var _deps$utils$hostPlatf;
+    async function validateDependenciesLinux(linuxLddDirectories, dlOpenLibraries) {
       const directoryPaths = linuxLddDirectories;
       const lddPaths = [];
       for (const directoryPath of directoryPaths)
         lddPaths.push(...await executablesOrSharedLibraries(directoryPath));
       const allMissingDeps = await Promise.all(lddPaths.map((lddPath) => missingFileDependencies(lddPath, directoryPaths)));
-      const missingDeps = /* @__PURE__ */ new Set();
+      const missingDeps = new Set();
       for (const deps of allMissingDeps) {
         for (const dep of deps)
           missingDeps.add(dep);
@@ -26946,21 +24991,28 @@ ${details.join("\n")}`;
         missingDeps.add(dep);
       if (!missingDeps.size)
         return;
-      const missingPackages = /* @__PURE__ */ new Set();
-      const libraryToPackageNameMapping = {
-        ...((_deps$utils$hostPlatf = _nativeDeps.deps[utils.hostPlatform]) === null || _deps$utils$hostPlatf === void 0 ? void 0 : _deps$utils$hostPlatf.lib2package) || {},
-        ...MANUAL_LIBRARY_TO_PACKAGE_NAME_UBUNTU
-      };
-      for (const missingDep of missingDeps) {
-        const packageName = libraryToPackageNameMapping[missingDep];
-        if (packageName) {
-          missingPackages.add(packageName);
-          missingDeps.delete(missingDep);
+      const missingPackages = new Set();
+      const ubuntuVersion = await (0, _ubuntuVersion.getUbuntuVersion)();
+      let libraryToPackageNameMapping = null;
+      if (ubuntuVersion === "18.04")
+        libraryToPackageNameMapping = LIBRARY_TO_PACKAGE_NAME_UBUNTU_18_04;
+      else if (ubuntuVersion === "20.04")
+        libraryToPackageNameMapping = LIBRARY_TO_PACKAGE_NAME_UBUNTU_20_04;
+      else if (ubuntuVersion === "21.04")
+        libraryToPackageNameMapping = LIBRARY_TO_PACKAGE_NAME_UBUNTU_21_04;
+      libraryToPackageNameMapping = Object.assign({}, libraryToPackageNameMapping, MANUAL_LIBRARY_TO_PACKAGE_NAME_UBUNTU);
+      if (libraryToPackageNameMapping) {
+        for (const missingDep of missingDeps) {
+          const packageName = libraryToPackageNameMapping[missingDep];
+          if (packageName) {
+            missingPackages.add(packageName);
+            missingDeps.delete(missingDep);
+          }
         }
       }
       const maybeSudo = process.getuid() !== 0 && os.platform() !== "win32" ? "sudo " : "";
       if (missingPackages.size && !missingDeps.size) {
-        throw new Error("\n" + utils.wrapInASCIIBox([`Host system is missing a few dependencies to run browsers.`, `Please install them with the following command:`, ``, `    ${maybeSudo}${(0, _registry.buildPlaywrightCLICommand)(sdkLanguage, "install-deps")}`, ``, `<3 Playwright Team`].join("\n"), 1));
+        throw new Error("\n" + utils.wrapInASCIIBox([`Host system is missing a few dependencies to run browsers.`, `Please install them with the following command:`, ``, `    ${maybeSudo}npx playwright install-deps`, ``, `<3 Playwright Team`].join("\n"), 1));
       }
       let missingPackagesMessage = "";
       if (missingPackages.size) {
@@ -27048,6 +25100,265 @@ ${details.join("\n")}`;
       const isLibraryAvailable = (library) => stdout.toLowerCase().includes(library.toLowerCase());
       return libraries.filter((library) => !isLibraryAvailable(library));
     }
+    var LIBRARY_TO_PACKAGE_NAME_UBUNTU_18_04 = {
+      "libasound.so.2": "libasound2",
+      "libatk-1.0.so.0": "libatk1.0-0",
+      "libatk-bridge-2.0.so.0": "libatk-bridge2.0-0",
+      "libatspi.so.0": "libatspi2.0-0",
+      "libbrotlidec.so.1": "libbrotli1",
+      "libcairo-gobject.so.2": "libcairo-gobject2",
+      "libcairo.so.2": "libcairo2",
+      "libcups.so.2": "libcups2",
+      "libdbus-1.so.3": "libdbus-1-3",
+      "libdbus-glib-1.so.2": "libdbus-glib-1-2",
+      "libdrm.so.2": "libdrm2",
+      "libEGL.so.1": "libegl1",
+      "libenchant.so.1": "libenchant1c2a",
+      "libepoxy.so.0": "libepoxy0",
+      "libevent-2.1.so.6": "libevent-2.1-6",
+      "libevdev.so.2": "libevdev2",
+      "libfontconfig.so.1": "libfontconfig1",
+      "libfreetype.so.6": "libfreetype6",
+      "libgbm.so.1": "libgbm1",
+      "libgdk_pixbuf-2.0.so.0": "libgdk-pixbuf2.0-0",
+      "libgdk-3.so.0": "libgtk-3-0",
+      "libgdk-x11-2.0.so.0": "libgtk2.0-0",
+      "libgio-2.0.so.0": "libglib2.0-0",
+      "libGL.so.1": "libgl1",
+      "libGLESv2.so.2": "libgles2",
+      "libglib-2.0.so.0": "libglib2.0-0",
+      "libgmodule-2.0.so.0": "libglib2.0-0",
+      "libgobject-2.0.so.0": "libglib2.0-0",
+      "libgstapp-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstaudio-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstbase-1.0.so.0": "libgstreamer1.0-0",
+      "libgstcodecparsers-1.0.so.0": "gstreamer1.0-plugins-bad",
+      "libgstfft-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstgl-1.0.so.0": "libgstreamer-gl1.0-0",
+      "libgstpbutils-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstreamer-1.0.so.0": "libgstreamer1.0-0",
+      "libgsttag-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstvideo-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgthread-2.0.so.0": "libglib2.0-0",
+      "libgtk-3.so.0": "libgtk-3-0",
+      "libgtk-x11-2.0.so.0": "libgtk2.0-0",
+      "libharfbuzz-icu.so.0": "libharfbuzz-icu0",
+      "libharfbuzz.so.0": "libharfbuzz0b",
+      "libhyphen.so.0": "libhyphen0",
+      "libicudata.so.60": "libicu60",
+      "libicui18n.so.60": "libicu60",
+      "libicuuc.so.60": "libicu60",
+      "libjpeg.so.8": "libjpeg-turbo8",
+      "libnotify.so.4": "libnotify4",
+      "libnspr4.so": "libnspr4",
+      "libnss3.so": "libnss3",
+      "libnssutil3.so": "libnss3",
+      "libopenjp2.so.7": "libopenjp2-7",
+      "libopus.so.0": "libopus0",
+      "libpango-1.0.so.0": "libpango-1.0-0",
+      "libpangocairo-1.0.so.0": "libpangocairo-1.0-0",
+      "libpangoft2-1.0.so.0": "libpangoft2-1.0-0",
+      "libpng16.so.16": "libpng16-16",
+      "libsecret-1.so.0": "libsecret-1-0",
+      "libsmime3.so": "libnss3",
+      "libvpx.so.5": "libvpx5",
+      "libwayland-client.so.0": "libwayland-client0",
+      "libwayland-egl.so.1": "libwayland-egl1",
+      "libwayland-server.so.0": "libwayland-server0",
+      "libwebp.so.6": "libwebp6",
+      "libwebpdemux.so.2": "libwebpdemux2",
+      "libwoff2dec.so.1.0.2": "libwoff1",
+      "libX11-xcb.so.1": "libx11-xcb1",
+      "libX11.so.6": "libx11-6",
+      "libxcb-dri3.so.0": "libxcb-dri3-0",
+      "libxcb-shm.so.0": "libxcb-shm0",
+      "libxcb.so.1": "libxcb1",
+      "libXcomposite.so.1": "libxcomposite1",
+      "libXcursor.so.1": "libxcursor1",
+      "libXdamage.so.1": "libxdamage1",
+      "libXext.so.6": "libxext6",
+      "libXfixes.so.3": "libxfixes3",
+      "libXi.so.6": "libxi6",
+      "libxkbcommon.so.0": "libxkbcommon0",
+      "libxml2.so.2": "libxml2",
+      "libXrandr.so.2": "libxrandr2",
+      "libXrender.so.1": "libxrender1",
+      "libxslt.so.1": "libxslt1.1",
+      "libXt.so.6": "libxt6",
+      "libXtst.so.6": "libxtst6"
+    };
+    var LIBRARY_TO_PACKAGE_NAME_UBUNTU_20_04 = {
+      "libasound.so.2": "libasound2",
+      "libatk-1.0.so.0": "libatk1.0-0",
+      "libatk-bridge-2.0.so.0": "libatk-bridge2.0-0",
+      "libatspi.so.0": "libatspi2.0-0",
+      "libcairo-gobject.so.2": "libcairo-gobject2",
+      "libcairo.so.2": "libcairo2",
+      "libcups.so.2": "libcups2",
+      "libdbus-1.so.3": "libdbus-1-3",
+      "libdbus-glib-1.so.2": "libdbus-glib-1-2",
+      "libdrm.so.2": "libdrm2",
+      "libEGL.so.1": "libegl1",
+      "libenchant.so.1": "libenchant1c2a",
+      "libevdev.so.2": "libevdev2",
+      "libepoxy.so.0": "libepoxy0",
+      "libfontconfig.so.1": "libfontconfig1",
+      "libfreetype.so.6": "libfreetype6",
+      "libgbm.so.1": "libgbm1",
+      "libgdk_pixbuf-2.0.so.0": "libgdk-pixbuf2.0-0",
+      "libgdk-3.so.0": "libgtk-3-0",
+      "libgdk-x11-2.0.so.0": "libgtk2.0-0",
+      "libgio-2.0.so.0": "libglib2.0-0",
+      "libGL.so.1": "libgl1",
+      "libGLESv2.so.2": "libgles2",
+      "libglib-2.0.so.0": "libglib2.0-0",
+      "libgmodule-2.0.so.0": "libglib2.0-0",
+      "libgobject-2.0.so.0": "libglib2.0-0",
+      "libgstapp-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstaudio-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstbase-1.0.so.0": "libgstreamer1.0-0",
+      "libgstcodecparsers-1.0.so.0": "gstreamer1.0-plugins-bad",
+      "libgstfft-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstgl-1.0.so.0": "libgstreamer-gl1.0-0",
+      "libgstpbutils-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstreamer-1.0.so.0": "libgstreamer1.0-0",
+      "libgsttag-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgstvideo-1.0.so.0": "gstreamer1.0-plugins-base",
+      "libgthread-2.0.so.0": "libglib2.0-0",
+      "libgtk-3.so.0": "libgtk-3-0",
+      "libgtk-x11-2.0.so.0": "libgtk2.0-0",
+      "libharfbuzz-icu.so.0": "libharfbuzz-icu0",
+      "libharfbuzz.so.0": "libharfbuzz0b",
+      "libhyphen.so.0": "libhyphen0",
+      "libicui18n.so.66": "libicu66",
+      "libicuuc.so.66": "libicu66",
+      "libjpeg.so.8": "libjpeg-turbo8",
+      "libnotify.so.4": "libnotify4",
+      "libnspr4.so": "libnspr4",
+      "libnss3.so": "libnss3",
+      "libnssutil3.so": "libnss3",
+      "libopenjp2.so.7": "libopenjp2-7",
+      "libopus.so.0": "libopus0",
+      "libpango-1.0.so.0": "libpango-1.0-0",
+      "libpangocairo-1.0.so.0": "libpangocairo-1.0-0",
+      "libpangoft2-1.0.so.0": "libpangoft2-1.0-0",
+      "libpng16.so.16": "libpng16-16",
+      "libsecret-1.so.0": "libsecret-1-0",
+      "libsmime3.so": "libnss3",
+      "libsoup-2.4.so.1": "libsoup2.4-1",
+      "libvpx.so.6": "libvpx6",
+      "libwayland-client.so.0": "libwayland-client0",
+      "libwayland-egl.so.1": "libwayland-egl1",
+      "libwayland-server.so.0": "libwayland-server0",
+      "libwebp.so.6": "libwebp6",
+      "libwebpdemux.so.2": "libwebpdemux2",
+      "libwoff2dec.so.1.0.2": "libwoff1",
+      "libX11-xcb.so.1": "libx11-xcb1",
+      "libX11.so.6": "libx11-6",
+      "libxcb-dri3.so.0": "libxcb-dri3-0",
+      "libxcb-shm.so.0": "libxcb-shm0",
+      "libxcb.so.1": "libxcb1",
+      "libXcomposite.so.1": "libxcomposite1",
+      "libXcursor.so.1": "libxcursor1",
+      "libXdamage.so.1": "libxdamage1",
+      "libXext.so.6": "libxext6",
+      "libXfixes.so.3": "libxfixes3",
+      "libXi.so.6": "libxi6",
+      "libxkbcommon.so.0": "libxkbcommon0",
+      "libxml2.so.2": "libxml2",
+      "libXrandr.so.2": "libxrandr2",
+      "libXrender.so.1": "libxrender1",
+      "libxslt.so.1": "libxslt1.1",
+      "libXt.so.6": "libxt6",
+      "libXtst.so.6": "libxtst6",
+      "libxshmfence.so.1": "libxshmfence1"
+    };
+    var LIBRARY_TO_PACKAGE_NAME_UBUNTU_21_04 = {
+      "libasound.so.2": "libasound2",
+      "libatk-1.0.so.0": "libatk1.0-0",
+      "libatk-bridge-2.0.so.0": "libatk-bridge2.0-0",
+      "libatspi.so.0": "libatspi2.0-0",
+      "libcairo-gobject.so.2": "libcairo-gobject2",
+      "libcairo.so.2": "libcairo2",
+      "libcups.so.2": "libcups2",
+      "libdbus-1.so.3": "libdbus-1-3",
+      "libdbus-glib-1.so.2": "libdbus-glib-1-2",
+      "libdrm.so.2": "libdrm2",
+      "libEGL.so.1": "libegl1",
+      "libepoxy.so.0": "libepoxy0",
+      "libfontconfig.so.1": "libfontconfig1",
+      "libfreetype.so.6": "libfreetype6",
+      "libgbm.so.1": "libgbm1",
+      "libgdk_pixbuf-2.0.so.0": "libgdk-pixbuf-2.0-0",
+      "libgdk-3.so.0": "libgtk-3-0",
+      "libgdk-x11-2.0.so.0": "libgtk2.0-0",
+      "libgio-2.0.so.0": "libglib2.0-0",
+      "libGL.so.1": "libgl1",
+      "libGLESv2.so.2": "libgles2",
+      "libglib-2.0.so.0": "libglib2.0-0",
+      "libgmodule-2.0.so.0": "libglib2.0-0",
+      "libgobject-2.0.so.0": "libglib2.0-0",
+      "libgstapp-1.0.so.0": "libgstreamer-plugins-base1.0-0",
+      "libgstaudio-1.0.so.0": "libgstreamer-plugins-base1.0-0",
+      "libgstbase-1.0.so.0": "libgstreamer1.0-0",
+      "libgstcodecparsers-1.0.so.0": "libgstreamer-plugins-bad1.0-0",
+      "libgstfft-1.0.so.0": "libgstreamer-plugins-base1.0-0",
+      "libgstgl-1.0.so.0": "libgstreamer-gl1.0-0",
+      "libgstpbutils-1.0.so.0": "libgstreamer-plugins-base1.0-0",
+      "libgstreamer-1.0.so.0": "libgstreamer1.0-0",
+      "libgsttag-1.0.so.0": "libgstreamer-plugins-base1.0-0",
+      "libgstvideo-1.0.so.0": "libgstreamer-plugins-base1.0-0",
+      "libgthread-2.0.so.0": "libglib2.0-0",
+      "libgtk-3.so.0": "libgtk-3-0",
+      "libgtk-x11-2.0.so.0": "libgtk2.0-0",
+      "libharfbuzz-icu.so.0": "libharfbuzz-icu0",
+      "libharfbuzz.so.0": "libharfbuzz0b",
+      "libhyphen.so.0": "libhyphen0",
+      "libjavascriptcoregtk-4.0.so.18": "libjavascriptcoregtk-4.0-18",
+      "libjpeg.so.8": "libjpeg-turbo8",
+      "liblcms2.so.2": "liblcms2-2",
+      "libnotify.so.4": "libnotify4",
+      "libnspr4.so": "libnspr4",
+      "libnss3.so": "libnss3",
+      "libnssutil3.so": "libnss3",
+      "libopenjp2.so.7": "libopenjp2-7",
+      "libopus.so.0": "libopus0",
+      "libpango-1.0.so.0": "libpango-1.0-0",
+      "libpangocairo-1.0.so.0": "libpangocairo-1.0-0",
+      "libpangoft2-1.0.so.0": "libpangoft2-1.0-0",
+      "libpng16.so.16": "libpng16-16",
+      "libsecret-1.so.0": "libsecret-1-0",
+      "libsmime3.so": "libnss3",
+      "libsoup-2.4.so.1": "libsoup2.4-1",
+      "libvpx.so.6": "libvpx6",
+      "libwayland-client.so.0": "libwayland-client0",
+      "libwayland-egl.so.1": "libwayland-egl1",
+      "libwayland-server.so.0": "libwayland-server0",
+      "libwebkit2gtk-4.0.so.37": "libwebkit2gtk-4.0-37",
+      "libwebp.so.6": "libwebp6",
+      "libwebpdemux.so.2": "libwebpdemux2",
+      "libwoff2dec.so.1.0.2": "libwoff1",
+      "libwpe-1.0.so.1": "libwpe-1.0-1",
+      "libWPEBackend-fdo-1.0.so.1": "libwpebackend-fdo-1.0-1",
+      "libWPEWebKit-1.0.so.3": "libwpewebkit-1.0-3",
+      "libX11-xcb.so.1": "libx11-xcb1",
+      "libX11.so.6": "libx11-6",
+      "libxcb-shm.so.0": "libxcb-shm0",
+      "libxcb.so.1": "libxcb1",
+      "libXcomposite.so.1": "libxcomposite1",
+      "libXcursor.so.1": "libxcursor1",
+      "libXdamage.so.1": "libxdamage1",
+      "libXext.so.6": "libxext6",
+      "libXfixes.so.3": "libxfixes3",
+      "libXi.so.6": "libxi6",
+      "libxkbcommon.so.0": "libxkbcommon0",
+      "libxml2.so.2": "libxml2",
+      "libXrandr.so.2": "libxrandr2",
+      "libXrender.so.1": "libxrender1",
+      "libxshmfence.so.1": "libxshmfence1",
+      "libxslt.so.1": "libxslt1.1",
+      "libXt.so.6": "libxt6"
+    };
     var MANUAL_LIBRARY_TO_PACKAGE_NAME_UBUNTU = {
       "libx264.so": "gstreamer1.0-libav"
     };
@@ -28561,27 +26872,27 @@ var require_browsers = __commonJS({
       browsers: [
         {
           name: "chromium",
-          revision: "939194",
+          revision: "930007",
           installByDefault: true
         },
         {
           name: "chromium-with-symbols",
-          revision: "939194",
+          revision: "930007",
           installByDefault: false
         },
         {
           name: "firefox",
-          revision: "1304",
+          revision: "1297",
           installByDefault: true
         },
         {
           name: "firefox-beta",
-          revision: "1303",
+          revision: "1293",
           installByDefault: false
         },
         {
           name: "webkit",
-          revision: "1578",
+          revision: "1564",
           installByDefault: true,
           revisionOverrides: {
             "mac10.14": "1446"
@@ -28604,7 +26915,6 @@ var require_registry = __commonJS({
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.buildPlaywrightCLICommand = buildPlaywrightCLICommand;
     exports.installDefaultBrowsersForNpmInstall = installDefaultBrowsersForNpmInstall;
     exports.installBrowsersForNpmInstall = installBrowsersForNpmInstall;
     exports.findChromiumChannel = findChromiumChannel;
@@ -28665,49 +26975,45 @@ var require_registry = __commonJS({
       "chromium": {
         "ubuntu18.04": ["chrome-linux", "chrome"],
         "ubuntu20.04": ["chrome-linux", "chrome"],
-        "ubuntu18.04-arm64": ["chrome-linux", "chrome"],
-        "ubuntu20.04-arm64": ["chrome-linux", "chrome"],
         "mac10.13": ["chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium"],
         "mac10.14": ["chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium"],
         "mac10.15": ["chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium"],
         "mac11": ["chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium"],
         "mac11-arm64": ["chrome-mac", "Chromium.app", "Contents", "MacOS", "Chromium"],
+        "win32": ["chrome-win", "chrome.exe"],
         "win64": ["chrome-win", "chrome.exe"]
       },
       "firefox": {
         "ubuntu18.04": ["firefox", "firefox"],
         "ubuntu20.04": ["firefox", "firefox"],
-        "ubuntu18.04-arm64": void 0,
-        "ubuntu20.04-arm64": ["firefox", "firefox"],
         "mac10.13": ["firefox", "Nightly.app", "Contents", "MacOS", "firefox"],
         "mac10.14": ["firefox", "Nightly.app", "Contents", "MacOS", "firefox"],
         "mac10.15": ["firefox", "Nightly.app", "Contents", "MacOS", "firefox"],
         "mac11": ["firefox", "Nightly.app", "Contents", "MacOS", "firefox"],
         "mac11-arm64": ["firefox", "Nightly.app", "Contents", "MacOS", "firefox"],
+        "win32": ["firefox", "firefox.exe"],
         "win64": ["firefox", "firefox.exe"]
       },
       "webkit": {
         "ubuntu18.04": ["pw_run.sh"],
         "ubuntu20.04": ["pw_run.sh"],
-        "ubuntu18.04-arm64": void 0,
-        "ubuntu20.04-arm64": ["pw_run.sh"],
         "mac10.13": void 0,
         "mac10.14": ["pw_run.sh"],
         "mac10.15": ["pw_run.sh"],
         "mac11": ["pw_run.sh"],
         "mac11-arm64": ["pw_run.sh"],
+        "win32": ["Playwright.exe"],
         "win64": ["Playwright.exe"]
       },
       "ffmpeg": {
         "ubuntu18.04": ["ffmpeg-linux"],
         "ubuntu20.04": ["ffmpeg-linux"],
-        "ubuntu18.04-arm64": ["ffmpeg-linux-arm64"],
-        "ubuntu20.04-arm64": ["ffmpeg-linux-arm64"],
         "mac10.13": ["ffmpeg-mac"],
         "mac10.14": ["ffmpeg-mac"],
         "mac10.15": ["ffmpeg-mac"],
         "mac11": ["ffmpeg-mac"],
         "mac11-arm64": ["ffmpeg-mac"],
+        "win32": ["ffmpeg-win32.exe"],
         "win64": ["ffmpeg-win64.exe"]
       }
     };
@@ -28715,73 +27021,67 @@ var require_registry = __commonJS({
       "chromium": {
         "ubuntu18.04": "%s/builds/chromium/%s/chromium-linux.zip",
         "ubuntu20.04": "%s/builds/chromium/%s/chromium-linux.zip",
-        "ubuntu18.04-arm64": "%s/builds/chromium/%s/chromium-linux-arm64.zip",
-        "ubuntu20.04-arm64": "%s/builds/chromium/%s/chromium-linux-arm64.zip",
         "mac10.13": "%s/builds/chromium/%s/chromium-mac.zip",
         "mac10.14": "%s/builds/chromium/%s/chromium-mac.zip",
         "mac10.15": "%s/builds/chromium/%s/chromium-mac.zip",
         "mac11": "%s/builds/chromium/%s/chromium-mac.zip",
         "mac11-arm64": "%s/builds/chromium/%s/chromium-mac-arm64.zip",
+        "win32": "%s/builds/chromium/%s/chromium-win32.zip",
         "win64": "%s/builds/chromium/%s/chromium-win64.zip"
       },
       "chromium-with-symbols": {
         "ubuntu18.04": "%s/builds/chromium/%s/chromium-with-symbols-linux.zip",
         "ubuntu20.04": "%s/builds/chromium/%s/chromium-with-symbols-linux.zip",
-        "ubuntu18.04-arm64": "%s/builds/chromium/%s/chromium-with-symbols-linux-arm64.zip",
-        "ubuntu20.04-arm64": "%s/builds/chromium/%s/chromium-with-symbols-linux-arm64.zip",
         "mac10.13": "%s/builds/chromium/%s/chromium-with-symbols-mac.zip",
         "mac10.14": "%s/builds/chromium/%s/chromium-with-symbols-mac.zip",
         "mac10.15": "%s/builds/chromium/%s/chromium-with-symbols-mac.zip",
         "mac11": "%s/builds/chromium/%s/chromium-with-symbols-mac.zip",
         "mac11-arm64": "%s/builds/chromium/%s/chromium-with-symbols-mac-arm64.zip",
+        "win32": "%s/builds/chromium/%s/chromium-with-symbols-win32.zip",
         "win64": "%s/builds/chromium/%s/chromium-with-symbols-win64.zip"
       },
       "firefox": {
         "ubuntu18.04": "%s/builds/firefox/%s/firefox-ubuntu-18.04.zip",
         "ubuntu20.04": "%s/builds/firefox/%s/firefox-ubuntu-20.04.zip",
-        "ubuntu18.04-arm64": void 0,
-        "ubuntu20.04-arm64": "%s/builds/firefox/%s/firefox-ubuntu-20.04-arm64.zip",
         "mac10.13": "%s/builds/firefox/%s/firefox-mac-11.zip",
         "mac10.14": "%s/builds/firefox/%s/firefox-mac-11.zip",
         "mac10.15": "%s/builds/firefox/%s/firefox-mac-11.zip",
         "mac11": "%s/builds/firefox/%s/firefox-mac-11.zip",
         "mac11-arm64": "%s/builds/firefox/%s/firefox-mac-11-arm64.zip",
+        "win32": "%s/builds/firefox/%s/firefox-win32.zip",
         "win64": "%s/builds/firefox/%s/firefox-win64.zip"
       },
       "firefox-beta": {
         "ubuntu18.04": "%s/builds/firefox-beta/%s/firefox-beta-ubuntu-18.04.zip",
         "ubuntu20.04": "%s/builds/firefox-beta/%s/firefox-beta-ubuntu-20.04.zip",
-        "ubuntu18.04-arm64": void 0,
-        "ubuntu20.04-arm64": void 0,
         "mac10.13": "%s/builds/firefox-beta/%s/firefox-beta-mac-11.zip",
         "mac10.14": "%s/builds/firefox-beta/%s/firefox-beta-mac-11.zip",
         "mac10.15": "%s/builds/firefox-beta/%s/firefox-beta-mac-11.zip",
         "mac11": "%s/builds/firefox-beta/%s/firefox-beta-mac-11.zip",
         "mac11-arm64": "%s/builds/firefox-beta/%s/firefox-beta-mac-11-arm64.zip",
+        "win32": "%s/builds/firefox-beta/%s/firefox-beta-win32.zip",
         "win64": "%s/builds/firefox-beta/%s/firefox-beta-win64.zip"
       },
       "webkit": {
         "ubuntu18.04": "%s/builds/webkit/%s/webkit-ubuntu-18.04.zip",
         "ubuntu20.04": "%s/builds/webkit/%s/webkit-ubuntu-20.04.zip",
-        "ubuntu18.04-arm64": void 0,
-        "ubuntu20.04-arm64": "%s/builds/webkit/%s/webkit-ubuntu-20.04-arm64.zip",
         "mac10.13": void 0,
         "mac10.14": "%s/builds/deprecated-webkit-mac-10.14/%s/deprecated-webkit-mac-10.14.zip",
         "mac10.15": "%s/builds/webkit/%s/webkit-mac-10.15.zip",
         "mac11": "%s/builds/webkit/%s/webkit-mac-10.15.zip",
         "mac11-arm64": "%s/builds/webkit/%s/webkit-mac-11-arm64.zip",
+        "win32": "%s/builds/webkit/%s/webkit-win64.zip",
         "win64": "%s/builds/webkit/%s/webkit-win64.zip"
       },
       "ffmpeg": {
         "ubuntu18.04": "%s/builds/ffmpeg/%s/ffmpeg-linux.zip",
         "ubuntu20.04": "%s/builds/ffmpeg/%s/ffmpeg-linux.zip",
-        "ubuntu18.04-arm64": "%s/builds/ffmpeg/%s/ffmpeg-linux-arm64.zip",
-        "ubuntu20.04-arm64": "%s/builds/ffmpeg/%s/ffmpeg-linux-arm64.zip",
         "mac10.13": "%s/builds/ffmpeg/%s/ffmpeg-mac.zip",
         "mac10.14": "%s/builds/ffmpeg/%s/ffmpeg-mac.zip",
         "mac10.15": "%s/builds/ffmpeg/%s/ffmpeg-mac.zip",
         "mac11": "%s/builds/ffmpeg/%s/ffmpeg-mac.zip",
         "mac11-arm64": "%s/builds/ffmpeg/%s/ffmpeg-mac.zip",
+        "win32": "%s/builds/ffmpeg/%s/ffmpeg-win32.zip",
         "win64": "%s/builds/ffmpeg/%s/ffmpeg-win64.zip"
       }
     };
@@ -28864,7 +27164,7 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
           executablePath: () => chromiumExecutable,
           executablePathOrDie: (sdkLanguage) => executablePathOrDie("chromium", chromiumExecutable, chromium2.installByDefault, sdkLanguage),
           installType: chromium2.installByDefault ? "download-by-default" : "download-on-demand",
-          validateHostRequirements: (sdkLanguage) => this._validateHostRequirements(sdkLanguage, "chromium", chromium2.dir, ["chrome-linux"], [], ["chrome-win"]),
+          validateHostRequirements: () => this._validateHostRequirements("chromium", chromium2.dir, ["chrome-linux"], [], ["chrome-win"]),
           _install: () => this._downloadExecutable(chromium2, chromiumExecutable, DOWNLOAD_URLS["chromium"][_utils.hostPlatform], "PLAYWRIGHT_CHROMIUM_DOWNLOAD_HOST"),
           _dependencyGroup: "chromium"
         });
@@ -28878,7 +27178,7 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
           executablePath: () => chromiumWithSymbolsExecutable,
           executablePathOrDie: (sdkLanguage) => executablePathOrDie("chromium-with-symbols", chromiumWithSymbolsExecutable, chromiumWithSymbols.installByDefault, sdkLanguage),
           installType: chromiumWithSymbols.installByDefault ? "download-by-default" : "download-on-demand",
-          validateHostRequirements: (sdkLanguage) => this._validateHostRequirements(sdkLanguage, "chromium", chromiumWithSymbols.dir, ["chrome-linux"], [], ["chrome-win"]),
+          validateHostRequirements: () => this._validateHostRequirements("chromium", chromiumWithSymbols.dir, ["chrome-linux"], [], ["chrome-win"]),
           _install: () => this._downloadExecutable(chromiumWithSymbols, chromiumWithSymbolsExecutable, DOWNLOAD_URLS["chromium-with-symbols"][_utils.hostPlatform], "PLAYWRIGHT_CHROMIUM_DOWNLOAD_HOST"),
           _dependencyGroup: "chromium"
         });
@@ -28911,11 +27211,11 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
           "win32": `\\Google\\Chrome SxS\\Application\\chrome.exe`
         }));
         this._executables.push(this._createChromiumChannel("msedge", {
-          "linux": "/opt/microsoft/msedge/msedge",
+          "linux": "",
           "darwin": "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
           "win32": `\\Microsoft\\Edge\\Application\\msedge.exe`
         }, () => this._installMSEdgeChannel("msedge", {
-          "linux": "reinstall_msedge_stable_linux.sh",
+          "linux": "",
           "darwin": "reinstall_msedge_stable_mac.sh",
           "win32": "reinstall_msedge_stable_win.ps1"
         })));
@@ -28952,7 +27252,7 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
           executablePath: () => firefoxExecutable,
           executablePathOrDie: (sdkLanguage) => executablePathOrDie("firefox", firefoxExecutable, firefox2.installByDefault, sdkLanguage),
           installType: firefox2.installByDefault ? "download-by-default" : "download-on-demand",
-          validateHostRequirements: (sdkLanguage) => this._validateHostRequirements(sdkLanguage, "firefox", firefox2.dir, ["firefox"], [], ["firefox"]),
+          validateHostRequirements: () => this._validateHostRequirements("firefox", firefox2.dir, ["firefox"], [], ["firefox"]),
           _install: () => this._downloadExecutable(firefox2, firefoxExecutable, DOWNLOAD_URLS["firefox"][_utils.hostPlatform], "PLAYWRIGHT_FIREFOX_DOWNLOAD_HOST"),
           _dependencyGroup: "firefox"
         });
@@ -28966,7 +27266,7 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
           executablePath: () => firefoxBetaExecutable,
           executablePathOrDie: (sdkLanguage) => executablePathOrDie("firefox-beta", firefoxBetaExecutable, firefoxBeta.installByDefault, sdkLanguage),
           installType: firefoxBeta.installByDefault ? "download-by-default" : "download-on-demand",
-          validateHostRequirements: (sdkLanguage) => this._validateHostRequirements(sdkLanguage, "firefox", firefoxBeta.dir, ["firefox"], [], ["firefox"]),
+          validateHostRequirements: () => this._validateHostRequirements("firefox", firefoxBeta.dir, ["firefox"], [], ["firefox"]),
           _install: () => this._downloadExecutable(firefoxBeta, firefoxBetaExecutable, DOWNLOAD_URLS["firefox-beta"][_utils.hostPlatform], "PLAYWRIGHT_FIREFOX_DOWNLOAD_HOST"),
           _dependencyGroup: "firefox"
         });
@@ -28981,7 +27281,7 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
           executablePath: () => webkitExecutable,
           executablePathOrDie: (sdkLanguage) => executablePathOrDie("webkit", webkitExecutable, webkit2.installByDefault, sdkLanguage),
           installType: webkit2.installByDefault ? "download-by-default" : "download-on-demand",
-          validateHostRequirements: (sdkLanguage) => this._validateHostRequirements(sdkLanguage, "webkit", webkit2.dir, webkitLinuxLddDirectories, ["libGLESv2.so.2", "libx264.so"], [""]),
+          validateHostRequirements: () => this._validateHostRequirements("webkit", webkit2.dir, webkitLinuxLddDirectories, ["libGLESv2.so.2", "libx264.so"], [""]),
           _install: () => this._downloadExecutable(webkit2, webkitExecutable, DOWNLOAD_URLS["webkit"][_utils.hostPlatform], "PLAYWRIGHT_WEBKIT_DOWNLOAD_HOST"),
           _dependencyGroup: "webkit"
         });
@@ -29001,7 +27301,7 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
         });
       }
       _createChromiumChannel(name, lookAt, install) {
-        const executablePath = (sdkLanguage, shouldThrow) => {
+        const executablePath = (shouldThrow) => {
           const suffix = lookAt[process.platform];
           if (!suffix) {
             if (shouldThrow)
@@ -29018,7 +27318,7 @@ ${(0, _utils.wrapInASCIIBox)(prettyMessage, 1)}`);
             return void 0;
           const location2 = prefixes.length ? ` at ${_path.default.join(prefixes[0], suffix)}` : ``;
           const installation = install ? `
-Run "${buildPlaywrightCLICommand(sdkLanguage, "install " + name)}"` : "";
+Run "npx playwright install ${name}"` : "";
           throw new Error(`Chromium distribution '${name}' is not found${location2}${installation}`);
         };
         return {
@@ -29026,8 +27326,8 @@ Run "${buildPlaywrightCLICommand(sdkLanguage, "install " + name)}"` : "";
           name,
           browserName: "chromium",
           directory: void 0,
-          executablePath: (sdkLanguage) => executablePath(sdkLanguage, false),
-          executablePathOrDie: (sdkLanguage) => executablePath(sdkLanguage, true),
+          executablePath: () => executablePath(false),
+          executablePathOrDie: (sdkLanguage) => executablePath(true),
           installType: install ? "install-script" : "none",
           validateHostRequirements: () => Promise.resolve(),
           _install: install
@@ -29043,7 +27343,7 @@ Run "${buildPlaywrightCLICommand(sdkLanguage, "install " + name)}"` : "";
         return this._executables.filter((e) => e.installType === "download-by-default");
       }
       _addRequirementsAndDedupe(executables) {
-        const set = /* @__PURE__ */ new Set();
+        const set = new Set();
         for (const executable of executables) {
           set.add(executable);
           if (executable.browserName === "chromium")
@@ -29051,7 +27351,7 @@ Run "${buildPlaywrightCLICommand(sdkLanguage, "install " + name)}"` : "";
         }
         return Array.from(set);
       }
-      async _validateHostRequirements(sdkLanguage, browserName, browserDirectory, linuxLddDirectories, dlOpenLibraries, windowsExeAndDllDirectories) {
+      async _validateHostRequirements(browserName, browserDirectory, linuxLddDirectories, dlOpenLibraries, windowsExeAndDllDirectories) {
         if ((0, _utils.getAsBooleanFromENV)("PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS")) {
           process.stdout.write("Skipping host requirements validation logic because `PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS` env variable is set.\n");
           return;
@@ -29060,13 +27360,13 @@ Run "${buildPlaywrightCLICommand(sdkLanguage, "install " + name)}"` : "";
         if (browserName === "firefox" && ubuntuVersion === "16.04")
           throw new Error(`Cannot launch Firefox on Ubuntu 16.04! Minimum required Ubuntu version for Firefox browser is 18.04`);
         if (os.platform() === "linux")
-          return await (0, _dependencies.validateDependenciesLinux)(sdkLanguage, linuxLddDirectories.map((d) => _path.default.join(browserDirectory, d)), dlOpenLibraries);
+          return await (0, _dependencies.validateDependenciesLinux)(linuxLddDirectories.map((d) => _path.default.join(browserDirectory, d)), dlOpenLibraries);
         if (os.platform() === "win32" && os.arch() === "x64")
           return await (0, _dependencies.validateDependenciesWindows)(windowsExeAndDllDirectories.map((d) => _path.default.join(browserDirectory, d)));
       }
       async installDeps(executablesToInstallDeps) {
         const executables = this._addRequirementsAndDedupe(executablesToInstallDeps);
-        const targets = /* @__PURE__ */ new Set();
+        const targets = new Set();
         for (const executable of executables) {
           if (executable._dependencyGroup)
             targets.add(executable._dependencyGroup);
@@ -29083,19 +27383,18 @@ Run "${buildPlaywrightCLICommand(sdkLanguage, "install " + name)}"` : "";
           recursive: true
         });
         const lockfilePath = _path.default.join(registryDirectory, "__dirlock");
+        const releaseLock = await _properLockfile.default.lock(registryDirectory, {
+          retries: {
+            retries: 10,
+            factor: 1.27579
+          },
+          onCompromised: (err) => {
+            throw new Error(`${err.message} Path: ${lockfilePath}`);
+          },
+          lockfilePath
+        });
         const linksDir = _path.default.join(registryDirectory, ".links");
-        let releaseLock;
         try {
-          releaseLock = await _properLockfile.default.lock(registryDirectory, {
-            retries: {
-              retries: 20,
-              factor: 1.27579
-            },
-            onCompromised: (err) => {
-              throw new Error(`${err.message} Path: ${lockfilePath}`);
-            },
-            lockfilePath
-          });
           await fs.promises.mkdir(linksDir, {
             recursive: true
           });
@@ -29115,8 +27414,7 @@ Run "${buildPlaywrightCLICommand(sdkLanguage, "install " + name)}"` : "";
             throw e;
           }
         } finally {
-          if (releaseLock)
-            await releaseLock();
+          await releaseLock();
         }
       }
       async _downloadExecutable(descriptor, executablePath, downloadURLTemplate, downloadHostEnv) {
@@ -29152,7 +27450,7 @@ ${e.stack}`);
             },
             win32: {
               platform: "Windows",
-              arch: "x64",
+              arch: os.arch() === "x64" ? "x64" : "x86",
               artifact: "msi"
             }
           }[process.platform];
@@ -29171,7 +27469,7 @@ ${e.stack}`);
           throw new Error(`Cannot install ${channel} on ${process.platform}`);
         const isPowerShell = scriptName.endsWith(".ps1");
         const shell = isPowerShell ? "powershell.exe" : "bash";
-        const args = [...isPowerShell ? ["-ExecutionPolicy", "Bypass", "-File"] : [], _path.default.join(BIN_PATH, scriptName), ...scriptArgs];
+        const args = [...isPowerShell ? ["-File"] : [], _path.default.join(BIN_PATH, scriptName), ...scriptArgs];
         const {
           code
         } = await (0, _utils.spawnAsync)(shell, args, {
@@ -29182,7 +27480,7 @@ ${e.stack}`);
           throw new Error(`Failed to install ${channel}`);
       }
       async _validateInstallationCache(linksDir) {
-        const usedBrowserPaths = /* @__PURE__ */ new Set();
+        const usedBrowserPaths = new Set();
         for (const fileName of await fs.promises.readdir(linksDir)) {
           const linkPath = _path.default.join(linksDir, fileName);
           let linkTarget = "";
@@ -29568,10 +27866,10 @@ var require_recorderSupplement = __commonJS({
         this._mode = void 0;
         this._highlightedSelector = "";
         this._recorderApp = null;
-        this._currentCallsMetadata = /* @__PURE__ */ new Map();
+        this._currentCallsMetadata = new Map();
         this._recorderSources = [];
-        this._userSources = /* @__PURE__ */ new Map();
-        this._allMetadatas = /* @__PURE__ */ new Map();
+        this._userSources = new Map();
+        this._allMetadatas = new Map();
         this._debugger = void 0;
         this._contextRecorder = void 0;
         this._mode = params.startRecording ? "recording" : "none";
@@ -29786,18 +28084,18 @@ var require_recorderSupplement = __commonJS({
       constructor(context, params) {
         super();
         this._generator = void 0;
-        this._pageAliases = /* @__PURE__ */ new Map();
+        this._pageAliases = new Map();
         this._lastPopupOrdinal = 0;
         this._lastDialogOrdinal = 0;
         this._lastDownloadOrdinal = 0;
-        this._timers = /* @__PURE__ */ new Set();
+        this._timers = new Set();
         this._context = void 0;
         this._params = void 0;
         this._recorderSources = void 0;
         this._context = context;
         this._params = params;
         const language = params.language || context._browser.options.sdkLanguage;
-        const languages = /* @__PURE__ */ new Set([new _java.JavaLanguageGenerator(), new _javascript.JavaScriptLanguageGenerator(false), new _javascript.JavaScriptLanguageGenerator(true), new _python.PythonLanguageGenerator(false), new _python.PythonLanguageGenerator(true), new _csharp.CSharpLanguageGenerator()]);
+        const languages = new Set([new _java.JavaLanguageGenerator(), new _javascript.JavaScriptLanguageGenerator(false), new _javascript.JavaScriptLanguageGenerator(true), new _python.PythonLanguageGenerator(false), new _python.PythonLanguageGenerator(true), new _csharp.CSharpLanguageGenerator()]);
         const primaryLanguage = [...languages].find((l) => l.id === language);
         if (!primaryLanguage)
           throw new Error(`
@@ -29916,7 +28214,6 @@ Unsupported language: '${language}'
             objectId: frame.guid,
             pageId: frame._page.guid,
             frameId: frame.guid,
-            wallTime: Date.now(),
             startTime: (0, _utils2.monotonicTime)(),
             endTime: 0,
             type: "Frame",
@@ -30114,19 +28411,19 @@ var require_browserContext = __commonJS({
       constructor(browser, options, browserContextId) {
         super(browser, "browser-context");
         this._timeoutSettings = new _timeoutSettings.TimeoutSettings();
-        this._pageBindings = /* @__PURE__ */ new Map();
+        this._pageBindings = new Map();
         this._options = void 0;
         this._requestInterceptor = void 0;
         this._isPersistentContext = void 0;
         this._closedStatus = "open";
         this._closePromise = void 0;
         this._closePromiseFulfill = void 0;
-        this._permissions = /* @__PURE__ */ new Map();
-        this._downloads = /* @__PURE__ */ new Set();
+        this._permissions = new Map();
+        this._downloads = new Set();
         this._browser = void 0;
         this._browserContextId = void 0;
         this._selectors = void 0;
-        this._origins = /* @__PURE__ */ new Set();
+        this._origins = new Set();
         this._harRecorder = void 0;
         this.tracing = void 0;
         this.fetchRequest = void 0;
@@ -30143,7 +28440,7 @@ var require_browserContext = __commonJS({
             path: _path.default.join(this._browser.options.artifactsDir, `${(0, _utils.createGuid)()}.har`)
           });
         this.tracing = new _tracing.Tracing(this);
-        this.fetchRequest = new _fetch.BrowserContextAPIRequestContext(this);
+        this.fetchRequest = new _fetch.BrowserContextFetchRequest(this);
       }
       isPersistentContext() {
         return this._isPersistentContext;
@@ -30459,6 +28756,8 @@ var require_browserContext = __commonJS({
       if ((0, _utils.debugMode)() === "inspector")
         options.bypassCSP = true;
       verifyGeolocation(options.geolocation);
+      if (!options._debugName)
+        options._debugName = (0, _utils.createGuid)();
     }
     function verifyGeolocation(geolocation) {
       if (!geolocation)
@@ -30567,10 +28866,10 @@ var require_browser2 = __commonJS({
       constructor(options) {
         super(options.rootSdkObject, "browser");
         this.options = void 0;
-        this._downloads = /* @__PURE__ */ new Map();
+        this._downloads = new Map();
         this._defaultContext = null;
         this._startedClosing = false;
-        this._idToVideo = /* @__PURE__ */ new Map();
+        this._idToVideo = new Map();
         this.attribution.browser = this;
         this.options = options;
       }
@@ -30661,7 +28960,7 @@ var require_crConnection = __commonJS({
         super();
         this._lastId = 0;
         this._transport = void 0;
-        this._sessions = /* @__PURE__ */ new Map();
+        this._sessions = new Map();
         this._protocolLogger = void 0;
         this._browserLogsCollector = void 0;
         this.rootSession = void 0;
@@ -30754,7 +29053,7 @@ var require_crConnection = __commonJS({
         super();
         this._connection = void 0;
         this._eventListener = void 0;
-        this._callbacks = /* @__PURE__ */ new Map();
+        this._callbacks = new Map();
         this._targetType = void 0;
         this._sessionId = void 0;
         this._rootSessionId = void 0;
@@ -31085,7 +29384,7 @@ var require_crExecutionContext = __commonJS({
           objectId,
           ownProperties: true
         });
-        const result = /* @__PURE__ */ new Map();
+        const result = new Map();
         for (const property of response.result) {
           if (!property.enumerable || !property.value)
             continue;
@@ -31210,13 +29509,13 @@ var require_crNetworkManager = __commonJS({
         this._client = void 0;
         this._page = void 0;
         this._parentManager = void 0;
-        this._requestIdToRequest = /* @__PURE__ */ new Map();
-        this._requestIdToRequestWillBeSentEvent = /* @__PURE__ */ new Map();
+        this._requestIdToRequest = new Map();
+        this._requestIdToRequestWillBeSentEvent = new Map();
         this._credentials = null;
-        this._attemptedAuthentications = /* @__PURE__ */ new Set();
+        this._attemptedAuthentications = new Set();
         this._userRequestInterceptionEnabled = false;
         this._protocolRequestInterceptionEnabled = false;
-        this._requestIdToRequestPausedEvent = /* @__PURE__ */ new Map();
+        this._requestIdToRequestPausedEvent = new Map();
         this._eventListeners = void 0;
         this._responseExtraInfoTracker = new ResponseExtraInfoTracker();
         this._client = client;
@@ -31262,6 +29561,9 @@ var require_crNetworkManager = __commonJS({
             patterns: [{
               urlPattern: "*",
               requestStage: "Request"
+            }, {
+              urlPattern: "*",
+              requestStage: "Response"
             }]
           })]);
         } else {
@@ -31318,6 +29620,11 @@ var require_crNetworkManager = __commonJS({
           if (request)
             this._responseExtraInfoTracker.requestPaused(request.request, event);
         }
+        if (!this._userRequestInterceptionEnabled && this._protocolRequestInterceptionEnabled) {
+          this._client._sendMayFail("Fetch.continueRequest", {
+            requestId: event.requestId
+          });
+        }
         if (!event.networkId) {
           this._client._sendMayFail("Fetch.failRequest", {
             requestId: event.requestId,
@@ -31327,6 +29634,19 @@ var require_crNetworkManager = __commonJS({
         }
         if (event.request.url.startsWith("data:"))
           return;
+        if (event.responseStatusCode || event.responseErrorReason) {
+          const isRedirect = event.responseStatusCode && event.responseStatusCode >= 300 && event.responseStatusCode < 400;
+          const request = this._requestIdToRequest.get(event.networkId);
+          const route = request === null || request === void 0 ? void 0 : request._routeForRedirectChain();
+          if (isRedirect || !route || !route._interceptingResponse) {
+            this._client._sendMayFail("Fetch.continueRequest", {
+              requestId: event.requestId
+            });
+            return;
+          }
+          route._responseInterceptedCallback(event);
+          return;
+        }
         const requestId = event.networkId;
         const requestWillBeSentEvent = this._requestIdToRequestWillBeSentEvent.get(requestId);
         if (requestWillBeSentEvent) {
@@ -31388,7 +29708,7 @@ var require_crNetworkManager = __commonJS({
         }
         let route = null;
         if (requestPausedEvent) {
-          if (redirectedFrom || !this._userRequestInterceptionEnabled && this._protocolRequestInterceptionEnabled)
+          if (redirectedFrom)
             this._client._sendMayFail("Fetch.continueRequest", {
               requestId: requestPausedEvent.requestId
             });
@@ -31582,11 +29902,23 @@ var require_crNetworkManager = __commonJS({
       constructor(client, interceptionId) {
         this._client = void 0;
         this._interceptionId = void 0;
+        this._responseInterceptedPromise = void 0;
+        this._responseInterceptedCallback = () => {
+        };
+        this._interceptingResponse = false;
         this._wasFulfilled = false;
         this._client = client;
         this._interceptionId = interceptionId;
+        this._responseInterceptedPromise = new Promise((resolve) => this._responseInterceptedCallback = resolve);
+      }
+      async responseBody() {
+        const response = await this._client.send("Fetch.getResponseBody", {
+          requestId: this._interceptionId
+        });
+        return Buffer.from(response.body, response.base64Encoded ? "base64" : "utf8");
       }
       async continue(request, overrides) {
+        this._interceptingResponse = !!overrides.interceptResponse;
         await this._client._sendMayFail("Fetch.continueRequest", {
           requestId: this._interceptionId,
           url: overrides.url,
@@ -31594,6 +29926,17 @@ var require_crNetworkManager = __commonJS({
           method: overrides.method,
           postData: overrides.postData ? overrides.postData.toString("base64") : void 0
         });
+        if (!this._interceptingResponse)
+          return null;
+        const event = await this._responseInterceptedPromise;
+        this._interceptionId = event.requestId;
+        if (event.responseErrorReason) {
+          this._client._sendMayFail("Fetch.continueRequest", {
+            requestId: event.requestId
+          });
+          throw new Error(`Request failed: ${event.responseErrorReason}`);
+        }
+        return new network.InterceptedResponse(request, event.responseStatusCode, "", event.responseHeaders);
       }
       async fulfill(response) {
         this._wasFulfilled = true;
@@ -31651,7 +29994,7 @@ var require_crNetworkManager = __commonJS({
     };
     var ResponseExtraInfoTracker = class {
       constructor() {
-        this._requests = /* @__PURE__ */ new Map();
+        this._requests = new Map();
       }
       requestWillBeSent(event) {
         const info = this._requests.get(event.requestId);
@@ -32290,7 +30633,7 @@ var require_crAccessibility = __commonJS({
         }
       }
       serialize() {
-        const properties = /* @__PURE__ */ new Map();
+        const properties = new Map();
         for (const property of this._payload.properties || [])
           properties.set(property.name.toLowerCase(), property.value.value);
         if (this._payload.description)
@@ -32341,7 +30684,7 @@ var require_crAccessibility = __commonJS({
         return axNode;
       }
       static createTree(client, payloads) {
-        const nodeById = /* @__PURE__ */ new Map();
+        const nodeById = new Map();
         for (const payload of payloads)
           nodeById.set(payload.nodeId, new CRAXNode(client, payload));
         for (const node of nodeById.values()) {
@@ -32396,8 +30739,8 @@ var require_crCoverage = __commonJS({
         this._reportAnonymousScripts = false;
         this._client = client;
         this._enabled = false;
-        this._scriptIds = /* @__PURE__ */ new Set();
-        this._scriptSources = /* @__PURE__ */ new Map();
+        this._scriptIds = new Set();
+        this._scriptSources = new Map();
         this._eventListeners = [];
         this._resetOnNavigation = false;
       }
@@ -32472,8 +30815,8 @@ var require_crCoverage = __commonJS({
         this._resetOnNavigation = void 0;
         this._client = client;
         this._enabled = false;
-        this._stylesheetURLs = /* @__PURE__ */ new Map();
-        this._stylesheetSources = /* @__PURE__ */ new Map();
+        this._stylesheetURLs = new Map();
+        this._stylesheetSources = new Map();
         this._eventListeners = [];
         this._resetOnNavigation = false;
       }
@@ -32513,7 +30856,7 @@ var require_crCoverage = __commonJS({
         const ruleTrackingResponse = await this._client.send("CSS.stopRuleUsageTracking");
         await Promise.all([this._client.send("CSS.disable"), this._client.send("DOM.disable")]);
         _eventsHelper.eventsHelper.removeEventListeners(this._eventListeners);
-        const styleSheetIdToCoverage = /* @__PURE__ */ new Map();
+        const styleSheetIdToCoverage = new Map();
         for (const entry of ruleTrackingResponse.ruleUsage) {
           let ranges = styleSheetIdToCoverage.get(entry.styleSheetId);
           if (!ranges) {
@@ -32739,10 +31082,6 @@ var require_processLauncher = __commonJS({
     var readline = _interopRequireWildcard(__require("readline"));
     var _eventsHelper = require_eventsHelper();
     var _utils = require_utils();
-    var _rimraf = _interopRequireDefault(require_rimraf());
-    function _interopRequireDefault(obj) {
-      return obj && obj.__esModule ? obj : { default: obj };
-    }
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -32781,7 +31120,7 @@ var require_processLauncher = __commonJS({
       }
       return newObj;
     }
-    var gracefullyCloseSet = /* @__PURE__ */ new Set();
+    var gracefullyCloseSet = new Set();
     exports.gracefullyCloseSet = gracefullyCloseSet;
     async function gracefullyCloseAll() {
       await Promise.all(Array.from(gracefullyCloseSet).map((gracefullyClose) => gracefullyClose().catch((e) => {
@@ -32849,7 +31188,7 @@ var require_processLauncher = __commonJS({
         fulfillClose();
         cleanup().then(fulfillCleanup);
       });
-      const listeners = [_eventsHelper.eventsHelper.addEventListener(process, "exit", killProcessAndCleanup)];
+      const listeners = [_eventsHelper.eventsHelper.addEventListener(process, "exit", killProcess)];
       if (options.handleSIGINT) {
         listeners.push(_eventsHelper.eventsHelper.addEventListener(process, "SIGINT", () => {
           gracefullyClose().then(() => {
@@ -32898,20 +31237,7 @@ var require_processLauncher = __commonJS({
         } else {
           options.log(`[pid=${spawnedProcess.pid}] <skipped force kill spawnedProcess.killed=${spawnedProcess.killed} processClosed=${processClosed}>`);
         }
-      }
-      function killProcessAndCleanup() {
-        killProcess();
-        options.log(`[pid=${spawnedProcess.pid || "N/A"}] starting temporary directories cleanup`);
-        for (const dir of options.tempDirectories) {
-          try {
-            _rimraf.default.sync(dir, {
-              maxBusyTries: 10
-            });
-          } catch (e) {
-            options.log(`[pid=${spawnedProcess.pid || "N/A"}] exception while removing ${dir}: ${e}`);
-          }
-        }
-        options.log(`[pid=${spawnedProcess.pid || "N/A"}] finished temporary directories cleanup`);
+        cleanup();
       }
       function killAndWait() {
         killProcess();
@@ -33258,7 +31584,7 @@ var require_crPage = __commonJS({
       }
       constructor(client, targetId, browserContext, opener, hasUIWindow, isBackgroundPage) {
         this._mainFrameSession = void 0;
-        this._sessions = /* @__PURE__ */ new Map();
+        this._sessions = new Map();
         this._page = void 0;
         this.rawMouse = void 0;
         this.rawKeyboard = void 0;
@@ -33539,7 +31865,7 @@ var require_crPage = __commonJS({
         this._crPage = void 0;
         this._page = void 0;
         this._networkManager = void 0;
-        this._contextIdToContext = /* @__PURE__ */ new Map();
+        this._contextIdToContext = new Map();
         this._eventListeners = [];
         this._targetId = void 0;
         this._firstNonInitialNavigationCommittedPromise = void 0;
@@ -33551,7 +31877,7 @@ var require_crPage = __commonJS({
         this._swappedIn = false;
         this._videoRecorder = null;
         this._screencastId = null;
-        this._screencastClients = /* @__PURE__ */ new Set();
+        this._screencastClients = new Set();
         this._client = client;
         this._crPage = crPage;
         this._page = crPage._page;
@@ -33792,7 +32118,6 @@ var require_crPage = __commonJS({
         else if (contextPayload.name === UTILITY_WORLD_NAME)
           worldName = "utility";
         const context = new dom.FrameExecutionContext(delegate, frame, worldName);
-        context[contextDelegateSymbol] = delegate;
         if (worldName)
           frame._contextCreated(worldName, context);
         this._contextIdToContext.set(contextPayload.id, context);
@@ -33868,8 +32193,6 @@ var require_crPage = __commonJS({
           return;
         }
         const context = this._contextIdToContext.get(event.executionContextId);
-        if (!context)
-          return;
         const values = event.args.map((arg) => context.createHandle(arg));
         this._page._addConsoleMessage(event.type, values, (0, _crProtocolHelper.toConsoleMessageLocation)(event.stackTrace));
       }
@@ -33881,12 +32204,10 @@ var require_crPage = __commonJS({
         })]);
       }
       async _onBindingCalled(event) {
+        const context = this._contextIdToContext.get(event.executionContextId);
         const pageOrError = await this._crPage.pageOrError();
-        if (!(pageOrError instanceof Error)) {
-          const context = this._contextIdToContext.get(event.executionContextId);
-          if (context)
-            await this._page._onBindingCalled(event.payload, context);
-        }
+        if (!(pageOrError instanceof Error))
+          await this._page._onBindingCalled(event.payload, context);
       }
       _onDialog(event) {
         if (!this._page._frameManager.frame(this._targetId))
@@ -33945,11 +32266,9 @@ var require_crPage = __commonJS({
         }
       }
       _onScreencastFrame(payload) {
-        this._page.throttleScreencastFrameAck(() => {
-          this._client.send("Page.screencastFrameAck", {
-            sessionId: payload.sessionId
-          }).catch(() => {
-          });
+        this._client.send("Page.screencastFrameAck", {
+          sessionId: payload.sessionId
+        }).catch(() => {
         });
         const buffer = Buffer.from(payload.data, "base64");
         this._page.emit(_page.Page.Events.ScreencastFrame, {
@@ -34243,7 +32562,7 @@ var require_crPage = __commonJS({
       async _adoptBackendNodeId(backendNodeId, to) {
         const result = await this._client._sendMayFail("DOM.resolveNode", {
           backendNodeId,
-          executionContextId: to[contextDelegateSymbol]._contextId
+          executionContextId: to._delegate._contextId
         });
         if (!result || result.object.subtype === "null")
           throw new Error(dom.kUnableToAdoptErrorMessage);
@@ -34274,7 +32593,6 @@ var require_crPage = __commonJS({
         throw exception;
       }
     }
-    var contextDelegateSymbol = Symbol("delegate");
   }
 });
 
@@ -34370,10 +32688,10 @@ var require_crBrowser = __commonJS({
         this._connection = void 0;
         this._session = void 0;
         this._clientRootSessionPromise = null;
-        this._contexts = /* @__PURE__ */ new Map();
-        this._crPages = /* @__PURE__ */ new Map();
-        this._backgroundPages = /* @__PURE__ */ new Map();
-        this._serviceWorkers = /* @__PURE__ */ new Map();
+        this._contexts = new Map();
+        this._crPages = new Map();
+        this._backgroundPages = new Map();
+        this._serviceWorkers = new Map();
         this._devtools = void 0;
         this._isMac = false;
         this._version = "";
@@ -34484,7 +32802,7 @@ var require_crBrowser = __commonJS({
         const serviceWorker = this._serviceWorkers.get(targetId);
         if (serviceWorker) {
           this._serviceWorkers.delete(targetId);
-          serviceWorker.didClose();
+          serviceWorker.emit(_page.Worker.Events.Close);
           return;
         }
       }
@@ -34655,7 +32973,7 @@ var require_crBrowser = __commonJS({
         });
       }
       async _doGrantPermissions(origin, permissions) {
-        const webPermissionToProtocol = /* @__PURE__ */ new Map([
+        const webPermissionToProtocol = new Map([
           ["geolocation", "geolocation"],
           ["midi", "midi"],
           ["notifications", "notifications"],
@@ -34732,7 +33050,7 @@ var require_crBrowser = __commonJS({
         for (const [targetId, serviceWorker] of this._browser._serviceWorkers) {
           if (serviceWorker._browserContext !== this)
             continue;
-          serviceWorker.didClose();
+          serviceWorker.emit(_page.Worker.Events.Close);
           this._browser._serviceWorkers.delete(targetId);
         }
       }
@@ -34931,7 +33249,7 @@ var require_android = __commonJS({
       constructor(backend, playwrightOptions) {
         super(playwrightOptions.rootSdkObject, "android");
         this._backend = void 0;
-        this._devices = /* @__PURE__ */ new Map();
+        this._devices = new Map();
         this._timeoutSettings = void 0;
         this._playwrightOptions = void 0;
         this._backend = backend;
@@ -34943,7 +33261,7 @@ var require_android = __commonJS({
       }
       async devices() {
         const devices2 = (await this._backend.devices()).filter((d) => d.status === "device");
-        const newSerials = /* @__PURE__ */ new Set();
+        const newSerials = new Set();
         for (const d of devices2) {
           newSerials.add(d.serial);
           if (this._devices.has(d.serial))
@@ -34970,11 +33288,11 @@ var require_android = __commonJS({
         this.serial = void 0;
         this._driverPromise = void 0;
         this._lastId = 0;
-        this._callbacks = /* @__PURE__ */ new Map();
+        this._callbacks = new Map();
         this._pollingWebViews = void 0;
         this._timeoutSettings = void 0;
-        this._webViews = /* @__PURE__ */ new Map();
-        this._browserConnections = /* @__PURE__ */ new Set();
+        this._webViews = new Map();
+        this._browserConnections = new Set();
         this._android = void 0;
         this._isClosed = false;
         this._android = android;
@@ -35188,7 +33506,7 @@ var require_android = __commonJS({
         const sockets = (await this._backend.runCommand(`shell:cat /proc/net/unix | grep webview_devtools_remote`)).toString().split("\n");
         if (this._isClosed)
           return;
-        const newPids = /* @__PURE__ */ new Set();
+        const newPids = new Set();
         for (const line of sockets) {
           const match = line.match(/[^@]+@webview_devtools_remote_(\d+)/);
           if (!match)
@@ -35723,7 +34041,7 @@ var require_browserType = __commonJS({
         this._name = browserName;
       }
       executablePath() {
-        return _registry.registry.findExecutable(this._name).executablePath(this._playwrightOptions.sdkLanguage) || "";
+        return _registry.registry.findExecutable(this._name).executablePath() || "";
       }
       name() {
         return this._name;
@@ -35852,7 +34170,7 @@ var require_browserType = __commonJS({
           if (!registryExecutable || registryExecutable.browserName !== this._name)
             throw new Error(`Unsupported ${this._name} channel "${options.channel}"`);
           executable = registryExecutable.executablePathOrDie(this._playwrightOptions.sdkLanguage);
-          await registryExecutable.validateHostRequirements(this._playwrightOptions.sdkLanguage);
+          await registryExecutable.validateHostRequirements();
         }
         let wsEndpointCallback;
         const shouldWaitForWSListening = options.useWebSocket || ((_options$args = options.args) === null || _options$args === void 0 ? void 0 : _options$args.some((a) => a.startsWith("--remote-debugging-port")));
@@ -36077,7 +34395,6 @@ var require_chromium = __commonJS({
     var _browserType = require_browserType();
     var _transport = require_transport2();
     var _crDevTools = require_crDevTools();
-    var _browser = require_browser2();
     var _utils = require_utils();
     var _debugLogger = require_debugLogger();
     var _progress = require_progress2();
@@ -36086,7 +34403,6 @@ var require_chromium = __commonJS({
     var _http = _interopRequireDefault(__require("http"));
     var _https = _interopRequireDefault(__require("https"));
     var _registry = require_registry();
-    var _async = require_async();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -36112,18 +34428,13 @@ var require_chromium = __commonJS({
         if (options.headers)
           headersMap = (0, _utils.headersArrayToObject)(options.headers, false);
         const artifactsDir = await _fs.default.promises.mkdtemp(ARTIFACTS_FOLDER);
-        const wsEndpoint = await urlToWSEndpoint(progress, endpointURL);
+        const wsEndpoint = await urlToWSEndpoint(endpointURL);
         progress.throwIfAborted();
         const chromeTransport = await _transport.WebSocketTransport.connect(progress, wsEndpoint, headersMap);
-        const cleanedUp = new _async.ManualPromise();
-        const doCleanup = async () => {
-          await (0, _utils.removeFolders)([artifactsDir]);
-          await (onClose === null || onClose === void 0 ? void 0 : onClose());
-          cleanedUp.resolve();
-        };
         const doClose = async () => {
+          await (0, _utils.removeFolders)([artifactsDir]);
           await chromeTransport.closeAndWait();
-          await cleanedUp;
+          await (onClose === null || onClose === void 0 ? void 0 : onClose());
         };
         const browserProcess = {
           close: doClose,
@@ -36142,15 +34453,10 @@ var require_chromium = __commonJS({
           browserLogsCollector: new _debugLogger.RecentLogsCollector(),
           artifactsDir,
           downloadsPath: artifactsDir,
-          tracesDir: artifactsDir,
-          proxy: {
-            server: "per-context"
-          }
+          tracesDir: artifactsDir
         };
         progress.throwIfAborted();
-        const browser = await _crBrowser.CRBrowser.connect(chromeTransport, browserOptions);
-        browser.on(_browser.Browser.Events.Disconnected, doCleanup);
-        return browser;
+        return await _crBrowser.CRBrowser.connect(chromeTransport, browserOptions);
       }
       _createDevTools() {
         const directory = _registry.registry.findExecutable("chromium").directory;
@@ -36191,7 +34497,7 @@ var require_chromium = __commonJS({
             args
           }
         };
-        progress.log(`<selenium> connecting to ${hubUrl}`);
+        progress.log(`<connecting to selenium> ${hubUrl}`);
         const response = await (0, _utils.fetchData)({
           url: hubUrl + "session",
           method: "POST",
@@ -36202,53 +34508,39 @@ var require_chromium = __commonJS({
             }
           }),
           timeout: progress.timeUntilDeadline()
-        }, seleniumErrorHandler);
+        }, async (response2) => {
+          const body = await (0, _utils.streamToString)(response2);
+          let message = "";
+          try {
+            const json = JSON.parse(body);
+            message = json.value.localizedMessage || json.value.message;
+          } catch (e) {
+          }
+          return new Error(`Error connecting to Selenium at ${hubUrl}: ${message}`);
+        });
         const value = JSON.parse(response).value;
         const sessionId = value.sessionId;
-        progress.log(`<selenium> connected to sessionId=${sessionId}`);
+        progress.log(`<connected to selenium> sessionId=${sessionId}`);
         const disconnectFromSelenium = async () => {
-          progress.log(`<selenium> disconnecting from sessionId=${sessionId}`);
+          progress.log(`<disconnecting from selenium> sessionId=${sessionId}`);
           await (0, _utils.fetchData)({
             url: hubUrl + "session/" + sessionId,
             method: "DELETE"
           }).catch((error) => progress.log(`<error disconnecting from selenium>: ${error}`));
-          progress.log(`<selenium> disconnected from sessionId=${sessionId}`);
+          progress.log(`<disconnected from selenium> sessionId=${sessionId}`);
           _processLauncher.gracefullyCloseSet.delete(disconnectFromSelenium);
         };
         _processLauncher.gracefullyCloseSet.add(disconnectFromSelenium);
         try {
           const capabilities = value.capabilities;
-          let endpointURL;
-          if (capabilities["se:cdp"]) {
-            const endpointURLString = addProtocol(capabilities["se:cdp"]);
-            endpointURL = new URL(endpointURLString);
-            endpointURL.hostname = new URL(hubUrl).hostname;
-            progress.log(`<selenium> retrieved endpoint ${endpointURL.toString()} for sessionId=${sessionId}`);
-          } else {
-            const maybeChromeOptions = capabilities["goog:chromeOptions"];
-            const chromeOptions = maybeChromeOptions && typeof maybeChromeOptions === "object" ? maybeChromeOptions : void 0;
-            const debuggerAddress = chromeOptions && typeof chromeOptions.debuggerAddress === "string" ? chromeOptions.debuggerAddress : void 0;
-            const chromeOptionsURL = typeof maybeChromeOptions === "string" ? maybeChromeOptions : void 0;
-            const endpointURLString = addProtocol(debuggerAddress || chromeOptionsURL);
-            progress.log(`<selenium> retrieved endpoint ${endpointURLString} for sessionId=${sessionId}`);
-            endpointURL = new URL(endpointURLString);
-            if (endpointURL.hostname === "localhost" || endpointURL.hostname === "127.0.0.1") {
-              const sessionInfoUrl = new URL(hubUrl).origin + "/grid/api/testsession?session=" + sessionId;
-              try {
-                const sessionResponse = await (0, _utils.fetchData)({
-                  url: sessionInfoUrl,
-                  method: "GET",
-                  timeout: progress.timeUntilDeadline()
-                }, seleniumErrorHandler);
-                const proxyId = JSON.parse(sessionResponse).proxyId;
-                endpointURL.hostname = new URL(proxyId).hostname;
-                progress.log(`<selenium> resolved endpoint ip ${endpointURL.toString()} for sessionId=${sessionId}`);
-              } catch (e) {
-                progress.log(`<selenium> unable to resolve endpoint ip for sessionId=${sessionId}, running in standalone?`);
-              }
-            }
-          }
-          return await this._connectOverCDPInternal(progress, endpointURL.toString(), {
+          const maybeChromeOptions = capabilities["goog:chromeOptions"];
+          const chromeOptions = maybeChromeOptions && typeof maybeChromeOptions === "object" ? maybeChromeOptions : void 0;
+          const debuggerAddress = chromeOptions && typeof chromeOptions.debuggerAddress === "string" ? chromeOptions.debuggerAddress : void 0;
+          const chromeOptionsURL = typeof maybeChromeOptions === "string" ? maybeChromeOptions : void 0;
+          let endpointURL = capabilities["se:cdp"] || debuggerAddress || chromeOptionsURL;
+          if (!["ws://", "wss://", "http://", "https://"].some((protocol) => endpointURL.startsWith(protocol)))
+            endpointURL = "http://" + endpointURL;
+          return this._connectOverCDPInternal(progress, endpointURL, {
             slowMo: options.slowMo
           }, disconnectFromSelenium);
         } catch (e) {
@@ -36322,7 +34614,7 @@ var require_chromium = __commonJS({
       "--disable-default-apps",
       "--disable-dev-shm-usage",
       "--disable-extensions",
-      "--disable-features=ImprovedCookieControls,LazyFrameLoading,GlobalMediaControls,DestroyProfileOnBrowserClose,MediaRouter,AcceptCHFrame",
+      "--disable-features=ImprovedCookieControls,LazyFrameLoading,GlobalMediaControls,DestroyProfileOnBrowserClose,MediaRouter",
       "--allow-pre-commit-input",
       "--disable-hang-monitor",
       "--disable-ipc-flooding-protection",
@@ -36338,10 +34630,9 @@ var require_chromium = __commonJS({
       "--use-mock-keychain",
       "--no-service-autorun"
     ];
-    async function urlToWSEndpoint(progress, endpointURL) {
+    async function urlToWSEndpoint(endpointURL) {
       if (endpointURL.startsWith("ws"))
         return endpointURL;
-      progress.log(`<ws preparing> retrieving websocket url from ${endpointURL}`);
       const httpURL = endpointURL.endsWith("/") ? `${endpointURL}json/version/` : `${endpointURL}/json/version/`;
       const request = endpointURL.startsWith("https") ? _https.default : _http.default;
       const json = await new Promise((resolve, reject) => {
@@ -36356,21 +34647,6 @@ This does not look like a DevTools server, try connecting via ws://.`));
         }).on("error", reject);
       });
       return JSON.parse(json).webSocketDebuggerUrl;
-    }
-    async function seleniumErrorHandler(params, response) {
-      const body = await (0, _utils.streamToString)(response);
-      let message = body;
-      try {
-        const json = JSON.parse(body);
-        message = json.value.localizedMessage || json.value.message;
-      } catch (e) {
-      }
-      return new Error(`Error connecting to Selenium at ${params.url}: ${message}`);
-    }
-    function addProtocol(url) {
-      if (!["ws://", "wss://", "http://", "https://"].some((protocol) => url.startsWith(protocol)))
-        return "http://" + url;
-      return url;
     }
   }
 });
@@ -36682,10 +34958,10 @@ var require_ffConnection = __commonJS({
         this._protocolLogger = protocolLogger;
         this._browserLogsCollector = browserLogsCollector;
         this._lastId = 0;
-        this._callbacks = /* @__PURE__ */ new Map();
+        this._callbacks = new Map();
         this._transport.onmessage = this._onMessage.bind(this);
         this._transport.onclose = this._onClose.bind(this);
-        this._sessions = /* @__PURE__ */ new Map();
+        this._sessions = new Map();
         this._closed = false;
         this.on = super.on;
         this.addListener = super.addListener;
@@ -36791,7 +35067,7 @@ var require_ffConnection = __commonJS({
         this.removeListener = void 0;
         this.once = void 0;
         this.setMaxListeners(0);
-        this._callbacks = /* @__PURE__ */ new Map();
+        this._callbacks = new Map();
         this._connection = connection;
         this._sessionId = sessionId;
         this._rawSend = rawSend;
@@ -37186,7 +35462,7 @@ var require_ffExecutionContext = __commonJS({
           executionContextId: this._executionContextId,
           objectId
         });
-        const result = /* @__PURE__ */ new Map();
+        const result = new Map();
         for (const property of response.properties)
           result.set(property.name, context.createHandle(property.value));
         return result;
@@ -37458,7 +35734,7 @@ var require_ffNetworkManager = __commonJS({
         this._page = void 0;
         this._eventListeners = void 0;
         this._session = session;
-        this._requests = /* @__PURE__ */ new Map();
+        this._requests = new Map();
         this._page = page;
         this._eventListeners = [_eventsHelper.eventsHelper.addEventListener(session, "Network.requestWillBeSent", this._onRequestWillBeSent.bind(this)), _eventsHelper.eventsHelper.addEventListener(session, "Network.responseReceived", this._onResponseReceived.bind(this)), _eventsHelper.eventsHelper.addEventListener(session, "Network.requestFinished", this._onRequestFinished.bind(this)), _eventsHelper.eventsHelper.addEventListener(session, "Network.requestFailed", this._onRequestFailed.bind(this))];
       }
@@ -37616,14 +35892,26 @@ var require_ffNetworkManager = __commonJS({
         this._session = session;
         this._request = request;
       }
+      async responseBody() {
+        const response = await this._session.send("Network.getResponseBody", {
+          requestId: this._request._finalRequest()._id
+        });
+        return Buffer.from(response.base64body, "base64");
+      }
       async continue(request, overrides) {
-        await this._session.sendMayFail("Network.resumeInterceptedRequest", {
+        const result = await this._session.sendMayFail("Network.resumeInterceptedRequest", {
           requestId: this._request._id,
           url: overrides.url,
           method: overrides.method,
           headers: overrides.headers,
-          postData: overrides.postData ? Buffer.from(overrides.postData).toString("base64") : void 0
+          postData: overrides.postData ? Buffer.from(overrides.postData).toString("base64") : void 0,
+          interceptResponse: overrides.interceptResponse
         });
+        if (!overrides.interceptResponse)
+          return null;
+        if (result.error)
+          throw new Error(`Request failed: ${result.error}`);
+        return new network.InterceptedResponse(request, result.response.status, result.response.statusText, result.response.headers);
       }
       async fulfill(response) {
         const base64body = response.isBase64 ? response.body : Buffer.from(response.body).toString("base64");
@@ -37735,14 +36023,14 @@ var require_ffPage = __commonJS({
         this._opener = void 0;
         this._contextIdToContext = void 0;
         this._eventListeners = void 0;
-        this._workers = /* @__PURE__ */ new Map();
+        this._workers = new Map();
         this._screencastId = void 0;
         this._session = session;
         this._opener = opener;
         this.rawKeyboard = new _ffInput.RawKeyboardImpl(session);
         this.rawMouse = new _ffInput.RawMouseImpl(session);
         this.rawTouchscreen = new _ffInput.RawTouchscreenImpl(session);
-        this._contextIdToContext = /* @__PURE__ */ new Map();
+        this._contextIdToContext = new Map();
         this._browserContext = browserContext;
         this._page = new _page.Page(this, browserContext);
         this.rawMouse.setPage(this._page);
@@ -37809,7 +36097,6 @@ var require_ffPage = __commonJS({
         else if (!auxData.name)
           worldName = "main";
         const context = new dom.FrameExecutionContext(delegate, frame, worldName);
-        context[contextDelegateSymbol] = delegate;
         if (worldName)
           frame._contextCreated(worldName, context);
         this._contextIdToContext.set(executionContextId, context);
@@ -37888,8 +36175,6 @@ var require_ffPage = __commonJS({
           location: location2
         } = payload;
         const context = this._contextIdToContext.get(executionContextId);
-        if (!context)
-          return;
         this._page._addConsoleMessage(type, args.map((arg) => context.createHandle(arg)), location2);
       }
       _onDialogOpened(params) {
@@ -37902,12 +36187,10 @@ var require_ffPage = __commonJS({
         }, params.defaultValue));
       }
       async _onBindingCalled(event) {
+        const context = this._contextIdToContext.get(event.executionContextId);
         const pageOrError = await this.pageOrError();
-        if (!(pageOrError instanceof Error)) {
-          const context = this._contextIdToContext.get(event.executionContextId);
-          if (context)
-            await this._page._onBindingCalled(event.payload, context);
-        }
+        if (!(pageOrError instanceof Error))
+          await this._page._onBindingCalled(event.payload, context);
       }
       async _onFileChooserOpened(payload) {
         const {
@@ -37915,8 +36198,6 @@ var require_ffPage = __commonJS({
           element
         } = payload;
         const context = this._contextIdToContext.get(executionContextId);
-        if (!context)
-          return;
         const handle = context.createHandle(element).asElement();
         await this._page._onFileChooserOpened(handle);
       }
@@ -38174,12 +36455,9 @@ var require_ffPage = __commonJS({
       _onScreencastFrame(event) {
         if (!this._screencastId)
           return;
-        const screencastId = this._screencastId;
-        this._page.throttleScreencastFrameAck(() => {
-          this._session.send("Page.screencastFrameAck", {
-            screencastId
-          }).catch((e) => _debugLogger.debugLogger.log("error", e));
-        });
+        this._session.send("Page.screencastFrameAck", {
+          screencastId: this._screencastId
+        }).catch((e) => _debugLogger.debugLogger.log("error", e));
         const buffer = Buffer.from(event.data, "base64");
         this._page.emit(_page.Page.Events.ScreencastFrame, {
           buffer,
@@ -38206,7 +36484,7 @@ var require_ffPage = __commonJS({
         const result = await this._session.send("Page.adoptNode", {
           frameId: handle._context.frame._id,
           objectId: handle._objectId,
-          executionContextId: to[contextDelegateSymbol]._executionContextId
+          executionContextId: to._delegate._executionContextId
         });
         if (!result.remoteObject)
           throw new Error(dom.kUnableToAdoptErrorMessage);
@@ -38221,8 +36499,7 @@ var require_ffPage = __commonJS({
         const parent = frame.parentFrame();
         if (!parent)
           throw new Error("Frame has been detached.");
-        const info = this._page.parseSelector("frame,iframe");
-        const handles = await this._page.selectors._queryAll(parent, info);
+        const handles = await this._page.selectors._queryAll(parent, "frame,iframe", void 0);
         const items = await Promise.all(handles.map(async (handle) => {
           const frame2 = await handle.contentFrame().catch((e) => null);
           return {
@@ -38241,7 +36518,6 @@ var require_ffPage = __commonJS({
     function webSocketId(frameId, wsid) {
       return `${frameId}---${wsid}`;
     }
-    var contextDelegateSymbol = Symbol("delegate");
   }
 });
 
@@ -38324,8 +36600,8 @@ var require_ffBrowser = __commonJS({
         this._version = "";
         this._userAgent = "";
         this._connection = connection;
-        this._ffPages = /* @__PURE__ */ new Map();
-        this._contexts = /* @__PURE__ */ new Map();
+        this._ffPages = new Map();
+        this._contexts = new Map();
         this._connection.on(_ffConnection.ConnectionEvents.Disconnected, () => this._onDisconnect());
         this._connection.on("Browser.attachedToTarget", this._onAttachedToTarget.bind(this));
         this._connection.on("Browser.detachedFromTarget", this._onDetachedFromTarget.bind(this));
@@ -38569,7 +36845,7 @@ var require_ffBrowser = __commonJS({
         });
       }
       async _doGrantPermissions(origin, permissions) {
-        const webPermissionToProtocol = /* @__PURE__ */ new Map([["geolocation", "geo"], ["persistent-storage", "persistent-storage"], ["push", "push"], ["notifications", "desktop-notification"]]);
+        const webPermissionToProtocol = new Map([["geolocation", "geo"], ["persistent-storage", "persistent-storage"], ["push", "push"], ["notifications", "desktop-notification"]]);
         const filtered = permissions.map((permission) => {
           const protocolPermission = webPermissionToProtocol.get(permission);
           if (!protocolPermission)
@@ -38807,6 +37083,1342 @@ var require_firefox = __commonJS({
   }
 });
 
+// node_modules/playwright-core/lib/server/common/cssTokenizer.js
+var require_cssTokenizer = __commonJS({
+  "node_modules/playwright-core/lib/server/common/cssTokenizer.js"(exports) {
+    (function(root, factory) {
+      if (typeof define === "function" && define.amd) {
+        define(["exports"], factory);
+      } else if (typeof exports !== "undefined") {
+        factory(exports);
+      } else {
+        factory(root);
+      }
+    })(exports, function(exports2) {
+      var between = function(num, first, last) {
+        return num >= first && num <= last;
+      };
+      function digit(code) {
+        return between(code, 48, 57);
+      }
+      function hexdigit(code) {
+        return digit(code) || between(code, 65, 70) || between(code, 97, 102);
+      }
+      function uppercaseletter(code) {
+        return between(code, 65, 90);
+      }
+      function lowercaseletter(code) {
+        return between(code, 97, 122);
+      }
+      function letter(code) {
+        return uppercaseletter(code) || lowercaseletter(code);
+      }
+      function nonascii(code) {
+        return code >= 128;
+      }
+      function namestartchar(code) {
+        return letter(code) || nonascii(code) || code == 95;
+      }
+      function namechar(code) {
+        return namestartchar(code) || digit(code) || code == 45;
+      }
+      function nonprintable(code) {
+        return between(code, 0, 8) || code == 11 || between(code, 14, 31) || code == 127;
+      }
+      function newline(code) {
+        return code == 10;
+      }
+      function whitespace(code) {
+        return newline(code) || code == 9 || code == 32;
+      }
+      function badescape(code) {
+        return newline(code) || isNaN(code);
+      }
+      var maximumallowedcodepoint = 1114111;
+      var InvalidCharacterError = function(message) {
+        this.message = message;
+      };
+      InvalidCharacterError.prototype = new Error();
+      InvalidCharacterError.prototype.name = "InvalidCharacterError";
+      function preprocess(str) {
+        var codepoints = [];
+        for (var i = 0; i < str.length; i++) {
+          var code = str.charCodeAt(i);
+          if (code == 13 && str.charCodeAt(i + 1) == 10) {
+            code = 10;
+            i++;
+          }
+          if (code == 13 || code == 12)
+            code = 10;
+          if (code == 0)
+            code = 65533;
+          if (between(code, 55296, 56319) && between(str.charCodeAt(i + 1), 56320, 57343)) {
+            var lead = code - 55296;
+            var trail = str.charCodeAt(i + 1) - 56320;
+            code = Math.pow(2, 16) + lead * Math.pow(2, 10) + trail;
+            i++;
+          }
+          codepoints.push(code);
+        }
+        return codepoints;
+      }
+      function stringFromCode(code) {
+        if (code <= 65535)
+          return String.fromCharCode(code);
+        code -= Math.pow(2, 16);
+        var lead = Math.floor(code / Math.pow(2, 10)) + 55296;
+        var trail = code % Math.pow(2, 10) + 56320;
+        return String.fromCharCode(lead) + String.fromCharCode(trail);
+      }
+      function tokenize(str) {
+        str = preprocess(str);
+        var i = -1;
+        var tokens = [];
+        var code;
+        var line = 0;
+        var column = 0;
+        var lastLineLength = 0;
+        var incrLineno = function() {
+          line += 1;
+          lastLineLength = column;
+          column = 0;
+        };
+        var locStart = { line, column };
+        var codepoint = function(i2) {
+          if (i2 >= str.length) {
+            return -1;
+          }
+          return str[i2];
+        };
+        var next = function(num) {
+          if (num === void 0)
+            num = 1;
+          if (num > 3)
+            throw "Spec Error: no more than three codepoints of lookahead.";
+          return codepoint(i + num);
+        };
+        var consume = function(num) {
+          if (num === void 0)
+            num = 1;
+          i += num;
+          code = codepoint(i);
+          if (newline(code))
+            incrLineno();
+          else
+            column += num;
+          return true;
+        };
+        var reconsume = function() {
+          i -= 1;
+          if (newline(code)) {
+            line -= 1;
+            column = lastLineLength;
+          } else {
+            column -= 1;
+          }
+          locStart.line = line;
+          locStart.column = column;
+          return true;
+        };
+        var eof = function(codepoint2) {
+          if (codepoint2 === void 0)
+            codepoint2 = code;
+          return codepoint2 == -1;
+        };
+        var donothing = function() {
+        };
+        var parseerror = function() {
+          console.log("Parse error at index " + i + ", processing codepoint 0x" + code.toString(16) + ".");
+          return true;
+        };
+        var consumeAToken = function() {
+          consumeComments();
+          consume();
+          if (whitespace(code)) {
+            while (whitespace(next()))
+              consume();
+            return new WhitespaceToken();
+          } else if (code == 34)
+            return consumeAStringToken();
+          else if (code == 35) {
+            if (namechar(next()) || areAValidEscape(next(1), next(2))) {
+              var token = new HashToken();
+              if (wouldStartAnIdentifier(next(1), next(2), next(3)))
+                token.type = "id";
+              token.value = consumeAName();
+              return token;
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 36) {
+            if (next() == 61) {
+              consume();
+              return new SuffixMatchToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 39)
+            return consumeAStringToken();
+          else if (code == 40)
+            return new OpenParenToken();
+          else if (code == 41)
+            return new CloseParenToken();
+          else if (code == 42) {
+            if (next() == 61) {
+              consume();
+              return new SubstringMatchToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 43) {
+            if (startsWithANumber()) {
+              reconsume();
+              return consumeANumericToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 44)
+            return new CommaToken();
+          else if (code == 45) {
+            if (startsWithANumber()) {
+              reconsume();
+              return consumeANumericToken();
+            } else if (next(1) == 45 && next(2) == 62) {
+              consume(2);
+              return new CDCToken();
+            } else if (startsWithAnIdentifier()) {
+              reconsume();
+              return consumeAnIdentlikeToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 46) {
+            if (startsWithANumber()) {
+              reconsume();
+              return consumeANumericToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 58)
+            return new ColonToken();
+          else if (code == 59)
+            return new SemicolonToken();
+          else if (code == 60) {
+            if (next(1) == 33 && next(2) == 45 && next(3) == 45) {
+              consume(3);
+              return new CDOToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 64) {
+            if (wouldStartAnIdentifier(next(1), next(2), next(3))) {
+              return new AtKeywordToken(consumeAName());
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 91)
+            return new OpenSquareToken();
+          else if (code == 92) {
+            if (startsWithAValidEscape()) {
+              reconsume();
+              return consumeAnIdentlikeToken();
+            } else {
+              parseerror();
+              return new DelimToken(code);
+            }
+          } else if (code == 93)
+            return new CloseSquareToken();
+          else if (code == 94) {
+            if (next() == 61) {
+              consume();
+              return new PrefixMatchToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 123)
+            return new OpenCurlyToken();
+          else if (code == 124) {
+            if (next() == 61) {
+              consume();
+              return new DashMatchToken();
+            } else if (next() == 124) {
+              consume();
+              return new ColumnToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (code == 125)
+            return new CloseCurlyToken();
+          else if (code == 126) {
+            if (next() == 61) {
+              consume();
+              return new IncludeMatchToken();
+            } else {
+              return new DelimToken(code);
+            }
+          } else if (digit(code)) {
+            reconsume();
+            return consumeANumericToken();
+          } else if (namestartchar(code)) {
+            reconsume();
+            return consumeAnIdentlikeToken();
+          } else if (eof())
+            return new EOFToken();
+          else
+            return new DelimToken(code);
+        };
+        var consumeComments = function() {
+          while (next(1) == 47 && next(2) == 42) {
+            consume(2);
+            while (true) {
+              consume();
+              if (code == 42 && next() == 47) {
+                consume();
+                break;
+              } else if (eof()) {
+                parseerror();
+                return;
+              }
+            }
+          }
+        };
+        var consumeANumericToken = function() {
+          var num = consumeANumber();
+          if (wouldStartAnIdentifier(next(1), next(2), next(3))) {
+            var token = new DimensionToken();
+            token.value = num.value;
+            token.repr = num.repr;
+            token.type = num.type;
+            token.unit = consumeAName();
+            return token;
+          } else if (next() == 37) {
+            consume();
+            var token = new PercentageToken();
+            token.value = num.value;
+            token.repr = num.repr;
+            return token;
+          } else {
+            var token = new NumberToken();
+            token.value = num.value;
+            token.repr = num.repr;
+            token.type = num.type;
+            return token;
+          }
+        };
+        var consumeAnIdentlikeToken = function() {
+          var str2 = consumeAName();
+          if (str2.toLowerCase() == "url" && next() == 40) {
+            consume();
+            while (whitespace(next(1)) && whitespace(next(2)))
+              consume();
+            if (next() == 34 || next() == 39) {
+              return new FunctionToken(str2);
+            } else if (whitespace(next()) && (next(2) == 34 || next(2) == 39)) {
+              return new FunctionToken(str2);
+            } else {
+              return consumeAURLToken();
+            }
+          } else if (next() == 40) {
+            consume();
+            return new FunctionToken(str2);
+          } else {
+            return new IdentToken(str2);
+          }
+        };
+        var consumeAStringToken = function(endingCodePoint) {
+          if (endingCodePoint === void 0)
+            endingCodePoint = code;
+          var string = "";
+          while (consume()) {
+            if (code == endingCodePoint || eof()) {
+              return new StringToken(string);
+            } else if (newline(code)) {
+              parseerror();
+              reconsume();
+              return new BadStringToken();
+            } else if (code == 92) {
+              if (eof(next())) {
+                donothing();
+              } else if (newline(next())) {
+                consume();
+              } else {
+                string += stringFromCode(consumeEscape());
+              }
+            } else {
+              string += stringFromCode(code);
+            }
+          }
+        };
+        var consumeAURLToken = function() {
+          var token = new URLToken("");
+          while (whitespace(next()))
+            consume();
+          if (eof(next()))
+            return token;
+          while (consume()) {
+            if (code == 41 || eof()) {
+              return token;
+            } else if (whitespace(code)) {
+              while (whitespace(next()))
+                consume();
+              if (next() == 41 || eof(next())) {
+                consume();
+                return token;
+              } else {
+                consumeTheRemnantsOfABadURL();
+                return new BadURLToken();
+              }
+            } else if (code == 34 || code == 39 || code == 40 || nonprintable(code)) {
+              parseerror();
+              consumeTheRemnantsOfABadURL();
+              return new BadURLToken();
+            } else if (code == 92) {
+              if (startsWithAValidEscape()) {
+                token.value += stringFromCode(consumeEscape());
+              } else {
+                parseerror();
+                consumeTheRemnantsOfABadURL();
+                return new BadURLToken();
+              }
+            } else {
+              token.value += stringFromCode(code);
+            }
+          }
+        };
+        var consumeEscape = function() {
+          consume();
+          if (hexdigit(code)) {
+            var digits = [code];
+            for (var total = 0; total < 5; total++) {
+              if (hexdigit(next())) {
+                consume();
+                digits.push(code);
+              } else {
+                break;
+              }
+            }
+            if (whitespace(next()))
+              consume();
+            var value = parseInt(digits.map(function(x) {
+              return String.fromCharCode(x);
+            }).join(""), 16);
+            if (value > maximumallowedcodepoint)
+              value = 65533;
+            return value;
+          } else if (eof()) {
+            return 65533;
+          } else {
+            return code;
+          }
+        };
+        var areAValidEscape = function(c1, c2) {
+          if (c1 != 92)
+            return false;
+          if (newline(c2))
+            return false;
+          return true;
+        };
+        var startsWithAValidEscape = function() {
+          return areAValidEscape(code, next());
+        };
+        var wouldStartAnIdentifier = function(c1, c2, c3) {
+          if (c1 == 45) {
+            return namestartchar(c2) || c2 == 45 || areAValidEscape(c2, c3);
+          } else if (namestartchar(c1)) {
+            return true;
+          } else if (c1 == 92) {
+            return areAValidEscape(c1, c2);
+          } else {
+            return false;
+          }
+        };
+        var startsWithAnIdentifier = function() {
+          return wouldStartAnIdentifier(code, next(1), next(2));
+        };
+        var wouldStartANumber = function(c1, c2, c3) {
+          if (c1 == 43 || c1 == 45) {
+            if (digit(c2))
+              return true;
+            if (c2 == 46 && digit(c3))
+              return true;
+            return false;
+          } else if (c1 == 46) {
+            if (digit(c2))
+              return true;
+            return false;
+          } else if (digit(c1)) {
+            return true;
+          } else {
+            return false;
+          }
+        };
+        var startsWithANumber = function() {
+          return wouldStartANumber(code, next(1), next(2));
+        };
+        var consumeAName = function() {
+          var result = "";
+          while (consume()) {
+            if (namechar(code)) {
+              result += stringFromCode(code);
+            } else if (startsWithAValidEscape()) {
+              result += stringFromCode(consumeEscape());
+            } else {
+              reconsume();
+              return result;
+            }
+          }
+        };
+        var consumeANumber = function() {
+          var repr = [];
+          var type = "integer";
+          if (next() == 43 || next() == 45) {
+            consume();
+            repr += stringFromCode(code);
+          }
+          while (digit(next())) {
+            consume();
+            repr += stringFromCode(code);
+          }
+          if (next(1) == 46 && digit(next(2))) {
+            consume();
+            repr += stringFromCode(code);
+            consume();
+            repr += stringFromCode(code);
+            type = "number";
+            while (digit(next())) {
+              consume();
+              repr += stringFromCode(code);
+            }
+          }
+          var c1 = next(1), c2 = next(2), c3 = next(3);
+          if ((c1 == 69 || c1 == 101) && digit(c2)) {
+            consume();
+            repr += stringFromCode(code);
+            consume();
+            repr += stringFromCode(code);
+            type = "number";
+            while (digit(next())) {
+              consume();
+              repr += stringFromCode(code);
+            }
+          } else if ((c1 == 69 || c1 == 101) && (c2 == 43 || c2 == 45) && digit(c3)) {
+            consume();
+            repr += stringFromCode(code);
+            consume();
+            repr += stringFromCode(code);
+            consume();
+            repr += stringFromCode(code);
+            type = "number";
+            while (digit(next())) {
+              consume();
+              repr += stringFromCode(code);
+            }
+          }
+          var value = convertAStringToANumber(repr);
+          return { type, value, repr };
+        };
+        var convertAStringToANumber = function(string) {
+          return +string;
+        };
+        var consumeTheRemnantsOfABadURL = function() {
+          while (consume()) {
+            if (code == 41 || eof()) {
+              return;
+            } else if (startsWithAValidEscape()) {
+              consumeEscape();
+              donothing();
+            } else {
+              donothing();
+            }
+          }
+        };
+        var iterationCount = 0;
+        while (!eof(next())) {
+          tokens.push(consumeAToken());
+          iterationCount++;
+          if (iterationCount > str.length * 2)
+            return "I'm infinite-looping!";
+        }
+        return tokens;
+      }
+      function CSSParserToken() {
+        throw "Abstract Base Class";
+      }
+      CSSParserToken.prototype.toJSON = function() {
+        return { token: this.tokenType };
+      };
+      CSSParserToken.prototype.toString = function() {
+        return this.tokenType;
+      };
+      CSSParserToken.prototype.toSource = function() {
+        return "" + this;
+      };
+      function BadStringToken() {
+        return this;
+      }
+      BadStringToken.prototype = Object.create(CSSParserToken.prototype);
+      BadStringToken.prototype.tokenType = "BADSTRING";
+      function BadURLToken() {
+        return this;
+      }
+      BadURLToken.prototype = Object.create(CSSParserToken.prototype);
+      BadURLToken.prototype.tokenType = "BADURL";
+      function WhitespaceToken() {
+        return this;
+      }
+      WhitespaceToken.prototype = Object.create(CSSParserToken.prototype);
+      WhitespaceToken.prototype.tokenType = "WHITESPACE";
+      WhitespaceToken.prototype.toString = function() {
+        return "WS";
+      };
+      WhitespaceToken.prototype.toSource = function() {
+        return " ";
+      };
+      function CDOToken() {
+        return this;
+      }
+      CDOToken.prototype = Object.create(CSSParserToken.prototype);
+      CDOToken.prototype.tokenType = "CDO";
+      CDOToken.prototype.toSource = function() {
+        return "<!--";
+      };
+      function CDCToken() {
+        return this;
+      }
+      CDCToken.prototype = Object.create(CSSParserToken.prototype);
+      CDCToken.prototype.tokenType = "CDC";
+      CDCToken.prototype.toSource = function() {
+        return "-->";
+      };
+      function ColonToken() {
+        return this;
+      }
+      ColonToken.prototype = Object.create(CSSParserToken.prototype);
+      ColonToken.prototype.tokenType = ":";
+      function SemicolonToken() {
+        return this;
+      }
+      SemicolonToken.prototype = Object.create(CSSParserToken.prototype);
+      SemicolonToken.prototype.tokenType = ";";
+      function CommaToken() {
+        return this;
+      }
+      CommaToken.prototype = Object.create(CSSParserToken.prototype);
+      CommaToken.prototype.tokenType = ",";
+      function GroupingToken() {
+        throw "Abstract Base Class";
+      }
+      GroupingToken.prototype = Object.create(CSSParserToken.prototype);
+      function OpenCurlyToken() {
+        this.value = "{";
+        this.mirror = "}";
+        return this;
+      }
+      OpenCurlyToken.prototype = Object.create(GroupingToken.prototype);
+      OpenCurlyToken.prototype.tokenType = "{";
+      function CloseCurlyToken() {
+        this.value = "}";
+        this.mirror = "{";
+        return this;
+      }
+      CloseCurlyToken.prototype = Object.create(GroupingToken.prototype);
+      CloseCurlyToken.prototype.tokenType = "}";
+      function OpenSquareToken() {
+        this.value = "[";
+        this.mirror = "]";
+        return this;
+      }
+      OpenSquareToken.prototype = Object.create(GroupingToken.prototype);
+      OpenSquareToken.prototype.tokenType = "[";
+      function CloseSquareToken() {
+        this.value = "]";
+        this.mirror = "[";
+        return this;
+      }
+      CloseSquareToken.prototype = Object.create(GroupingToken.prototype);
+      CloseSquareToken.prototype.tokenType = "]";
+      function OpenParenToken() {
+        this.value = "(";
+        this.mirror = ")";
+        return this;
+      }
+      OpenParenToken.prototype = Object.create(GroupingToken.prototype);
+      OpenParenToken.prototype.tokenType = "(";
+      function CloseParenToken() {
+        this.value = ")";
+        this.mirror = "(";
+        return this;
+      }
+      CloseParenToken.prototype = Object.create(GroupingToken.prototype);
+      CloseParenToken.prototype.tokenType = ")";
+      function IncludeMatchToken() {
+        return this;
+      }
+      IncludeMatchToken.prototype = Object.create(CSSParserToken.prototype);
+      IncludeMatchToken.prototype.tokenType = "~=";
+      function DashMatchToken() {
+        return this;
+      }
+      DashMatchToken.prototype = Object.create(CSSParserToken.prototype);
+      DashMatchToken.prototype.tokenType = "|=";
+      function PrefixMatchToken() {
+        return this;
+      }
+      PrefixMatchToken.prototype = Object.create(CSSParserToken.prototype);
+      PrefixMatchToken.prototype.tokenType = "^=";
+      function SuffixMatchToken() {
+        return this;
+      }
+      SuffixMatchToken.prototype = Object.create(CSSParserToken.prototype);
+      SuffixMatchToken.prototype.tokenType = "$=";
+      function SubstringMatchToken() {
+        return this;
+      }
+      SubstringMatchToken.prototype = Object.create(CSSParserToken.prototype);
+      SubstringMatchToken.prototype.tokenType = "*=";
+      function ColumnToken() {
+        return this;
+      }
+      ColumnToken.prototype = Object.create(CSSParserToken.prototype);
+      ColumnToken.prototype.tokenType = "||";
+      function EOFToken() {
+        return this;
+      }
+      EOFToken.prototype = Object.create(CSSParserToken.prototype);
+      EOFToken.prototype.tokenType = "EOF";
+      EOFToken.prototype.toSource = function() {
+        return "";
+      };
+      function DelimToken(code) {
+        this.value = stringFromCode(code);
+        return this;
+      }
+      DelimToken.prototype = Object.create(CSSParserToken.prototype);
+      DelimToken.prototype.tokenType = "DELIM";
+      DelimToken.prototype.toString = function() {
+        return "DELIM(" + this.value + ")";
+      };
+      DelimToken.prototype.toJSON = function() {
+        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
+        json.value = this.value;
+        return json;
+      };
+      DelimToken.prototype.toSource = function() {
+        if (this.value == "\\")
+          return "\\\n";
+        else
+          return this.value;
+      };
+      function StringValuedToken() {
+        throw "Abstract Base Class";
+      }
+      StringValuedToken.prototype = Object.create(CSSParserToken.prototype);
+      StringValuedToken.prototype.ASCIIMatch = function(str) {
+        return this.value.toLowerCase() == str.toLowerCase();
+      };
+      StringValuedToken.prototype.toJSON = function() {
+        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
+        json.value = this.value;
+        return json;
+      };
+      function IdentToken(val) {
+        this.value = val;
+      }
+      IdentToken.prototype = Object.create(StringValuedToken.prototype);
+      IdentToken.prototype.tokenType = "IDENT";
+      IdentToken.prototype.toString = function() {
+        return "IDENT(" + this.value + ")";
+      };
+      IdentToken.prototype.toSource = function() {
+        return escapeIdent(this.value);
+      };
+      function FunctionToken(val) {
+        this.value = val;
+        this.mirror = ")";
+      }
+      FunctionToken.prototype = Object.create(StringValuedToken.prototype);
+      FunctionToken.prototype.tokenType = "FUNCTION";
+      FunctionToken.prototype.toString = function() {
+        return "FUNCTION(" + this.value + ")";
+      };
+      FunctionToken.prototype.toSource = function() {
+        return escapeIdent(this.value) + "(";
+      };
+      function AtKeywordToken(val) {
+        this.value = val;
+      }
+      AtKeywordToken.prototype = Object.create(StringValuedToken.prototype);
+      AtKeywordToken.prototype.tokenType = "AT-KEYWORD";
+      AtKeywordToken.prototype.toString = function() {
+        return "AT(" + this.value + ")";
+      };
+      AtKeywordToken.prototype.toSource = function() {
+        return "@" + escapeIdent(this.value);
+      };
+      function HashToken(val) {
+        this.value = val;
+        this.type = "unrestricted";
+      }
+      HashToken.prototype = Object.create(StringValuedToken.prototype);
+      HashToken.prototype.tokenType = "HASH";
+      HashToken.prototype.toString = function() {
+        return "HASH(" + this.value + ")";
+      };
+      HashToken.prototype.toJSON = function() {
+        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
+        json.value = this.value;
+        json.type = this.type;
+        return json;
+      };
+      HashToken.prototype.toSource = function() {
+        if (this.type == "id") {
+          return "#" + escapeIdent(this.value);
+        } else {
+          return "#" + escapeHash(this.value);
+        }
+      };
+      function StringToken(val) {
+        this.value = val;
+      }
+      StringToken.prototype = Object.create(StringValuedToken.prototype);
+      StringToken.prototype.tokenType = "STRING";
+      StringToken.prototype.toString = function() {
+        return '"' + escapeString(this.value) + '"';
+      };
+      function URLToken(val) {
+        this.value = val;
+      }
+      URLToken.prototype = Object.create(StringValuedToken.prototype);
+      URLToken.prototype.tokenType = "URL";
+      URLToken.prototype.toString = function() {
+        return "URL(" + this.value + ")";
+      };
+      URLToken.prototype.toSource = function() {
+        return 'url("' + escapeString(this.value) + '")';
+      };
+      function NumberToken() {
+        this.value = null;
+        this.type = "integer";
+        this.repr = "";
+      }
+      NumberToken.prototype = Object.create(CSSParserToken.prototype);
+      NumberToken.prototype.tokenType = "NUMBER";
+      NumberToken.prototype.toString = function() {
+        if (this.type == "integer")
+          return "INT(" + this.value + ")";
+        return "NUMBER(" + this.value + ")";
+      };
+      NumberToken.prototype.toJSON = function() {
+        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
+        json.value = this.value;
+        json.type = this.type;
+        json.repr = this.repr;
+        return json;
+      };
+      NumberToken.prototype.toSource = function() {
+        return this.repr;
+      };
+      function PercentageToken() {
+        this.value = null;
+        this.repr = "";
+      }
+      PercentageToken.prototype = Object.create(CSSParserToken.prototype);
+      PercentageToken.prototype.tokenType = "PERCENTAGE";
+      PercentageToken.prototype.toString = function() {
+        return "PERCENTAGE(" + this.value + ")";
+      };
+      PercentageToken.prototype.toJSON = function() {
+        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
+        json.value = this.value;
+        json.repr = this.repr;
+        return json;
+      };
+      PercentageToken.prototype.toSource = function() {
+        return this.repr + "%";
+      };
+      function DimensionToken() {
+        this.value = null;
+        this.type = "integer";
+        this.repr = "";
+        this.unit = "";
+      }
+      DimensionToken.prototype = Object.create(CSSParserToken.prototype);
+      DimensionToken.prototype.tokenType = "DIMENSION";
+      DimensionToken.prototype.toString = function() {
+        return "DIM(" + this.value + "," + this.unit + ")";
+      };
+      DimensionToken.prototype.toJSON = function() {
+        var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);
+        json.value = this.value;
+        json.type = this.type;
+        json.repr = this.repr;
+        json.unit = this.unit;
+        return json;
+      };
+      DimensionToken.prototype.toSource = function() {
+        var source = this.repr;
+        var unit = escapeIdent(this.unit);
+        if (unit[0].toLowerCase() == "e" && (unit[1] == "-" || between(unit.charCodeAt(1), 48, 57))) {
+          unit = "\\65 " + unit.slice(1, unit.length);
+        }
+        return source + unit;
+      };
+      function escapeIdent(string) {
+        string = "" + string;
+        var result = "";
+        var firstcode = string.charCodeAt(0);
+        for (var i = 0; i < string.length; i++) {
+          var code = string.charCodeAt(i);
+          if (code == 0) {
+            throw new InvalidCharacterError("Invalid character: the input contains U+0000.");
+          }
+          if (between(code, 1, 31) || code == 127 || i == 0 && between(code, 48, 57) || i == 1 && between(code, 48, 57) && firstcode == 45) {
+            result += "\\" + code.toString(16) + " ";
+          } else if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {
+            result += string[i];
+          } else {
+            result += "\\" + string[i];
+          }
+        }
+        return result;
+      }
+      function escapeHash(string) {
+        string = "" + string;
+        var result = "";
+        var firstcode = string.charCodeAt(0);
+        for (var i = 0; i < string.length; i++) {
+          var code = string.charCodeAt(i);
+          if (code == 0) {
+            throw new InvalidCharacterError("Invalid character: the input contains U+0000.");
+          }
+          if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {
+            result += string[i];
+          } else {
+            result += "\\" + code.toString(16) + " ";
+          }
+        }
+        return result;
+      }
+      function escapeString(string) {
+        string = "" + string;
+        var result = "";
+        for (var i = 0; i < string.length; i++) {
+          var code = string.charCodeAt(i);
+          if (code == 0) {
+            throw new InvalidCharacterError("Invalid character: the input contains U+0000.");
+          }
+          if (between(code, 1, 31) || code == 127) {
+            result += "\\" + code.toString(16) + " ";
+          } else if (code == 34 || code == 92) {
+            result += "\\" + string[i];
+          } else {
+            result += string[i];
+          }
+        }
+        return result;
+      }
+      exports2.tokenize = tokenize;
+      exports2.IdentToken = IdentToken;
+      exports2.FunctionToken = FunctionToken;
+      exports2.AtKeywordToken = AtKeywordToken;
+      exports2.HashToken = HashToken;
+      exports2.StringToken = StringToken;
+      exports2.BadStringToken = BadStringToken;
+      exports2.URLToken = URLToken;
+      exports2.BadURLToken = BadURLToken;
+      exports2.DelimToken = DelimToken;
+      exports2.NumberToken = NumberToken;
+      exports2.PercentageToken = PercentageToken;
+      exports2.DimensionToken = DimensionToken;
+      exports2.IncludeMatchToken = IncludeMatchToken;
+      exports2.DashMatchToken = DashMatchToken;
+      exports2.PrefixMatchToken = PrefixMatchToken;
+      exports2.SuffixMatchToken = SuffixMatchToken;
+      exports2.SubstringMatchToken = SubstringMatchToken;
+      exports2.ColumnToken = ColumnToken;
+      exports2.WhitespaceToken = WhitespaceToken;
+      exports2.CDOToken = CDOToken;
+      exports2.CDCToken = CDCToken;
+      exports2.ColonToken = ColonToken;
+      exports2.SemicolonToken = SemicolonToken;
+      exports2.CommaToken = CommaToken;
+      exports2.OpenParenToken = OpenParenToken;
+      exports2.CloseParenToken = CloseParenToken;
+      exports2.OpenSquareToken = OpenSquareToken;
+      exports2.CloseSquareToken = CloseSquareToken;
+      exports2.OpenCurlyToken = OpenCurlyToken;
+      exports2.CloseCurlyToken = CloseCurlyToken;
+      exports2.EOFToken = EOFToken;
+      exports2.CSSParserToken = CSSParserToken;
+      exports2.GroupingToken = GroupingToken;
+    });
+  }
+});
+
+// node_modules/playwright-core/lib/server/common/cssParser.js
+var require_cssParser = __commonJS({
+  "node_modules/playwright-core/lib/server/common/cssParser.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
+    exports.parseCSS = parseCSS;
+    exports.serializeSelector = serializeSelector;
+    var css = _interopRequireWildcard(require_cssTokenizer());
+    function _getRequireWildcardCache(nodeInterop) {
+      if (typeof WeakMap !== "function")
+        return null;
+      var cacheBabelInterop = new WeakMap();
+      var cacheNodeInterop = new WeakMap();
+      return (_getRequireWildcardCache = function(nodeInterop2) {
+        return nodeInterop2 ? cacheNodeInterop : cacheBabelInterop;
+      })(nodeInterop);
+    }
+    function _interopRequireWildcard(obj, nodeInterop) {
+      if (!nodeInterop && obj && obj.__esModule) {
+        return obj;
+      }
+      if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
+        return { default: obj };
+      }
+      var cache = _getRequireWildcardCache(nodeInterop);
+      if (cache && cache.has(obj)) {
+        return cache.get(obj);
+      }
+      var newObj = {};
+      var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+      for (var key in obj) {
+        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+          if (desc && (desc.get || desc.set)) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+      newObj.default = obj;
+      if (cache) {
+        cache.set(obj, newObj);
+      }
+      return newObj;
+    }
+    function parseCSS(selector, customNames) {
+      let tokens;
+      try {
+        tokens = css.tokenize(selector);
+        if (!(tokens[tokens.length - 1] instanceof css.EOFToken))
+          tokens.push(new css.EOFToken());
+      } catch (e) {
+        const newMessage = e.message + ` while parsing selector "${selector}"`;
+        const index = (e.stack || "").indexOf(e.message);
+        if (index !== -1)
+          e.stack = e.stack.substring(0, index) + newMessage + e.stack.substring(index + e.message.length);
+        e.message = newMessage;
+        throw e;
+      }
+      const unsupportedToken = tokens.find((token) => {
+        return token instanceof css.AtKeywordToken || token instanceof css.BadStringToken || token instanceof css.BadURLToken || token instanceof css.ColumnToken || token instanceof css.CDOToken || token instanceof css.CDCToken || token instanceof css.SemicolonToken || token instanceof css.OpenCurlyToken || token instanceof css.CloseCurlyToken || token instanceof css.URLToken || token instanceof css.PercentageToken;
+      });
+      if (unsupportedToken)
+        throw new Error(`Unsupported token "${unsupportedToken.toSource()}" while parsing selector "${selector}"`);
+      let pos = 0;
+      const names = new Set();
+      function unexpected() {
+        return new Error(`Unexpected token "${tokens[pos].toSource()}" while parsing selector "${selector}"`);
+      }
+      function skipWhitespace() {
+        while (tokens[pos] instanceof css.WhitespaceToken)
+          pos++;
+      }
+      function isIdent(p = pos) {
+        return tokens[p] instanceof css.IdentToken;
+      }
+      function isString(p = pos) {
+        return tokens[p] instanceof css.StringToken;
+      }
+      function isNumber(p = pos) {
+        return tokens[p] instanceof css.NumberToken;
+      }
+      function isComma(p = pos) {
+        return tokens[p] instanceof css.CommaToken;
+      }
+      function isCloseParen(p = pos) {
+        return tokens[p] instanceof css.CloseParenToken;
+      }
+      function isStar(p = pos) {
+        return tokens[p] instanceof css.DelimToken && tokens[p].value === "*";
+      }
+      function isEOF(p = pos) {
+        return tokens[p] instanceof css.EOFToken;
+      }
+      function isClauseCombinator(p = pos) {
+        return tokens[p] instanceof css.DelimToken && [">", "+", "~"].includes(tokens[p].value);
+      }
+      function isSelectorClauseEnd(p = pos) {
+        return isComma(p) || isCloseParen(p) || isEOF(p) || isClauseCombinator(p) || tokens[p] instanceof css.WhitespaceToken;
+      }
+      function consumeFunctionArguments() {
+        const result2 = [consumeArgument()];
+        while (true) {
+          skipWhitespace();
+          if (!isComma())
+            break;
+          pos++;
+          result2.push(consumeArgument());
+        }
+        return result2;
+      }
+      function consumeArgument() {
+        skipWhitespace();
+        if (isNumber())
+          return tokens[pos++].value;
+        if (isString())
+          return tokens[pos++].value;
+        return consumeComplexSelector();
+      }
+      function consumeComplexSelector() {
+        const result2 = {
+          simples: []
+        };
+        skipWhitespace();
+        if (isClauseCombinator()) {
+          result2.simples.push({
+            selector: {
+              functions: [{
+                name: "scope",
+                args: []
+              }]
+            },
+            combinator: ""
+          });
+        } else {
+          result2.simples.push({
+            selector: consumeSimpleSelector(),
+            combinator: ""
+          });
+        }
+        while (true) {
+          skipWhitespace();
+          if (isClauseCombinator()) {
+            result2.simples[result2.simples.length - 1].combinator = tokens[pos++].value;
+            skipWhitespace();
+          } else if (isSelectorClauseEnd()) {
+            break;
+          }
+          result2.simples.push({
+            combinator: "",
+            selector: consumeSimpleSelector()
+          });
+        }
+        return result2;
+      }
+      function consumeSimpleSelector() {
+        let rawCSSString = "";
+        const functions = [];
+        while (!isSelectorClauseEnd()) {
+          if (isIdent() || isStar()) {
+            rawCSSString += tokens[pos++].toSource();
+          } else if (tokens[pos] instanceof css.HashToken) {
+            rawCSSString += tokens[pos++].toSource();
+          } else if (tokens[pos] instanceof css.DelimToken && tokens[pos].value === ".") {
+            pos++;
+            if (isIdent())
+              rawCSSString += "." + tokens[pos++].toSource();
+            else
+              throw unexpected();
+          } else if (tokens[pos] instanceof css.ColonToken) {
+            pos++;
+            if (isIdent()) {
+              if (!customNames.has(tokens[pos].value.toLowerCase())) {
+                rawCSSString += ":" + tokens[pos++].toSource();
+              } else {
+                const name = tokens[pos++].value.toLowerCase();
+                functions.push({
+                  name,
+                  args: []
+                });
+                names.add(name);
+              }
+            } else if (tokens[pos] instanceof css.FunctionToken) {
+              const name = tokens[pos++].value.toLowerCase();
+              if (!customNames.has(name)) {
+                rawCSSString += `:${name}(${consumeBuiltinFunctionArguments()})`;
+              } else {
+                functions.push({
+                  name,
+                  args: consumeFunctionArguments()
+                });
+                names.add(name);
+              }
+              skipWhitespace();
+              if (!isCloseParen())
+                throw unexpected();
+              pos++;
+            } else {
+              throw unexpected();
+            }
+          } else if (tokens[pos] instanceof css.OpenSquareToken) {
+            rawCSSString += "[";
+            pos++;
+            while (!(tokens[pos] instanceof css.CloseSquareToken) && !isEOF())
+              rawCSSString += tokens[pos++].toSource();
+            if (!(tokens[pos] instanceof css.CloseSquareToken))
+              throw unexpected();
+            rawCSSString += "]";
+            pos++;
+          } else {
+            throw unexpected();
+          }
+        }
+        if (!rawCSSString && !functions.length)
+          throw unexpected();
+        return {
+          css: rawCSSString || void 0,
+          functions
+        };
+      }
+      function consumeBuiltinFunctionArguments() {
+        let s = "";
+        while (!isCloseParen() && !isEOF())
+          s += tokens[pos++].toSource();
+        return s;
+      }
+      const result = consumeFunctionArguments();
+      if (!isEOF())
+        throw new Error(`Error while parsing selector "${selector}"`);
+      if (result.some((arg) => typeof arg !== "object" || !("simples" in arg)))
+        throw new Error(`Error while parsing selector "${selector}"`);
+      return {
+        selector: result,
+        names: Array.from(names)
+      };
+    }
+    function serializeSelector(args) {
+      return args.map((arg) => {
+        if (typeof arg === "string")
+          return `"${arg}"`;
+        if (typeof arg === "number")
+          return String(arg);
+        return arg.simples.map(({
+          selector,
+          combinator
+        }) => {
+          let s = selector.css || "";
+          s = s + selector.functions.map((func) => `:${func.name}(${serializeSelector(func.args)})`).join("");
+          if (combinator)
+            s += " " + combinator;
+          return s;
+        }).join(" ");
+      }).join(", ");
+    }
+  }
+});
+
+// node_modules/playwright-core/lib/server/common/selectorParser.js
+var require_selectorParser = __commonJS({
+  "node_modules/playwright-core/lib/server/common/selectorParser.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
+    exports.parseSelector = parseSelector;
+    exports.customCSSNames = void 0;
+    var _cssParser = require_cssParser();
+    var customCSSNames = new Set(["not", "is", "where", "has", "scope", "light", "visible", "text", "text-matches", "text-is", "has-text", "above", "below", "right-of", "left-of", "near", "nth-match"]);
+    exports.customCSSNames = customCSSNames;
+    function parseSelector(selector) {
+      const result = parseSelectorString(selector);
+      const parts = result.parts.map((part) => {
+        if (part.name === "css" || part.name === "css:light") {
+          if (part.name === "css:light")
+            part.body = ":light(" + part.body + ")";
+          const parsedCSS = (0, _cssParser.parseCSS)(part.body, customCSSNames);
+          return {
+            name: "css",
+            body: parsedCSS.selector
+          };
+        }
+        return part;
+      });
+      return {
+        selector,
+        capture: result.capture,
+        parts
+      };
+    }
+    function parseSelectorString(selector) {
+      let index = 0;
+      let quote;
+      let start = 0;
+      const result = {
+        parts: []
+      };
+      const append = () => {
+        const part = selector.substring(start, index).trim();
+        const eqIndex = part.indexOf("=");
+        let name;
+        let body;
+        if (eqIndex !== -1 && part.substring(0, eqIndex).trim().match(/^[a-zA-Z_0-9-+:*]+$/)) {
+          name = part.substring(0, eqIndex).trim();
+          body = part.substring(eqIndex + 1);
+        } else if (part.length > 1 && part[0] === '"' && part[part.length - 1] === '"') {
+          name = "text";
+          body = part;
+        } else if (part.length > 1 && part[0] === "'" && part[part.length - 1] === "'") {
+          name = "text";
+          body = part;
+        } else if (/^\(*\/\//.test(part) || part.startsWith("..")) {
+          name = "xpath";
+          body = part;
+        } else {
+          name = "css";
+          body = part;
+        }
+        let capture = false;
+        if (name[0] === "*") {
+          capture = true;
+          name = name.substring(1);
+        }
+        result.parts.push({
+          name,
+          body
+        });
+        if (capture) {
+          if (result.capture !== void 0)
+            throw new Error(`Only one of the selectors can capture using * modifier`);
+          result.capture = result.parts.length - 1;
+        }
+      };
+      if (!selector.includes(">>")) {
+        index = selector.length;
+        append();
+        return result;
+      }
+      while (index < selector.length) {
+        const c = selector[index];
+        if (c === "\\" && index + 1 < selector.length) {
+          index += 2;
+        } else if (c === quote) {
+          quote = void 0;
+          index++;
+        } else if (!quote && (c === '"' || c === "'" || c === "`")) {
+          quote = c;
+          index++;
+        } else if (!quote && c === ">" && selector[index + 1] === ">") {
+          append();
+          index += 2;
+          start = index;
+        } else {
+          index++;
+        }
+      }
+      append();
+      return result;
+    }
+  }
+});
+
 // node_modules/playwright-core/lib/server/selectors.js
 var require_selectors = __commonJS({
   "node_modules/playwright-core/lib/server/selectors.js"(exports) {
@@ -38823,9 +38435,9 @@ var require_selectors = __commonJS({
         this._builtinEnginesInMainWorld = void 0;
         this._engines = void 0;
         this.guid = `selectors@${(0, _utils.createGuid)()}`;
-        this._builtinEngines = /* @__PURE__ */ new Set(["css", "css:light", "xpath", "xpath:light", "_react", "_vue", "text", "text:light", "id", "id:light", "data-testid", "data-testid:light", "data-test-id", "data-test-id:light", "data-test", "data-test:light", "nth", "visible", "control"]);
-        this._builtinEnginesInMainWorld = /* @__PURE__ */ new Set(["_react", "_vue"]);
-        this._engines = /* @__PURE__ */ new Map();
+        this._builtinEngines = new Set(["css", "css:light", "xpath", "xpath:light", "_react", "_vue", "text", "text:light", "id", "id:light", "data-testid", "data-testid:light", "data-test-id", "data-test-id:light", "data-test", "data-test:light", "nth", "visible"]);
+        this._builtinEnginesInMainWorld = new Set(["_react", "_vue"]);
+        this._engines = new Map();
       }
       async register(name, source, contentScript = false) {
         if (!name.match(/^[a-zA-Z_0-9-]+$/))
@@ -38842,7 +38454,8 @@ var require_selectors = __commonJS({
       unregisterAll() {
         this._engines.clear();
       }
-      async query(frame, info, scope) {
+      async query(frame, selector, options, scope) {
+        const info = frame._page.parseSelector(selector, options);
         const context = await frame._context(info.world);
         const injectedScript = await context.injectedScript();
         const handle = await injectedScript.evaluateHandle((injected, {
@@ -38864,7 +38477,8 @@ var require_selectors = __commonJS({
         const mainContext = await frame._mainContext();
         return this._adoptIfNeeded(elementHandle, mainContext);
       }
-      async _queryArray(frame, info, scope) {
+      async _queryArray(frame, selector, scope) {
+        const info = this.parseSelector(selector, false);
         const context = await frame._mainContext();
         const injectedScript = await context.injectedScript();
         const arrayHandle = await injectedScript.evaluateHandle((injected, {
@@ -38879,7 +38493,7 @@ var require_selectors = __commonJS({
         return arrayHandle;
       }
       async _queryAll(frame, selector, scope, adoptToMain) {
-        const info = typeof selector === "string" ? frame._page.parseSelector(selector) : selector;
+        const info = this.parseSelector(selector, false);
         const context = await frame._context(info.world);
         const injectedScript = await context.injectedScript();
         const arrayHandle = await injectedScript.evaluateHandle((injected, {
@@ -38912,12 +38526,12 @@ var require_selectors = __commonJS({
         return adopted;
       }
       parseSelector(selector, strict) {
-        const parsed = typeof selector === "string" ? (0, _selectorParser.parseSelector)(selector) : selector;
+        const parsed = (0, _selectorParser.parseSelector)(selector);
         let needsMainWorld = false;
         for (const part of parsed.parts) {
           const custom = this._engines.get(part.name);
           if (!custom && !this._builtinEngines.has(part.name))
-            throw new Error(`Unknown engine "${part.name}" while parsing selector ${(0, _selectorParser.stringifySelector)(parsed)}`);
+            throw new Error(`Unknown engine "${part.name}" while parsing selector ${selector}`);
           if (custom && !custom.contentScript)
             needsMainWorld = true;
           if (this._builtinEnginesInMainWorld.has(part.name))
@@ -38925,6 +38539,7 @@ var require_selectors = __commonJS({
         }
         return {
           parsed,
+          selector,
           world: needsMainWorld ? "main" : "utility",
           strict
         };
@@ -39021,7 +38636,7 @@ var require_wkConnection = __commonJS({
         this.sessionId = void 0;
         this._disposed = false;
         this._rawSend = void 0;
-        this._callbacks = /* @__PURE__ */ new Map();
+        this._callbacks = new Map();
         this._crashed = false;
         this.on = void 0;
         this.addListener = void 0;
@@ -43361,7 +42976,7 @@ var require_wkAccessibility = __commonJS({
             continue;
           node[tokenProperty] = value;
         }
-        const orientationIsApplicable = /* @__PURE__ */ new Set(["ScrollArea", "scrollbar", "listbox", "combobox", "menu", "tree", "separator", "slider", "tablist", "toolbar"]);
+        const orientationIsApplicable = new Set(["ScrollArea", "scrollbar", "listbox", "combobox", "menu", "tree", "separator", "slider", "tablist", "toolbar"]);
         if (this._payload.orientation && orientationIsApplicable.has(this._payload.role))
           node.orientation = this._payload.orientation;
         return node;
@@ -43423,8 +43038,17 @@ var require_wkExecutionContext = __commonJS({
       constructor(session, contextId) {
         this._session = void 0;
         this._contextId = void 0;
+        this._contextDestroyedCallback = () => {
+        };
+        this._executionContextDestroyedPromise = void 0;
         this._session = session;
         this._contextId = contextId;
+        this._executionContextDestroyedPromise = new Promise((resolve, reject) => {
+          this._contextDestroyedCallback = resolve;
+        });
+      }
+      _dispose() {
+        this._contextDestroyedCallback();
       }
       async rawEvaluateJSON(expression) {
         try {
@@ -43470,7 +43094,9 @@ var require_wkExecutionContext = __commonJS({
       }
       async evaluateWithArguments(expression, returnByValue, utilityScript, values, objectIds) {
         try {
-          const response = await this._session.send("Runtime.callFunctionOn", {
+          const response = await Promise.race([this._executionContextDestroyedPromise.then(() => {
+            throw new Error(contextDestroyedError);
+          }), this._session.send("Runtime.callFunctionOn", {
             functionDeclaration: expression,
             objectId: utilityScript._objectId,
             arguments: [{
@@ -43483,7 +43109,7 @@ var require_wkExecutionContext = __commonJS({
             returnByValue,
             emulateUserGesture: true,
             awaitPromise: true
-          });
+          })]);
           if (response.wasThrown)
             throw new js.JavaScriptErrorInEvaluate(response.result.description);
           if (returnByValue)
@@ -43498,7 +43124,7 @@ var require_wkExecutionContext = __commonJS({
           objectId,
           ownProperties: true
         });
-        const result = /* @__PURE__ */ new Map();
+        const result = new Map();
         for (const property of response.properties) {
           if (!property.enumerable || !property.value)
             continue;
@@ -43517,6 +43143,7 @@ var require_wkExecutionContext = __commonJS({
       }
     };
     exports.WKExecutionContext = WKExecutionContext;
+    var contextDestroyedError = "Execution context was destroyed.";
     function potentiallyUnserializableValue(remoteObject) {
       const value = remoteObject.value;
       const isUnserializable = remoteObject.type === "number" && ["NaN", "-Infinity", "Infinity", "-0"].includes(remoteObject.description);
@@ -43867,18 +43494,28 @@ var require_wkInterceptableRequest = __commonJS({
     };
     exports.WKInterceptableRequest = WKInterceptableRequest;
     var WKRouteImpl = class {
-      constructor(session, requestId) {
+      constructor(session, page, requestId) {
         this._session = void 0;
         this._requestId = void 0;
         this._requestInterceptedPromise = new _async.ManualPromise();
+        this._responseInterceptedPromise = void 0;
+        this._page = void 0;
         this._session = session;
+        this._page = page;
         this._requestId = requestId;
+      }
+      async responseBody() {
+        const response = await this._session.send("Network.getInterceptedResponseBody", {
+          requestId: this._requestId
+        });
+        return Buffer.from(response.body, "base64");
       }
       async abort(errorCode) {
         const errorType = errorReasons[errorCode];
         (0, _utils.assert)(errorType, "Unknown error code: " + errorCode);
         await this._requestInterceptedPromise;
-        await this._session.sendMayFail("Network.interceptRequestWithError", {
+        const isResponseIntercepted = await this._responseInterceptedPromise;
+        await this._session.sendMayFail(isResponseIntercepted ? "Network.interceptResponseWithError" : "Network.interceptRequestWithError", {
           requestId: this._requestId,
           errorType
         });
@@ -43892,7 +43529,8 @@ var require_wkInterceptableRequest = __commonJS({
         const contentType = headers["content-type"];
         if (contentType)
           mimeType = contentType.split(";")[0].trim();
-        await this._session.sendMayFail("Network.interceptRequestWithResponse", {
+        const isResponseIntercepted = await this._responseInterceptedPromise;
+        await this._session.sendMayFail(isResponseIntercepted ? "Network.interceptWithResponse" : "Network.interceptRequestWithResponse", {
           requestId: this._requestId,
           status: response.status,
           statusText: network.STATUS_TEXTS[String(response.status)],
@@ -43903,6 +43541,10 @@ var require_wkInterceptableRequest = __commonJS({
         });
       }
       async continue(request, overrides) {
+        if (overrides.interceptResponse) {
+          await this._page._ensureResponseInterceptionEnabled();
+          this._responseInterceptedPromise = new _async.ManualPromise();
+        }
         await this._requestInterceptedPromise;
         await this._session.sendMayFail("Network.interceptWithRequest", {
           requestId: this._requestId,
@@ -43911,6 +43553,15 @@ var require_wkInterceptableRequest = __commonJS({
           headers: overrides.headers ? (0, _utils.headersArrayToObject)(overrides.headers, false) : void 0,
           postData: overrides.postData ? Buffer.from(overrides.postData).toString("base64") : void 0
         });
+        if (!this._responseInterceptedPromise)
+          return null;
+        const {
+          response,
+          error
+        } = await this._responseInterceptedPromise;
+        if (error)
+          throw new Error(`Request failed: ${error.errorText}`);
+        return new network.InterceptedResponse(request, response.status, response.statusText, (0, _utils.headersObjectToArray)(response.headers));
       }
     };
     exports.WKRouteImpl = WKRouteImpl;
@@ -43952,7 +43603,7 @@ var require_wkProvisionalPage = __commonJS({
           };
         };
         const wkPage = this._wkPage;
-        this._sessionListeners = [_eventsHelper.eventsHelper.addEventListener(session, "Network.requestWillBeSent", overrideFrameId((e) => wkPage._onRequestWillBeSent(session, e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.requestIntercepted", overrideFrameId((e) => wkPage._onRequestIntercepted(session, e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.responseReceived", overrideFrameId((e) => wkPage._onResponseReceived(e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.loadingFinished", overrideFrameId((e) => wkPage._onLoadingFinished(e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.loadingFailed", overrideFrameId((e) => wkPage._onLoadingFailed(e)))];
+        this._sessionListeners = [_eventsHelper.eventsHelper.addEventListener(session, "Network.requestWillBeSent", overrideFrameId((e) => wkPage._onRequestWillBeSent(session, e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.requestIntercepted", overrideFrameId((e) => wkPage._onRequestIntercepted(session, e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.responseIntercepted", overrideFrameId((e) => wkPage._onResponseIntercepted(session, e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.responseReceived", overrideFrameId((e) => wkPage._onResponseReceived(e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.loadingFinished", overrideFrameId((e) => wkPage._onLoadingFinished(e))), _eventsHelper.eventsHelper.addEventListener(session, "Network.loadingFailed", overrideFrameId((e) => wkPage._onLoadingFailed(e)))];
         this.initializationPromise = this._wkPage._initializeSession(session, true, ({
           frameTree
         }) => this._handleFrameTree(frameTree));
@@ -43989,7 +43640,7 @@ var require_wkWorkers = __commonJS({
       constructor(page) {
         this._sessionListeners = [];
         this._page = void 0;
-        this._workerSessions = /* @__PURE__ */ new Map();
+        this._workerSessions = new Map();
         this._page = page;
       }
       setSession(session) {
@@ -44152,7 +43803,7 @@ var require_wkPage = __commonJS({
         this._pagePromise = new _async.ManualPromise();
         this._pageProxySession = void 0;
         this._opener = void 0;
-        this._requestIdToRequest = /* @__PURE__ */ new Map();
+        this._requestIdToRequest = new Map();
         this._workers = void 0;
         this._contextIdToContext = void 0;
         this._mainFrameContextId = void 0;
@@ -44166,7 +43817,8 @@ var require_wkPage = __commonJS({
         this._firstNonInitialNavigationCommittedReject = (e) => {
         };
         this._lastConsoleMessage = null;
-        this._requestIdToResponseReceivedPayloadEvent = /* @__PURE__ */ new Map();
+        this._requestIdToResponseReceivedPayloadEvent = new Map();
+        this._needsResponseInterception = false;
         this._nextWindowOpenPopupFeatures = void 0;
         this._recordingVideoFile = null;
         this._screencastGeneration = 0;
@@ -44175,7 +43827,7 @@ var require_wkPage = __commonJS({
         this.rawKeyboard = new _wkInput.RawKeyboardImpl(pageProxySession);
         this.rawMouse = new _wkInput.RawMouseImpl(pageProxySession);
         this.rawTouchscreen = new _wkInput.RawTouchscreenImpl(pageProxySession);
-        this._contextIdToContext = /* @__PURE__ */ new Map();
+        this._contextIdToContext = new Map();
         this._page = new _page.Page(this, browserContext);
         this.rawMouse.setPage(this._page);
         this._workers = new _wkWorkers.WKWorkers(this._page);
@@ -44264,6 +43916,12 @@ var require_wkPage = __commonJS({
             stage: "request",
             isRegex: true
           }));
+          if (this._needsResponseInterception)
+            promises.push(session.send("Network.addInterception", {
+              url: ".*",
+              stage: "response",
+              isRegex: true
+            }));
         }
         const contextOptions = this._browserContext._options;
         if (contextOptions.userAgent)
@@ -44478,7 +44136,7 @@ var require_wkPage = __commonJS({
           throw new Error("Unknown target: " + targetId);
       }
       _addSessionListeners() {
-        this._sessionListeners = [_eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameNavigated", (event) => this._onFrameNavigated(event.frame, false)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.navigatedWithinDocument", (event) => this._onFrameNavigatedWithinDocument(event.frameId, event.url)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameAttached", (event) => this._onFrameAttached(event.frameId, event.parentFrameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameDetached", (event) => this._onFrameDetached(event.frameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameScheduledNavigation", (event) => this._onFrameScheduledNavigation(event.frameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameStoppedLoading", (event) => this._onFrameStoppedLoading(event.frameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.loadEventFired", (event) => this._onLifecycleEvent(event.frameId, "load")), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.domContentEventFired", (event) => this._onLifecycleEvent(event.frameId, "domcontentloaded")), _eventsHelper.eventsHelper.addEventListener(this._session, "Runtime.executionContextCreated", (event) => this._onExecutionContextCreated(event.context)), _eventsHelper.eventsHelper.addEventListener(this._session, "Console.messageAdded", (event) => this._onConsoleMessage(event)), _eventsHelper.eventsHelper.addEventListener(this._session, "Console.messageRepeatCountUpdated", (event) => this._onConsoleRepeatCountUpdated(event)), _eventsHelper.eventsHelper.addEventListener(this._pageProxySession, "Dialog.javascriptDialogOpening", (event) => this._onDialog(event)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.fileChooserOpened", (event) => this._onFileChooserOpened(event)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.requestWillBeSent", (e) => this._onRequestWillBeSent(this._session, e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.requestIntercepted", (e) => this._onRequestIntercepted(this._session, e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.responseReceived", (e) => this._onResponseReceived(e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.loadingFinished", (e) => this._onLoadingFinished(e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.loadingFailed", (e) => this._onLoadingFailed(e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketCreated", (e) => this._page._frameManager.onWebSocketCreated(e.requestId, e.url)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketWillSendHandshakeRequest", (e) => this._page._frameManager.onWebSocketRequest(e.requestId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketHandshakeResponseReceived", (e) => this._page._frameManager.onWebSocketResponse(e.requestId, e.response.status, e.response.statusText)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketFrameSent", (e) => e.response.payloadData && this._page._frameManager.onWebSocketFrameSent(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketFrameReceived", (e) => e.response.payloadData && this._page._frameManager.webSocketFrameReceived(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketClosed", (e) => this._page._frameManager.webSocketClosed(e.requestId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketFrameError", (e) => this._page._frameManager.webSocketError(e.requestId, e.errorMessage))];
+        this._sessionListeners = [_eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameNavigated", (event) => this._onFrameNavigated(event.frame, false)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.navigatedWithinDocument", (event) => this._onFrameNavigatedWithinDocument(event.frameId, event.url)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameAttached", (event) => this._onFrameAttached(event.frameId, event.parentFrameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameDetached", (event) => this._onFrameDetached(event.frameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameScheduledNavigation", (event) => this._onFrameScheduledNavigation(event.frameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.frameStoppedLoading", (event) => this._onFrameStoppedLoading(event.frameId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.loadEventFired", (event) => this._onLifecycleEvent(event.frameId, "load")), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.domContentEventFired", (event) => this._onLifecycleEvent(event.frameId, "domcontentloaded")), _eventsHelper.eventsHelper.addEventListener(this._session, "Runtime.executionContextCreated", (event) => this._onExecutionContextCreated(event.context)), _eventsHelper.eventsHelper.addEventListener(this._session, "Console.messageAdded", (event) => this._onConsoleMessage(event)), _eventsHelper.eventsHelper.addEventListener(this._session, "Console.messageRepeatCountUpdated", (event) => this._onConsoleRepeatCountUpdated(event)), _eventsHelper.eventsHelper.addEventListener(this._pageProxySession, "Dialog.javascriptDialogOpening", (event) => this._onDialog(event)), _eventsHelper.eventsHelper.addEventListener(this._session, "Page.fileChooserOpened", (event) => this._onFileChooserOpened(event)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.requestWillBeSent", (e) => this._onRequestWillBeSent(this._session, e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.requestIntercepted", (e) => this._onRequestIntercepted(this._session, e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.responseIntercepted", (e) => this._onResponseIntercepted(this._session, e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.responseReceived", (e) => this._onResponseReceived(e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.loadingFinished", (e) => this._onLoadingFinished(e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.loadingFailed", (e) => this._onLoadingFailed(e)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketCreated", (e) => this._page._frameManager.onWebSocketCreated(e.requestId, e.url)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketWillSendHandshakeRequest", (e) => this._page._frameManager.onWebSocketRequest(e.requestId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketHandshakeResponseReceived", (e) => this._page._frameManager.onWebSocketResponse(e.requestId, e.response.status, e.response.statusText)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketFrameSent", (e) => e.response.payloadData && this._page._frameManager.onWebSocketFrameSent(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketFrameReceived", (e) => e.response.payloadData && this._page._frameManager.webSocketFrameReceived(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketClosed", (e) => this._page._frameManager.webSocketClosed(e.requestId)), _eventsHelper.eventsHelper.addEventListener(this._session, "Network.webSocketFrameError", (e) => this._page._frameManager.webSocketError(e.requestId, e.errorMessage))];
       }
       async _updateState(method, params) {
         await this._forAllSessions((session) => session.send(method, params).then());
@@ -44531,6 +44189,7 @@ var require_wkPage = __commonJS({
       _removeContextsForFrame(frame, notifyFrame) {
         for (const [contextId, context] of this._contextIdToContext) {
           if (context.frame === frame) {
+            context._delegate._dispose();
             this._contextIdToContext.delete(contextId);
             if (notifyFrame)
               frame._contextDestroyed(context);
@@ -44550,7 +44209,6 @@ var require_wkPage = __commonJS({
         else if (contextPayload.type === "user" && contextPayload.name === UTILITY_WORLD_NAME)
           worldName = "utility";
         const context = new dom.FrameExecutionContext(delegate, frame, worldName);
-        context[contextDelegateSymbol] = delegate;
         if (worldName)
           frame._contextCreated(worldName, context);
         if (contextPayload.type === "normal" && frame === this._page.mainFrame())
@@ -44584,9 +44242,9 @@ var require_wkPage = __commonJS({
         } = event.message;
         if (level === "debug" && parameters && parameters[0].value === BINDING_CALL_MESSAGE) {
           const parsedObjectId = JSON.parse(parameters[1].objectId);
+          const context = this._contextIdToContext.get(parsedObjectId.injectedScriptId);
           this.pageOrError().then((pageOrError) => {
-            const context = this._contextIdToContext.get(parsedObjectId.injectedScriptId);
-            if (!(pageOrError instanceof Error) && context)
+            if (!(pageOrError instanceof Error))
               this._page._onBindingCalled(parameters[2].value, context);
           });
           return;
@@ -44615,19 +44273,16 @@ var require_wkPage = __commonJS({
           derivedType = level;
         else if (type === "timing")
           derivedType = "timeEnd";
-        const handles = [];
-        for (const p of parameters || []) {
-          let context;
+        const handles = (parameters || []).map((p) => {
+          let context = null;
           if (p.objectId) {
             const objectId = JSON.parse(p.objectId);
             context = this._contextIdToContext.get(objectId.injectedScriptId);
           } else {
             context = this._contextIdToContext.get(this._mainFrameContextId);
           }
-          if (!context)
-            return;
-          handles.push(context.createHandle(p));
-        }
+          return context.createHandle(p);
+        });
         this._lastConsoleMessage = {
           derivedType,
           text,
@@ -44754,15 +44409,28 @@ var require_wkPage = __commonJS({
         }
         await Promise.all(promises);
       }
+      async _ensureResponseInterceptionEnabled() {
+        if (this._needsResponseInterception)
+          return;
+        this._needsResponseInterception = true;
+        await this.updateRequestInterception();
+      }
       async updateRequestInterception() {
         const enabled = this._page._needsRequestInterception();
-        await Promise.all([this._updateState("Network.setInterceptionEnabled", {
+        const promises = [this._updateState("Network.setInterceptionEnabled", {
           enabled
         }), this._updateState("Network.addInterception", {
           url: ".*",
           stage: "request",
           isRegex: true
-        })]);
+        })];
+        if (this._needsResponseInterception)
+          this._updateState("Network.addInterception", {
+            url: ".*",
+            stage: "response",
+            isRegex: true
+          });
+        await Promise.all(promises);
       }
       async updateOffline() {
         await this._updateState("Network.setEmulateOfflineState", {
@@ -44954,12 +44622,9 @@ var require_wkPage = __commonJS({
         }
       }
       _onScreencastFrame(event) {
-        const generation = this._screencastGeneration;
-        this._page.throttleScreencastFrameAck(() => {
-          this._pageProxySession.send("Screencast.screencastFrameAck", {
-            generation
-          }).catch((e) => _debugLogger.debugLogger.log("error", e));
-        });
+        this._pageProxySession.send("Screencast.screencastFrameAck", {
+          generation: this._screencastGeneration
+        }).catch((e) => _debugLogger.debugLogger.log("error", e));
         const buffer = Buffer.from(event.data, "base64");
         this._page.emit(_page.Page.Events.ScreencastFrame, {
           buffer,
@@ -45005,7 +44670,7 @@ var require_wkPage = __commonJS({
       async adoptElementHandle(handle, to) {
         const result = await this._session.sendMayFail("DOM.resolveNode", {
           objectId: handle._objectId,
-          executionContextId: to[contextDelegateSymbol]._contextId
+          executionContextId: to._delegate._contextId
         });
         if (!result || result.object.subtype === "null")
           throw new Error(dom.kUnableToAdoptErrorMessage);
@@ -45020,8 +44685,7 @@ var require_wkPage = __commonJS({
         const parent = frame.parentFrame();
         if (!parent)
           throw new Error("Frame has been detached.");
-        const info = this._page.parseSelector("frame,iframe");
-        const handles = await this._page.selectors._queryAll(parent, info);
+        const handles = await this._page.selectors._queryAll(parent, "frame,iframe", void 0);
         const items = await Promise.all(handles.map(async (handle) => {
           const frame2 = await handle.contentFrame().catch((e) => null);
           return {
@@ -45053,7 +44717,7 @@ var require_wkPage = __commonJS({
         const documentId = isNavigationRequest ? event.loaderId : void 0;
         let route = null;
         if (this._page._needsRequestInterception() && !redirectedFrom)
-          route = new _wkInterceptableRequest.WKRouteImpl(session, event.requestId);
+          route = new _wkInterceptableRequest.WKRouteImpl(session, this, event.requestId);
         const request = new _wkInterceptableRequest.WKInterceptableRequest(session, route, frame, event, redirectedFrom, documentId);
         this._requestIdToRequest.set(event.requestId, request);
         this._page._frameManager.requestStarted(request.request, route || void 0);
@@ -45083,6 +44747,20 @@ var require_wkPage = __commonJS({
         } else {
           request._route._requestInterceptedPromise.resolve();
         }
+      }
+      _onResponseIntercepted(session, event) {
+        const request = this._requestIdToRequest.get(event.requestId);
+        const route = request === null || request === void 0 ? void 0 : request._routeForRedirectChain();
+        if (!(route !== null && route !== void 0 && route._responseInterceptedPromise)) {
+          session.sendMayFail("Network.interceptContinue", {
+            requestId: event.requestId,
+            stage: "response"
+          });
+          return;
+        }
+        route._responseInterceptedPromise.resolve({
+          response: event.response
+        });
       }
       _onResponseReceived(event) {
         const request = this._requestIdToRequest.get(event.requestId);
@@ -45138,6 +44816,11 @@ var require_wkPage = __commonJS({
         const request = this._requestIdToRequest.get(event.requestId);
         if (!request)
           return;
+        const route = request._routeForRedirectChain();
+        if (route !== null && route !== void 0 && route._responseInterceptedPromise)
+          route._responseInterceptedPromise.resolve({
+            error: event
+          });
         const response = request.request._existingResponse();
         if (response) {
           response._serverAddrFinished();
@@ -45149,7 +44832,7 @@ var require_wkPage = __commonJS({
         this._page._frameManager.requestFailed(request.request, event.errorText.includes("cancelled"));
       }
       async _grantPermissions(origin, permissions) {
-        const webPermissionToProtocol = /* @__PURE__ */ new Map([["geolocation", "geolocation"]]);
+        const webPermissionToProtocol = new Map([["geolocation", "geolocation"]]);
         const filtered = permissions.map((permission) => {
           const protocolPermission = webPermissionToProtocol.get(permission);
           if (!protocolPermission)
@@ -45205,7 +44888,6 @@ var require_wkPage = __commonJS({
       } catch (_) {
       }
     }
-    var contextDelegateSymbol = Symbol("delegate");
   }
 });
 
@@ -45282,8 +44964,8 @@ var require_wkBrowser = __commonJS({
         super(options);
         this._connection = void 0;
         this._browserSession = void 0;
-        this._contexts = /* @__PURE__ */ new Map();
-        this._wkPages = /* @__PURE__ */ new Map();
+        this._contexts = new Map();
+        this._wkPages = new Map();
         this._eventListeners = void 0;
         this._connection = new _wkConnection.WKConnection(transport, this._onDisconnect.bind(this), options.protocolLogger, options.browserLogsCollector);
         this._browserSession = this._connection.browserSession;
@@ -45598,8 +45280,6 @@ var require_webkit = __commonJS({
         if (args.find((arg) => !arg.startsWith("-")))
           throw new Error("Arguments can not specify page to be opened");
         const webkitArguments = ["--inspector-pipe"];
-        if (process.platform === "win32")
-          webkitArguments.push("--disable-accelerated-compositing");
         if (headless)
           webkitArguments.push("--headless");
         if (isPersistent)
@@ -45981,7 +45661,7 @@ var require_jsHandleDispatcher = __commonJS({
     function serializeResult(arg) {
       return (0, _serializers.serializeValue)(arg, (value) => ({
         fallThrough: value
-      }), /* @__PURE__ */ new Set());
+      }), new Set());
     }
   }
 });
@@ -46237,7 +45917,7 @@ var require_networkDispatchers = __commonJS({
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.APIRequestContextDispatcher = exports.WebSocketDispatcher = exports.RouteDispatcher = exports.ResponseDispatcher = exports.RequestDispatcher = void 0;
+    exports.FetchRequestDispatcher = exports.WebSocketDispatcher = exports.RouteDispatcher = exports.ResponseDispatcher = exports.RequestDispatcher = void 0;
     var _fetch = require_fetch();
     var _network = require_network();
     var _dispatcher = require_dispatcher();
@@ -46330,13 +46010,29 @@ var require_networkDispatchers = __commonJS({
           request: RequestDispatcher.from(scope, route.request())
         });
       }
+      async responseBody(params) {
+        return {
+          binary: (await this._object.responseBody()).toString("base64")
+        };
+      }
       async continue(params, metadata) {
-        await this._object.continue({
+        const response = await this._object.continue({
           url: params.url,
           method: params.method,
           headers: params.headers,
-          postData: params.postData ? Buffer.from(params.postData, "base64") : void 0
+          postData: params.postData ? Buffer.from(params.postData, "base64") : void 0,
+          interceptResponse: params.interceptResponse
         });
+        const result = {};
+        if (response) {
+          result.response = {
+            request: RequestDispatcher.from(this._scope, response.request()),
+            status: response.status(),
+            statusText: response.statusText(),
+            headers: response.headers()
+          };
+        }
+        return result;
       }
       async fulfill(params) {
         await this._object.fulfill(params);
@@ -46360,17 +46056,17 @@ var require_networkDispatchers = __commonJS({
       }
     };
     exports.WebSocketDispatcher = WebSocketDispatcher;
-    var APIRequestContextDispatcher = class extends _dispatcher.Dispatcher {
+    var FetchRequestDispatcher = class extends _dispatcher.Dispatcher {
       static from(scope, request) {
         const result = (0, _dispatcher.existingDispatcher)(request);
-        return result || new APIRequestContextDispatcher(scope, request);
+        return result || new FetchRequestDispatcher(scope, request);
       }
       static fromNullable(scope, request) {
-        return request ? APIRequestContextDispatcher.from(scope, request) : void 0;
+        return request ? FetchRequestDispatcher.from(scope, request) : void 0;
       }
       constructor(scope, request) {
-        super(scope, request, "APIRequestContext", {}, true);
-        request.once(_fetch.APIRequestContext.Events.Dispose, () => {
+        super(scope, request, "FetchRequest", {}, true);
+        request.once(_fetch.FetchRequest.Events.Dispose, () => {
           if (!this._disposed)
             super._dispose();
         });
@@ -46407,11 +46103,11 @@ var require_networkDispatchers = __commonJS({
           binary: buffer ? buffer.toString("base64") : void 0
         };
       }
-      async disposeAPIResponse(params, metadata) {
+      async disposeFetchResponse(params, metadata) {
         this._object.fetchResponses.delete(params.fetchUid);
       }
     };
-    exports.APIRequestContextDispatcher = APIRequestContextDispatcher;
+    exports.FetchRequestDispatcher = FetchRequestDispatcher;
   }
 });
 
@@ -47157,7 +46853,7 @@ var require_browserContextDispatcher = __commonJS({
       constructor(scope, context) {
         super(scope, context, "BrowserContext", {
           isChromium: context._browser.options.isChromium,
-          APIRequestContext: _networkDispatchers.APIRequestContextDispatcher.from(scope, context.fetchRequest)
+          fetchRequest: _networkDispatchers.FetchRequestDispatcher.from(scope, context.fetchRequest)
         }, true);
         this._context = void 0;
         this._context = context;
@@ -47314,16 +47010,12 @@ var require_browserContextDispatcher = __commonJS({
         await this._context.tracing.start(params);
       }
       async tracingStartChunk(params) {
-        await this._context.tracing.startChunk(params);
+        await this._context.tracing.startChunk();
       }
       async tracingStopChunk(params) {
-        const {
-          artifact,
-          entries
-        } = await this._context.tracing.stopChunk(params.save, params.skipCompress);
+        const artifact = await this._context.tracing.stopChunk(params.save);
         return {
-          artifact: artifact ? new _artifactDispatcher.ArtifactDispatcher(this._scope, artifact) : void 0,
-          entries
+          artifact: artifact ? new _artifactDispatcher.ArtifactDispatcher(this._scope, artifact) : void 0
         };
       }
       async tracingStop(params) {
@@ -47519,7 +47211,7 @@ var require_androidDispatcher = __commonJS({
       }
     };
     exports.AndroidSocketDispatcher = AndroidSocketDispatcher;
-    var keyMap = /* @__PURE__ */ new Map([["Unknown", 0], ["SoftLeft", 1], ["SoftRight", 2], ["Home", 3], ["Back", 4], ["Call", 5], ["EndCall", 6], ["0", 7], ["1", 8], ["2", 9], ["3", 10], ["4", 11], ["5", 12], ["6", 13], ["7", 14], ["8", 15], ["9", 16], ["Star", 17], ["*", 17], ["Pound", 18], ["#", 18], ["DialUp", 19], ["DialDown", 20], ["DialLeft", 21], ["DialRight", 22], ["DialCenter", 23], ["VolumeUp", 24], ["VolumeDown", 25], ["Power", 26], ["Camera", 27], ["Clear", 28], ["A", 29], ["B", 30], ["C", 31], ["D", 32], ["E", 33], ["F", 34], ["G", 35], ["H", 36], ["I", 37], ["J", 38], ["K", 39], ["L", 40], ["M", 41], ["N", 42], ["O", 43], ["P", 44], ["Q", 45], ["R", 46], ["S", 47], ["T", 48], ["U", 49], ["V", 50], ["W", 51], ["X", 52], ["Y", 53], ["Z", 54], ["Comma", 55], [",", 55], ["Period", 56], [".", 56], ["AltLeft", 57], ["AltRight", 58], ["ShiftLeft", 59], ["ShiftRight", 60], ["Tab", 61], ["	", 61], ["Space", 62], [" ", 62], ["Sym", 63], ["Explorer", 64], ["Envelop", 65], ["Enter", 66], ["Del", 67], ["Grave", 68], ["Minus", 69], ["-", 69], ["Equals", 70], ["=", 70], ["LeftBracket", 71], ["(", 71], ["RightBracket", 72], [")", 72], ["Backslash", 73], ["\\", 73], ["Semicolon", 74], [";", 74], ["Apostrophe", 75], ["`", 75], ["Slash", 76], ["/", 76], ["At", 77], ["@", 77], ["Num", 78], ["HeadsetHook", 79], ["Focus", 80], ["Plus", 81], ["Menu", 82], ["Notification", 83], ["Search", 84], ["AppSwitch", 187], ["Assist", 219], ["Cut", 277], ["Copy", 278], ["Paste", 279]]);
+    var keyMap = new Map([["Unknown", 0], ["SoftLeft", 1], ["SoftRight", 2], ["Home", 3], ["Back", 4], ["Call", 5], ["EndCall", 6], ["0", 7], ["1", 8], ["2", 9], ["3", 10], ["4", 11], ["5", 12], ["6", 13], ["7", 14], ["8", 15], ["9", 16], ["Star", 17], ["*", 17], ["Pound", 18], ["#", 18], ["DialUp", 19], ["DialDown", 20], ["DialLeft", 21], ["DialRight", 22], ["DialCenter", 23], ["VolumeUp", 24], ["VolumeDown", 25], ["Power", 26], ["Camera", 27], ["Clear", 28], ["A", 29], ["B", 30], ["C", 31], ["D", 32], ["E", 33], ["F", 34], ["G", 35], ["H", 36], ["I", 37], ["J", 38], ["K", 39], ["L", 40], ["M", 41], ["N", 42], ["O", 43], ["P", 44], ["Q", 45], ["R", 46], ["S", 47], ["T", 48], ["U", 49], ["V", 50], ["W", 51], ["X", 52], ["Y", 53], ["Z", 54], ["Comma", 55], [",", 55], ["Period", 56], [".", 56], ["AltLeft", 57], ["AltRight", 58], ["ShiftLeft", 59], ["ShiftRight", 60], ["Tab", 61], ["	", 61], ["Space", 62], [" ", 62], ["Sym", 63], ["Explorer", 64], ["Envelop", 65], ["Enter", 66], ["Del", 67], ["Grave", 68], ["Minus", 69], ["-", 69], ["Equals", 70], ["=", 70], ["LeftBracket", 71], ["(", 71], ["RightBracket", 72], [")", 72], ["Backslash", 73], ["\\", 73], ["Semicolon", 74], [";", 74], ["Apostrophe", 75], ["`", 75], ["Slash", 76], ["/", 76], ["At", 77], ["@", 77], ["Num", 78], ["HeadsetHook", 79], ["Focus", 80], ["Plus", 81], ["Menu", 82], ["Notification", 83], ["Search", 84], ["AppSwitch", 187], ["Assist", 219], ["Cut", 277], ["Copy", 278], ["Paste", 279]]);
   }
 });
 
@@ -47877,9 +47569,9 @@ var require_playwrightDispatcher = __commonJS({
         (_this$_socksProxy5 = this._socksProxy) === null || _this$_socksProxy5 === void 0 ? void 0 : _this$_socksProxy5.sendSocketEnd(params);
       }
       async newRequest(params, metadata) {
-        const request = new _fetch.GlobalAPIRequestContext(this._object, params);
+        const request = new _fetch.GlobalFetchRequest(this._object, params);
         return {
-          request: _networkDispatchers.APIRequestContextDispatcher.from(this._scope, request)
+          request: _networkDispatchers.FetchRequestDispatcher.from(this._scope, request)
         };
       }
     };
@@ -47887,7 +47579,7 @@ var require_playwrightDispatcher = __commonJS({
     var SocksProxy = class {
       constructor(dispatcher) {
         this._server = void 0;
-        this._connections = /* @__PURE__ */ new Map();
+        this._connections = new Map();
         this._dispatcher = void 0;
         this._dispatcher = dispatcher;
         this._server = new _net.default.Server((socket) => {
@@ -48073,24 +47765,22 @@ var require_channelOwner = __commonJS({
     var _stackTrace = require_stackTrace();
     var _utils = require_utils();
     var ChannelOwner = class extends _events.EventEmitter {
-      constructor(parent, type, guid, initializer, instrumentation) {
-        var _this$_parent;
+      constructor(parent, type, guid, initializer) {
         super();
         this._connection = void 0;
         this._parent = void 0;
-        this._objects = /* @__PURE__ */ new Map();
+        this._objects = new Map();
         this._type = void 0;
         this._guid = void 0;
         this._channel = void 0;
         this._initializer = void 0;
         this._logger = void 0;
-        this._instrumentation = void 0;
+        this._csi = void 0;
         this.setMaxListeners(0);
         this._connection = parent instanceof ChannelOwner ? parent._connection : parent;
         this._type = type;
         this._guid = guid;
         this._parent = parent instanceof ChannelOwner ? parent : void 0;
-        this._instrumentation = instrumentation || ((_this$_parent = this._parent) === null || _this$_parent === void 0 ? void 0 : _this$_parent._instrumentation);
         this._connection._objects.set(guid, this);
         if (this._parent) {
           this._parent._objects.set(guid, this);
@@ -48123,7 +47813,7 @@ var require_channelOwner = __commonJS({
               if (validator) {
                 return (params) => {
                   if (callCookie && csi) {
-                    csi.onApiCallBegin(renderCallWithParams(stackTrace.apiName, params), stackTrace, callCookie);
+                    callCookie.userObject = csi.onApiCallBegin(renderCallWithParams(stackTrace.apiName, params), stackTrace).userObject;
                     csi = void 0;
                   }
                   return this._connection.sendMessageToServer(this, prop, validator(params, ""), stackTrace);
@@ -48143,14 +47833,19 @@ var require_channelOwner = __commonJS({
           apiName,
           frameTexts
         } = stackTrace;
+        let ancestorWithCSI = this;
+        while (!ancestorWithCSI._csi && ancestorWithCSI._parent)
+          ancestorWithCSI = ancestorWithCSI._parent;
         isInternal = isInternal || stackTrace.allFrames.filter((f) => {
           var _f$function;
           return (_f$function = f.function) === null || _f$function === void 0 ? void 0 : _f$function.includes("_wrapApiCall");
         }).length > 1;
         if (isInternal)
           delete stackTrace.apiName;
-        const csi = isInternal ? void 0 : this._instrumentation;
-        const callCookie = {};
+        const csi = isInternal ? void 0 : ancestorWithCSI._csi;
+        const callCookie = {
+          userObject: null
+        };
         try {
           logApiCall(logger, `=> ${apiName} started`, isInternal);
           const channel = this._createChannel({}, stackTrace, csi, callCookie);
@@ -48267,7 +47962,7 @@ var require_jsHandle = __commonJS({
       }
       async getProperties() {
         return this._wrapApiCall(async (channel) => {
-          const map = /* @__PURE__ */ new Map();
+          const map = new Map();
           for (const {
             name,
             value
@@ -48308,7 +48003,7 @@ var require_jsHandle = __commonJS({
         return {
           fallThrough: value2
         };
-      }, /* @__PURE__ */ new Set());
+      }, new Set());
       return {
         value,
         handles
@@ -48500,12 +48195,12 @@ var require_locator = __commonJS({
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.FrameLocator = exports.Locator = void 0;
+    exports.Locator = void 0;
     var util = _interopRequireWildcard(__require("util"));
     var _utils = require_utils();
     var _elementHandle = require_elementHandle();
     var _jsHandle = require_jsHandle();
-    var _util$inspect$custom;
+    var _custom;
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -48544,7 +48239,7 @@ var require_locator = __commonJS({
       }
       return newObj;
     }
-    _util$inspect$custom = util.inspect.custom;
+    _custom = util.inspect.custom;
     var Locator = class {
       constructor(frame, selector) {
         this._frame = void 0;
@@ -48618,9 +48313,6 @@ var require_locator = __commonJS({
       }
       locator(selector) {
         return new Locator(this._frame, this._selector + " >> " + selector);
-      }
-      frameLocator(selector) {
-        return new FrameLocator(this._frame, this._selector + " >> " + selector);
       }
       async elementHandle(options) {
         return await this._frame.waitForSelector(this._selector, {
@@ -48814,7 +48506,7 @@ var require_locator = __commonJS({
           return result;
         });
       }
-      [_util$inspect$custom]() {
+      [_custom]() {
         return this.toString();
       }
       toString() {
@@ -48822,30 +48514,6 @@ var require_locator = __commonJS({
       }
     };
     exports.Locator = Locator;
-    var FrameLocator = class {
-      constructor(frame, selector) {
-        this._frame = void 0;
-        this._frameSelector = void 0;
-        this._frame = frame;
-        this._frameSelector = selector;
-      }
-      locator(selector) {
-        return new Locator(this._frame, this._frameSelector + " >> control=enter-frame >> " + selector);
-      }
-      frameLocator(selector) {
-        return new FrameLocator(this._frame, this._frameSelector + " >> control=enter-frame >> " + selector);
-      }
-      first() {
-        return new FrameLocator(this._frame, this._frameSelector + " >> nth=0");
-      }
-      last() {
-        return new FrameLocator(this._frame, this._frameSelector + ` >> nth=-1`);
-      }
-      nth(index) {
-        return new FrameLocator(this._frame, this._frameSelector + ` >> nth=${index}`);
-      }
-    };
-    exports.FrameLocator = FrameLocator;
   }
 });
 
@@ -49024,7 +48692,7 @@ var require_clientHelper = __commonJS({
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
-    var deprecatedHits = /* @__PURE__ */ new Set();
+    var deprecatedHits = new Set();
     function deprecate(methodName, message) {
       if (deprecatedHits.has(methodName))
         return;
@@ -49089,7 +48757,7 @@ var require_clientHelper = __commonJS({
         throw new Error("url parameter should be string, RegExp or function");
       return match(url);
     }
-    var escapeGlobChars = /* @__PURE__ */ new Set(["/", "$", "^", "+", ".", "(", ")", "=", "!", "|"]);
+    var escapeGlobChars = new Set(["/", "$", "^", "+", ".", "(", ")", "=", "!", "|"]);
     function globToRegex(glob) {
       const tokens = ["^"];
       let inGroup;
@@ -49156,7 +48824,7 @@ var require_multimap = __commonJS({
     var MultiMap = class {
       constructor() {
         this._map = void 0;
-        this._map = /* @__PURE__ */ new Map();
+        this._map = new Map();
       }
       set(key, value) {
         let values = this._map.get(key);
@@ -49205,16 +48873,14 @@ var require_fetch2 = __commonJS({
     Object.defineProperty(exports, "__esModule", {
       value: true
     });
-    exports.APIResponse = exports.APIRequestContext = exports.APIRequest = void 0;
+    exports.FetchResponse = exports.FetchRequest = exports.Fetch = void 0;
     var _fs = _interopRequireDefault(__require("fs"));
     var _path = _interopRequireDefault(__require("path"));
     var mime = _interopRequireWildcard(require_mime());
-    var util = _interopRequireWildcard(__require("util"));
     var _errors = require_errors();
     var _utils = require_utils();
     var _channelOwner = require_channelOwner();
     var network = _interopRequireWildcard(require_network2());
-    var _util$inspect$custom;
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -49256,7 +48922,7 @@ var require_fetch2 = __commonJS({
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
-    var APIRequest = class {
+    var Fetch = class {
       constructor(playwright2) {
         this._playwright = void 0;
         this._playwright = playwright2;
@@ -49264,7 +48930,7 @@ var require_fetch2 = __commonJS({
       async newContext(options = {}) {
         return await this._playwright._wrapApiCall(async (channel) => {
           const storageState = typeof options.storageState === "string" ? JSON.parse(await _fs.default.promises.readFile(options.storageState, "utf8")) : options.storageState;
-          return APIRequestContext.from((await channel.newRequest({
+          return FetchRequest.from((await channel.newRequest({
             ...options,
             extraHTTPHeaders: options.extraHTTPHeaders ? (0, _utils.headersObjectToArray)(options.extraHTTPHeaders) : void 0,
             storageState
@@ -49272,8 +48938,8 @@ var require_fetch2 = __commonJS({
         });
       }
     };
-    exports.APIRequest = APIRequest;
-    var APIRequestContext = class extends _channelOwner.ChannelOwner {
+    exports.Fetch = Fetch;
+    var FetchRequest = class extends _channelOwner.ChannelOwner {
       static from(channel) {
         return channel._object;
       }
@@ -49336,18 +49002,14 @@ var require_fetch2 = __commonJS({
           let multipartData;
           let postDataBuffer;
           if (options.data !== void 0) {
-            if ((0, _utils.isString)(options.data)) {
-              if (isJsonContentType(headers))
-                jsonData = options.data;
-              else
-                postDataBuffer = Buffer.from(options.data, "utf8");
-            } else if (Buffer.isBuffer(options.data)) {
+            if ((0, _utils.isString)(options.data))
+              postDataBuffer = Buffer.from(options.data, "utf8");
+            else if (Buffer.isBuffer(options.data))
               postDataBuffer = options.data;
-            } else if (typeof options.data === "object" || typeof options.data === "number" || typeof options.data === "boolean") {
+            else if (typeof options.data === "object")
               jsonData = options.data;
-            } else {
+            else
               throw new Error(`Unexpected 'data' type`);
-            }
           } else if (options.form) {
             formData = (0, _utils.objectToArray)(options.form);
           } else if (options.multipart) {
@@ -49392,7 +49054,7 @@ var require_fetch2 = __commonJS({
           });
           if (result.error)
             throw new Error(result.error);
-          return new APIResponse(this, result.response);
+          return new FetchResponse(this, result.response);
         });
       }
       async storageState(options = {}) {
@@ -49406,9 +49068,8 @@ var require_fetch2 = __commonJS({
         });
       }
     };
-    exports.APIRequestContext = APIRequestContext;
-    _util$inspect$custom = util.inspect.custom;
-    var APIResponse = class {
+    exports.FetchRequest = FetchRequest;
+    var FetchResponse = class {
       constructor(context, initializer) {
         this._initializer = void 0;
         this._headers = void 0;
@@ -49418,7 +49079,7 @@ var require_fetch2 = __commonJS({
         this._headers = new network.RawHeaders(this._initializer.headers);
       }
       ok() {
-        return this._initializer.status >= 200 && this._initializer.status <= 299;
+        return this._initializer.status === 0 || this._initializer.status >= 200 && this._initializer.status <= 299;
       }
       url() {
         return this._initializer.url;
@@ -49461,24 +49122,16 @@ var require_fetch2 = __commonJS({
       }
       async dispose() {
         return this._request._wrapApiCall(async (channel) => {
-          await channel.disposeAPIResponse({
+          await channel.disposeFetchResponse({
             fetchUid: this._fetchUid()
           });
         });
-      }
-      [_util$inspect$custom]() {
-        const headers = this.headersArray().map(({
-          name,
-          value
-        }) => `  ${name}: ${value}`);
-        return `APIResponse: ${this.status()} ${this.statusText()}
-${headers.join("\n")}`;
       }
       _fetchUid() {
         return this._initializer.fetchUid;
       }
     };
-    exports.APIResponse = APIResponse;
+    exports.FetchResponse = FetchResponse;
     function filePayloadToJson(payload) {
       return {
         name: payload.name,
@@ -49500,18 +49153,6 @@ ${headers.join("\n")}`;
         buffer: buffer.toString("base64")
       };
     }
-    function isJsonContentType(headers) {
-      if (!headers)
-        return false;
-      for (const {
-        name,
-        value
-      } of headers) {
-        if (name.toLocaleLowerCase() === "content-type")
-          return value === "application/json";
-      }
-      return false;
-    }
   }
 });
 
@@ -49523,7 +49164,7 @@ var require_network2 = __commonJS({
       value: true
     });
     exports.validateHeaders = validateHeaders;
-    exports.RawHeaders = exports.RouteHandler = exports.WebSocket = exports.Response = exports.Route = exports.Request = void 0;
+    exports.RawHeaders = exports.RouteHandler = exports.WebSocket = exports.Response = exports.Route = exports.InterceptedResponse = exports.Request = void 0;
     var _url = __require("url");
     var _channelOwner = require_channelOwner();
     var _frame = require_frame();
@@ -49708,41 +49349,115 @@ var require_network2 = __commonJS({
       }
     };
     exports.Request = Request;
+    var InterceptedResponse = class {
+      constructor(route, initializer) {
+        this._route = void 0;
+        this._initializer = void 0;
+        this._request = void 0;
+        this._headers = void 0;
+        this._route = route;
+        this._initializer = initializer;
+        this._headers = new RawHeaders(initializer.headers);
+        this._request = Request.from(initializer.request);
+      }
+      async securityDetails() {
+        return null;
+      }
+      async serverAddr() {
+        return null;
+      }
+      async finished() {
+        const response = await this._request.response();
+        if (!response)
+          return null;
+        return await response.finished();
+      }
+      frame() {
+        return this._request.frame();
+      }
+      ok() {
+        return this._initializer.status === 0 || this._initializer.status >= 200 && this._initializer.status <= 299;
+      }
+      url() {
+        return this._request.url();
+      }
+      status() {
+        return this._initializer.status;
+      }
+      statusText() {
+        return this._initializer.statusText;
+      }
+      headers() {
+        return this._headers.headers();
+      }
+      async allHeaders() {
+        return this.headers();
+      }
+      async headersArray() {
+        return this._headers.headersArray();
+      }
+      async headerValue(name) {
+        return this._headers.get(name);
+      }
+      async headerValues(name) {
+        return this._headers.getAll(name);
+      }
+      async body() {
+        return this._route._responseBody();
+      }
+      async text() {
+        const content = await this.body();
+        return content.toString("utf8");
+      }
+      async json() {
+        const content = await this.text();
+        return JSON.parse(content);
+      }
+      request() {
+        return this._request;
+      }
+    };
+    exports.InterceptedResponse = InterceptedResponse;
     var Route = class extends _channelOwner.ChannelOwner {
       static from(route) {
         return route._object;
       }
       constructor(parent, type, guid, initializer) {
         super(parent, type, guid, initializer);
+        this._interceptedResponse = void 0;
       }
       request() {
         return Request.from(this._initializer.request);
       }
-      _raceWithPageClose(promise) {
-        const page = this.request().frame()._page;
-        return Promise.race([promise, page ? page._closedOrCrashedPromise : Promise.resolve()]);
-      }
       async abort(errorCode) {
         return this._wrapApiCall(async (channel) => {
-          await this._raceWithPageClose(channel.abort({
+          await channel.abort({
             errorCode
-          }));
+          });
         });
       }
       async fulfill(options = {}) {
         return this._wrapApiCall(async (channel) => {
+          let useInterceptedResponseBody;
           let fetchResponseUid;
           let {
             status: statusOption,
             headers: headersOption,
-            body
+            body: bodyOption
           } = options;
           if (options.response) {
             statusOption || (statusOption = options.response.status());
             headersOption || (headersOption = options.response.headers());
-            if (options.body === void 0 && options.path === void 0 && options.response instanceof _fetch.APIResponse)
-              fetchResponseUid = options.response._fetchUid();
+            if (options.body === void 0 && options.path === void 0) {
+              if (options.response instanceof _fetch.FetchResponse)
+                fetchResponseUid = options.response._fetchUid();
+              else if (options.response === this._interceptedResponse)
+                useInterceptedResponseBody = true;
+              else
+                bodyOption = await options.response.body();
+            }
           }
+          let body = void 0;
           let isBase64 = false;
           let length = 0;
           if (options.path) {
@@ -49750,13 +49465,14 @@ var require_network2 = __commonJS({
             body = buffer.toString("base64");
             isBase64 = true;
             length = buffer.length;
-          } else if ((0, _utils.isString)(body)) {
+          } else if ((0, _utils.isString)(bodyOption)) {
+            body = bodyOption;
             isBase64 = false;
             length = Buffer.byteLength(body);
-          } else if (body) {
-            length = body.length;
-            body = body.toString("base64");
+          } else if (bodyOption) {
+            body = bodyOption.toString("base64");
             isBase64 = true;
+            length = bodyOption.length;
           }
           const headers = {};
           for (const header of Object.keys(headersOption || {}))
@@ -49767,32 +49483,46 @@ var require_network2 = __commonJS({
             headers["content-type"] = mime.getType(options.path) || "application/octet-stream";
           if (length && !("content-length" in headers))
             headers["content-length"] = String(length);
-          await this._raceWithPageClose(channel.fulfill({
+          await channel.fulfill({
             status: statusOption || 200,
             headers: (0, _utils.headersObjectToArray)(headers),
             body,
             isBase64,
+            useInterceptedResponseBody,
             fetchResponseUid
-          }));
+          });
         });
+      }
+      async _continueToResponse(options = {}) {
+        this._interceptedResponse = await this._continue(options, true);
+        return this._interceptedResponse;
       }
       async continue(options = {}) {
-        await this._continue(options);
+        await this._continue(options, false);
       }
       async _internalContinue(options = {}) {
-        await this._continue(options, true).catch(() => {
+        await this._continue(options, false, true).catch(() => {
         });
       }
-      async _continue(options, isInternal) {
+      async _continue(options, interceptResponse, isInternal) {
         return await this._wrapApiCall(async (channel) => {
           const postDataBuffer = (0, _utils.isString)(options.postData) ? Buffer.from(options.postData, "utf8") : options.postData;
-          await this._raceWithPageClose(channel.continue({
+          const result = await channel.continue({
             url: options.url,
             method: options.method,
             headers: options.headers ? (0, _utils.headersObjectToArray)(options.headers) : void 0,
-            postData: postDataBuffer ? postDataBuffer.toString("base64") : void 0
-          }));
+            postData: postDataBuffer ? postDataBuffer.toString("base64") : void 0,
+            interceptResponse
+          });
+          if (result.response)
+            return new InterceptedResponse(this, result.response);
+          return null;
         }, void 0, isInternal);
+      }
+      async _responseBody() {
+        return this._wrapApiCall(async (channel) => {
+          return Buffer.from((await channel.responseBody()).binary, "base64");
+        });
       }
     };
     exports.Route = Route;
@@ -49952,7 +49682,7 @@ var require_network2 = __commonJS({
       }
     }
     var RouteHandler = class {
-      constructor(baseURL, url, handler, times = Number.MAX_SAFE_INTEGER) {
+      constructor(baseURL, url, handler, times) {
         this.handledCount = 0;
         this._baseURL = void 0;
         this._times = void 0;
@@ -49963,15 +49693,16 @@ var require_network2 = __commonJS({
         this.url = url;
         this.handler = handler;
       }
+      expired() {
+        return !!this._times && this.handledCount >= this._times;
+      }
       matches(requestURL) {
         return (0, _clientHelper.urlMatches)(this._baseURL, requestURL, this.url);
       }
       handle(route, request) {
-        try {
-          this.handler(route, request);
-        } finally {
-          return ++this.handledCount >= this._times;
-        }
+        this.handler(route, request);
+        if (this._times)
+          this.handledCount++;
       }
     };
     exports.RouteHandler = RouteHandler;
@@ -50057,7 +49788,7 @@ var require_types3 = __commonJS({
     });
     exports.kLifecycleEvents = void 0;
     var _types = require_types();
-    var kLifecycleEvents = /* @__PURE__ */ new Set(["load", "domcontentloaded", "networkidle", "commit"]);
+    var kLifecycleEvents = new Set(["load", "domcontentloaded", "networkidle"]);
     exports.kLifecycleEvents = kLifecycleEvents;
   }
 });
@@ -50139,7 +49870,7 @@ var require_frame = __commonJS({
         this._url = "";
         this._name = "";
         this._detached = false;
-        this._childFrames = /* @__PURE__ */ new Set();
+        this._childFrames = new Set();
         this._page = void 0;
         this._eventEmitter = new _events.EventEmitter();
         this._eventEmitter.setMaxListeners(0);
@@ -50235,7 +49966,7 @@ var require_frame = __commonJS({
       async waitForURL(url, options = {}) {
         var _this$_page2;
         if ((0, _clientHelper.urlMatches)((_this$_page2 = this._page) === null || _this$_page2 === void 0 ? void 0 : _this$_page2.context()._options.baseURL, this.url(), url))
-          return await this.waitForLoadState(options.waitUntil, options);
+          return await this.waitForLoadState(options === null || options === void 0 ? void 0 : options.waitUntil, options);
         await this.waitForNavigation({
           url,
           ...options
@@ -50435,9 +50166,6 @@ var require_frame = __commonJS({
       locator(selector) {
         return new _locator.Locator(this, selector);
       }
-      frameLocator(selector) {
-        return new _locator.FrameLocator(this, selector);
-      }
       async focus(selector, options = {}) {
         return this._wrapApiCall(async (channel) => {
           await channel.focus({
@@ -50635,7 +50363,7 @@ var require_frame = __commonJS({
       if (waitUntil === "networkidle0")
         waitUntil = "networkidle";
       if (!_types.kLifecycleEvents.has(waitUntil))
-        throw new Error(`${name}: expected one of (load|domcontentloaded|networkidle|commit)`);
+        throw new Error(`${name}: expected one of (load|domcontentloaded|networkidle)`);
       return waitUntil;
     }
   }
@@ -51503,8 +51231,8 @@ var require_page2 = __commonJS({
         this._browserContext = void 0;
         this._ownedContext = void 0;
         this._mainFrame = void 0;
-        this._frames = /* @__PURE__ */ new Set();
-        this._workers = /* @__PURE__ */ new Set();
+        this._frames = new Set();
+        this._workers = new Set();
         this._closed = false;
         this._closedOrCrashedPromise = void 0;
         this._viewportSize = void 0;
@@ -51515,7 +51243,7 @@ var require_page2 = __commonJS({
         this.mouse = void 0;
         this.request = void 0;
         this.touchscreen = void 0;
-        this._bindings = /* @__PURE__ */ new Map();
+        this._bindings = new Map();
         this._timeoutSettings = void 0;
         this._video = null;
         this._opener = void 0;
@@ -51610,18 +51338,18 @@ var require_page2 = __commonJS({
         this.emit(_events.Events.Page.FrameDetached, frame);
       }
       _onRoute(route, request) {
+        let handled = false;
         for (const routeHandler of this._routes) {
           if (routeHandler.matches(request.url())) {
-            if (routeHandler.handle(route, request)) {
-              this._routes.splice(this._routes.indexOf(routeHandler), 1);
-              if (!this._routes.length)
-                this._wrapApiCall((channel) => this._disableInterception(channel), void 0, true).catch(() => {
-                });
-            }
-            return;
+            routeHandler.handle(route, request);
+            handled = true;
+            break;
           }
         }
-        this._browserContext._onRoute(route, request);
+        if (!handled)
+          this._browserContext._onRoute(route, request);
+        else
+          this._routes = this._routes.filter((route2) => !route2.expired());
       }
       async _onBinding(bindingCall) {
         const func = this._bindings.get(bindingCall._initializer.name);
@@ -51890,13 +51618,10 @@ var require_page2 = __commonJS({
       async unroute(url, handler) {
         return this._wrapApiCall(async (channel) => {
           this._routes = this._routes.filter((route) => route.url !== url || handler && route.handler !== handler);
-          if (!this._routes.length)
-            await this._disableInterception(channel);
-        });
-      }
-      async _disableInterception(channel) {
-        await channel.setNetworkInterceptionEnabled({
-          enabled: false
+          if (this._routes.length === 0)
+            await channel.setNetworkInterceptionEnabled({
+              enabled: false
+            });
         });
       }
       async screenshot(options = {}) {
@@ -51959,9 +51684,6 @@ var require_page2 = __commonJS({
       }
       locator(selector) {
         return this.mainFrame().locator(selector);
-      }
-      frameLocator(selector) {
-        return this.mainFrame().frameLocator(selector);
       }
       async focus(selector, options) {
         return this._mainFrame.focus(selector, options);
@@ -52202,42 +51924,20 @@ var require_tracing2 = __commonJS({
     });
     exports.Tracing = void 0;
     var _artifact = require_artifact2();
-    var _fs = _interopRequireDefault(__require("fs"));
-    var _path = _interopRequireDefault(__require("path"));
-    var _yauzl = _interopRequireDefault(require_yauzl());
-    var _yazl = _interopRequireDefault(require_yazl());
-    var _utils = require_utils();
-    var _async = require_async();
-    function _interopRequireDefault(obj) {
-      return obj && obj.__esModule ? obj : { default: obj };
-    }
     var Tracing = class {
       constructor(channel) {
         this._context = void 0;
-        this._sources = /* @__PURE__ */ new Set();
-        this._instrumentationListener = void 0;
         this._context = channel;
-        this._instrumentationListener = {
-          onApiCallBegin: (apiCall, stackTrace) => {
-            for (const frame of (stackTrace === null || stackTrace === void 0 ? void 0 : stackTrace.frames) || [])
-              this._sources.add(frame.file);
-          }
-        };
       }
       async start(options = {}) {
-        if (options.sources)
-          this._context._instrumentation.addListener(this._instrumentationListener);
         await this._context._wrapApiCall(async (channel) => {
           await channel.tracingStart(options);
-          await channel.tracingStartChunk({
-            title: options.title
-          });
+          await channel.tracingStartChunk();
         });
       }
-      async startChunk(options = {}) {
-        this._sources = /* @__PURE__ */ new Set();
+      async startChunk() {
         await this._context._wrapApiCall(async (channel) => {
-          await channel.tracingStartChunk(options);
+          await channel.tracingStartChunk();
         });
       }
       async stopChunk(options = {}) {
@@ -52251,113 +51951,18 @@ var require_tracing2 = __commonJS({
           await channel.tracingStop();
         });
       }
-      async _doStopChunk(channel, filePath) {
-        const sources = this._sources;
-        this._sources = /* @__PURE__ */ new Set();
-        this._context._instrumentation.removeListener(this._instrumentationListener);
-        const skipCompress = !this._context._connection.isRemote();
+      async _doStopChunk(channel, path) {
         const result = await channel.tracingStopChunk({
-          save: !!filePath,
-          skipCompress
+          save: !!path
         });
-        if (!filePath) {
+        if (!result.artifact)
           return;
-        }
-        if (!skipCompress && !sources) {
-          const artifact2 = _artifact.Artifact.from(result.artifact);
-          await artifact2.saveAs(filePath);
-          await artifact2.delete();
-          return;
-        }
-        const promise = new _async.ManualPromise();
-        const zipFile = new _yazl.default.ZipFile();
-        zipFile.on("error", (error) => promise.reject(error));
-        if (sources) {
-          for (const source of sources) {
-            try {
-              if (_fs.default.statSync(source).isFile())
-                zipFile.addFile(source, "resources/src@" + (0, _utils.calculateSha1)(source) + ".txt");
-            } catch (e) {
-            }
-          }
-        }
-        await _fs.default.promises.mkdir(_path.default.dirname(filePath), {
-          recursive: true
-        });
-        if (skipCompress) {
-          for (const entry of result.entries)
-            zipFile.addFile(entry.value, entry.name);
-          zipFile.end(void 0, () => {
-            zipFile.outputStream.pipe(_fs.default.createWriteStream(filePath)).on("close", () => promise.resolve());
-          });
-          return promise;
-        }
         const artifact = _artifact.Artifact.from(result.artifact);
-        const tmpPath = filePath + ".tmp";
-        await artifact.saveAs(tmpPath);
+        await artifact.saveAs(path);
         await artifact.delete();
-        _yauzl.default.open(tmpPath, (err, inZipFile) => {
-          if (err) {
-            promise.reject(err);
-            return;
-          }
-          (0, _utils.assert)(inZipFile);
-          let pendingEntries = inZipFile.entryCount;
-          inZipFile.on("entry", (entry) => {
-            inZipFile.openReadStream(entry, (err2, readStream) => {
-              if (err2) {
-                promise.reject(err2);
-                return;
-              }
-              zipFile.addReadStream(readStream, entry.fileName);
-              if (--pendingEntries === 0) {
-                zipFile.end(void 0, () => {
-                  zipFile.outputStream.pipe(_fs.default.createWriteStream(filePath)).on("close", () => {
-                    _fs.default.promises.unlink(tmpPath).then(() => {
-                      promise.resolve();
-                    });
-                  });
-                });
-              }
-            });
-          });
-        });
-        return promise;
       }
     };
     exports.Tracing = Tracing;
-  }
-});
-
-// node_modules/playwright-core/lib/client/clientInstrumentation.js
-var require_clientInstrumentation = __commonJS({
-  "node_modules/playwright-core/lib/client/clientInstrumentation.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", {
-      value: true
-    });
-    exports.createInstrumentation = createInstrumentation;
-    function createInstrumentation() {
-      const listeners = [];
-      return new Proxy({}, {
-        get: (obj, prop) => {
-          if (prop === "addListener")
-            return (listener) => listeners.push(listener);
-          if (prop === "removeListener")
-            return (listener) => listeners.splice(listeners.indexOf(listener), 1);
-          if (prop === "removeAllListeners")
-            return () => listeners.splice(0, listeners.length);
-          if (!prop.startsWith("on"))
-            return obj[prop];
-          return async (...params) => {
-            for (const listener of listeners) {
-              var _prop, _ref;
-              await ((_prop = (_ref = listener)[prop]) === null || _prop === void 0 ? void 0 : _prop.call(_ref, ...params));
-            }
-          };
-        }
-      });
-    }
   }
 });
 
@@ -52387,7 +51992,6 @@ var require_browserContext2 = __commonJS({
     var _tracing = require_tracing2();
     var _artifact = require_artifact2();
     var _fetch = require_fetch2();
-    var _clientInstrumentation = require_clientInstrumentation();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -52438,26 +52042,26 @@ var require_browserContext2 = __commonJS({
       }
       constructor(parent, type, guid, initializer) {
         var _this$_browser;
-        super(parent, type, guid, initializer, (0, _clientInstrumentation.createInstrumentation)());
-        this._pages = /* @__PURE__ */ new Set();
+        super(parent, type, guid, initializer);
+        this._pages = new Set();
         this._routes = [];
         this._browser = null;
         this._browserType = void 0;
-        this._bindings = /* @__PURE__ */ new Map();
+        this._bindings = new Map();
         this._timeoutSettings = new _timeoutSettings.TimeoutSettings();
         this._ownerPage = void 0;
         this._closedPromise = void 0;
         this._options = {};
         this.request = void 0;
         this.tracing = void 0;
-        this._backgroundPages = /* @__PURE__ */ new Set();
-        this._serviceWorkers = /* @__PURE__ */ new Set();
+        this._backgroundPages = new Set();
+        this._serviceWorkers = new Set();
         this._isChromium = void 0;
         if (parent instanceof _browser.Browser)
           this._browser = parent;
         this._isChromium = ((_this$_browser = this._browser) === null || _this$_browser === void 0 ? void 0 : _this$_browser._name) === "chromium";
         this.tracing = new _tracing.Tracing(this);
-        this.request = _fetch.APIRequestContext.from(initializer.APIRequestContext);
+        this.request = _fetch.FetchRequest.from(initializer.fetchRequest);
         this._channel.on("bindingCall", ({
           binding
         }) => this._onBinding(_page.BindingCall.from(binding)));
@@ -52545,18 +52149,19 @@ var require_browserContext2 = __commonJS({
           response._finishedPromise.resolve();
       }
       _onRoute(route, request) {
+        let handled = false;
         for (const routeHandler of this._routes) {
           if (routeHandler.matches(request.url())) {
-            if (routeHandler.handle(route, request)) {
-              this._routes.splice(this._routes.indexOf(routeHandler), 1);
-              if (!this._routes.length)
-                this._wrapApiCall((channel) => this._disableInterception(channel), void 0, true).catch(() => {
-                });
-            }
-            return;
+            routeHandler.handle(route, request);
+            handled = true;
+            break;
           }
         }
-        route._internalContinue();
+        if (!handled) {
+          route._internalContinue();
+        } else {
+          this._routes = this._routes.filter((route2) => !route2.expired());
+        }
       }
       async _onBinding(bindingCall) {
         const func = this._bindings.get(bindingCall._initializer.name);
@@ -52694,13 +52299,10 @@ var require_browserContext2 = __commonJS({
       async unroute(url, handler) {
         return this._wrapApiCall(async (channel) => {
           this._routes = this._routes.filter((route) => route.url !== url || handler && route.handler !== handler);
-          if (!this._routes.length)
-            await this._disableInterception(channel);
-        });
-      }
-      async _disableInterception(channel) {
-        await channel.setNetworkInterceptionEnabled({
-          enabled: false
+          if (this._routes.length === 0)
+            await channel.setNetworkInterceptionEnabled({
+              enabled: false
+            });
         });
       }
       async waitForEvent(event, optionsOrPredicate = {}) {
@@ -52821,7 +52423,7 @@ var require_browser3 = __commonJS({
       }
       constructor(parent, type, guid, initializer) {
         super(parent, type, guid, initializer);
-        this._contexts = /* @__PURE__ */ new Set();
+        this._contexts = new Set();
         this._isConnected = true;
         this._closedPromise = void 0;
         this._shouldCloseConnectionOnClose = false;
@@ -52932,7 +52534,7 @@ var require_browserType2 = __commonJS({
       constructor(...args) {
         super(...args);
         this._serverLauncher = void 0;
-        this._contexts = /* @__PURE__ */ new Set();
+        this._contexts = new Set();
         this._playwright = void 0;
         this._defaultContextOptions = {};
         this._defaultLaunchOptions = {};
@@ -52974,10 +52576,6 @@ var require_browserType2 = __commonJS({
       async launchServer(options = {}) {
         if (!this._serverLauncher)
           throw new Error("Launching server is not supported");
-        options = {
-          ...this._defaultLaunchOptions,
-          ...options
-        };
         return this._serverLauncher.launchServer(options);
       }
       async launchPersistentContext(userDataDir, options = {}) {
@@ -53199,7 +52797,7 @@ var require_android2 = __commonJS({
       constructor(parent, type, guid, initializer) {
         super(parent, type, guid, initializer);
         this._timeoutSettings = void 0;
-        this._webViews = /* @__PURE__ */ new Map();
+        this._webViews = new Map();
         this.input = void 0;
         this.input = new AndroidInput(this);
         this._timeoutSettings = new _timeoutSettings.TimeoutSettings(parent._timeoutSettings);
@@ -53626,7 +53224,7 @@ var require_electron3 = __commonJS({
       constructor(parent, type, guid, initializer) {
         super(parent, type, guid, initializer);
         this._context = void 0;
-        this._windows = /* @__PURE__ */ new Set();
+        this._windows = new Set();
         this._timeoutSettings = new _timeoutSettings.TimeoutSettings();
         this._context = _browserContext.BrowserContext.from(initializer.context);
         for (const page of this._context._pages)
@@ -53715,7 +53313,7 @@ var require_selectors2 = __commonJS({
     var _channelOwner = require_channelOwner();
     var Selectors = class {
       constructor() {
-        this._channels = /* @__PURE__ */ new Set();
+        this._channels = new Set();
         this._registrations = [];
       }
       async register(name, script, options = {}) {
@@ -53784,9 +53382,9 @@ var require_playwright2 = __commonJS({
         this.selectors = void 0;
         this.request = void 0;
         this.errors = void 0;
-        this._sockets = /* @__PURE__ */ new Map();
+        this._sockets = new Map();
         this._redirectPortForTest = void 0;
-        this.request = new _fetch.APIRequest(this);
+        this.request = new _fetch.Fetch(this);
         this.chromium = _browserType.BrowserType.from(initializer.chromium);
         this.chromium._playwright = this;
         this.firefox = _browserType.BrowserType.from(initializer.firefox);
@@ -53967,12 +53565,12 @@ var require_connection = __commonJS({
     var Connection = class extends _events.EventEmitter {
       constructor() {
         super();
-        this._objects = /* @__PURE__ */ new Map();
-        this._waitingForObject = /* @__PURE__ */ new Map();
+        this._objects = new Map();
+        this._waitingForObject = new Map();
         this.onmessage = (message) => {
         };
         this._lastId = 0;
-        this._callbacks = /* @__PURE__ */ new Map();
+        this._callbacks = new Map();
         this._rootObject = void 0;
         this._closedErrorMessage = void 0;
         this._isRemote = false;
@@ -54111,9 +53709,6 @@ var require_connection = __commonJS({
           case "AndroidDevice":
             result = new _android2.AndroidDevice(parent, type, guid, initializer);
             break;
-          case "APIRequestContext":
-            result = new _fetch.APIRequestContext(parent, type, guid, initializer);
-            break;
           case "Artifact":
             result = new _artifact.Artifact(parent, type, guid, initializer);
             break;
@@ -54146,6 +53741,9 @@ var require_connection = __commonJS({
             break;
           case "ElementHandle":
             result = new _elementHandle.ElementHandle(parent, type, guid, initializer);
+            break;
+          case "FetchRequest":
+            result = new _fetch.FetchRequest(parent, type, guid, initializer);
             break;
           case "Frame":
             result = new _frame.Frame(parent, type, guid, initializer);
@@ -54445,7 +54043,7 @@ var require_browserServerImpl = __commonJS({
           version: browser.version(),
           name: browser.options.name
         }, true);
-        this._contexts = /* @__PURE__ */ new Set();
+        this._contexts = new Set();
         this._selectors = void 0;
         this._selectors = selectors2;
       }
