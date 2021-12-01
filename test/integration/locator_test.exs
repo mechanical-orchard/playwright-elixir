@@ -528,6 +528,36 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.nth/2" do
+    test "return nested/scoped Locators", %{page: page} do
+      page
+      |> Page.set_content("""
+      <section>
+          <div><p>A</p></div>
+          <div><p>A</p><p>A</p></div>
+          <div><p>A</p><p>A</p><p>A</p></div>
+      </section>
+      """)
+
+      assert {:ok, 1} =
+               Page.locator(page, "div >> p")
+               |> Locator.nth(0)
+               |> Locator.count()
+
+      assert {:ok, 2} =
+               Page.locator(page, "div")
+               |> Locator.nth(1)
+               |> Locator.locator("p")
+               |> Locator.count()
+
+      assert {:ok, 3} =
+               Page.locator(page, "div")
+               |> Locator.nth(2)
+               |> Locator.locator("p")
+               |> Locator.count()
+    end
+  end
+
   describe "Locator.press/2" do
     test "focuses an element and 'presses' a key within it", %{page: page} do
       locator = Page.locator(page, "input")

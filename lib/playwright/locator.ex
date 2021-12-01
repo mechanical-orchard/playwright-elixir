@@ -595,12 +595,10 @@ defmodule Playwright.Locator do
     Locator.new(locator.frame, "#{locator.selector} >> #{selector}")
   end
 
-  # ---
-
-  # @spec nth(Locator.t(), non_negative_integer()) :: Locator.t()
-  # def nth(locator, index)
-
-  # ---
+  @spec nth(Locator.t(), term()) :: Locator.t()
+  def nth(context, index) do
+    locator(context, "nth=#{index}")
+  end
 
   @spec press(Locator.t(), binary(), options()) :: :ok
   def press(locator, key, options \\ %{}) do
