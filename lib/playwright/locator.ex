@@ -203,10 +203,10 @@ defmodule Playwright.Locator do
   """
   def_locator(:click, :click, options_click())
 
-  # ---
-
-  # @spec count(Locator.t()) :: {:ok, non_neg_integer()}
-  # def count(locator)
+  @spec count(Locator.t()) :: {:ok, term()}
+  def count(%Locator{} = locator) do
+    evaluate_all(locator, "ee => ee.length")
+  end
 
   @doc """
   Double clicks the element.
@@ -487,17 +487,15 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @spec fill(Locator.t(), binary(), options()) :: :ok
-  def fill(locator, value, options \\ %{}) do
+  def fill(%Locator{} = locator, value, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.fill(locator.frame, locator.selector, value, options)
   end
 
-  # ---
-
-  # @spec first(Locator.t()) :: Locator.t()
-  # def first(locator)
-
-  # ---
+  @spec first(Locator.t()) :: Locator.t()
+  def first(%Locator{} = context) do
+    locator(context, "nth=0")
+  end
 
   @doc """
   Calls [focus](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus) on the element.
@@ -580,8 +578,6 @@ defmodule Playwright.Locator do
     Frame.input_value(locator.frame, locator.selector, options)
   end
 
-  # ---
-
   def_locator(:is_checked, :is_checked)
   def_locator(:is_disabled, :is_disabled)
   def_locator(:is_editable, :is_editable)
@@ -589,12 +585,10 @@ defmodule Playwright.Locator do
   def_locator(:is_hidden, :is_hidden)
   def_locator(:is_visible, :is_visible)
 
-  # ---
-
-  # @spec last(Locator.t()) :: Locator.t()
-  # def last(locator)
-
-  # ---
+  @spec last(Locator.t()) :: Locator.t()
+  def last(%Locator{} = context) do
+    locator(context, "nth=-1")
+  end
 
   @spec locator(Locator.t(), binary()) :: Locator.t()
   def locator(locator, selector) do
@@ -692,8 +686,6 @@ defmodule Playwright.Locator do
     Frame.select_option(locator.frame, locator.selector, values, options)
   end
 
-  # ---
-
   @spec select_text(Locator.t(), options()) :: :ok
   def select_text(locator, options \\ %{}) do
     with_element(locator, options, fn handle ->
@@ -701,18 +693,18 @@ defmodule Playwright.Locator do
     end)
   end
 
+  # ---
+
   # @spec set_checked(Locator.t(), boolean(), options()) :: :ok
   # def set_checked(locator, checked, options \\ %{})
+
+  # ---
 
   @spec set_input_files(Locator.t(), any(), options()) :: :ok
   def set_input_files(locator, files, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.set_input_files(locator.frame, locator.selector, files, options)
   end
-
-  # return this._frame.setInputFiles(this._selector, files, { strict: true, ...options });
-
-  # ---
 
   def string(locator) do
     "Locator@#{locator.selector}"

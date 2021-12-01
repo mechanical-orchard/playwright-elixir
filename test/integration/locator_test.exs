@@ -343,6 +343,40 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.first/1 and .last/1, with .count/1" do
+    test "return nested/scoped Locators", %{page: page} do
+      page
+      |> Page.set_content("""
+      <section>
+          <div><p>A</p></div>
+          <div><p>A</p><p>A</p></div>
+          <div><p>A</p><p>A</p><p>A</p></div>
+      </section>
+      """)
+
+      assert {:ok, 6} =
+               Page.locator(page, "div >> p")
+               |> Locator.count()
+
+      assert {:ok, 6} =
+               Page.locator(page, "div")
+               |> Locator.locator("p")
+               |> Locator.count()
+
+      assert {:ok, 1} =
+               Page.locator(page, "div")
+               |> Locator.first()
+               |> Locator.locator("p")
+               |> Locator.count()
+
+      assert {:ok, 3} =
+               Page.locator(page, "div")
+               |> Locator.last()
+               |> Locator.locator("p")
+               |> Locator.count()
+    end
+  end
+
   describe "Locator.focus/2" do
     test "focuses/activates an element", %{assets: assets, page: page} do
       button = Page.locator(page, "button")
