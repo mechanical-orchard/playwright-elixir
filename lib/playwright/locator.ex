@@ -255,12 +255,60 @@ defmodule Playwright.Locator do
     Frame.dblclick(locator.frame, locator.selector, options)
   end
 
-  # ---
+  @doc """
+  Dispatches the `param: type` event on the element.
 
-  # @spec dispatch_event(Locator.t(), atom() | binary(), any(), options()) :: :ok
-  # def dispatch_event(locator, type, event_init \\ nil, options \\ %{})
+  Regardless of the visibility state of the element, the event is dispatched.
 
-  # ---
+  Under the hood, creates an instance of an event based on the given type,
+  initializes it with the `param: event_init` properties and dispatches it on
+  the element.
+
+  Events are composed, cancelable and bubble by default.
+
+  The `param: event_init` is event-specific. Please refer to the events
+  documentation for the lists of initial properties:
+
+  - [DragEvent](https://developer.mozilla.org/en-US/docs/Web/API/DragEvent/DragEvent)
+  - [FocusEvent](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent/FocusEvent)
+  - [KeyboardEvent](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/KeyboardEvent)
+  - [MouseEvent](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent)
+  - [PointerEvent](https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent/PointerEvent)
+  - [TouchEvent](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/TouchEvent)
+  - [Event](https://developer.mozilla.org/en-US/docs/Web/API/Event/Event)
+
+  ## Example
+
+  Dispatch a 'click' event on the element. This is equivalent to calling
+  `Playwright.ElementHandle.click/2`:
+
+      Locator.dispatch_event(locator, :click)
+
+  Specify a `Playwright.JSHandle` as the property value to be passed into the
+  event:
+
+      data_transfer = Page.evaluate_handle(page, "new DataTransfer()")
+      Locator.dispatch_event(locator, :dragstart, { "dataTransfer": data_transfer })
+
+  ## Returns
+
+  - `:ok`
+
+  ## Arguments
+
+  | key / name       | type   |                         | description |
+  | ---------------- | ------ | ----------------------- | ----------- |
+  | `type`           | param  | `atom()` or `binary()`  | DOM event type: `:click`, `:dragstart`, etc. |
+  | `event_init`     | param  | `evaluation_argument()` | Optional event-specific initialization properties. |
+  | `:timeout`       | option | `number()`              | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec dispatch_event(Locator.t(), atom() | binary(), Frame.evaluation_argument(), options()) :: :ok
+  def dispatch_event(locator, type, event_init \\ nil, options \\ %{})
+
+  def dispatch_event(%Locator{} = locator, type, event_init, options) do
+    options = Map.merge(options, %{strict: true})
+    Frame.dispatch_event(locator.frame, locator.selector, type, event_init, options)
+  end
 
   @doc """
   Resolves the given `Playwright.Locator` to the first matching DOM element.

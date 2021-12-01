@@ -78,6 +78,16 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.dispatch_event/4" do
+    test "with a 'click' event", %{assets: assets, page: page} do
+      locator = Page.locator(page, "button")
+      page |> Page.goto(assets.prefix <> "/input/button.html")
+
+      Locator.dispatch_event(locator, :click)
+      assert {:ok, "Clicked"} = Page.evaluate(page, "result")
+    end
+  end
+
   describe "Locator.element_handle/2" do
     test "passed as `arg` to a nested Locator", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/playground.html")

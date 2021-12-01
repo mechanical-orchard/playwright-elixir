@@ -27,6 +27,7 @@ defmodule Playwright.Frame do
   @property :load_states
   @property :url
 
+  @type evaluation_argument :: any()
   @type expression :: binary()
   @type options :: map()
   @type serializable :: any()
@@ -184,10 +185,76 @@ defmodule Playwright.Frame do
     :ok
   end
 
-  # ---
+  @doc """
+  Dispatches the `param: type` event on the `param: selector` element.
 
-  # @spec dispatch_event(Frame.t(), binary(), binary(), evaluation_argument(), options()) :: :ok
-  # def dispatch_event(frame, selector, type, arg, options \\ %{})
+  Regardless of the visibility state of the element, the event is dispatched.
+
+  Under the hood, creates an instance of an event based on the given type,
+  initializes it with the `param: event_init` properties and dispatches it on
+  the element.
+
+  Events are composed, cancelable and bubble by default.
+
+  The `param: event_init` is event-specific. Please refer to the events
+  documentation for the lists of initial properties:
+
+  - [DragEvent](https://developer.mozilla.org/en-US/docs/Web/API/DragEvent/DragEvent)
+  - [FocusEvent](https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent/FocusEvent)
+  - [KeyboardEvent](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/KeyboardEvent)
+  - [MouseEvent](https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/MouseEvent)
+  - [PointerEvent](https://developer.mozilla.org/en-US/docs/Web/API/PointerEvent/PointerEvent)
+  - [TouchEvent](https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/TouchEvent)
+  - [Event](https://developer.mozilla.org/en-US/docs/Web/API/Event/Event)
+
+  ## Example
+
+  Dispatch a 'click' event on the element. This is equivalent to calling
+  `Playwright.ElementHandle.click/2`:
+
+      Frame.dispatch_event(frame, "button#submit", :click)
+
+  Specify a `Playwright.JSHandle` as the property value to be passed into the
+  event:
+
+      data_transfer = Frame.evaluate_handle(frame, "new DataTransfer()")
+      Frame.dispatch_event(frame, "#source", :dragstart, { "dataTransfer": data_transfer })
+
+  ## Returns
+
+  - `:ok`
+
+  ## Arguments
+
+  | key / name       | type   |                         | description |
+  | ---------------- | ------ | ----------------------- | ----------- |
+  | `selector`       | param  | `binary()`              | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
+  | `type`           | param  | `atom()` or `binary()`  | DOM event type: `:click`, `:dragstart`, etc. |
+  | `event_init`     | param  | `evaluation_argument()` | Optional event-specific initialization properties. |
+  | `:strict`        | option | `boolean()`             | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
+  | `:timeout`       | option | `number()`              | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  """
+  @spec dispatch_event(Frame.t(), binary(), binary(), evaluation_argument(), options()) :: :ok
+  def dispatch_event(frame, selector, type, event_init \\ nil, options \\ %{})
+
+  def dispatch_event(%Frame{} = frame, selector, type, options, _)
+      when is_map(options) do
+    dispatch_event(frame, selector, type, nil, options)
+  end
+
+  def dispatch_event(%Frame{} = frame, selector, type, event_init, options) do
+    params =
+      Map.merge(options, %{
+        selector: selector,
+        type: type,
+        event_init: Helpers.Serialization.serialize(event_init)
+      })
+
+    {:ok, _} = Channel.post(frame, :dispatch_event, params)
+    :ok
+  end
+
+  # ---
 
   # @spec drag_and_drop(Frame.t(), binary(), binary(), options()) :: :ok
   # def drag_and_drop(frame, source, target, options \\ %{})

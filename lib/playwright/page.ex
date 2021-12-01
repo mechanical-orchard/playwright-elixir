@@ -81,9 +81,6 @@ defmodule Playwright.Page do
   defdelegate click(page, selector, options \\ %{}),
     to: Playwright.Frame
 
-  # defdelegate dispatch_event(page, selector, type, event_init \\ nil, options \\ %{}),
-  #   to: Playwright.Frame
-
   # defdelegate drag_and_drop(page, source, target, options \\ %{}),
   #   to: Playwright.Frame
 
@@ -303,6 +300,14 @@ defmodule Playwright.Page do
 
   def dblclick({:ok, page}, selector, options) do
     dblclick(page, selector, options)
+  end
+
+  @doc """
+  A shortcut for the main frame's `Playwright.Frame.dispatch_event/5`.
+  """
+  @spec dispatch_event(t(), binary(), atom() | binary(), Frame.evaluation_argument(), options()) :: :ok
+  def dispatch_event(%Page{} = page, selector, type, event_init \\ nil, options \\ %{}) do
+    main_frame(page) |> Frame.dispatch_event(selector, type, event_init, options)
   end
 
   # ---
