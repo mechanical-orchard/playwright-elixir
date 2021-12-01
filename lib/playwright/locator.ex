@@ -600,8 +600,15 @@ defmodule Playwright.Locator do
   # @spec nth(Locator.t(), non_negative_integer()) :: Locator.t()
   # def nth(locator, index)
 
-  # @spec press_key(Locator.t(), options()) :: :ok
-  # def press_key(locator, options \\ %{})
+  # ---
+
+  @spec press(Locator.t(), binary(), options()) :: :ok
+  def press(locator, key, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.press(locator.frame, locator.selector, key, options)
+  end
+
+  # ---
 
   # @spec screenshot(Locator.t(), options()) :: {:ok, binary()}
   # def screenshot(locator, options \\ %{})

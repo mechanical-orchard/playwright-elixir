@@ -483,6 +483,16 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.press/2" do
+    test "focuses an element and 'presses' a key within it", %{page: page} do
+      locator = Page.locator(page, "input")
+      page |> Page.set_content("<input type='text' />")
+
+      Locator.press(locator, "x")
+      assert {:ok, %{s: "x"}} = Page.eval_on_selector(page, "input", "(input) => input.value")
+    end
+  end
+
   describe "Locator.select_option/2" do
     test "single selection matching value", %{assets: assets, page: page} do
       locator = Page.locator(page, "select")
