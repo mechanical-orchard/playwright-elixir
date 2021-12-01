@@ -827,10 +827,47 @@ defmodule Playwright.Frame do
     set_content(owner, html, options)
   end
 
-  # ---
+  @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
+  def set_input_files(frame, selector, files, options \\ %{}) do
+    params =
+      Map.merge(options, %{
+        selector: selector,
+        files: normalize_file_payloads(files)
+      })
 
-  # @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
-  # def set_input_files(frame, selector, files, options \\ %{})
+    {:ok, _} = Channel.post(frame, :set_input_files, params)
+    :ok
+  end
+
+  defp normalize_file_payloads(files) when is_binary(files) do
+    normalize_file_payloads([files])
+  end
+
+  defp normalize_file_payloads(files) when is_list(files) do
+    Enum.into(files, [], fn file ->
+      normalize_file_payload(file)
+    end)
+  end
+
+  defp normalize_file_payload(file) when is_binary(file) do
+    {:ok, data} = File.read(file)
+
+    %{
+      name: Path.basename(file),
+      buffer: Base.encode64(data)
+    }
+  end
+
+  # when it's a `FilePayload`...
+  # defp normalize_file_payload(file) do
+  #   %{
+  #     name: file.name,
+  #     mime_type: file.mime_type,
+  #     buffer: Base.encode64(file.buffer)
+  #   }
+  # end
+
+  # ---
 
   # @spec tap(Frame.t(), binary(), options()) :: :ok
   # def tap(frame, selector, options \\ %{})
@@ -979,7 +1016,6 @@ defmodule Playwright.Frame do
       %{}
     else
       if is_struct(List.first(values), ElementHandle) do
-        # "elements":[{"guid":"handle@861d62cf4e61c383ddd049a675c895eb"}]
         elements =
           Enum.into(values, [], fn value ->
             select_option_value(value)

@@ -328,12 +328,20 @@ defmodule Playwright.Locator do
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @spec element_handle(Locator.t(), options()) :: {:ok, ElementHandle.t()} | {:error, Channel.Error.t()}
-  def element_handle(locator, options \\ %{}) do
+  def element_handle(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(%{strict: true, state: "attached"}, options)
 
     with_element(locator, options, fn handle ->
       {:ok, handle}
     end)
+  end
+
+  @doc false
+  def element_handle!(%Locator{} = locator, options \\ %{}) do
+    case element_handle(locator, options) do
+      # {:ok, nil} -> raise "No element found for selector: #{selector}"
+      {:ok, handle} -> handle
+    end
   end
 
   @doc """
@@ -673,8 +681,13 @@ defmodule Playwright.Locator do
   # @spec set_checked(Locator.t(), boolean(), options()) :: :ok
   # def set_checked(locator, checked, options \\ %{})
 
-  # @spec set_input_files(Locator.t(), any(), options()) :: :ok
-  # def set_input_files(locator, files, options \\ %{})
+  @spec set_input_files(Locator.t(), any(), options()) :: :ok
+  def set_input_files(locator, files, options \\ %{}) do
+    options = Map.merge(options, %{strict: true})
+    Frame.set_input_files(locator.frame, locator.selector, files, options)
+  end
+
+  # return this._frame.setInputFiles(this._selector, files, { strict: true, ...options });
 
   # ---
 

@@ -433,24 +433,6 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  test "<aside>A more interesting version of the ... test above", %{page: page} do
-    # create all the Locators in advance
-    locator_a = Page.locator(page, "#input1")
-    locator_b = Page.locator(page, "#input2")
-    locator_c = Page.locator(page, "textarea")
-
-    Page.set_content(page, """
-      <input id=input1 disabled>
-      <textarea readonly></textarea>
-      <input id=input2>
-    """)
-
-    # make assertions, demonstrating that  the Locators matched dynamic content
-    assert {:ok, false} = Locator.is_editable(locator_a)
-    assert {:ok, true} = Locator.is_editable(locator_b)
-    assert {:ok, false} = Locator.is_editable(locator_c)
-  end
-
   describe "Locator.is_enabled/1 and is_disabled/1" do
     test "...", %{page: page} do
       Page.set_content(page, """
@@ -509,6 +491,17 @@ defmodule Playwright.LocatorTest do
       Locator.select_option(locator, "blue")
       assert {:ok, ["blue"]} = Page.evaluate(page, "result.onChange")
       assert {:ok, ["blue"]} = Page.evaluate(page, "result.onInput")
+    end
+  end
+
+  describe "Locator.set_input_files/3" do
+    test "file upload", %{assets: assets, page: page} do
+      fixture = "test/support/assets_server/assets/file-to-upload.txt"
+      locator = Page.locator(page, "input[type=file]")
+      page |> Page.goto(assets.prefix <> "/input/fileupload.html")
+
+      Locator.set_input_files(locator, fixture)
+      assert {:ok, "file-to-upload.txt"} = Page.evaluate(page, "e => e.files[0].name", Locator.element_handle!(locator))
     end
   end
 
