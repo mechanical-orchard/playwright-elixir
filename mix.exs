@@ -70,7 +70,7 @@ defmodule Playwright.MixProject do
       main: "README",
       extras: [
         "README.md": [filename: "README"],
-        "guides/actionability.md": [title: "Actionability"],
+        # "guides/actionability.md": [title: "Actionability"],
         "guides/getting-started.md": [title: "Getting started"]
       ],
       groups_for_modules: [
