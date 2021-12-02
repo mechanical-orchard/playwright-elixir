@@ -1,6 +1,6 @@
 defmodule Playwright.BrowserContextTest do
   use Playwright.TestCase
-  alias Playwright.{Browser, BrowserContext, Page}
+  alias Playwright.{Browser, BrowserContext}
 
   describe "BrowserContext.new_context/1" do
     @tag exclude: [:page]
@@ -13,64 +13,6 @@ defmodule Playwright.BrowserContextTest do
 
       BrowserContext.close(context)
       assert Browser.contexts(browser) == {:ok, []}
-    end
-  end
-
-  describe "BrowserContext cookies" do
-    test ".cookies/1", %{assets: assets, page: page} do
-      page |> Page.goto(assets.extras <> "/cookiesapi.html")
-      cookies = BrowserContext.cookies(page.owned_context)
-
-      assert cookies ==
-               {:ok,
-                [
-                  %{
-                    name: "testcookie",
-                    value: "crunchcrunch",
-                    domain: "localhost",
-                    expires: -1,
-                    httpOnly: false,
-                    path: "/",
-                    sameSite: "Lax",
-                    secure: false
-                  }
-                ]}
-    end
-
-    test ".add_cookies/2", %{assets: assets, page: page} do
-      cookies = BrowserContext.cookies(page.owned_context)
-      assert cookies == {:ok, []}
-
-      BrowserContext.add_cookies(page.owned_context, [
-        %{
-          name: "testcookie",
-          value: "crunchcrunch",
-          domain: "localhost",
-          expires: -1,
-          httpOnly: false,
-          path: "/",
-          sameSite: "Lax",
-          secure: false
-        }
-      ])
-
-      Page.goto(page, assets.prefix <> "/empty.html")
-      cookies = BrowserContext.cookies(page.owned_context)
-
-      assert cookies ==
-               {:ok,
-                [
-                  %{
-                    name: "testcookie",
-                    value: "crunchcrunch",
-                    domain: "localhost",
-                    expires: -1,
-                    httpOnly: false,
-                    path: "/",
-                    sameSite: "Lax",
-                    secure: false
-                  }
-                ]}
     end
   end
 end

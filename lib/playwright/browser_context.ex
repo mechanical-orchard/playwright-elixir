@@ -218,23 +218,27 @@ defmodule Playwright.BrowserContext do
   All pages within this context will have these cookies installed. Cookies can
   be obtained via `Playwright.BrowserContext.cookies/1`.
 
+  ## Returns
+
+    - `:ok`
+
   ## Example
 
       :ok = BrowserContext.add_cookies(context, [cookie_1, cookie_2])
 
   ## Cookie fields
 
-  | key         | description |
-  | ----------  | ----------- |
-  | `:name`     | |
-  | `:value`    | |
-  | `:url`      | *(optional)* either url or domain / path are required |
-  | `:domain`   | *(optional)* either url or domain / path are required |
-  | `:path`     | *(optional)* either url or domain / path are required |
-  | `:expires`  | *(optional)* Unix time in seconds. |
-  | `:httpOnly` | *(optional)* |
-  | `:secure`   | *(optional)* |
-  | `:sameSite` | *(optional)* one of "Strict", "Lax", "None" |
+  | key         | type        | description |
+  | ----------  | ----------- | ----------- |
+  | `:name`     | `binary()`  | |
+  | `:value`    | `binary()`  | |
+  | `:url`      | `binary()`  | *(optional)* either url or domain / path are required |
+  | `:domain`   | `binary()`  | *(optional)* either url or domain / path are required |
+  | `:path`     | `binary()`  | *(optional)* either url or domain / path are required |
+  | `:expires`  | `float()`   | *(optional)* Unix time in seconds. |
+  | `:httpOnly` | `boolean()` | *(optional)* |
+  | `:secure`   | `boolean()` | *(optional)* |
+  | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
   """
   @spec add_cookies(BrowserContext.t(), [cookie]) :: :ok
   def add_cookies(context, cookies)
@@ -306,8 +310,18 @@ defmodule Playwright.BrowserContext do
   # @spec browser(BrowserContext.t()) :: {:ok, Playwright.Browser.t()}
   # def browser(context)
 
-  # @spec clear_cookies(BrowserContext.t()) :: :ok
-  # def clear_cookies(context)
+  # ---
+
+  @doc """
+  Clears `Playwright.BrowserContext` cookies.
+  """
+  @spec clear_cookies(BrowserContext.t()) :: :ok
+  def clear_cookies(context) do
+    {:ok, _} = Channel.post(context, :clear_cookies)
+    :ok
+  end
+
+  # ---
 
   # @spec clear_permissions(BrowserContext.t()) :: :ok
   # def clear_permissions(context)
@@ -337,11 +351,16 @@ defmodule Playwright.BrowserContext do
   If no URLs are specified, this method returns all cookies. If URLs are
   specified, only cookies that affect those URLs are returned.
 
-  | param  | description |
-  | ------ | ----------- |
-  | `urls` | *(optional)* List of URLs |
+  ## Returns
 
-  See `add_cookies/2` for cookie field details.
+    - `{:ok, [cookie()]}`
+      See `add_cookies/2` for cookie field details.
+
+  ## Arguments
+
+  | key / name | type  |                            | description |
+  | ---------- | ----- | -------------------------- | ----------- |
+  | `urls`     | param | `binary()` or `[binary()]` | List of URLs. `(optional)` |
   """
   @spec cookies(BrowserContext.t(), url | [url]) :: {:ok, [cookie]}
   def cookies(context, urls \\ [])

@@ -259,7 +259,7 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec bring_to_front(Page.t()) :: :ok
+  # @spec bring_to_front(t()) :: :ok
   # def bring_to_front(owner)
 
   # ---
@@ -364,12 +364,12 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec emulate_media(Page.t(), options()) :: :ok
+  # @spec emulate_media(t(), options()) :: :ok
   # def emulate_media(page, options \\ %{})
 
   # ---
 
-  @spec eval_on_selector(Page.t(), binary(), binary(), term(), map()) :: term()
+  @spec eval_on_selector(t(), binary(), binary(), term(), map()) :: term()
   def eval_on_selector(owner, selector, expression, arg \\ nil, options \\ %{})
 
   def eval_on_selector(%Page{} = owner, selector, expression, arg, options) do
@@ -383,22 +383,22 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec expect_event(Page.t(), atom() | binary(), function(), options()) :: :ok
+  # @spec expect_event(t(), atom() | binary(), function(), options()) :: :ok
   # def expect_event(page, event, predicate \\ nil, options \\ %{})
   # ...defdelegate wait_for_event
 
-  # @spec expect_request(Page.t(), binary() | function(), options()) :: :ok
+  # @spec expect_request(t(), binary() | function(), options()) :: :ok
   # def expect_request(page, url_or_predicate, options \\ %{})
   # ...defdelegate wait_for_request
 
-  # @spec expect_response(Page.t(), binary() | function(), options()) :: :ok
+  # @spec expect_response(t(), binary() | function(), options()) :: :ok
   # def expect_response(page, url_or_predicate, options \\ %{})
   # ...defdelegate wait_for_response
 
-  # @spec expose_binding(Page.t(), binary(), function(), options()) :: :ok
+  # @spec expose_binding(t(), binary(), function(), options()) :: :ok
   # def expose_binding(page, name, callback, options \\ %{})
 
-  # @spec expose_function(Page.t(), binary(), function()) :: :ok
+  # @spec expose_function(t(), binary(), function()) :: :ok
   # def expose_function(page, name, callback)
 
   # ---
@@ -413,19 +413,19 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec frame(Page.t(), binary()) :: Frame.t() | nil
+  # @spec frame(t(), binary()) :: Frame.t() | nil
   # def frame(page, selector)
 
-  # @spec frames(Page.t()) :: [Frame.t()]
+  # @spec frames(t()) :: [Frame.t()]
   # def frames(page)
 
-  # @spec frame_locator(Page.t(), binary()) :: FrameLocator.t()
+  # @spec frame_locator(t(), binary()) :: FrameLocator.t()
   # def frame_locator(page, selector)
 
-  # @spec go_back(Page.t(), options()) :: {:ok, Response.t() | nil}
+  # @spec go_back(t(), options()) :: {:ok, Response.t() | nil}
   # def go_back(page, options \\ %{})
 
-  # @spec go_forward(Page.t(), options()) :: {:ok, Response.t() | nil}
+  # @spec go_forward(t(), options()) :: {:ok, Response.t() | nil}
   # def go_forward(page, options \\ %{})
 
   # ---
@@ -439,7 +439,7 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec is_closed(Page.t()) :: boolean()
+  # @spec is_closed(t()) :: boolean()
   # def is_closed(page)
 
   # ---
@@ -467,18 +467,46 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec opener(Page.t()) :: {:ok, Page.t() | nil}
+  # @spec opener(t()) :: {:ok, Page.t() | nil}
   # def opener(page)
 
-  # @spec pdf(Page.t(), options()) :: {:ok, binary()}
+  # @spec pdf(t(), options()) :: {:ok, binary()}
   # def pdf(page, options \\ %{})
-
-  # @spec reload(Page.t(), options()) :: {:ok, Response.t() | nil}
-  # def reload(page, options \\ %{})
 
   # ---
 
-  @spec route(Page.t(), binary(), function(), map()) :: {atom(), Page.t()}
+  @doc """
+  Reloads the current page.
+
+  Reloads in the same way as if the user had triggered a browser refresh.
+
+  Returns the main resource response. In case of multiple redirects, the
+  navigation will resolve with the response of the last redirect.
+
+  ## Returns
+
+    - `{:ok, Playwright.Response.t() | nil}`
+
+  ## Arguments
+
+  | key / name    | type   |            | description |
+  | ------------- | ------ | ---------- | ----------- |
+  | `:timeout`    | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
+  | `:wait_until` | option | `binary()` | "load", "domcontentloaded", "networkidle", or "commit". When to consider the operation as having succeeded. `(default: "load")` |
+
+  ## On Wait Events
+
+  - `domcontentloaded` - consider operation to be finished when the `DOMContentLoaded` event is fired.
+  - `load` - consider operation to be finished when the `load` event is fired.
+  - `networkidle` - consider operation to be finished when there are no network connections for at least `500 ms`.
+  - `commit` - consider operation to be finished when network response is received and the document started loading.
+  """
+  @spec reload(t(), options()) :: {:ok, Response.t() | nil}
+  def reload(page, options \\ %{}) do
+    Channel.post(page, :reload, options)
+  end
+
+  @spec route(t(), binary(), function(), map()) :: {atom(), Page.t()}
   def route(owner, pattern, handler, options \\ %{})
 
   def route(%Page{} = owner, pattern, handler, _options) do
@@ -495,7 +523,7 @@ defmodule Playwright.Page do
     route(owner, pattern, handler, options)
   end
 
-  @spec screenshot(Page.t(), options()) :: {:ok, binary()}
+  @spec screenshot(t(), options()) :: {:ok, binary()}
   def screenshot(owner, options \\ %{})
 
   def screenshot(%Page{} = owner, options) do
@@ -526,38 +554,38 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec set_checked(Page.t(), binary(), boolean(), options()) :: :ok
+  # @spec set_checked(t(), binary(), boolean(), options()) :: :ok
   # def set_checked(page, selector, checked, options \\ %{})
 
   # NOTE: these 2 are good examples of functions that should `cast` instead of `call`.
   # ...
-  # @spec set_default_navigation_timeout(Page.t(), number()) :: nil (???)
+  # @spec set_default_navigation_timeout(t(), number()) :: nil (???)
   # def set_default_navigation_timeout(page, timeout)
 
-  # @spec set_default_timeout(Page.t(), number()) :: nil (???)
+  # @spec set_default_timeout(t(), number()) :: nil (???)
   # def set_default_timeout(page, timeout)
 
-  # @spec set_extra_http_headers(Page.t(), map()) :: :ok
+  # @spec set_extra_http_headers(t(), map()) :: :ok
   # def set_extra_http_headers(page, headers)
 
-  @spec set_viewport_size(Page.t(), dimensions()) :: :ok
+  @spec set_viewport_size(t(), dimensions()) :: :ok
   def set_viewport_size(%Page{} = page, dimensions) do
     {:ok, _} = Channel.post(page, :set_viewport_size, %{viewport_size: dimensions})
     :ok
   end
 
-  # @spec unroute(Page.t(), function()) :: :ok
+  # @spec unroute(t(), function()) :: :ok
   # def unroute(owner, handler \\ nil)
 
-  # @spec video(Page.t()) :: Video.t() | nil
+  # @spec video(t()) :: Video.t() | nil
   # def video(owner, handler \\ nil)
 
-  # @spec viewport_size(Page.t()) :: dimensions() | nil
+  # @spec viewport_size(t()) :: dimensions() | nil
   # def viewport_size(owner)
 
   # ---
 
-  @spec wait_for_load_state(Page.t(), binary(), options()) :: {:ok, Page.t()}
+  @spec wait_for_load_state(t(), binary(), options()) :: {:ok, Page.t()}
   def wait_for_load_state(owner, state \\ "load", options \\ %{})
 
   def wait_for_load_state(%Page{} = owner, state, _options)
@@ -582,7 +610,7 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec workers(Page.t()) :: [Worker.t()]
+  # @spec workers(t()) :: [Worker.t()]
   # def workers(owner)
 
   # ---
