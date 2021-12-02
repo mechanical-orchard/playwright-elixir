@@ -6,6 +6,7 @@ defmodule Playwright.MixProject do
   def project do
     [
       app: :playwright,
+      consolidate_protocols: Mix.env() != :dev,
       deps: deps(),
       description:
         "Playwright is an Elixir library to automate Chromium, Firefox and WebKit browsers with a single API. Playwright delivers automation that is ever-green, capable, reliable and fast.",
