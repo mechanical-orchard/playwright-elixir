@@ -244,10 +244,61 @@ defmodule Playwright.BrowserContext do
     :ok
   end
 
-  # ---
+  @doc """
+  Adds a script to be evaluated before other scripts.
 
-  # @spec add_init_script(BrowserContext.t(), binary(), options()) :: :ok
-  # def add_init_script(context, script, options \\ %{})
+  The script is evaluated in the following scenarios:
+
+  - Whenever a page is created in the browser context or is navigated.
+  - Whenever a child frame is attached or navigated in any page in the browser
+    context. In this case, the script is evaluated in the context of the newly
+    attached frame.
+
+  The script is evaluated after the document is created but before any of its
+  scripts are run. This is useful to amend the JavaScript environment, e.g. to
+  seed `Math.random`.
+
+  ## Returns
+
+    - `:ok`
+
+  ## Arguments
+
+  | key / name  | type   |                       | description |
+  | ----------- | ------ | --------------------- | ----------- |
+  | `script`    | param  | `binary()` or `map()` | As `binary()`: an inlined script to be evaluated; As `%{path: path}`: a path to a JavaScript file. |
+
+  ## Example
+
+  Overriding `Math.random` before the page loads:
+
+      # preload.js
+      Math.random = () => 42;
+
+      BrowserContext.add_init_script(context, %{path: "preload.js"})
+
+  ## Notes
+
+  > While the official Node.js Playwright implementation supports an optional
+  > `param: arg` for this function, the official Python implementation does
+  > not. This implementation matches the Python for now.
+
+  > The order of evaluation of multiple scripts installed via
+  > `Playwright.BrowserContext.add_init_script/2` and
+  > `Playwright.Page.add_init_script/2` is not defined.
+  """
+  @spec add_init_script(t(), binary() | map()) :: :ok
+  def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
+    params = %{source: script}
+    {:ok, _} = Channel.post(context, :add_init_script, params)
+    :ok
+  end
+
+  def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
+    add_init_script(context, File.read!(path))
+  end
+
+  # ---
 
   # @spec background_pages(BrowserContext.t()) :: {:ok, [Playwright.Page.t()]}
   # def background_pages(context)

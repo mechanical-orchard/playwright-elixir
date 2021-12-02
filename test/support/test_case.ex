@@ -64,6 +64,7 @@ defmodule Playwright.TestCase do
         blank: "about:blank",
         dom: prefix <> "/dom.html",
         extras: prefix <> "/extras",
+        path: Path.expand("assets_server/assets", __DIR__),
         prefix: prefix,
         empty: prefix <> "/empty.html"
       }
