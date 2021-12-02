@@ -102,20 +102,18 @@ defmodule Playwright.Page.Accessibility do
 
   Dumping an entire accessibility tree:
 
-      iex> page = PlaywrightTest.Page.setup()
-      iex> page
-      ...>   |> Page.set_content("<p>Hello!</p>")
-      ...>   |> Page.Accessibility.snapshot()
+      Browser.new_page(browser)
+        |> Page.set_content("<p>Hello!</p>")
+        |> Page.Accessibility.snapshot()
       %{children: [%{name: "Hello!", role: "text"}], name: "", role: "WebArea"}
 
   Retrieving the name of a focused node:
 
-      iex> page = PlaywrightTest.Page.setup()
-      iex> body = "<input placeholder='pick me' readonly /><input placeholder='not me' />"
-      iex> page
-      ...>   |> Page.set_content(body)
-      ...>   |> Page.Accessibility.snapshot()
-      ...>   |> (&(Enum.find(&1.children, fn e -> e.readonly end))).()
+      body = "<input placeholder='pick me' readonly /><input placeholder='not me' />"
+      Browser.new_page(browser)
+        |> Page.set_content(body)
+        |> Page.Accessibility.snapshot()
+        |> (&(Enum.find(&1.children, fn e -> e.readonly end))).()
       %{name: "pick me", readonly: true, role: "textbox"}
   """
   @spec snapshot(Page.t(), options) :: snapshot
