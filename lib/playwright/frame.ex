@@ -457,15 +457,16 @@ defmodule Playwright.Frame do
   @doc """
   !!!
   """
-  @spec goto(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: {:ok, Response.t()} | {:error, term()}
-  def goto(owner, url, params \\ %{})
+  @spec goto(t() | {:ok, t()}, binary(), options()) :: {:ok, Response.t()} | {:error, term()}
+  def goto(frame, url, options \\ %{})
 
-  def goto(%Page{} = page, url, _params) do
-    Channel.post(from(page), :goto, %{url: url})
+  def goto(%Frame{} = frame, url, options) do
+    params = Map.merge(options, %{url: url})
+    Channel.post(frame, :goto, params)
   end
 
-  def goto({:ok, owner}, url, params) do
-    goto(owner, url, params)
+  def goto({:ok, frame}, url, params) do
+    goto(frame, url, params)
   end
 
   @doc """

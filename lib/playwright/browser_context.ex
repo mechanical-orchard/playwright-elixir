@@ -161,12 +161,12 @@ defmodule Playwright.BrowserContext do
 
   use Playwright.ChannelOwner
   alias Playwright.{BrowserContext, ChannelOwner, Page}
-  alias Playwright.Runner.Channel
+  alias Playwright.Runner.{Channel, Helpers}
 
   @property :bindings
   @property :browser
   @property :owner_page
-  # @property :pages
+  @property :routes
 
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
@@ -210,7 +210,12 @@ defmodule Playwright.BrowserContext do
       on_binding(target, binding)
     end)
 
-    {:ok, %{context | bindings: %{}, browser: context.parent}}
+    Channel.bind(context, :route, fn %{target: target} = e ->
+      on_route(target, e)
+      # NOTE: will patch here
+    end)
+
+    {:ok, %{context | bindings: %{}, browser: context.parent, routes: []}}
   end
 
   # API
@@ -563,10 +568,25 @@ defmodule Playwright.BrowserContext do
     result
   end
 
-  # ---
+  @spec route(t(), binary(), function(), map()) :: :ok
+  def route(context, pattern, handler, options \\ %{})
 
-  # @spec route(t(), String.t(), function(), options()) :: :ok
-  # def route(context, url_pattern, handler, options \\ %{})
+  def route(%BrowserContext{} = context, pattern, handler, _options) do
+    with_latest(context, fn context ->
+      matcher = Helpers.URLMatcher.new(pattern)
+      handler = Helpers.RouteHandler.new(matcher, handler)
+      routes = context.routes
+
+      if Enum.empty?(routes) do
+        Channel.post(context, :set_network_interception_enabled, %{enabled: true})
+      end
+
+      {:ok, _} = Channel.patch(context.connection, context.guid, %{routes: [handler | routes]})
+      :ok
+    end)
+  end
+
+  # ---
 
   # @spec service_workers(t()) :: {:ok, [Playwright.Worker.t()]}
   # def service_workers(context)
@@ -592,15 +612,53 @@ defmodule Playwright.BrowserContext do
   # @spec storage_state(t(), String.t()) :: {:ok, storage_state()}
   # def storage_state(context, path \\ nil)
 
-  # @spec unroute(t(), String.t(), function()) :: :ok
-  # def unroute(context, url_pattern, handler)
-
   # ---
+
+  @spec unroute(t(), binary(), function() | nil) :: :ok
+  def unroute(%BrowserContext{} = context, pattern, callback \\ nil) do
+    with_latest(context, fn context ->
+      remaining =
+        Enum.filter(context.routes, fn handler ->
+          handler.matcher.match != pattern || (callback && handler.callback != callback)
+        end)
+
+      {:ok, _} = Channel.patch(context.connection, context.guid, %{routes: remaining})
+      :ok
+    end)
+  end
 
   # private
   # ---------------------------------------------------------------------------
 
   defp on_binding(context, binding) do
     Playwright.BindingCall.call(binding, Map.get(context.bindings, binding.name))
+  end
+
+  # NOTE:
+  # Still need to remove the handler when it does the job. Like the following:
+  #
+  #     if handler_entry.matches(request.url):
+  #         if handler_entry.handle(route, request):
+  #             self._routes.remove(handler_entry)
+  #             if not len(self._routes) == 0:
+  #                 asyncio.create_task(self._disable_interception())
+  #         break
+  #
+  # ...hoping for a test to drive that out.
+  defp on_route(context, %{params: %{request: request} = params} = _event) do
+    Enum.reduce_while(context.routes, [], fn handler, acc ->
+      if Helpers.RouteHandler.matches(handler, request.url) do
+        Helpers.RouteHandler.handle(handler, params)
+        # break
+        {:halt, acc}
+      else
+        {:cont, [handler | acc]}
+      end
+    end)
+  end
+
+  defp with_latest(context, task) do
+    {:ok, latest} = Channel.find(context)
+    task.(latest)
   end
 end

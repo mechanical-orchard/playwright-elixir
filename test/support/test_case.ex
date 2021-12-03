@@ -23,6 +23,11 @@ defmodule Playwright.TestCase do
         end
       end
 
+      defp assert_empty_mailbox() do
+        count = Keyword.get(Process.info(self()), :message_queue_len)
+        assert count == 0
+      end
+
       defp attach_frame(%Playwright.Page{} = page, frame_id, url) do
         Playwright.Page.evaluate_handle(
           page,

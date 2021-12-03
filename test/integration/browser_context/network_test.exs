@@ -3,8 +3,6 @@ defmodule Playwright.BrowserContext.NetworkTest do
   alias Playwright.{Browser, BrowserContext, Page}
 
   describe "BrowserContext network events" do
-    # flaky in CI
-    # @tag :skip
     @tag without: [:page]
     test "on :request", %{assets: assets, browser: browser} do
       this = self()

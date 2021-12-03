@@ -70,7 +70,7 @@ defmodule Playwright.Request do
   @doc false
   def get_header(request, name) do
     Enum.find(request.initializer.headers, fn header ->
-      header.name == name
+      String.downcase(header.name) == String.downcase(name)
     end)
   end
 end

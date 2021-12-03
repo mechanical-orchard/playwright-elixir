@@ -1,6 +1,6 @@
 defmodule Playwright.BrowserContextTest do
   use Playwright.TestCase
-  alias Playwright.{Browser, BrowserContext, Page}
+  alias Playwright.{Browser, BrowserContext, Frame, Page, Request, Response, Route}
 
   describe "Browser.new_context/1" do
     @tag exclude: [:page]
@@ -114,7 +114,78 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
-  # ---
+  describe "BrowserContext.route/4" do
+    test "intercepts requests", %{assets: assets, page: page} do
+      pid = self()
+      context = Page.context(page)
+
+      handler = fn route, request ->
+        send(pid, :intercepted)
+
+        assert String.contains?(request.url, "empty.html")
+        assert request.method == "GET"
+        assert request.post_data == nil
+        assert request.is_navigation_request == true
+        assert request.resource_type == "document"
+        assert Request.get_header(request, "user-agent")
+
+        frame = Request.frame(request)
+        assert frame == Page.main_frame(page)
+        assert Frame.url(frame) == "about:blank"
+
+        Route.continue(route)
+      end
+
+      BrowserContext.route(context, "**/empty.html", handler)
+      response = Page.goto!(page, assets.empty)
+
+      assert Response.ok(response)
+      assert_received(:intercepted)
+    end
+
+    test "with multiple, rolled-up handlers and `.unroute/1`", %{assets: assets, page: page} do
+      pid = self()
+      context = Page.context(page)
+
+      handler = fn route, marker ->
+        IO.inspect("  --> marker: #{inspect(marker)}")
+        send(pid, marker)
+        Route.continue(route)
+      end
+
+      handler_4 = fn route, _request ->
+        handler.(route, 4)
+      end
+
+      BrowserContext.route(context, "**/*", fn route, _request ->
+        handler.(route, 1)
+      end)
+
+      BrowserContext.route(context, "**/empty.html", fn route, _request ->
+        handler.(route, 2)
+      end)
+
+      BrowserContext.route(context, "**/empty.html", fn route, _request ->
+        handler.(route, 3)
+      end)
+
+      BrowserContext.route(context, "**/empty.html", handler_4)
+
+      Page.goto(page, assets.empty)
+      BrowserContext.unroute(context, "**/empty.html", handler_4)
+      Page.goto(page, assets.empty)
+      BrowserContext.unroute(context, "**/empty.html")
+      Page.goto(page, assets.empty)
+
+      assert_next_receive(4)
+      assert_next_receive(3)
+      assert_next_receive(1)
+      assert_empty_mailbox()
+    end
+  end
+
+  # test_route_should_yield_to_page_route
+  # test_route_should_fall_back_to_context_route
 
   # test_expose_function_should_throw_for_duplicate_registrations
   # test_expose_function_should_be_callable_from_inside_add_init_script
@@ -136,10 +207,6 @@ defmodule Playwright.BrowserContextTest do
   # test_page_event_should_bypass_csp_in_iframes_as_well
   # test_csp_should_work
   # test_csp_should_be_able_to_navigate_after_disabling_javascript
-  # test_route_should_intercept
-  # test_route_should_unroute
-  # test_route_should_yield_to_page_route
-  # test_route_should_fall_back_to_context_route
   # test_auth_should_fail_without_credentials
   # test_auth_should_work_with_correct_credentials
   # test_auth_should_fail_with_wrong_credentials

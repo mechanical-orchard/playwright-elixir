@@ -1,15 +1,16 @@
 defmodule Playwright.Runner.Helpers.URLMatcher do
   @moduledoc false
 
-  defstruct([:regex])
+  defstruct([:match, :regex])
 
-  def new(base_url, pattern) do
-    new(Enum.join([base_url, pattern], "/"))
+  def new(base_url, match) do
+    new(Enum.join([base_url, match], "/"))
   end
 
-  def new(pattern) do
+  def new(match) do
     %__MODULE__{
-      regex: Regex.compile!(translate(pattern))
+      match: match,
+      regex: Regex.compile!(translate(match))
     }
   end
 

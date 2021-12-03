@@ -41,7 +41,7 @@ defmodule Playwright.Page do
   """
   use Playwright.ChannelOwner
 
-  alias Playwright.{BrowserContext, Frame, Page}
+  alias Playwright.{BrowserContext, Frame, Page, Response}
   alias Playwright.ChannelOwner
   alias Playwright.Runner.Helpers
 
@@ -103,9 +103,6 @@ defmodule Playwright.Page do
     to: Playwright.Frame
 
   defdelegate get_attribute(page, selector, name, options \\ %{}),
-    to: Playwright.Frame
-
-  defdelegate goto(page, url, params \\ %{}),
     to: Playwright.Frame
 
   # defdelegate hover(page, selector, options \\ %{}),
@@ -429,6 +426,17 @@ defmodule Playwright.Page do
   # def go_forward(page, options \\ %{})
 
   # ---
+
+  @spec goto(t(), binary(), options()) :: {:ok, Response.t() | nil}
+  def goto(%Page{} = page, url, options \\ %{}) do
+    main_frame(page) |> Frame.goto(url, options)
+  end
+
+  @spec goto!(t(), binary(), options()) :: Response.t() | nil
+  def goto!(page, url, options \\ %{}) do
+    {:ok, response} = goto(page, url, options)
+    response
+  end
 
   @doc """
   A shortcut for the main frame's `Playwright.Frame.hover/2`.
