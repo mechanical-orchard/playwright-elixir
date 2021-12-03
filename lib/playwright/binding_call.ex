@@ -9,15 +9,17 @@ defmodule Playwright.BindingCall do
   @property :name
 
   def call(binding_call, func) do
-    source = %{
-      context: "TBD",
-      frame: "TBD",
-      page: "TBD"
-    }
-
-    result = func.(source, deserialize(binding_call.args))
-
     Task.start_link(fn ->
+      frame = Channel.get(binding_call.connection, {:guid, binding_call.frame.guid})
+
+      source = %{
+        context: "TBD",
+        frame: frame,
+        page: "TBD"
+      }
+
+      result = func.(source, deserialize(binding_call.args))
+
       Channel.post(binding_call, :resolve, %{result: serialize(result)})
     end)
   end

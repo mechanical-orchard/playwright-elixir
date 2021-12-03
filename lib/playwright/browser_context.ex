@@ -212,6 +212,11 @@ defmodule Playwright.BrowserContext do
     {:ok, %{context | bindings: %{}, browser: context.parent}}
   end
 
+  # self._channel.on(
+  #     "bindingCall",
+  #     lambda params: self._on_binding(from_channel(params["binding"])),
+  # )
+
   # API
   # ---------------------------------------------------------------------------
 
@@ -475,14 +480,6 @@ defmodule Playwright.BrowserContext do
   """
   @spec expose_binding(t(), String.t(), function(), options()) :: :ok
   def expose_binding(context, name, callback, options \\ %{}) do
-    # for page in self._pages:
-    #     if name in page._bindings:
-    #         raise Error(
-    #             f'Function "{name}" has been already registered in one of the pages'
-    #         )
-    # if name in self._bindings:
-    #     raise Error(f'Function "{name}" has been already registered')
-
     bindings = context.bindings
     {:ok, _} = Channel.patch(context.connection, context.guid, %{bindings: Map.merge(bindings, %{name => callback})})
 
@@ -491,10 +488,14 @@ defmodule Playwright.BrowserContext do
     :ok
   end
 
-  # ---
+  @spec expose_function(t(), String.t(), function()) :: :ok
+  def expose_function(context, name, callback) do
+    expose_binding(context, name, fn _, args ->
+      callback.(args)
+    end)
+  end
 
-  # @spec expose_function(t(), String.t(), function()) :: :ok
-  # def expose_function(context, name, callback)
+  # ---
 
   # @spec grant_permissions(t(), [String.t()], options()) :: :ok
   # def grant_permissions(context, permission, options \\ %{})

@@ -56,17 +56,37 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.expose_binding/4" do
-    test "supports defining a function bound to a local definition", %{page: page} do
+    test "binds a local function", %{page: page} do
       context = Page.context(page)
 
-      context
-      |> BrowserContext.expose_binding("add", fn _source, [a, b] ->
+      handler = fn source, [a, b] ->
+        assert source.frame == Page.main_frame(page)
         a + b
-      end)
+      end
 
+      BrowserContext.expose_binding(context, "add", handler)
       assert Page.evaluate!(page, "add(5, 6)") == 11
     end
   end
+
+  describe "BrowserContext.expose_function/3" do
+    test "binds a local function", %{page: page} do
+      context = Page.context(page)
+
+      handler = fn [a, b] ->
+        a + b
+      end
+
+      BrowserContext.expose_function(context, "add", handler)
+      assert Page.evaluate!(page, "add(9, 4)") == 13
+    end
+  end
+
+  # ---
+
+  # test_expose_function_should_throw_for_duplicate_registrations
+  # test_expose_function_should_be_callable_from_inside_add_init_script
+  # test_expose_bindinghandle_should_work
 
   # test_window_open_should_use_parent_tab_context
   # test_page_event_should_isolate_localStorage_and_cookies
@@ -86,11 +106,6 @@ defmodule Playwright.BrowserContextTest do
   # test_csp_should_be_able_to_navigate_after_disabling_javascript
   # test_pages_should_return_all_of_the_pages
   # test_pages_should_close_all_belonging_pages_once_closing_context
-  # test_expose_binding_should_work
-  # test_expose_function_should_work
-  # test_expose_function_should_throw_for_duplicate_registrations
-  # test_expose_function_should_be_callable_from_inside_add_init_script
-  # test_expose_bindinghandle_should_work
   # test_route_should_intercept
   # test_route_should_unroute
   # test_route_should_yield_to_page_route
