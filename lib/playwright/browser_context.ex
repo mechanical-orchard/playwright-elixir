@@ -507,7 +507,7 @@ defmodule Playwright.BrowserContext do
   # ---
 
   # @spec new_cdp_session(t(), Page.t()) :: {:ok, Playwright.CDPSession.t()}
-  # def new_cdp_session(context, page)
+  # def new_cdp_session(%BrowserContext{} = context, %Page{} = page)
 
   # ---
 
@@ -535,12 +535,8 @@ defmodule Playwright.BrowserContext do
     new_page(context)
   end
 
-  # ---
-
   # @spec pages(t()) :: {:ok, [Page.t()]}
   # def pages(context)
-
-  # ---
 
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
@@ -561,8 +557,8 @@ defmodule Playwright.BrowserContext do
   # @spec set_default_navigation_timeout(t(), number()) :: :ok
   # def set_default_navigation_timeout(context, timeout)
 
-  # @spec set_default_imeout(t(), number()) :: :ok
-  # def set_default_imeout(context, timeout)
+  # @spec set_default_timeout(t(), number()) :: :ok
+  # def set_default_timeout(context, timeout)
 
   # @spec set_extra_http_headers(t(), headers()) :: :ok
   # def set_extra_http_headers(context, headers)
@@ -579,8 +575,8 @@ defmodule Playwright.BrowserContext do
   # @spec storage_state(t(), String.t()) :: {:ok, storage_state()}
   # def storage_state(context, path \\ nil)
 
-  # @spec route(t(), String.t(), options()) :: :ok
-  # def route(context, url_pattern, options \\ %{})
+  # @spec unroute(t(), String.t(), function()) :: :ok
+  # def unroute(context, url_pattern, handler)
 
   # ---
 
