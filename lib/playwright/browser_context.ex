@@ -166,6 +166,7 @@ defmodule Playwright.BrowserContext do
   @property :bindings
   @property :browser
   @property :owner_page
+  # @property :pages
 
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
@@ -211,11 +212,6 @@ defmodule Playwright.BrowserContext do
 
     {:ok, %{context | bindings: %{}, browser: context.parent}}
   end
-
-  # self._channel.on(
-  #     "bindingCall",
-  #     lambda params: self._on_binding(from_channel(params["binding"])),
-  # )
 
   # API
   # ---------------------------------------------------------------------------
@@ -535,15 +531,36 @@ defmodule Playwright.BrowserContext do
     new_page(context)
   end
 
-  # @spec pages(t()) :: {:ok, [Page.t()]}
-  # def pages(context)
-
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
   @spec on(t(), event(), function()) :: {:ok, BrowserContext.t()}
   def on(%BrowserContext{} = context, event, callback) do
     Channel.bind(context, event, callback)
+  end
+
+  @doc """
+  Returns all open pages in the context.
+
+  ## Returns
+
+    - `{:ok, [Page.t()]}`
+  """
+  @spec pages(t()) :: {:ok, [Page.t()]}
+  def pages(%BrowserContext{} = context) do
+    result =
+      Channel.all(context.connection, %{
+        parent: context,
+        type: "Page"
+      })
+
+    {:ok, result}
+  end
+
+  @doc false
+  def pages!(context) do
+    {:ok, result} = pages(context)
+    result
   end
 
   # ---

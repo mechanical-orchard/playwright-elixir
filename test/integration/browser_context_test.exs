@@ -60,6 +60,17 @@ defmodule Playwright.BrowserContextTest do
       assert :ok = BrowserContext.close(context)
       assert :ok = BrowserContext.close(context)
     end
+
+    @tag exclude: [:page]
+    test "closes all belonging pages", %{browser: browser} do
+      context = Browser.new_context!(browser)
+
+      {:ok, _} = BrowserContext.new_page(context)
+      assert length(BrowserContext.pages!(context)) == 1
+
+      BrowserContext.close(context)
+      assert length(BrowserContext.pages!(context)) == 0
+    end
   end
 
   describe "BrowserContext.expose_binding/4" do
@@ -89,6 +100,20 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.pages/1" do
+    @tag exclude: [:page]
+    test "returns the pages", %{browser: browser} do
+      context = Browser.new_context!(browser)
+      {:ok, _} = BrowserContext.new_page(context)
+      {:ok, _} = BrowserContext.new_page(context)
+
+      {:ok, pages} = BrowserContext.pages(context)
+      assert length(pages) == 2
+
+      BrowserContext.close(context)
+    end
+  end
+
   # ---
 
   # test_expose_function_should_throw_for_duplicate_registrations
@@ -111,8 +136,6 @@ defmodule Playwright.BrowserContextTest do
   # test_page_event_should_bypass_csp_in_iframes_as_well
   # test_csp_should_work
   # test_csp_should_be_able_to_navigate_after_disabling_javascript
-  # test_pages_should_return_all_of_the_pages
-  # test_pages_should_close_all_belonging_pages_once_closing_context
   # test_route_should_intercept
   # test_route_should_unroute
   # test_route_should_yield_to_page_route

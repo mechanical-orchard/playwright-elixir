@@ -142,6 +142,14 @@ defmodule Playwright.ChannelOwner do
         @doc unquote(doc)
         @spec unquote(arg)(t()) :: term()
         def unquote(arg)(owner) do
+          owner =
+            unless Map.has_key?(owner, :is_closed) && owner.is_closed do
+              {:ok, refreshed} = Playwright.Runner.Channel.find(owner)
+              refreshed
+            else
+              owner
+            end
+
           property = Map.get(owner, unquote(arg))
 
           if is_map(property) && Map.has_key?(property, :guid) do
