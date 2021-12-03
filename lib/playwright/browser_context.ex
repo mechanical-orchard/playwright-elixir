@@ -315,9 +315,6 @@ defmodule Playwright.BrowserContext do
   # @spec background_pages(t()) :: {:ok, [Playwright.Page.t()]}
   # def background_pages(context)
 
-  # @spec browser(t()) :: {:ok, Playwright.Browser.t()}
-  # def browser(context)
-
   # ---
 
   @doc """
@@ -329,12 +326,11 @@ defmodule Playwright.BrowserContext do
     :ok
   end
 
-  # ---
-
-  # @spec clear_permissions(t()) :: :ok
-  # def clear_permissions(context)
-
-  # ---
+  @spec clear_permissions(t()) :: :ok
+  def clear_permissions(context) do
+    {:ok, _} = Channel.post(context, :clear_permissions)
+    :ok
+  end
 
   @doc """
   Closes the `Playwright.BrowserContext`. All pages that belong to the
@@ -495,10 +491,20 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
-  # ---
+  @spec grant_permissions(t(), [String.t()], options()) :: :ok | {:error, Channel.Error.t()}
+  def grant_permissions(context, permissions, options \\ %{}) do
+    params = Map.merge(%{permissions: permissions}, options)
 
-  # @spec grant_permissions(t(), [String.t()], options()) :: :ok
-  # def grant_permissions(context, permission, options \\ %{})
+    case Channel.post(context, :grant_permissions, params) do
+      {:ok, _} ->
+        :ok
+
+      other ->
+        other
+    end
+  end
+
+  # ---
 
   # @spec new_cdp_session(t(), Page.t()) :: {:ok, Playwright.CDPSession.t()}
   # def new_cdp_session(context, page)

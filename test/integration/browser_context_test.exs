@@ -30,6 +30,13 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.browser/1" do
+    test "returns the Browser", %{browser: browser, page: page} do
+      context = Page.context(page)
+      assert BrowserContext.browser(context) == browser
+    end
+  end
+
   describe "BrowserContext.close/1" do
     @tag exclude: [:page]
     test "is :ok with an empty context", %{browser: browser} do
