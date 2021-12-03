@@ -48,7 +48,7 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
-  # @spec close(Browser.t()) :: :ok
+  # @spec close(t()) :: :ok
   # def close(browser)
 
   @doc """
@@ -65,7 +65,7 @@ defmodule Playwright.Browser do
       {:ok, contexts} = Browser.contexts(browser)
       assert length(contexts) == 1
   """
-  @spec contexts(Browser.t()) :: {:ok, [BrowserContext.t()]}
+  @spec contexts(t()) :: {:ok, [BrowserContext.t()]}
   def contexts(%Browser{} = browser) do
     result =
       Channel.all(browser.connection, %{
@@ -113,9 +113,15 @@ defmodule Playwright.Browser do
   | `accept_downloads` | option | `boolean()` | Whether to automatically download all the attachments. If false, all the downloads are canceled. `(default: false)` |
   | `...`              | option | `...`       | ... |
   """
-  @spec new_context(Browser.t(), options()) :: {:ok, BrowserContext.t()}
+  @spec new_context(t(), options()) :: {:ok, BrowserContext.t()}
   def new_context(%Browser{} = browser, options \\ %{}) do
     Channel.post(browser, :new_context, prepare(options))
+  end
+
+  @doc false
+  def new_context!(browser, options \\ %{}) do
+    {:ok, context} = new_context(browser, options)
+    context
   end
 
   @doc """
@@ -151,13 +157,13 @@ defmodule Playwright.Browser do
 
   # ---
 
-  # @spec on(Browser.t(), event(), function()) :: {:ok, Browser.t()}
+  # @spec on(t(), event(), function()) :: {:ok, Browser.t()}
   # def on(browser, event, callback)
 
-  # @spec start_tracing(Browser.t(), Page.t(), options()) :: :ok
+  # @spec start_tracing(t(), Page.t(), options()) :: :ok
   # def start_tracing(browser, page \\ nil, options \\ %{})
 
-  # @spec stop_tracing(Browser.t()) :: {:ok, binary()}
+  # @spec stop_tracing(t()) :: {:ok, binary()}
   # def stop_tracing(browser)
 
   # ---

@@ -49,9 +49,10 @@ defmodule Playwright.Runner.Channel.Event do
 
   defp resolve(type, %{guid: guid, params: params}, catalog)
        when type in [
+              "bindingCall",
               "close",
               "console",
-              "loadState",
+              "loadstate",
               "navigated",
               "page",
               "previewUpdated",
@@ -77,7 +78,7 @@ defmodule Playwright.Runner.Channel.Event do
 
   # to do...
   defp resolve(method, event, catalog) do
-    Logger.debug("Event.handle/3 for unhandled method: #{inspect(method)}; event data: #{inspect(event)}")
+    Logger.debug("Event.resolve/3 for unhandled method: #{inspect(method)}; event data: #{inspect(event)}")
     catalog
   end
 
@@ -122,9 +123,10 @@ defmodule Playwright.Runner.Channel.Event do
 
   defp prepare(params, type, catalog)
        when type in [
+              "bindingCall",
               "close",
               "console",
-              "loadState",
+              "loadstate",
               "navigated",
               "previewUpdated",
               "request",
@@ -136,7 +138,7 @@ defmodule Playwright.Runner.Channel.Event do
   end
 
   defp prepare(params, type, _catalog) do
-    Logger.warn("Event.prepare/3 not implemented for type: #{inspect(type)} w/ params: #{inspect(params)}")
+    Logger.debug("Event.prepare/3 not implemented for type: #{inspect(type)} w/ params: #{inspect(params)}")
     params
   end
 end

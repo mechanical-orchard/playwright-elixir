@@ -159,12 +159,11 @@ defmodule Playwright.BrowserContext do
       > - Service workers are only supported on Chromium-based browsers.
   """
 
-  # ---
-
   use Playwright.ChannelOwner
   alias Playwright.{BrowserContext, ChannelOwner, Page}
   alias Playwright.Runner.Channel
 
+  @property :bindings
   @property :browser
   @property :owner_page
 
@@ -206,7 +205,11 @@ defmodule Playwright.BrowserContext do
 
   @impl ChannelOwner
   def init(%BrowserContext{} = context, _initializer) do
-    {:ok, %{context | browser: context.parent}}
+    Channel.bind(context, :binding_call, fn %{params: %{binding: binding}, target: target} ->
+      on_binding(target, binding)
+    end)
+
+    {:ok, %{context | bindings: %{}, browser: context.parent}}
   end
 
   # API
@@ -240,7 +243,7 @@ defmodule Playwright.BrowserContext do
   | `:secure`   | `boolean()` | *(optional)* |
   | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
   """
-  @spec add_cookies(BrowserContext.t(), [cookie]) :: :ok
+  @spec add_cookies(t(), [cookie]) :: :ok
   def add_cookies(context, cookies)
 
   def add_cookies(%BrowserContext{} = context, cookies) do
@@ -304,10 +307,10 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec background_pages(BrowserContext.t()) :: {:ok, [Playwright.Page.t()]}
+  # @spec background_pages(t()) :: {:ok, [Playwright.Page.t()]}
   # def background_pages(context)
 
-  # @spec browser(BrowserContext.t()) :: {:ok, Playwright.Browser.t()}
+  # @spec browser(t()) :: {:ok, Playwright.Browser.t()}
   # def browser(context)
 
   # ---
@@ -315,7 +318,7 @@ defmodule Playwright.BrowserContext do
   @doc """
   Clears `Playwright.BrowserContext` cookies.
   """
-  @spec clear_cookies(BrowserContext.t()) :: :ok
+  @spec clear_cookies(t()) :: :ok
   def clear_cookies(context) do
     {:ok, _} = Channel.post(context, :clear_cookies)
     :ok
@@ -323,7 +326,7 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec clear_permissions(BrowserContext.t()) :: :ok
+  # @spec clear_permissions(t()) :: :ok
   # def clear_permissions(context)
 
   # ---
@@ -335,10 +338,15 @@ defmodule Playwright.BrowserContext do
   > NOTE:
   > - The default browser context cannot be closed.
   """
-  @spec close(BrowserContext.t()) :: :ok
+  @spec close(t()) :: :ok
   def close(%BrowserContext{} = context) do
-    {:ok, _} = Channel.post(context, :close)
-    :ok
+    case Channel.post(context, :close) do
+      {:ok, _} ->
+        :ok
+
+      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
+        :ok
+    end
   end
 
   def close({:ok, context}) do
@@ -362,7 +370,7 @@ defmodule Playwright.BrowserContext do
   | ---------- | ----- | -------------------------- | ----------- |
   | `urls`     | param | `binary()` or `[binary()]` | List of URLs. `(optional)` |
   """
-  @spec cookies(BrowserContext.t(), url | [url]) :: {:ok, [cookie]}
+  @spec cookies(t(), url | [url]) :: {:ok, [cookie]}
   def cookies(context, urls \\ [])
 
   def cookies(%BrowserContext{} = context, urls) do
@@ -397,7 +405,7 @@ defmodule Playwright.BrowserContext do
   > - The "throw an error if the context closes..." is not yet implemented.
   > - The handling of :predicate is not yet implemented.
   """
-  @spec expect_event(BrowserContext.t() | Page.t(), atom() | binary(), fun(), function_or_options(), map()) ::
+  @spec expect_event(t() | Page.t(), atom() | binary(), fun(), function_or_options(), map()) ::
           {:ok, Playwright.Runner.EventInfo.t()}
   def expect_event(context, event, trigger, predicate \\ nil, options \\ %{})
 
@@ -446,7 +454,7 @@ defmodule Playwright.BrowserContext do
   > - The handling of `predicate` is not yet implemented.
   > - The handling of `timeout` is not yet implemented.
   """
-  @spec expect_page(BrowserContext.t(), fun(), function_or_options(), map()) :: {:ok, Playwright.Runner.EventInfo.t()}
+  @spec expect_page(t(), fun(), function_or_options(), map()) :: {:ok, Playwright.Runner.EventInfo.t()}
   def expect_page(context, trigger, predicate \\ nil, options \\ %{})
 
   def expect_page(%BrowserContext{} = context, trigger, predicate, options)
@@ -461,18 +469,37 @@ defmodule Playwright.BrowserContext do
 
   defdelegate wait_for_page(context, trigger, predicate \\ nil, options \\ %{}), to: __MODULE__, as: :expect_page
 
+  @doc """
+  WIP: Adds a function called `param: name` on the `window` object of every
+  frame in every page in the context.
+  """
+  @spec expose_binding(t(), String.t(), function(), options()) :: :ok
+  def expose_binding(context, name, callback, options \\ %{}) do
+    # for page in self._pages:
+    #     if name in page._bindings:
+    #         raise Error(
+    #             f'Function "{name}" has been already registered in one of the pages'
+    #         )
+    # if name in self._bindings:
+    #     raise Error(f'Function "{name}" has been already registered')
+
+    bindings = context.bindings
+    {:ok, _} = Channel.patch(context.connection, context.guid, %{bindings: Map.merge(bindings, %{name => callback})})
+
+    params = Map.merge(%{name: name, needs_handle: false}, options)
+    {:ok, _} = Channel.post(context, :expose_binding, params)
+    :ok
+  end
+
   # ---
 
-  # @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: :ok
-  # def expose_binding(context, name, callback, options \\ %{})
-
-  # @spec expose_function(BrowserContext.t(), String.t(), function()) :: :ok
+  # @spec expose_function(t(), String.t(), function()) :: :ok
   # def expose_function(context, name, callback)
 
-  # @spec grant_permissions(BrowserContext.t(), [String.t()], options()) :: :ok
+  # @spec grant_permissions(t(), [String.t()], options()) :: :ok
   # def grant_permissions(context, permission, options \\ %{})
 
-  # @spec new_cdp_session(BrowserContext.t(), Page.t()) :: {:ok, Playwright.CDPSession.t()}
+  # @spec new_cdp_session(t(), Page.t()) :: {:ok, Playwright.CDPSession.t()}
   # def new_cdp_session(context, page)
 
   # ---
@@ -503,7 +530,7 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec pages(BrowserContext.t()) :: {:ok, [Page.t()]}
+  # @spec pages(t()) :: {:ok, [Page.t()]}
   # def pages(context)
 
   # ---
@@ -511,42 +538,49 @@ defmodule Playwright.BrowserContext do
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(BrowserContext.t(), event(), function()) :: {:ok, BrowserContext.t()}
+  @spec on(t(), event(), function()) :: {:ok, BrowserContext.t()}
   def on(%BrowserContext{} = context, event, callback) do
     Channel.bind(context, event, callback)
   end
 
   # ---
 
-  # @spec route(BrowserContext.t(), String.t(), function(), options()) :: :ok
+  # @spec route(t(), String.t(), function(), options()) :: :ok
   # def route(context, url_pattern, handler, options \\ %{})
 
-  # @spec service_workers(BrowserContext.t()) :: {:ok, [Playwright.Worker.t()]}
+  # @spec service_workers(t()) :: {:ok, [Playwright.Worker.t()]}
   # def service_workers(context)
 
-  # @spec set_default_navigation_timeout(BrowserContext.t(), number()) :: :ok
+  # @spec set_default_navigation_timeout(t(), number()) :: :ok
   # def set_default_navigation_timeout(context, timeout)
 
-  # @spec set_default_imeout(BrowserContext.t(), number()) :: :ok
+  # @spec set_default_imeout(t(), number()) :: :ok
   # def set_default_imeout(context, timeout)
 
-  # @spec set_extra_http_headers(BrowserContext.t(), headers()) :: :ok
+  # @spec set_extra_http_headers(t(), headers()) :: :ok
   # def set_extra_http_headers(context, headers)
 
-  # @spec set_geolocation(BrowserContext.t(), geolocation()) :: :ok
+  # @spec set_geolocation(t(), geolocation()) :: :ok
   # def set_geolocation(context, geolocation)
 
-  # @spec set_http_credentials(BrowserContext.t(), http_credentials()) :: :ok
+  # @spec set_http_credentials(t(), http_credentials()) :: :ok
   # def set_http_credentials(context, http_credentials)
 
-  # @spec set_offline(BrowserContext.t(), boolean()) :: :ok
+  # @spec set_offline(t(), boolean()) :: :ok
   # def set_offline(context, offline)
 
-  # @spec storage_state(BrowserContext.t(), String.t()) :: {:ok, storage_state()}
+  # @spec storage_state(t(), String.t()) :: {:ok, storage_state()}
   # def storage_state(context, path \\ nil)
 
-  # @spec route(BrowserContext.t(), String.t(), options()) :: :ok
+  # @spec route(t(), String.t(), options()) :: :ok
   # def route(context, url_pattern, options \\ %{})
 
   # ---
+
+  # private
+  # ---------------------------------------------------------------------------
+
+  defp on_binding(context, binding) do
+    Playwright.BindingCall.call(binding, Map.get(context.bindings, binding.name))
+  end
 end

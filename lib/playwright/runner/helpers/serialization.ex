@@ -37,6 +37,10 @@ defmodule Playwright.Runner.Helpers.Serialization do
     end
   end
 
+  def deserialize(value) when is_list(value) do
+    Enum.map(value, &deserialize(&1))
+  end
+
   def serialize(arg) do
     {value, handles} = serialize(arg, [], 0)
     %{value: deep_atomize_keys(value), handles: handles}
