@@ -427,9 +427,15 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec goto(t(), binary(), options()) :: {:ok, Response.t() | nil}
-  def goto(%Page{} = page, url, options \\ %{}) do
+  @spec goto(t() | {:ok, t()}, binary(), options()) :: {:ok, Response.t() | nil}
+  def goto(owner, url, options \\ %{})
+
+  def goto(%Page{} = page, url, options) do
     main_frame(page) |> Frame.goto(url, options)
+  end
+
+  def goto({:ok, page}, url, options) do
+    goto(page, url, options)
   end
 
   @spec goto!(t(), binary(), options()) :: Response.t() | nil

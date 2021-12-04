@@ -197,9 +197,23 @@ defmodule Playwright.BrowserContextTest do
       assert Response.ok(response)
       assert Response.text!(response) == "from page"
     end
-  end
 
-  # test_route_should_fall_back_to_context_route
+    test "falls back to Context.route", %{assets: assets, page: page} do
+      context = Page.context(page)
+
+      BrowserContext.route(context, "**/empty.html", fn route, _ ->
+        Route.fulfill(route, %{status: 200, body: "from context"})
+      end)
+
+      Page.route(page, "**/non-empty.html", fn route, _ ->
+        Route.fulfill(route, %{status: 200, body: "from page"})
+      end)
+
+      response = Page.goto!(page, assets.empty)
+      assert Response.ok(response)
+      assert Response.text!(response) == "from context"
+    end
+  end
 
   # test_expose_function_should_throw_for_duplicate_registrations
   # test_expose_function_should_be_callable_from_inside_add_init_script
