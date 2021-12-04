@@ -52,6 +52,7 @@ defmodule Playwright.Runner.Channel.Event do
               "bindingCall",
               "close",
               "console",
+              "event",
               "loadstate",
               "navigated",
               "page",

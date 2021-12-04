@@ -160,7 +160,7 @@ defmodule Playwright.BrowserContext do
   """
 
   use Playwright.ChannelOwner
-  alias Playwright.{BrowserContext, ChannelOwner, Page}
+  alias Playwright.{BrowserContext, ChannelOwner, Frame, Page}
   alias Playwright.Runner.{Channel, Helpers}
 
   @property :bindings
@@ -505,12 +505,16 @@ defmodule Playwright.BrowserContext do
     end
   end
 
-  # ---
+  @spec new_cdp_session(t(), Frame.t() | Page.t()) :: {:ok, Playwright.CDPSession.t()}
+  def new_cdp_session(context, owner)
 
-  # @spec new_cdp_session(t(), Page.t()) :: {:ok, Playwright.CDPSession.t()}
-  # def new_cdp_session(%BrowserContext{} = context, %Page{} = page)
+  def new_cdp_session(%BrowserContext{} = context, %Frame{} = frame) do
+    Channel.post(context, "newCDPSession", %{frame: %{guid: frame.guid}})
+  end
 
-  # ---
+  def new_cdp_session(%BrowserContext{} = context, %Page{} = page) do
+    Channel.post(context, "newCDPSession", %{page: %{guid: page.guid}})
+  end
 
   @doc """
   Creates a new `Playwright.Page` in the context.

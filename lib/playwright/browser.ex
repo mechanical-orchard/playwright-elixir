@@ -48,8 +48,13 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
+  # ---
+
+  # test_launcher.py
   # @spec close(t()) :: :ok
   # def close(browser)
+
+  # ---
 
   @doc """
   Returns an array of all open browser contexts. In a newly created browser,
@@ -157,12 +162,15 @@ defmodule Playwright.Browser do
 
   # ---
 
+  # test_browsertype_connect.py
   # @spec on(t(), event(), function()) :: {:ok, Browser.t()}
   # def on(browser, event, callback)
 
+  # test_chromium_tracing.py
   # @spec start_tracing(t(), Page.t(), options()) :: :ok
   # def start_tracing(browser, page \\ nil, options \\ %{})
 
+  # test_chromium_tracing.py
   # @spec stop_tracing(t()) :: {:ok, binary()}
   # def stop_tracing(browser)
 
