@@ -96,6 +96,10 @@ defmodule Playwright.ChannelOwner do
 
         {:ok, event.target}
       end
+
+      defp bang!({:ok, resource}) do
+        resource
+      end
     end
   end
 

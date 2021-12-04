@@ -11,7 +11,7 @@ defmodule Playwright.Route do
 
   # ---
 
-  # @spec abort(Route.t(), binary()) :: :ok
+  # @spec abort(t(), binary()) :: :ok
   # def abort(route, error_code \\ nil)
 
   # ---
@@ -29,13 +29,40 @@ defmodule Playwright.Route do
     continue(route, options)
   end
 
-  # ---
-
-  # @spec fulfill(Route.t(), options()) :: :ok
+  @spec fulfill(t(), options()) :: :ok
   # def fulfill(route, options \\ %{})
 
-  # @spec request(Route.t()) :: Request.t()
+  def fulfill(route, %{status: status, body: body}) when is_binary(body) do
+    length = String.length(body)
+
+    params = %{
+      body: body,
+      is_base64: false,
+      length: length,
+      status: status,
+      headers:
+        serialize_headers(%{
+          "content-length" => "#{length}"
+        })
+    }
+
+    {:ok, _} = Channel.post(route, :fulfill, params)
+    :ok
+  end
+
+  # ---
+
+  # @spec request(t()) :: Request.t()
   # def request(route)
 
   # ---
+
+  # private
+  # ---------------------------------------------------------------------------
+
+  defp serialize_headers(headers) when is_map(headers) do
+    Enum.reduce(headers, [], fn {k, v}, acc ->
+      [%{name: k, value: v} | acc]
+    end)
+  end
 end

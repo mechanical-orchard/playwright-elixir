@@ -148,7 +148,6 @@ defmodule Playwright.BrowserContextTest do
       context = Page.context(page)
 
       handler = fn route, marker ->
-        IO.inspect("  --> marker: #{inspect(marker)}")
         send(pid, marker)
         Route.continue(route)
       end
@@ -182,9 +181,24 @@ defmodule Playwright.BrowserContextTest do
       assert_next_receive(1)
       assert_empty_mailbox()
     end
+
+    test "yields to Page.route", %{assets: assets, page: page} do
+      context = Page.context(page)
+
+      BrowserContext.route(context, "**/empty.html", fn route, _ ->
+        Route.fulfill(route, %{status: 200, body: "from context"})
+      end)
+
+      Page.route(page, "**/empty.html", fn route, _ ->
+        Route.fulfill(route, %{status: 200, body: "from page"})
+      end)
+
+      response = Page.goto!(page, assets.empty)
+      assert Response.ok(response)
+      assert Response.text!(response) == "from page"
+    end
   end
 
-  # test_route_should_yield_to_page_route
   # test_route_should_fall_back_to_context_route
 
   # test_expose_function_should_throw_for_duplicate_registrations
