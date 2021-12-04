@@ -48,6 +48,7 @@ defmodule Playwright.Page do
   @property :is_closed
   @property :main_frame
   @property :owned_context
+  @property :routes
 
   @type dimensions :: map()
   @type function_or_options :: fun() | options() | nil
@@ -60,12 +61,17 @@ defmodule Playwright.Page do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(owner, _intializer) do
-    Channel.bind(owner, :close, fn event ->
+  def init(page, _intializer) do
+    Channel.bind(page, :close, fn event ->
       {:patch, %{event.target | is_closed: true}}
     end)
 
-    {:ok, owner}
+    Channel.bind(page, :route, fn %{target: target} = e ->
+      on_route(target, e)
+      # NOTE: will patch here
+    end)
+
+    {:ok, %{page | routes: []}}
   end
 
   # delegates (should these be reworked as a Protocol?)
@@ -520,21 +526,22 @@ defmodule Playwright.Page do
     Channel.post(page, :reload, options)
   end
 
-  @spec route(t(), binary(), function(), map()) :: {atom(), Page.t()}
-  def route(owner, pattern, handler, options \\ %{})
+  @spec route(t(), binary(), function(), map()) :: :ok
+  def route(page, pattern, handler, options \\ %{})
 
-  def route(%Page{} = owner, pattern, handler, _options) do
-    matcher = Helpers.URLMatcher.new(pattern)
+  def route(%Page{} = page, pattern, handler, _options) do
+    with_latest(page, fn page ->
+      matcher = Helpers.URLMatcher.new(pattern)
+      handler = Helpers.RouteHandler.new(matcher, handler)
+      routes = page.routes
 
-    if Enum.empty?(owner.listeners["route"] || []) do
-      Channel.post(owner, :set_network_interception_enabled, %{enabled: true})
-    end
+      if Enum.empty?(routes) do
+        Channel.post(page, :set_network_interception_enabled, %{enabled: true})
+      end
 
-    Channel.bind(owner, :route, &Page.exec_callback_on_route(&1, matcher, handler))
-  end
-
-  def route({:ok, owner}, pattern, handler, options) do
-    route(owner, pattern, handler, options)
+      {:ok, _} = Channel.patch(page.connection, page.guid, %{routes: [handler | routes]})
+      :ok
+    end)
   end
 
   @spec screenshot(t(), options()) :: {:ok, binary()}
@@ -642,12 +649,26 @@ defmodule Playwright.Page do
   # private
   # ---------------------------------------------------------------------------
 
-  @doc false
-  def exec_callback_on_route(%{params: %{request: request, route: route}}, matcher, callback) do
-    if Helpers.URLMatcher.matches(matcher, request.url) do
-      Task.start_link(fn ->
-        callback.(route, request)
-      end)
-    end
+  defp on_route(page, %{params: %{request: request} = params} = _event) do
+    Enum.reduce_while(page.routes, [], fn handler, acc ->
+      if Helpers.RouteHandler.matches(handler, request.url) do
+        Helpers.RouteHandler.handle(handler, params)
+        # break
+        {:halt, acc}
+      else
+        {:cont, [handler | acc]}
+      end
+    end)
+
+    # task =
+    #   Task.async(fn ->
+    #     IO.puts("fetching context for page...")
+
+    #     context(page)
+    #     |> IO.inspect(label: "task context")
+    #     |> BrowserContext.on_route(event)
+    #   end)
+
+    # Task.await(task)
   end
 end

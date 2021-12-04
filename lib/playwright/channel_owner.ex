@@ -97,8 +97,13 @@ defmodule Playwright.ChannelOwner do
         {:ok, event.target}
       end
 
-      defp bang!({:ok, resource}) do
-        resource
+      defp bang!({:ok, owner}) do
+        owner
+      end
+
+      defp with_latest(owner, task) do
+        {:ok, latest} = Channel.find(owner)
+        task.(latest)
       end
     end
   end

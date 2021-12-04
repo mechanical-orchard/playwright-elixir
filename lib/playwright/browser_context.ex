@@ -656,9 +656,4 @@ defmodule Playwright.BrowserContext do
       end
     end)
   end
-
-  defp with_latest(context, task) do
-    {:ok, latest} = Channel.find(context)
-    task.(latest)
-  end
 end

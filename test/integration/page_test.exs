@@ -1,6 +1,6 @@
 defmodule Playwright.PageTest do
   use Playwright.TestCase
-  alias Playwright.{Browser, ElementHandle, Page, Response, Route}
+  alias Playwright.{Browser, ElementHandle, Frame, Page, Request, Response, Route}
   alias Playwright.Runner.{Channel, Connection, EventInfo}
 
   describe "Page.hover/2" do
@@ -145,10 +145,11 @@ defmodule Playwright.PageTest do
         assert request.post_data == nil
         assert request.is_navigation_request == true
         assert request.resource_type == "document"
+        assert Request.get_header(request, "user-agent")
 
-        # expect(request.headers()['user-agent']).toBeTruthy();
-        # expect(request.frame() === page.mainFrame()).toBe(true);
-        # expect(request.frame().url()).toBe('about:blank');
+        frame = Request.frame(request)
+        assert frame == Page.main_frame(page)
+        assert Frame.url(frame) == "about:blank"
 
         Route.continue(route)
         send(pid, :intercepted)
