@@ -69,7 +69,7 @@ defmodule Playwright.BrowserContextTest do
       assert length(BrowserContext.pages!(context)) == 1
 
       BrowserContext.close(context)
-      assert length(BrowserContext.pages!(context)) == 0
+      assert Enum.empty?(BrowserContext.pages!(context))
     end
   end
 
@@ -216,6 +216,34 @@ defmodule Playwright.BrowserContextTest do
     #   assert Response.ok(response)
     #   assert Response.text!(response) == "from context"
     # end
+  end
+
+  describe "BrowserContext.set_offline/2" do
+    @tag without: [:page]
+    test "using initial option", %{assets: assets, browser: browser} do
+      context = Browser.new_context!(browser, %{offline: true})
+      page = BrowserContext.new_page!(context)
+
+      assert {:error, error} = Page.goto(page, assets.empty)
+      assert String.contains?(error.message, "net::ERR_INTERNET_DISCONNECTED")
+
+      BrowserContext.set_offline(context, false)
+      response = Page.goto!(page, assets.empty)
+      assert Response.ok(response)
+
+      BrowserContext.close(context)
+    end
+
+    test "emulating navigator.onLine", %{page: page} do
+      context = Page.context(page)
+      assert Page.evaluate!(page, "window.navigator.onLine")
+
+      BrowserContext.set_offline(context, true)
+      refute Page.evaluate!(page, "window.navigator.onLine")
+
+      BrowserContext.set_offline(context, false)
+      assert Page.evaluate!(page, "window.navigator.onLine")
+    end
   end
 
   # test_expose_function_should_throw_for_duplicate_registrations

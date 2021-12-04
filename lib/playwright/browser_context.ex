@@ -536,6 +536,10 @@ defmodule Playwright.BrowserContext do
     new_page(context)
   end
 
+  def new_page!(context) do
+    new_page(context) |> bang!
+  end
+
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
@@ -606,8 +610,15 @@ defmodule Playwright.BrowserContext do
   # @spec set_http_credentials(t(), http_credentials()) :: :ok
   # def set_http_credentials(context, http_credentials)
 
-  # @spec set_offline(t(), boolean()) :: :ok
-  # def set_offline(context, offline)
+  # ---
+
+  @spec set_offline(t(), boolean()) :: :ok
+  def set_offline(context, offline) do
+    Channel.post(context, :set_offline, %{offline: offline})
+    |> ok!()
+  end
+
+  # ---
 
   # @spec storage_state(t(), String.t()) :: {:ok, storage_state()}
   # def storage_state(context, path \\ nil)

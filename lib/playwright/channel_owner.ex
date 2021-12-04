@@ -101,6 +101,10 @@ defmodule Playwright.ChannelOwner do
         owner
       end
 
+      defp ok!({:ok, _}) do
+        :ok
+      end
+
       defp with_latest(owner, task) do
         {:ok, latest} = Channel.find(owner)
         task.(latest)
@@ -133,6 +137,7 @@ defmodule Playwright.ChannelOwner do
 
   defmodule Macros do
     @moduledoc false
+    alias Playwright.Runner.Channel
 
     defmacro __using__(_args) do
       Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
@@ -152,17 +157,17 @@ defmodule Playwright.ChannelOwner do
         @spec unquote(arg)(t()) :: term()
         def unquote(arg)(owner) do
           owner =
-            unless Map.has_key?(owner, :is_closed) && owner.is_closed do
-              {:ok, refreshed} = Playwright.Runner.Channel.find(owner)
-              refreshed
-            else
+            if Map.has_key?(owner, :is_closed) && owner.is_closed do
               owner
+            else
+              {:ok, refreshed} = Channel.find(owner)
+              refreshed
             end
 
           property = Map.get(owner, unquote(arg))
 
           if is_map(property) && Map.has_key?(property, :guid) do
-            {:ok, result} = Playwright.Runner.Channel.find(owner, property)
+            {:ok, result} = Channel.find(owner, property)
             result
           else
             property
