@@ -41,6 +41,10 @@ defmodule Playwright.Runner.Connection do
 
   # ---
 
+  def all(connection, filter) do
+    GenServer.call(connection, {:all, filter})
+  end
+
   # Catalog or callback(`GenServer.reply`).
   # - Like `find` (now another `get`, below), does not send/post.
   # - Unlike `find` (`get`, below), will register a "from" to receive a reply, if not already in the catalog.
@@ -51,8 +55,8 @@ defmodule Playwright.Runner.Connection do
   # Catalog-only.
   # - Attempts to retrieve an existing entry, and returns that or "default".
   # - Could probably be collapsed with `get` (above), with some options or similar.
-  def get(connection, attributes, default \\ []) do
-    GenServer.call(connection, {:get, attributes, default})
+  def get(connection, attributes) do
+    GenServer.call(connection, {:get, attributes})
   end
 
   # Callback-only (remote event).
@@ -130,23 +134,22 @@ defmodule Playwright.Runner.Connection do
   end
 
   @impl GenServer
-  def handle_info(msg, state) do
-    Logger.error("Connection.handle_info/2 with msg: #{inspect(msg)}")
-    state
+  def handle_call({:all, filter}, _from, %{catalog: catalog} = state) do
+    {:reply, Catalog.filter(catalog, filter), state}
   end
 
   @impl GenServer
-  def handle_call({:get, {:guid, guid}}, subscriber, %{catalog: catalog} = state) do
-    Catalog.get(catalog, guid, subscriber)
+  def handle_call({:get, {:guid, guid}}, from, %{catalog: catalog} = state) do
+    Catalog.get(catalog, guid, from)
     {:noreply, state}
   end
 
-  # these 2 ^v :get handlers are not really alike... redefine them, please
-
   @impl GenServer
-  def handle_call({:get, filter, default}, _from, %{catalog: catalog} = state) do
-    {:reply, Catalog.filter(catalog, filter, default), state}
+  def handle_call({:get, filter}, _from, %{catalog: catalog} = state) do
+    {:reply, Catalog.filter(catalog, filter, nil), state}
   end
+
+  # these 2 ^v :get handlers are not really alike... redefine them, please :)
 
   # NOTE: this should move to be part of `Catalog.put`
   @impl GenServer

@@ -66,7 +66,7 @@ defmodule Playwright.Runner.Catalog do
   end
 
   # Retrieves a list of entries, filtered by some attributes.
-  def filter(pid, filter, default \\ nil) do
+  def filter(pid, filter, default \\ []) do
     GenServer.call(pid, {:filter, {filter, default}})
   end
 

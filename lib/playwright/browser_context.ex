@@ -511,7 +511,7 @@ defmodule Playwright.BrowserContext do
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(t(), event(), function()) :: {:ok, BrowserContext.t()}
+  @spec on(t(), event(), function()) :: BrowserContext.t()
   def on(%BrowserContext{} = context, event, callback) do
     Channel.bind(context, event, callback)
   end
@@ -523,7 +523,7 @@ defmodule Playwright.BrowserContext do
 
     - `{:ok, [Page.t()]}`
   """
-  @spec pages(t()) :: {:ok, [Page.t()]}
+  @spec pages(t()) :: [Page.t()]
   def pages(%BrowserContext{} = context) do
     Channel.all(context.connection, %{
       parent: context,

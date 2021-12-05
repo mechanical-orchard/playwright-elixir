@@ -292,12 +292,12 @@ defmodule Playwright.PageTest do
     test ".close/1", %{browser: browser, connection: connection} do
       page = Browser.new_page(browser)
 
-      Connection.get(connection, %{guid: page.guid}, nil)
+      Connection.get(connection, %{guid: page.guid})
       |> assert()
 
       page |> Page.close()
 
-      Connection.get(connection, %{guid: page.guid}, nil)
+      Connection.get(connection, %{guid: page.guid})
       |> refute()
     end
 

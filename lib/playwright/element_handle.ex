@@ -69,6 +69,8 @@ defmodule Playwright.ElementHandle do
     Channel.bind(handle, :preview_updated, fn %{params: params} = event ->
       {:patch, %{event.target | preview: params.preview}}
     end)
+
+    {:ok, handle}
   end
 
   # delegates

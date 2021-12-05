@@ -10,10 +10,10 @@ defmodule Playwright.Runner.Channel do
   # def send...      (cast)
   # def wait...
 
-  @spec bind(struct(), atom() | binary(), (... -> any)) :: {:ok, struct()}
+  @spec bind(struct(), atom() | binary(), (... -> any)) :: struct()
   def bind(%{connection: connection} = owner, event, callback) do
     :ok = Connection.bind(connection, {as_atom(event), owner}, callback)
-    {:ok, owner}
+    owner
   end
 
   @spec find(struct()) :: {:ok, struct()}
@@ -73,8 +73,9 @@ defmodule Playwright.Runner.Channel do
 
   # ---------------------------------------------------------------------------
 
-  def all(connection, filter, default \\ []) do
-    Connection.get(connection, filter, default)
+  @spec all(pid(), map()) :: [struct()]
+  def all(connection, filter) do
+    Connection.all(connection, filter)
   end
 
   def get(connection, {:guid, guid}) do
