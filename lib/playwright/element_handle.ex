@@ -152,11 +152,9 @@ defmodule Playwright.ElementHandle do
   @doc """
   Returns the value of an element's attribute.
   """
-  @spec get_attribute(t(), binary()) :: {:ok, binary() | nil}
-  def get_attribute(handle, name)
-
+  @spec get_attribute(t(), binary()) :: binary() | nil
   def get_attribute(%ElementHandle{} = handle, name) do
-    Channel.post(handle, :get_attribute, %{name: name})
+    Channel.post!(handle, :get_attribute, %{name: name})
   end
 
   # ---
@@ -173,29 +171,26 @@ defmodule Playwright.ElementHandle do
   # @spec input_value(ElementHandle.t(), options()) :: {:ok, binary()}
   # def input_value(handle, options)
 
-  # @spec is_checked(ElementHandle.t()) :: {:ok, boolean()}
+  # @spec is_checked(ElementHandle.t()) :: boolean()
   # def is_checked(handle)
 
-  # @spec is_disabled(ElementHandle.t()) :: {:ok, boolean()}
+  # @spec is_disabled(ElementHandle.t()) :: boolean()
   # def is_disabled(handle)
 
-  # @spec is_editable(ElementHandle.t()) :: {:ok, boolean()}
+  # @spec is_editable(ElementHandle.t()) :: boolean()
   # def is_editable(handle)
 
-  # @spec is_enabled(ElementHandle.t()) :: {:ok, boolean()}
+  # @spec is_enabled(ElementHandle.t()) :: boolean()
   # def is_enabled(handle)
 
-  # @spec is_hidden(ElementHandle.t()) :: {:ok, boolean()}
+  # @spec is_hidden(ElementHandle.t()) :: boolean()
   # def is_hidden(handle)
 
   # ---
 
-  @spec is_visible(t() | {:ok, t()}) :: {:ok, boolean()}
-  def is_visible(handle)
-
+  @spec is_visible(t() | {:ok, t()}) :: boolean()
   def is_visible(%ElementHandle{} = handle) do
-    {:ok, result} = Channel.post(handle, :is_visible)
-    {:ok, result == true}
+    Channel.post!(handle, :is_visible)
   end
 
   # ---

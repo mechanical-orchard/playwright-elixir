@@ -35,8 +35,8 @@ defmodule Playwright.ElementHandleTest do
       Page.goto(page, assets.prefix <> "/dom.html")
 
       element = Page.query_selector(page, "#outer")
-      assert element |> ElementHandle.get_attribute("name") == {:ok, "value"}
-      assert element |> ElementHandle.get_attribute("foo") == {:ok, nil}
+      assert element |> ElementHandle.get_attribute("name") == "value"
+      assert element |> ElementHandle.get_attribute("foo") == nil
     end
   end
 
@@ -48,10 +48,10 @@ defmodule Playwright.ElementHandleTest do
       span = Page.q(page, "span")
 
       assert div
-      assert {:ok, true} = ElementHandle.is_visible(div)
+      assert ElementHandle.is_visible(div) === true
 
       assert span
-      assert {:ok, false} = ElementHandle.is_visible(span)
+      assert ElementHandle.is_visible(span) === false
     end
   end
 
