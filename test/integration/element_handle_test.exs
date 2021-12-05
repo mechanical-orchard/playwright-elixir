@@ -6,10 +6,10 @@ defmodule Playwright.ElementHandleTest do
     test ":preview field", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      with outer <- Page.q(page, "#outer"),
-           inner <- Page.q(page, "#inner"),
-           check <- Page.q(page, "#check"),
-           {:ok, child} <- JSHandle.evaluate_handle(inner, "e => e.firstChild") do
+      with %ElementHandle{} = outer <- Page.q(page, "#outer"),
+           %ElementHandle{} = inner <- Page.q(page, "#inner"),
+           %ElementHandle{} = check <- Page.q(page, "#check"),
+           %ElementHandle{} = child <- JSHandle.evaluate_handle(inner, "e => e.firstChild") do
         assert outer.preview == ~s|JSHandle@<div id="outer" name="value">…</div>|
         assert inner.preview == ~s|JSHandle@<div id="inner">Text,↵more text</div>|
         assert check.preview == ~s|JSHandle@<input checked id="check" foo="bar"" type="checkbox"/>|

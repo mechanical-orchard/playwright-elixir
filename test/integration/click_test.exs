@@ -4,44 +4,40 @@ defmodule Playwright.ClickTest do
 
   describe "Frame.click/3" do
     test "with a button inside an iframe", %{assets: assets, page: page} do
-      with :ok <-
-             Page.set_content(page, "<div style='width:100px; height:100px'>spacer</div>"),
-           frame <-
-             attach_frame(page, "button-test", assets.prefix <> "/input/button.html"),
-           {:ok, button} <-
-             Frame.query_selector(frame, "button") do
-        assert ElementHandle.click(button) == :ok
-        assert Frame.evaluate(frame, "window.result") == "Clicked"
-      end
+      :ok = Page.set_content(page, "<div style='width:100px; height:100px'>spacer</div>")
+      frame = attach_frame(page, "button-test", assets.prefix <> "/input/button.html")
+      button = Frame.query_selector(frame, "button")
+
+      assert ElementHandle.click(button) == :ok
+      assert Frame.evaluate(frame, "window.result") == "Clicked"
     end
   end
 
   describe "Page.click/3" do
     test "with a button", %{assets: assets, page: page} do
-      with :ok <- Page.goto(page, assets.prefix <> "/input/button.html"),
-           :ok <- Page.click(page, "button") do
-        assert Page.evaluate(page, "result") == "Clicked"
-      end
+      Page.goto(page, assets.prefix <> "/input/button.html")
+      Page.click(page, "button")
+      assert Page.evaluate(page, "result") == "Clicked"
     end
   end
 
   describe "Page.dblclick/2, mimicking Python tests" do
     test "test_locators.py: `test_double_click_the_button`", %{assets: assets, page: page} do
-      with :ok <- Page.goto(page, assets.prefix <> "/input/button.html"),
-           :ok <-
-             Page.evaluate(page, """
-              () => {
-                window['double'] = false;
-                const button = document.querySelector('button');
-                button.addEventListener('dblclick', event => {
-                  window['double'] = true;
-                });
-              }
-             """) do
-        assert Page.dblclick(page, "button") == :ok
-        assert Page.evaluate(page, "window['double']") == true
-        assert Page.evaluate(page, "window['result']") == "Clicked"
-      end
+      Page.goto(page, assets.prefix <> "/input/button.html")
+
+      Page.evaluate(page, """
+        () => {
+          window['double'] = false;
+          const button = document.querySelector('button');
+          button.addEventListener('dblclick', event => {
+            window['double'] = true;
+          });
+        }
+      """)
+
+      assert Page.dblclick(page, "button") == :ok
+      assert Page.evaluate(page, "window['double']") == true
+      assert Page.evaluate(page, "window['result']") == "Clicked"
     end
   end
 end

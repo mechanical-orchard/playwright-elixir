@@ -54,7 +54,7 @@ defmodule Playwright.Locator do
   """
 
   import Playwright.Locator.Macros
-  alias Playwright.{ElementHandle, Frame, JSHandle, Locator, Page}
+  alias Playwright.{ElementHandle, Frame, Locator, Page}
   alias Playwright.Runner.Channel
 
   @enforce_keys [:frame, :selector]
@@ -476,7 +476,7 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, Playwright.JSHandle.t()}`
+    - `{:ok, Playwright.ElementHandle.t()}`
     - `{:error, Playwright.Runner.Channel.Error.t()}`
 
   ## Arguments
@@ -487,7 +487,7 @@ defmodule Playwright.Locator do
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   | `:timeout`   | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec evaluate_handle(t(), binary(), any(), options()) :: {:ok, JSHandle.t()} | {:error, Channel.Error.t()}
+  @spec evaluate_handle(t(), binary(), any(), options()) :: ElementHandle.t() | {:error, Channel.Error.t()}
   def evaluate_handle(locator, expression, arg \\ nil, options \\ %{})
 
   # NOTE: need to do all of the map-like things before a plain `map()`,
@@ -598,7 +598,7 @@ defmodule Playwright.Locator do
   | `name`     | param  | `binary()` | Name of the attribute to retrieve. |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec get_attribute(t(), binary(), options()) :: {:ok, binary() | nil}
+  @spec get_attribute(t(), binary(), options()) :: binary() | nil
   def get_attribute(%Locator{} = locator, name, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.get_attribute(locator.frame, locator.selector, name, options)

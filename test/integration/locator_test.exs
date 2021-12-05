@@ -322,13 +322,12 @@ defmodule Playwright.LocatorTest do
   end
 
   describe "Locator.evaluate_handle/3" do
-    test "returns a JSHandle", %{assets: assets, page: page} do
+    test "returns a handle", %{assets: assets, page: page} do
+      locator = Page.locator(page, "#inner")
       Page.goto(page, assets.dom)
 
-      inner = Page.locator(page, "#inner")
-      {:ok, text} = Locator.evaluate_handle(inner, "e => e.firstChild")
-
-      assert ElementHandle.string(text) == ~s|JSHandle@#text=Text,↵more text|
+      handle = Locator.evaluate_handle(locator, "e => e.firstChild")
+      assert ElementHandle.string(handle) == ~s|JSHandle@#text=Text,↵more text|
     end
   end
 
