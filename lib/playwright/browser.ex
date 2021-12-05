@@ -72,13 +72,10 @@ defmodule Playwright.Browser do
   """
   @spec contexts(t()) :: {:ok, [BrowserContext.t()]}
   def contexts(%Browser{} = browser) do
-    result =
-      Channel.all(browser.connection, %{
-        parent: browser,
-        type: "BrowserContext"
-      })
-
-    {:ok, result}
+    Channel.all(browser.connection, %{
+      parent: browser,
+      type: "BrowserContext"
+    })
   end
 
   # ---

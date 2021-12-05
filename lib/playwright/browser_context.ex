@@ -552,19 +552,10 @@ defmodule Playwright.BrowserContext do
   """
   @spec pages(t()) :: {:ok, [Page.t()]}
   def pages(%BrowserContext{} = context) do
-    result =
-      Channel.all(context.connection, %{
-        parent: context,
-        type: "Page"
-      })
-
-    {:ok, result}
-  end
-
-  @doc false
-  def pages!(context) do
-    {:ok, result} = pages(context)
-    result
+    Channel.all(context.connection, %{
+      parent: context,
+      type: "Page"
+    })
   end
 
   @spec route(t(), binary(), function(), map()) :: :ok
@@ -609,8 +600,7 @@ defmodule Playwright.BrowserContext do
 
   @spec set_offline(t(), boolean()) :: :ok
   def set_offline(context, offline) do
-    Channel.post(context, :set_offline, %{offline: offline})
-    |> ok!()
+    Channel.post!(context, :set_offline, %{offline: offline})
   end
 
   # ---

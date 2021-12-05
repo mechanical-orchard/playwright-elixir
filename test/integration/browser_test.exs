@@ -5,19 +5,19 @@ defmodule Playwright.BrowserTest do
   describe "Browser.new_page/1" do
     @tag exclude: [:page]
     test "builds a new Page, incl. context", %{browser: browser} do
-      assert {:ok, []} = Browser.contexts(browser)
+      assert [] = Browser.contexts(browser)
 
       page1 = Browser.new_page(browser)
-      assert {:ok, [%BrowserContext{}]} = Browser.contexts(browser)
+      assert [%BrowserContext{}] = Browser.contexts(browser)
 
       page2 = Browser.new_page(browser)
-      assert {:ok, [%BrowserContext{}, %BrowserContext{}]} = Browser.contexts(browser)
+      assert [%BrowserContext{}, %BrowserContext{}] = Browser.contexts(browser)
 
       Page.close(page1)
-      assert {:ok, [%BrowserContext{}]} = Browser.contexts(browser)
+      assert [%BrowserContext{}] = Browser.contexts(browser)
 
       Page.close(page2)
-      assert {:ok, []} = Browser.contexts(browser)
+      assert [] = Browser.contexts(browser)
     end
 
     test "raises an exception upon additional call to `new_page`", %{page: page} do

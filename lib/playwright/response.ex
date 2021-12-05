@@ -22,14 +22,10 @@ defmodule Playwright.Response do
 
   # ---
 
-  @spec body(t() | {:ok, t()}) :: {:ok, binary()}
+  @spec body(t() | {:ok, t()}) :: binary()
   def body(%Response{} = response) do
     {:ok, result} = Channel.post(response, :body)
-    Base.decode64(result)
-  end
-
-  def body({:ok, response}) do
-    body(response)
+    Base.decode64!(result)
   end
 
   # ---
@@ -70,12 +66,8 @@ defmodule Playwright.Response do
 
   # ---
 
-  @spec text(t()) :: {:ok, binary()}
+  @spec text(t()) :: binary()
   def text(response) do
     body(response)
-  end
-
-  def text!(response) do
-    text(response) |> bang!
   end
 end

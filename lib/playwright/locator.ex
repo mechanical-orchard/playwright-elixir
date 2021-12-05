@@ -381,16 +381,8 @@ defmodule Playwright.Locator do
     options = Map.merge(%{strict: true, state: "attached"}, options)
 
     with_element(locator, options, fn handle ->
-      {:ok, handle}
+      handle
     end)
-  end
-
-  @doc false
-  def element_handle!(%Locator{} = locator, options \\ %{}) do
-    case element_handle(locator, options) do
-      # {:ok, nil} -> raise "No element found for selector: #{selector}"
-      {:ok, handle} -> handle
-    end
   end
 
   @doc """

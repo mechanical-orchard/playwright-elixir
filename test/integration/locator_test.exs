@@ -118,7 +118,7 @@ defmodule Playwright.LocatorTest do
       outer = Locator.locator(html, ".outer")
       inner = Locator.locator(outer, ".inner")
 
-      {:ok, handle} = Locator.element_handle(inner)
+      handle = Locator.element_handle(inner)
       assert Page.evaluate(page, "e => e.textContent", handle) == "A"
     end
   end
@@ -187,7 +187,7 @@ defmodule Playwright.LocatorTest do
 
       Page.set_content(page, "<input type='checkbox' checked><div>Not a checkbox</div>")
 
-      {:ok, handle} = Page.wait_for_selector(page, selector)
+      handle = Page.wait_for_selector(page, selector)
 
       {:ok, checked} = Locator.is_checked(locator)
       assert checked
@@ -644,7 +644,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.goto(assets.prefix <> "/input/fileupload.html")
 
       Locator.set_input_files(locator, fixture)
-      assert Page.evaluate(page, "e => e.files[0].name", Locator.element_handle!(locator)) == "file-to-upload.txt"
+      assert Page.evaluate(page, "e => e.files[0].name", Locator.element_handle(locator)) == "file-to-upload.txt"
     end
   end
 

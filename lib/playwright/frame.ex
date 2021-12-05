@@ -651,29 +651,6 @@ defmodule Playwright.Frame do
 
   defdelegate q(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector
 
-  # # NOTE: this should either delegate to `query_selector` w/ `strict: true`, or
-  # # be removed.
-  # @doc false
-  # @spec query_selector!(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: struct()
-  # def query_selector!(owner, selector, options \\ %{})
-
-  # def query_selector!(%Page{} = page, selector, options) do
-  #   from(page) |> query_selector!(selector, options)
-  # end
-
-  # def query_selector!(%Frame{} = frame, selector, options) do
-  #   case query_selector(frame, selector, options) do
-  #     {:ok, nil} -> raise "No element found for selector: #{selector}"
-  #     {:ok, handle} -> handle
-  #   end
-  # end
-
-  # def query_selector!({:ok, owner}, selector, options) do
-  #   query_selector!(owner, selector, options)
-  # end
-
-  # defdelegate q!(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector!
-
   @doc """
   Returns the list of `Playwright.ElementHandle` pointing to the frame elements.
 

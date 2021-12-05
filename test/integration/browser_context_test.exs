@@ -5,28 +5,28 @@ defmodule Playwright.BrowserContextTest do
   describe "Browser.new_context/1" do
     @tag exclude: [:page]
     test "creates and binds a new context", %{browser: browser} do
-      assert Browser.contexts(browser) == {:ok, []}
+      assert Browser.contexts(browser) == []
 
       Browser.new_context(browser)
-      assert {:ok, [%BrowserContext{} = context]} = Browser.contexts(browser)
+      assert [%BrowserContext{} = context] = Browser.contexts(browser)
       assert context.browser == browser
 
       BrowserContext.close(context)
-      assert Browser.contexts(browser) == {:ok, []}
+      assert Browser.contexts(browser) == []
     end
   end
 
   describe "Browser.new_page/1" do
     @tag exclude: [:page]
     test "creates and binds a new context", %{browser: browser} do
-      assert Browser.contexts(browser) == {:ok, []}
+      assert Browser.contexts(browser) == []
 
       page = Browser.new_page(browser)
-      assert {:ok, [%BrowserContext{} = context]} = Browser.contexts(browser)
+      assert [%BrowserContext{} = context] = Browser.contexts(browser)
       assert context.browser == browser
 
       Page.close(page)
-      assert Browser.contexts(browser) == {:ok, []}
+      assert Browser.contexts(browser) == []
     end
   end
 
@@ -66,10 +66,10 @@ defmodule Playwright.BrowserContextTest do
       context = Browser.new_context(browser)
 
       BrowserContext.new_page(context)
-      assert length(BrowserContext.pages!(context)) == 1
+      assert length(BrowserContext.pages(context)) == 1
 
       BrowserContext.close(context)
-      assert Enum.empty?(BrowserContext.pages!(context))
+      assert Enum.empty?(BrowserContext.pages(context))
     end
   end
 
@@ -107,7 +107,7 @@ defmodule Playwright.BrowserContextTest do
       BrowserContext.new_page(context)
       BrowserContext.new_page(context)
 
-      {:ok, pages} = BrowserContext.pages(context)
+      pages = BrowserContext.pages(context)
       assert length(pages) == 2
 
       BrowserContext.close(context)
@@ -195,7 +195,7 @@ defmodule Playwright.BrowserContextTest do
 
       response = Page.goto(page, assets.empty)
       assert Response.ok(response)
-      assert Response.text!(response) == "from page"
+      assert Response.text(response) == "from page"
     end
 
     # NOTE:
