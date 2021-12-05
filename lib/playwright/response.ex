@@ -24,8 +24,8 @@ defmodule Playwright.Response do
 
   @spec body(t() | {:ok, t()}) :: binary()
   def body(%Response{} = response) do
-    {:ok, result} = Channel.post(response, :body)
-    Base.decode64!(result)
+    Channel.post(response, :body)
+    |> Base.decode64!()
   end
 
   # ---

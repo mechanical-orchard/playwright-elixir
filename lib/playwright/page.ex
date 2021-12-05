@@ -10,8 +10,8 @@ defmodule Playwright.Page do
 
   Create a page, navigate it to a URL, and save a screenshot:
 
-      {:ok, page} = Browser.new_page(browser)
-      {:ok, resp} = Page.goto(page, "https://example.com")
+      page = Browser.new_page(browser)
+      resp =  = Page.goto(page, "https://example.com")
 
       {:ok _} = Page.screenshot(page, %{path: "screenshot.png"})
 
@@ -124,7 +124,7 @@ defmodule Playwright.Page do
   @spec add_init_script(t(), binary() | map()) :: :ok
   def add_init_script(%Page{} = page, script) when is_binary(script) do
     params = %{source: script}
-    Channel.post!(page, :add_init_script, params)
+    Channel.post(page, :add_init_script, params)
   end
 
   def add_init_script(%Page{} = page, %{path: path} = script) when is_map(script) do
@@ -186,15 +186,13 @@ defmodule Playwright.Page do
     :ok
   end
 
-  @doc """
-  Get the full HTML contents of the page, including the doctype.
-  """
-  @spec content(t()) :: {:ok, binary()}
-  def content(owner)
-
-  def content(%Page{} = owner) do
-    Channel.post(owner, :content)
-  end
+  # @doc """
+  # Get the full HTML contents of the page, including the doctype.
+  # """
+  # @spec content(t()) :: binary()
+  # def content(%Page{} = page) do
+  #   Channel.post(page, :content)
+  # end
 
   @doc """
   Get the `Playwright.BrowserContext` that the page belongs to.
@@ -250,7 +248,7 @@ defmodule Playwright.Page do
     main_frame(page) |> Frame.evaluate_handle(expression, arg)
   end
 
-  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: {:ok, Playwright.Runner.EventInfo.t()}
+  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.Runner.EventInfo.t()
   def expect_event(page, event, trigger, predicate \\ nil, options \\ %{})
 
   def expect_event(%Page{} = page, event, trigger, predicate, options) do
@@ -418,7 +416,7 @@ defmodule Playwright.Page do
   - `networkidle` - consider operation to be finished when there are no network connections for at least `500 ms`.
   - `commit` - consider operation to be finished when network response is received and the document started loading.
   """
-  @spec reload(t(), options()) :: {:ok, Response.t() | nil}
+  @spec reload(t(), options()) :: Response.t() | nil
   def reload(page, options \\ %{}) do
     Channel.post(page, :reload, options)
   end
@@ -445,12 +443,12 @@ defmodule Playwright.Page do
   def screenshot(%Page{} = page, options \\ %{}) do
     case Map.pop(options, :path) do
       {nil, params} ->
-        Channel.post!(page, :screenshot, params)
+        Channel.post(page, :screenshot, params)
 
       {path, params} ->
         [_, filetype] = String.split(path, ".")
 
-        data = Channel.post!(page, :screenshot, Map.put(params, :type, filetype))
+        data = Channel.post(page, :screenshot, Map.put(params, :type, filetype))
         File.write!(path, Base.decode64!(data))
         data
     end
@@ -491,8 +489,7 @@ defmodule Playwright.Page do
 
   @spec set_viewport_size(t(), dimensions()) :: :ok
   def set_viewport_size(%Page{} = page, dimensions) do
-    {:ok, _} = Channel.post(page, :set_viewport_size, %{viewport_size: dimensions})
-    :ok
+    Channel.post(page, :set_viewport_size, %{viewport_size: dimensions})
   end
 
   @spec text_content(t(), binary(), map()) :: binary() | nil
@@ -527,30 +524,27 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec wait_for_load_state(t(), binary(), options()) :: {:ok, Page.t()}
-  def wait_for_load_state(owner, state \\ "load", options \\ %{})
+  @spec wait_for_load_state(t(), binary(), options()) :: Page.t()
+  def wait_for_load_state(page, state \\ "load", options \\ %{})
 
-  def wait_for_load_state(%Page{} = owner, state, _options)
+  def wait_for_load_state(%Page{} = page, state, _options)
       when is_binary(state)
       when state in ["load", "domcontentloaded", "networkidle", "commit"] do
     Logger.warn("Page.wait_for_load_state (not fully implemented)")
 
-    {:ok, _} =
-      main_frame(owner)
-      |> Frame.wait_for_load_state(state)
-
-    {:ok, owner}
+    main_frame(page) |> Frame.wait_for_load_state(state)
+    page
   end
 
-  def wait_for_load_state(%Page{} = owner, state, options) when is_binary(state) do
-    wait_for_load_state(owner, state, options)
+  def wait_for_load_state(%Page{} = page, state, options) when is_binary(state) do
+    wait_for_load_state(page, state, options)
   end
 
-  def wait_for_load_state(%Page{} = owner, options, _) when is_map(options) do
-    wait_for_load_state(owner, "load", options)
+  def wait_for_load_state(%Page{} = page, options, _) when is_map(options) do
+    wait_for_load_state(page, "load", options)
   end
 
-  @spec wait_for_selector(t(), binary(), map()) :: {:ok, ElementHandle.t() | nil}
+  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | nil
   def wait_for_selector(%Page{} = page, selector, options \\ %{}) do
     main_frame(page) |> Frame.wait_for_selector(selector, options)
   end

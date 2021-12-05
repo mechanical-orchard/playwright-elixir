@@ -21,7 +21,7 @@ defmodule Playwright.BrowserContext.NetworkTest do
         page |> Page.click("a")
       end)
 
-      Page.wait_for_load_state(page)
+      assert %Page{} = Page.wait_for_load_state(page)
 
       recv_1 = assets.empty
       recv_2 = assets.prefix <> "/one-style.html"

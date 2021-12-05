@@ -37,13 +37,8 @@ defmodule Playwright.Runner.Channel do
     Connection.on(connection, {event, owner}, handler)
   end
 
-  # spec: :: {:ok, struct()}
   def post(%{connection: connection} = owner, method, params \\ %{}) do
-    Connection.post(connection, Channel.Command.new(owner.guid, method, params))
-  end
-
-  def post!(owner, method, params \\ %{}) do
-    case post(owner, method, params) do
+    case Connection.post(connection, Channel.Command.new(owner.guid, method, params)) do
       {:ok, %{id: _}} -> :ok
       {:ok, resource} -> resource
       {:error, error} -> {:error, error}
@@ -55,14 +50,20 @@ defmodule Playwright.Runner.Channel do
   #   Connection.post(connection, Channel.Command.new(owner.guid, method, params))
   # end
 
-  @spec wait_for(struct(), atom() | binary()) :: {:ok, EventInfo.t()}
+  @spec wait_for(struct(), atom() | binary()) :: EventInfo.t()
   def wait_for(owner, event) do
-    Connection.wait_for(owner.connection, {as_atom(event), owner}, fn -> IO.puts("NOTE: executing dummy action") end)
+    {:ok, result} =
+      Connection.wait_for(owner.connection, {as_atom(event), owner}, fn ->
+        Logger.warn("Executing dummy action (does this happen?)")
+      end)
+
+    result
   end
 
-  @spec wait_for(struct(), atom() | binary(), (() -> any())) :: {:ok, EventInfo.t()}
+  @spec wait_for(struct(), atom() | binary(), (() -> any())) :: EventInfo.t()
   def wait_for(owner, event, action) do
-    Connection.wait_for(owner.connection, {as_atom(event), owner}, action)
+    {:ok, result} = Connection.wait_for(owner.connection, {as_atom(event), owner}, action)
+    result
   end
 
   # NOTE: intend to merge/redesign these various wait things

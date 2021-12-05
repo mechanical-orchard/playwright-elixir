@@ -120,8 +120,8 @@ defmodule Playwright.Page.Accessibility do
   def snapshot(page, options \\ %{})
 
   def snapshot(%Page{} = page, options) do
-    {:ok, result} = Channel.post(page, :accessibility_snapshot, prepare(options))
-    result |> ax_node_from_protocol()
+    Channel.post(page, :accessibility_snapshot, prepare(options))
+    |> ax_node_from_protocol()
   end
 
   # private

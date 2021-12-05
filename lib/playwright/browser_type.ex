@@ -8,7 +8,7 @@ defmodule Playwright.BrowserType do
       alias Playwright.{Browser, BrowserType, Page}
 
       {connection, browser} = BrowserType.launch(:chromium)
-      {:ok, page} = Browser.new_page(browser)
+      page = Browser.new_page(browser)
 
       Page.goto(page, "https://example.com")
       # other actions...
@@ -165,13 +165,7 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp browser(%BrowserType{} = browser_type) do
-    case Channel.post(browser_type, :launch, Config.launch_options(true)) do
-      {:ok, %Playwright.Browser{} = result} ->
-        result
-
-      other ->
-        raise("expected launch to return a  Playwright.Browser, received: #{inspect(other)}")
-    end
+    Channel.post(browser_type, :launch, Config.launch_options(true))
   end
 
   defp chromium(connection) do

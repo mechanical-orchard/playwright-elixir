@@ -21,8 +21,7 @@ defmodule Playwright.Route do
 
   def continue(%Route{} = route, options) do
     params = Map.merge(options, %{intercept_response: false})
-    {:ok, _} = Channel.post(route, :continue, params)
-    :ok
+    Channel.post(route, :continue, params)
   end
 
   @spec fulfill(t(), options()) :: :ok
@@ -42,8 +41,7 @@ defmodule Playwright.Route do
         })
     }
 
-    {:ok, _} = Channel.post(route, :fulfill, params)
-    :ok
+    Channel.post(route, :fulfill, params)
   end
 
   # ---

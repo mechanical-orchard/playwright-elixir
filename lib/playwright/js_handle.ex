@@ -45,7 +45,7 @@ defmodule Playwright.JSHandle do
       arg: Helpers.Serialization.serialize(arg)
     }
 
-    Channel.post!(handle, :evaluate_expression, params)
+    Channel.post(handle, :evaluate_expression, params)
     |> Helpers.Serialization.deserialize()
   end
 
@@ -84,7 +84,7 @@ defmodule Playwright.JSHandle do
       arg: Helpers.Serialization.serialize(arg)
     }
 
-    Channel.post!(handle, :evaluate_expression_handle, params)
+    Channel.post(handle, :evaluate_expression_handle, params)
   end
 
   def string(%{} = handle) do

@@ -17,7 +17,7 @@ defmodule Playwright.Runner.Channel.Event do
     case resolve(type, event, catalog) do
       {:ok, %EventInfo{} = event_info} ->
         Enum.each(callbacks, fn callback ->
-          callback.(event_info)
+          callback.({:ok, event_info})
         end)
 
         :ok

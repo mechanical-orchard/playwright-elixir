@@ -9,8 +9,8 @@ defmodule Playwright.Browser do
 
       alias Playwright.{Browser, Page}
 
-      {:ok, browser} = Playwright.launch(:chromium)
-      {:ok, page} = Browser.new_page(browser)
+      browser = Playwright.launch(:chromium)
+      page = Browser.new_page(browser)
 
       Page.goto(page, "https://example.com")
       Browser.close(browser)
@@ -97,10 +97,10 @@ defmodule Playwright.Browser do
   ## Example
 
       # create a new "incognito" browser context.
-      {:ok, context} = Browser.new_context(browser)
+      context = Browser.new_context(browser)
 
       # create a new page in a pristine context.
-      {:ok, page} = BrowserContext.new_page(context)
+      page = BrowserContext.new_page(context)
 
       Page.goto(page, "https://example.com")
 
@@ -117,7 +117,7 @@ defmodule Playwright.Browser do
   """
   @spec new_context(t(), options()) :: BrowserContext.t()
   def new_context(%Browser{} = browser, options \\ %{}) do
-    Channel.post!(browser, :new_context, prepare(options))
+    Channel.post(browser, :new_context, prepare(options))
   end
 
   @doc """

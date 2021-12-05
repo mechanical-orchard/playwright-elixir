@@ -67,7 +67,7 @@ defmodule Playwright.Frame do
   @spec check(t(), binary(), options()) :: :ok
   def check(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :check, params)
+    Channel.post(frame, :check, params)
   end
 
   # ---
@@ -109,7 +109,7 @@ defmodule Playwright.Frame do
         options
       )
 
-    Channel.post!(frame, :click, params)
+    Channel.post(frame, :click, params)
   end
 
   # ---
@@ -173,8 +173,7 @@ defmodule Playwright.Frame do
         options
       )
 
-    {:ok, _} = Channel.post(frame, :dblclick, params)
-    :ok
+    Channel.post(frame, :dblclick, params)
   end
 
   @doc """
@@ -242,8 +241,7 @@ defmodule Playwright.Frame do
         event_init: Helpers.Serialization.serialize(event_init)
       })
 
-    {:ok, _} = Channel.post(frame, :dispatch_event, params)
-    :ok
+    Channel.post(frame, :dispatch_event, params)
   end
 
   # ---
@@ -269,7 +267,7 @@ defmodule Playwright.Frame do
 
   def eval_on_selector(%Frame{} = frame, selector, expression, arg, _options) do
     parse_result(fn ->
-      Channel.post!(frame, :eval_on_selector, %{
+      Channel.post(frame, :eval_on_selector, %{
         selector: selector,
         expression: expression,
         arg: serialize(arg)
@@ -279,7 +277,7 @@ defmodule Playwright.Frame do
 
   def eval_on_selector_all(%Frame{} = frame, selector, expression, arg \\ nil) do
     parse_result(fn ->
-      Channel.post!(frame, :eval_on_selector_all, %{
+      Channel.post(frame, :eval_on_selector_all, %{
         selector: selector,
         expression: expression,
         arg: Helpers.Serialization.serialize(arg)
@@ -296,7 +294,7 @@ defmodule Playwright.Frame do
 
   def evaluate(%Frame{} = frame, expression, arg) do
     parse_result(fn ->
-      Channel.post!(frame, :evaluate_expression, %{
+      Channel.post(frame, :evaluate_expression, %{
         expression: expression,
         arg: serialize(arg)
       })
@@ -309,7 +307,7 @@ defmodule Playwright.Frame do
   """
   @spec evaluate_handle(t(), expression(), any()) :: serializable()
   def evaluate_handle(%Frame{} = frame, expression, arg \\ nil) do
-    Channel.post!(frame, :evaluate_expression_handle, %{
+    Channel.post(frame, :evaluate_expression_handle, %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
@@ -358,7 +356,7 @@ defmodule Playwright.Frame do
   @spec fill(t(), binary(), binary(), options()) :: :ok
   def fill(%Frame{} = frame, selector, value, options \\ %{}) do
     params = Map.merge(options, %{selector: selector, value: value})
-    Channel.post!(frame, :fill, params)
+    Channel.post(frame, :fill, params)
   end
 
   # ---
@@ -383,8 +381,7 @@ defmodule Playwright.Frame do
   @spec focus(t(), binary(), options()) :: :ok
   def focus(%Frame{} = frame, selector, options \\ %{}) do
     params = Map.merge(options, %{selector: selector})
-    {:ok, _} = Channel.post(frame, :focus, params)
-    :ok
+    Channel.post(frame, :focus, params)
   end
 
   # @spec frame_element(Frame.t()) :: {:ok, ElementHandle.t()}
@@ -407,7 +404,7 @@ defmodule Playwright.Frame do
         name: name
       })
 
-    Channel.post!(frame, :get_attribute, params)
+    Channel.post(frame, :get_attribute, params)
   end
 
   @doc """
@@ -418,7 +415,7 @@ defmodule Playwright.Frame do
 
   def goto(%Frame{} = frame, url, options) do
     params = Map.merge(options, %{url: url})
-    Channel.post!(frame, :goto, params)
+    Channel.post(frame, :goto, params)
   end
 
   @doc """
@@ -460,32 +457,31 @@ defmodule Playwright.Frame do
   @spec hover(Frame.t(), binary(), options()) :: :ok
   def hover(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    {:ok, _} = Channel.post(frame, :hover, params)
-    :ok
+    Channel.post(frame, :hover, params)
   end
 
   @spec inner_html(Frame.t(), binary(), options()) :: binary()
   def inner_html(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, "innerHTML", params)
+    Channel.post(frame, "innerHTML", params)
   end
 
   @spec inner_text(Frame.t(), binary(), options()) :: binary()
   def inner_text(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :inner_text, params)
+    Channel.post(frame, :inner_text, params)
   end
 
   @spec input_value(Frame.t(), binary(), options()) :: binary()
   def input_value(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :input_value, params)
+    Channel.post(frame, :input_value, params)
   end
 
   @spec is_checked(Frame.t(), binary(), options()) :: boolean()
   def is_checked(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :is_checked, params)
+    Channel.post(frame, :is_checked, params)
   end
 
   # # @spec is_detached(Frame.t(), binary(), options()) :: boolean()
@@ -494,31 +490,31 @@ defmodule Playwright.Frame do
   @spec is_disabled(Frame.t(), binary(), options()) :: boolean()
   def is_disabled(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :is_disabled, params)
+    Channel.post(frame, :is_disabled, params)
   end
 
   @spec is_editable(Frame.t(), binary(), options()) :: boolean()
   def is_editable(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :is_editable, params)
+    Channel.post(frame, :is_editable, params)
   end
 
   @spec is_enabled(Frame.t(), binary(), options()) :: boolean()
   def is_enabled(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :is_enabled, params)
+    Channel.post(frame, :is_enabled, params)
   end
 
   @spec is_hidden(Frame.t(), binary(), options()) :: boolean()
   def is_hidden(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :is_hidden, params)
+    Channel.post(frame, :is_hidden, params)
   end
 
   @spec is_visible(Frame.t(), binary(), options()) :: boolean()
   def is_visible(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :is_visible, params)
+    Channel.post(frame, :is_visible, params)
   end
 
   # ---
@@ -581,7 +577,7 @@ defmodule Playwright.Frame do
   """
   @spec press(t(), binary(), binary(), options()) :: :ok
   def press(%Frame{} = frame, selector, key, options \\ %{}) do
-    Channel.post!(frame, :press, Map.merge(%{selector: selector, key: key}, options))
+    Channel.post(frame, :press, Map.merge(%{selector: selector, key: key}, options))
   end
 
   @doc """
@@ -606,7 +602,7 @@ defmodule Playwright.Frame do
   @spec query_selector(t(), binary(), map()) :: ElementHandle.t() | nil | {:error, :timeout}
   def query_selector(%Frame{} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :query_selector, params)
+    Channel.post(frame, :query_selector, params)
   end
 
   defdelegate q(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector
@@ -632,7 +628,7 @@ defmodule Playwright.Frame do
   @spec query_selector_all(t(), binary(), map()) :: [ElementHandle.t()]
   def query_selector_all(%Frame{} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :query_selector_all, params)
+    Channel.post(frame, :query_selector_all, params)
   end
 
   defdelegate qq(frame, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
@@ -695,7 +691,7 @@ defmodule Playwright.Frame do
   - `label <binary>` Matches by `option.label`. `(optional)`.
   - `index <number>` Matches by the index. `(optional)`.
   """
-  @spec select_option(Frame.t(), binary(), any(), options()) :: {:ok, [binary()]}
+  @spec select_option(Frame.t(), binary(), any(), options()) :: [binary()]
   def select_option(%Frame{} = frame, selector, values, options \\ %{}) do
     params = Map.merge(options, Map.merge(select_option_values(values), %{selector: selector}))
     Channel.post(frame, :select_option, params)
@@ -723,8 +719,7 @@ defmodule Playwright.Frame do
   @spec set_content(t(), binary(), options()) :: :ok
   def set_content(%Frame{} = frame, html, options \\ %{}) do
     params = Map.merge(%{html: html, timeout: 30_000, wait_until: "load"}, options)
-    {:ok, _response} = Channel.post(frame, :set_content, params)
-    :ok
+    Channel.post(frame, :set_content, params)
   end
 
   @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
@@ -735,8 +730,7 @@ defmodule Playwright.Frame do
         files: normalize_file_payloads(files)
       })
 
-    {:ok, _} = Channel.post(frame, :set_input_files, params)
-    :ok
+    Channel.post(frame, :set_input_files, params)
   end
 
   # when it's a `FilePayload`...
@@ -751,8 +745,7 @@ defmodule Playwright.Frame do
   @spec tap(Frame.t(), binary(), options()) :: :ok
   def tap(%Frame{} = frame, selector, options \\ %{}) do
     params = Map.merge(options, %{selector: selector})
-    {:ok, _} = Channel.post(frame, :tap, params)
-    :ok
+    Channel.post(frame, :tap, params)
   end
 
   @doc """
@@ -772,7 +765,7 @@ defmodule Playwright.Frame do
   """
   @spec text_content(t(), binary(), map()) :: binary() | nil
   def text_content(%Frame{} = frame, selector, options \\ %{}) do
-    Channel.post!(frame, :text_content, Map.merge(%{selector: selector}, options))
+    Channel.post(frame, :text_content, Map.merge(%{selector: selector}, options))
   end
 
   @doc """
@@ -784,20 +777,19 @@ defmodule Playwright.Frame do
   """
   @spec title(t()) :: binary()
   def title(%Frame{} = frame) do
-    Channel.post!(frame, :title)
+    Channel.post(frame, :title)
   end
 
   @spec type(Frame.t(), binary(), binary(), options()) :: :ok
   def type(%Frame{} = frame, selector, text, options \\ %{}) do
     params = Map.merge(%{selector: selector, text: text}, options)
-    {:ok, _} = Channel.post(frame, :type, params)
-    :ok
+    Channel.post(frame, :type, params)
   end
 
   @spec uncheck(t(), binary(), options()) :: :ok
   def uncheck(frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post!(frame, :uncheck, params)
+    Channel.post(frame, :uncheck, params)
   end
 
   # ---
@@ -815,17 +807,17 @@ defmodule Playwright.Frame do
   the current document has already reached the required state, resolves
   immediately.
   """
-  @spec wait_for_load_state(Frame.t(), binary(), options()) :: {:ok, Frame.t()}
+  @spec wait_for_load_state(Frame.t(), binary(), options()) :: Frame.t()
   def wait_for_load_state(frame, state \\ "load", options \\ %{})
 
   def wait_for_load_state(%Frame{} = frame, state, _options)
       when is_binary(state)
       when state in ["load", "domcontentloaded", "networkidle", "commit"] do
     if Enum.member?(frame.load_states, state) do
-      {:ok, frame}
+      frame
     else
-      {:ok, _} = Channel.wait_for(frame, :loadstate)
-      {:ok, frame}
+      e = Channel.wait_for(frame, :loadstate)
+      e.target
     end
   end
 
@@ -849,10 +841,8 @@ defmodule Playwright.Frame do
 
   Returns `nil` if waiting for a hidden or detached element.
   """
-  @spec wait_for_selector(t(), binary(), map()) :: {:ok, ElementHandle.t() | nil}
-  def wait_for_selector(owner, selector, options \\ %{})
-
-  def wait_for_selector(%Frame{} = frame, selector, options) do
+  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | nil
+  def wait_for_selector(%Frame{} = frame, selector, options \\ %{}) do
     Channel.post(frame, :wait_for_selector, Map.merge(%{selector: selector}, options))
   end
 

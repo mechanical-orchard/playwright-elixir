@@ -12,11 +12,11 @@ defmodule Playwright.BrowserContext do
   ## Example
 
       # create a new "incognito" browser context:
-      {:ok, context} = Playwright.Browser.new_context(browser)
+      context = Playwright.Browser.new_context(browser)
 
       # create and use a new page within that context:
-      {:ok, page} = Playwright.BrowserContext.new_page(context)
-      {:ok, resp} = Playwright.Page.goto(page, "https://example.com")
+      page = Playwright.BrowserContext.new_page(context)
+      resp =  = Playwright.Page.goto(page, "https://example.com")
 
       # dispose the context once it's no longer needed:
       Playwright.BrowserContext.close(context)
@@ -43,7 +43,7 @@ defmodule Playwright.BrowserContext do
   event will be sent to the predicate, which must return a "truthy" result
   in order for the expectation to be fulfilled.
 
-      {:ok, e } = BrowserContext.expect_event(context, :close, fn ->
+      e = BrowserContext.expect_event(context, :close, fn ->
         Page.close(page)
       end)
       assert %BrowserContext{} = e.target
@@ -253,8 +253,7 @@ defmodule Playwright.BrowserContext do
   def add_cookies(context, cookies)
 
   def add_cookies(%BrowserContext{} = context, cookies) do
-    {:ok, _} = Channel.post(context, :add_cookies, %{cookies: cookies})
-    :ok
+    Channel.post(context, :add_cookies, %{cookies: cookies})
   end
 
   @doc """
@@ -303,8 +302,7 @@ defmodule Playwright.BrowserContext do
   @spec add_init_script(t(), binary() | map()) :: :ok
   def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
     params = %{source: script}
-    {:ok, _} = Channel.post(context, :add_init_script, params)
-    :ok
+    Channel.post(context, :add_init_script, params)
   end
 
   def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
@@ -313,7 +311,7 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec background_pages(t()) :: {:ok, [Playwright.Page.t()]}
+  # @spec background_pages(t()) :: [Playwright.Page.t()]
   # def background_pages(context)
 
   # ---
@@ -323,12 +321,12 @@ defmodule Playwright.BrowserContext do
   """
   @spec clear_cookies(t()) :: :ok
   def clear_cookies(context) do
-    Channel.post!(context, :clear_cookies)
+    Channel.post(context, :clear_cookies)
   end
 
   @spec clear_permissions(t()) :: :ok
   def clear_permissions(context) do
-    Channel.post!(context, :clear_permissions)
+    Channel.post(context, :clear_permissions)
   end
 
   @doc """
@@ -341,7 +339,7 @@ defmodule Playwright.BrowserContext do
   @spec close(t()) :: :ok
   def close(%BrowserContext{} = context) do
     case Channel.post(context, :close) do
-      {:ok, _} ->
+      :ok ->
         :ok
 
       {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
@@ -367,7 +365,7 @@ defmodule Playwright.BrowserContext do
   """
   @spec cookies(t(), url | [url]) :: [cookie]
   def cookies(%BrowserContext{} = context, urls \\ []) do
-    Channel.post!(context, :cookies, %{urls: urls})
+    Channel.post(context, :cookies, %{urls: urls})
   end
 
   @doc """
@@ -390,7 +388,7 @@ defmodule Playwright.BrowserContext do
 
   ## Example
 
-      {:ok, event_info} = BrowserContext.expect_event(context, :page, fn ->
+      event_info = BrowserContext.expect_event(context, :page, fn ->
         BrowserContext.new_page(context)
       end)
 
@@ -398,7 +396,7 @@ defmodule Playwright.BrowserContext do
   > - The "throw an error if the context closes..." is not yet implemented.
   > - The handling of :predicate is not yet implemented.
   """
-  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: {:ok, Playwright.Runner.EventInfo.t()}
+  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.Runner.EventInfo.t()
   def expect_event(context, event, trigger, predicate \\ nil, options \\ %{})
 
   def expect_event(%BrowserContext{} = context, event, trigger, _predicate, _options)
@@ -438,7 +436,7 @@ defmodule Playwright.BrowserContext do
   > - The handling of `predicate` is not yet implemented.
   > - The handling of `timeout` is not yet implemented.
   """
-  @spec expect_page(t(), fun(), function_or_options(), map()) :: {:ok, Playwright.Runner.EventInfo.t()}
+  @spec expect_page(t(), fun(), function_or_options(), map()) :: Playwright.Runner.EventInfo.t()
   def expect_page(context, trigger, predicate \\ nil, options \\ %{})
 
   def expect_page(%BrowserContext{} = context, trigger, predicate, options)
@@ -463,7 +461,7 @@ defmodule Playwright.BrowserContext do
     Channel.patch(context.connection, context.guid, %{bindings: Map.merge(bindings, %{name => callback})})
 
     params = Map.merge(%{name: name, needs_handle: false}, options)
-    Channel.post!(context, :expose_binding, params)
+    Channel.post(context, :expose_binding, params)
   end
 
   @spec expose_function(t(), String.t(), function()) :: :ok
@@ -476,25 +474,18 @@ defmodule Playwright.BrowserContext do
   @spec grant_permissions(t(), [String.t()], options()) :: :ok | {:error, Channel.Error.t()}
   def grant_permissions(context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
-
-    case Channel.post(context, :grant_permissions, params) do
-      {:ok, _} ->
-        :ok
-
-      other ->
-        other
-    end
+    Channel.post(context, :grant_permissions, params)
   end
 
   @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
   def new_cdp_session(context, owner)
 
   def new_cdp_session(%BrowserContext{} = context, %Frame{} = frame) do
-    Channel.post!(context, "newCDPSession", %{frame: %{guid: frame.guid}})
+    Channel.post(context, "newCDPSession", %{frame: %{guid: frame.guid}})
   end
 
   def new_cdp_session(%BrowserContext{} = context, %Page{} = page) do
-    Channel.post!(context, "newCDPSession", %{page: %{guid: page.guid}})
+    Channel.post(context, "newCDPSession", %{page: %{guid: page.guid}})
   end
 
   @doc """
@@ -510,7 +501,7 @@ defmodule Playwright.BrowserContext do
   def new_page(%BrowserContext{} = context) do
     case context.owner_page do
       nil ->
-        Channel.post!(context, :new_page)
+        Channel.post(context, :new_page)
 
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")
@@ -560,21 +551,28 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
+  # ???
   # @spec service_workers(t()) :: {:ok, [Playwright.Worker.t()]}
   # def service_workers(context)
 
+  # test_navigation.py
   # @spec set_default_navigation_timeout(t(), number()) :: :ok
   # def set_default_navigation_timeout(context, timeout)
 
+  # test_navigation.py
   # @spec set_default_timeout(t(), number()) :: :ok
   # def set_default_timeout(context, timeout)
 
+  # test_interception.py
+  # test_network.py
   # @spec set_extra_http_headers(t(), headers()) :: :ok
   # def set_extra_http_headers(context, headers)
 
+  # test_geolocation.py
   # @spec set_geolocation(t(), geolocation()) :: :ok
   # def set_geolocation(context, geolocation)
 
+  # ???
   # @spec set_http_credentials(t(), http_credentials()) :: :ok
   # def set_http_credentials(context, http_credentials)
 
@@ -582,7 +580,7 @@ defmodule Playwright.BrowserContext do
 
   @spec set_offline(t(), boolean()) :: :ok
   def set_offline(context, offline) do
-    Channel.post!(context, :set_offline, %{offline: offline})
+    Channel.post(context, :set_offline, %{offline: offline})
   end
 
   # ---

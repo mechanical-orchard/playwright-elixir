@@ -88,7 +88,7 @@ defmodule Playwright.ElementHandle do
 
   @spec bounding_box(ElementHandle.t()) :: map() | nil
   def bounding_box(handle) do
-    Channel.post!(handle, :bounding_box)
+    Channel.post(handle, :bounding_box)
   end
 
   # ---
@@ -121,7 +121,7 @@ defmodule Playwright.ElementHandle do
   """
   @spec click(t() | {:ok, t()}, options()) :: :ok
   def click(%ElementHandle{} = handle, options \\ %{}) do
-    Channel.post!(handle, :click, options)
+    Channel.post(handle, :click, options)
   end
 
   @doc """
@@ -130,7 +130,7 @@ defmodule Playwright.ElementHandle do
   """
   @spec content_frame(t()) :: Frame.t() | nil
   def content_frame(%ElementHandle{} = handle) do
-    Channel.post!(handle, :content_frame)
+    Channel.post(handle, :content_frame)
   end
 
   # ---
@@ -154,7 +154,7 @@ defmodule Playwright.ElementHandle do
   """
   @spec get_attribute(t(), binary()) :: binary() | nil
   def get_attribute(%ElementHandle{} = handle, name) do
-    Channel.post!(handle, :get_attribute, %{name: name})
+    Channel.post(handle, :get_attribute, %{name: name})
   end
 
   # ---
@@ -190,7 +190,7 @@ defmodule Playwright.ElementHandle do
 
   @spec is_visible(t() | {:ok, t()}) :: boolean()
   def is_visible(%ElementHandle{} = handle) do
-    Channel.post!(handle, :is_visible)
+    Channel.post(handle, :is_visible)
   end
 
   # ---
@@ -212,7 +212,7 @@ defmodule Playwright.ElementHandle do
   def query_selector(handle, selector)
 
   def query_selector(%ElementHandle{} = handle, selector) do
-    handle |> Channel.post!(:query_selector, %{selector: selector})
+    handle |> Channel.post(:query_selector, %{selector: selector})
   end
 
   defdelegate q(handle, selector), to: __MODULE__, as: :query_selector
@@ -229,13 +229,13 @@ defmodule Playwright.ElementHandle do
   def screenshot(%ElementHandle{} = handle, options \\ %{}) do
     case Map.pop(options, :path) do
       {nil, params} ->
-        encoded = Channel.post!(handle, :screenshot, params)
+        encoded = Channel.post(handle, :screenshot, params)
         Base.decode64!(encoded)
 
       {path, params} ->
         [_, filetype] = String.split(path, ".")
 
-        encoded = Channel.post!(handle, :screenshot, Map.put(params, :type, filetype))
+        encoded = Channel.post(handle, :screenshot, Map.put(params, :type, filetype))
         decoded = Base.decode64!(encoded)
         File.write!(path, decoded)
         decoded
@@ -244,8 +244,7 @@ defmodule Playwright.ElementHandle do
 
   @spec scroll_into_view(ElementHandle.t(), options()) :: :ok
   def scroll_into_view(%ElementHandle{} = handle, options \\ %{}) do
-    {:ok, _} = Channel.post(handle, :scroll_into_view_if_needed, options)
-    :ok
+    Channel.post(handle, :scroll_into_view_if_needed, options)
   end
 
   # ---
@@ -257,8 +256,7 @@ defmodule Playwright.ElementHandle do
 
   @spec select_text(ElementHandle.t(), options()) :: :ok
   def select_text(handle, options \\ %{}) do
-    {:ok, _} = Channel.post(handle, :select_text, options)
-    :ok
+    Channel.post(handle, :select_text, options)
   end
 
   # ---
@@ -281,7 +279,7 @@ defmodule Playwright.ElementHandle do
   def text_content(handle)
 
   def text_content(%ElementHandle{} = handle) do
-    handle |> Channel.post!(:text_content)
+    handle |> Channel.post(:text_content)
   end
 
   # ---
