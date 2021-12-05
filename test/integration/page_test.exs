@@ -259,14 +259,10 @@ defmodule Playwright.PageTest do
       assert page |> Page.query_selector("css=#non-existent") === nil
     end
 
-    # NOTE: query_selector_all, and ElementHandles, are somewhat problematic.
-    # Specifically, we don't always receive the `previewUpdated` event, which
-    # results in a timeout, crashing everything.
-    @tag :skip
     test ".query_selector_all/2", %{assets: assets, connection: connection, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      {:ok, [outer, inner]} = Page.query_selector_all(page, "css=div")
+      [outer, inner] = Page.query_selector_all(page, "css=div")
 
       assert %ElementHandle{
                type: "ElementHandle",

@@ -441,20 +441,18 @@ defmodule Playwright.Page do
     end)
   end
 
-  @spec screenshot(t(), options()) :: {:ok, binary()}
-  def screenshot(owner, options \\ %{})
-
-  def screenshot(%Page{} = owner, options) do
+  @spec screenshot(t(), options()) :: binary()
+  def screenshot(%Page{} = page, options \\ %{}) do
     case Map.pop(options, :path) do
       {nil, params} ->
-        Channel.post(owner, :screenshot, params)
+        Channel.post!(page, :screenshot, params)
 
       {path, params} ->
         [_, filetype] = String.split(path, ".")
 
-        {:ok, data} = Channel.post(owner, :screenshot, Map.put(params, :type, filetype))
+        data = Channel.post!(page, :screenshot, Map.put(params, :type, filetype))
         File.write!(path, Base.decode64!(data))
-        {:ok, data}
+        data
     end
   end
 

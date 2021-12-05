@@ -11,7 +11,7 @@ defmodule Playwright.BrowserContext.ClearCookiesTest do
       assert Page.evaluate(page, "document.cookie") == "cookie1=one"
 
       BrowserContext.clear_cookies(context)
-      assert {:ok, []} = BrowserContext.cookies(context)
+      assert BrowserContext.cookies(context) == []
 
       Page.reload(page)
       assert Page.evaluate(page, "document.cookie") == ""

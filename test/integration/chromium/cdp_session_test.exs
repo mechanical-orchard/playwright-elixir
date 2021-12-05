@@ -5,29 +5,29 @@ defmodule Playwright.Chromium.CDPSessionTest do
   describe "BrowserContext.new_cdp_session/1" do
     test "a page-attached CDP session", %{page: page} do
       context = Page.context(page)
-      assert {:ok, %CDPSession{}} = BrowserContext.new_cdp_session(context, page)
+      assert %CDPSession{} = BrowserContext.new_cdp_session(context, page)
     end
 
     test "a frame-attached CDP session", %{page: page} do
       context = Page.context(page)
       frame = Page.main_frame(page)
-      assert {:ok, %CDPSession{}} = BrowserContext.new_cdp_session(context, frame)
+      assert %CDPSession{} = BrowserContext.new_cdp_session(context, frame)
     end
   end
 
   describe "CDPSession.send/2" do
     test "using `Runtime` methods", %{page: page} do
       context = Page.context(page)
-      {:ok, session} = BrowserContext.new_cdp_session(context, page)
+      session = BrowserContext.new_cdp_session(context, page)
 
       CDPSession.send(session, "Runtime.enable")
 
-      {:ok, result} =
+      %{result: result} =
         CDPSession.send(session, "Runtime.evaluate", %{
           expression: "window.foo = 'bar'; 'expression result'"
         })
 
-      assert result == %{result: %{type: "string", value: "expression result"}}
+      assert result == %{type: "string", value: "expression result"}
       assert "bar" == Page.evaluate(page, "() => window.foo")
     end
   end
@@ -37,7 +37,7 @@ defmodule Playwright.Chromium.CDPSessionTest do
       pid = self()
       context = Page.context(page)
 
-      {:ok, session} = BrowserContext.new_cdp_session(context, page)
+      session = BrowserContext.new_cdp_session(context, page)
 
       CDPSession.send(session, "Runtime.enable")
 
@@ -57,7 +57,7 @@ defmodule Playwright.Chromium.CDPSessionTest do
       url = assets.empty
       context = Page.context(page)
 
-      {:ok, session} = BrowserContext.new_cdp_session(context, page)
+      session = BrowserContext.new_cdp_session(context, page)
 
       CDPSession.send(session, "Network.enable")
 
@@ -73,11 +73,11 @@ defmodule Playwright.Chromium.CDPSessionTest do
   describe "CDPSession.detach/1" do
     test "detaches the sesssion", %{page: page} do
       context = Page.context(page)
-      {:ok, session} = BrowserContext.new_cdp_session(context, page)
+      session = BrowserContext.new_cdp_session(context, page)
 
       CDPSession.send(session, "Runtime.enable")
 
-      {:ok, %{result: result}} =
+      %{result: result} =
         CDPSession.send(session, "Runtime.evaluate", %{
           expression: "3 + 1"
         })
@@ -99,7 +99,7 @@ defmodule Playwright.Chromium.CDPSessionTest do
       context = Browser.new_context(browser)
       page = BrowserContext.new_page(context)
 
-      {:ok, session} = BrowserContext.new_cdp_session(context, page)
+      session = BrowserContext.new_cdp_session(context, page)
 
       CDPSession.detach(session)
       Page.close(page)
@@ -112,7 +112,7 @@ defmodule Playwright.Chromium.CDPSessionTest do
     test "detaches on Page.close/2", %{browser: browser} do
       context = Browser.new_context(browser)
       page = BrowserContext.new_page(context)
-      {:ok, session} = BrowserContext.new_cdp_session(context, page)
+      session = BrowserContext.new_cdp_session(context, page)
 
       Page.close(page)
 

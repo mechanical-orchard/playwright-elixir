@@ -323,14 +323,12 @@ defmodule Playwright.BrowserContext do
   """
   @spec clear_cookies(t()) :: :ok
   def clear_cookies(context) do
-    {:ok, _} = Channel.post(context, :clear_cookies)
-    :ok
+    Channel.post!(context, :clear_cookies)
   end
 
   @spec clear_permissions(t()) :: :ok
   def clear_permissions(context) do
-    {:ok, _} = Channel.post(context, :clear_permissions)
-    :ok
+    Channel.post!(context, :clear_permissions)
   end
 
   @doc """
@@ -359,8 +357,7 @@ defmodule Playwright.BrowserContext do
 
   ## Returns
 
-    - `{:ok, [cookie()]}`
-      See `add_cookies/2` for cookie field details.
+    - `[cookie()]` See `add_cookies/2` for cookie field details.
 
   ## Arguments
 
@@ -368,11 +365,9 @@ defmodule Playwright.BrowserContext do
   | ---------- | ----- | -------------------------- | ----------- |
   | `urls`     | param | `binary()` or `[binary()]` | List of URLs. `(optional)` |
   """
-  @spec cookies(t(), url | [url]) :: {:ok, [cookie]}
-  def cookies(context, urls \\ [])
-
-  def cookies(%BrowserContext{} = context, urls) do
-    Channel.post(context, :cookies, %{urls: urls})
+  @spec cookies(t(), url | [url]) :: [cookie]
+  def cookies(%BrowserContext{} = context, urls \\ []) do
+    Channel.post!(context, :cookies, %{urls: urls})
   end
 
   @doc """
@@ -491,15 +486,15 @@ defmodule Playwright.BrowserContext do
     end
   end
 
-  @spec new_cdp_session(t(), Frame.t() | Page.t()) :: {:ok, Playwright.CDPSession.t()}
+  @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
   def new_cdp_session(context, owner)
 
   def new_cdp_session(%BrowserContext{} = context, %Frame{} = frame) do
-    Channel.post(context, "newCDPSession", %{frame: %{guid: frame.guid}})
+    Channel.post!(context, "newCDPSession", %{frame: %{guid: frame.guid}})
   end
 
   def new_cdp_session(%BrowserContext{} = context, %Page{} = page) do
-    Channel.post(context, "newCDPSession", %{page: %{guid: page.guid}})
+    Channel.post!(context, "newCDPSession", %{page: %{guid: page.guid}})
   end
 
   @doc """

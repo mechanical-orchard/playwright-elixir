@@ -553,7 +553,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.set_viewport_size(%{width: 500, height: 500})
       page |> Page.goto(assets.prefix <> "/grid.html")
 
-      {:ok, data} = Locator.screenshot(locator)
+      data = Locator.screenshot(locator)
       assert Base.encode64(data) == Base.encode64(fixture)
     end
   end

@@ -21,8 +21,7 @@ defmodule Page.ScreenshotTest do
 
         _ ->
           max_frame_size = 32_768
-          {:ok, raw} = Page.screenshot(page, %{full_page: true, type: "png"})
-
+          raw = Page.screenshot(page, %{full_page: true, type: "png"})
           assert byte_size(raw) > max_frame_size
       end
     end

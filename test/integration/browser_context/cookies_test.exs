@@ -5,7 +5,7 @@ defmodule Playwright.BrowserContext.CookiesTest do
   describe "BrowserContext.cookies/1" do
     test "retrieves no cookies from a pristine context", %{page: page} do
       cookies = BrowserContext.cookies(page.owned_context)
-      assert cookies == {:ok, []}
+      assert cookies == []
     end
 
     test "retrieves cookies for the context", %{assets: assets, page: page} do
@@ -23,21 +23,18 @@ defmodule Playwright.BrowserContext.CookiesTest do
 
       assert cookie == "username=Jane"
 
-      assert BrowserContext.cookies(context) == {
-               :ok,
-               [
-                 %{
-                   domain: "localhost",
-                   expires: -1,
-                   httpOnly: false,
-                   name: "username",
-                   path: "/",
-                   sameSite: "Lax",
-                   secure: false,
-                   value: "Jane"
-                 }
-               ]
-             }
+      assert BrowserContext.cookies(context) == [
+               %{
+                 domain: "localhost",
+                 expires: -1,
+                 httpOnly: false,
+                 name: "username",
+                 path: "/",
+                 sameSite: "Lax",
+                 secure: false,
+                 value: "Jane"
+               }
+             ]
     end
 
     # test_should_get_a_non_session_cookie

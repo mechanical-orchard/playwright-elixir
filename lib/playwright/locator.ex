@@ -882,7 +882,7 @@ defmodule Playwright.Locator do
   | `:timeout`         | option | `number()`        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   | `:type`            | option | `:png` or `:jpeg` | Specify screenshot type. `(default: :png)` |
   """
-  @spec screenshot(t(), options()) :: {:ok, binary()}
+  @spec screenshot(t(), options()) :: binary()
   def screenshot(%Locator{} = locator, options \\ %{}) do
     with_element(locator, options, fn handle ->
       ElementHandle.screenshot(handle, options)
@@ -1110,7 +1110,7 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec text_content(t(), options()) :: boolean()
+  @spec text_content(t(), options()) :: binary()
   def text_content(%Locator{} = locator, options \\ %{}) do
     Frame.text_content(locator.frame, locator.selector, options)
   end
@@ -1169,7 +1169,7 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`     | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  @spec uncheck(t(), options()) :: boolean()
+  @spec uncheck(t(), options()) :: :ok
   def uncheck(%Locator{} = locator, options \\ %{}) do
     Frame.uncheck(locator.frame, locator.selector, options)
   end

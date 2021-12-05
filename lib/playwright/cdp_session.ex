@@ -41,9 +41,9 @@ defmodule Playwright.CDPSession do
     Channel.patch(session.connection, session.guid, %{bindings: bindings})
   end
 
-  @spec send(t(), binary(), options()) :: {:ok, map()}
+  @spec send(t(), binary(), options()) :: map()
   def send(%CDPSession{} = session, method, params \\ %{}) do
-    Channel.post(session, :send, %{method: method, params: params})
+    Channel.post!(session, :send, %{method: method, params: params})
   end
 
   # private
