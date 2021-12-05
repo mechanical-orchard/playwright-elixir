@@ -53,7 +53,6 @@ defmodule Playwright.Locator do
       Locator.count(locator)
   """
 
-  import Playwright.Locator.Macros
   alias Playwright.{ElementHandle, Frame, Locator, Page}
   alias Playwright.Runner.Channel
 
@@ -210,7 +209,10 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`     | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  def_locator(:check, :check)
+  @spec check(t(), options()) :: :ok
+  def check(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :check, options)
+  end
 
   @doc """
   Clicks the element by performing the following steps:
@@ -245,7 +247,10 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  def_locator(:click, :click, options_click())
+  @spec click(t(), options_click()) :: :ok
+  def click(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :click, options)
+  end
 
   @doc """
   Returns the number of elements matching given selector.
@@ -392,7 +397,7 @@ defmodule Playwright.Locator do
 
     - `[Playwright.ElementHandle.t()]`
   """
-  @spec element_handles(t()) :: {:ok, [ElementHandle.t()]}
+  @spec element_handles(t()) :: [ElementHandle.t()]
   def element_handles(locator) do
     Frame.query_selector_all(locator.frame, locator.selector)
   end
@@ -701,7 +706,10 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  def_locator(:is_checked, :is_checked)
+  @spec is_checked(t(), options()) :: boolean()
+  def is_checked(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :is_checked, options)
+  end
 
   @doc """
   Returns whether the element is disabled.
@@ -712,7 +720,10 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  def_locator(:is_disabled, :is_disabled)
+  @spec is_disabled(t(), options()) :: boolean()
+  def is_disabled(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :is_disabled, options)
+  end
 
   @doc """
   Returns whether the element is editable.
@@ -723,7 +734,10 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  def_locator(:is_editable, :is_editable)
+  @spec is_editable(t(), options()) :: boolean()
+  def is_editable(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :is_editable, options)
+  end
 
   @doc """
   Returns whether the element is enabled.
@@ -734,7 +748,10 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  def_locator(:is_enabled, :is_enabled)
+  @spec is_enabled(t(), options()) :: boolean()
+  def is_enabled(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :is_enabled, options)
+  end
 
   @doc """
   Returns whether the element is hidden.
@@ -745,7 +762,10 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  def_locator(:is_hidden, :is_hidden)
+  @spec is_hidden(t(), options()) :: boolean()
+  def is_hidden(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :is_hidden, options)
+  end
 
   @doc """
   Returns whether the element is visible.
@@ -756,7 +776,10 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  def_locator(:is_visible, :is_visible)
+  @spec is_visible(t(), options()) :: boolean()
+  def is_visible(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :is_visible, options)
+  end
 
   @doc """
   Returns a new `Playwright.Locator` scoped to the last matching element.
@@ -1088,7 +1111,10 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  def_locator(:text_content, :text_content)
+  @spec text_content(t(), options()) :: boolean()
+  def text_content(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :text_content, options)
+  end
 
   @doc """
   Focuses the element, and then sends a `keydown`, `keypress/input`, and
@@ -1144,7 +1170,10 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`     | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  def_locator(:uncheck, :uncheck)
+  @spec uncheck(t(), options()) :: boolean()
+  def uncheck(%Locator{} = locator, options \\ %{}) do
+    post_simple(locator, :uncheck, options)
+  end
 
   @doc """
   Returns when element specified by locator satisfies `option: state`.
@@ -1153,10 +1182,18 @@ defmodule Playwright.Locator do
   immediately. Otherwise, waits for up to `option: timeout` milliseconds until
   the condition is met.
   """
-  def_locator(:wait_for, :wait_for_selector)
+  @spec wait_for(t(), options()) :: :ok
+  def wait_for(%Locator{} = locator, options \\ %{}) do
+    %{guid: _} = post_simple(locator, :wait_for_selector, options)
+    :ok
+  end
 
   # private
   # ---------------------------------------------------------------------------
+
+  defp post_simple(locator, method, options) do
+    Channel.post!(locator.frame, method, Map.merge(options, %{selector: locator.selector}))
+  end
 
   defp with_element(locator, options, task) do
     case Channel.await(locator.frame, {:selector, locator.selector}, options) do

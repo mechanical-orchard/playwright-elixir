@@ -613,7 +613,7 @@ defmodule Playwright.Frame do
 
   ## Returns
 
-    - `{:ok, [Playwright.ElementHandle.t()]}`
+    - `[Playwright.ElementHandle.t()]`
 
   ## Arguments
 
@@ -621,10 +621,10 @@ defmodule Playwright.Frame do
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to query for. See "working with selectors (guide)" for more details. |
   """
-  @spec query_selector_all(t(), binary(), map()) :: {atom(), [ElementHandle.t()]}
+  @spec query_selector_all(t(), binary(), map()) :: [ElementHandle.t()]
   def query_selector_all(%Frame{} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :query_selector_all, params)
+    Channel.post!(frame, :query_selector_all, params)
   end
 
   defdelegate qq(frame, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all

@@ -137,12 +137,10 @@ defmodule Playwright.LocatorTest do
       html = Page.locator(page, "html")
       divs = Locator.locator(html, "div")
 
-      {:ok, handles} = Locator.element_handles(divs)
-
       assert [
                %ElementHandle{preview: "JSHandle@<div>A</div>"},
                %ElementHandle{preview: "JSHandle@<div>B</div>"}
-             ] = handles
+             ] = Locator.element_handles(divs)
     end
 
     test "returns an empty list when there are no matches", %{page: page} do
@@ -158,26 +156,19 @@ defmodule Playwright.LocatorTest do
 
       html = Page.locator(page, "html")
       para = Locator.locator(html, "p")
-
-      {:ok, handles} = Locator.element_handles(para)
-
-      assert [] = handles
-      assert Enum.empty?(handles)
+      assert Locator.element_handles(para) == []
     end
   end
 
   describe "Locator.evaluate/4" do
     test "called with expression", %{page: page} do
       element = Locator.new(page, "input")
-      Page.set_content(page, "<input type='checkbox' checked><div>Not a checkbox</div>")
 
-      {:ok, checked} = Locator.is_checked(element)
-      assert checked
+      Page.set_content(page, "<input type='checkbox' checked><div>Not a checkbox</div>")
+      assert Locator.is_checked(element) === true
 
       Locator.evaluate(element, "function (input) { return input.checked = false; }")
-
-      {:ok, checked} = Locator.is_checked(element)
-      refute checked
+      assert Locator.is_checked(element) === false
     end
 
     test "called with expression and an `ElementHandle` arg", %{page: page} do
@@ -185,16 +176,12 @@ defmodule Playwright.LocatorTest do
       locator = Locator.new(page, selector)
 
       Page.set_content(page, "<input type='checkbox' checked><div>Not a checkbox</div>")
-
       handle = Page.wait_for_selector(page, selector)
 
-      {:ok, checked} = Locator.is_checked(locator)
-      assert checked
+      assert Locator.is_checked(locator) === true
 
       Locator.evaluate(locator, "function (input) { return input.checked = false; }", handle)
-
-      {:ok, checked} = Locator.is_checked(locator)
-      refute checked
+      assert Locator.is_checked(locator) === false
     end
 
     test "retrieves a matching node", %{page: page} do
@@ -442,10 +429,10 @@ defmodule Playwright.LocatorTest do
         <div>Not a checkbox</div>
       """)
 
-      assert {:ok, true} = Locator.is_checked(locator)
+      assert Locator.is_checked(locator) === true
 
       assert Locator.evaluate(locator, "input => input.checked = false") === false
-      assert {:ok, false} = Locator.is_checked(locator)
+      assert Locator.is_checked(locator) === false
     end
   end
 
@@ -461,13 +448,13 @@ defmodule Playwright.LocatorTest do
       # Page.eval_on_selector(page, "textarea", "t => t.readOnly = true")
 
       locator = Page.locator(page, "#input1")
-      assert {:ok, false} = Locator.is_editable(locator)
+      assert Locator.is_editable(locator) === false
 
       locator = Page.locator(page, "#input2")
-      assert {:ok, true} = Locator.is_editable(locator)
+      assert Locator.is_editable(locator) === true
 
       locator = Page.locator(page, "textarea")
-      assert {:ok, false} = Locator.is_editable(locator)
+      assert Locator.is_editable(locator) === false
     end
   end
 
@@ -480,16 +467,16 @@ defmodule Playwright.LocatorTest do
       """)
 
       locator = Page.locator(page, "div")
-      assert {:ok, true} = Locator.is_enabled(locator)
-      assert {:ok, false} = Locator.is_disabled(locator)
+      assert Locator.is_enabled(locator) === true
+      assert Locator.is_disabled(locator) === false
 
       locator = Page.locator(page, ":text('button1')")
-      assert {:ok, false} = Locator.is_enabled(locator)
-      assert {:ok, true} = Locator.is_disabled(locator)
+      assert Locator.is_enabled(locator) === false
+      assert Locator.is_disabled(locator) === true
 
       locator = Page.locator(page, ":text('button2')")
-      assert {:ok, true} = Locator.is_enabled(locator)
-      assert {:ok, false} = Locator.is_disabled(locator)
+      assert Locator.is_enabled(locator) === true
+      assert Locator.is_disabled(locator) === false
     end
   end
 
@@ -498,12 +485,12 @@ defmodule Playwright.LocatorTest do
       Page.set_content(page, "<div>Hi</div><span></span>")
 
       locator = Page.locator(page, "div")
-      assert {:ok, true} = Locator.is_visible(locator)
-      assert {:ok, false} = Locator.is_hidden(locator)
+      assert Locator.is_visible(locator) === true
+      assert Locator.is_hidden(locator) === false
 
       locator = Page.locator(page, "span")
-      assert {:ok, false} = Locator.is_visible(locator)
-      assert {:ok, true} = Locator.is_hidden(locator)
+      assert Locator.is_visible(locator) === false
+      assert Locator.is_hidden(locator) === true
     end
   end
 
@@ -659,7 +646,7 @@ defmodule Playwright.LocatorTest do
       locator = Page.locator(page, "#inner")
 
       Page.goto(page, assets.dom)
-      assert {:ok, "Text,\nmore text"} = Locator.text_content(locator)
+      assert Locator.text_content(locator) == "Text,\nmore text"
     end
   end
 
@@ -685,10 +672,10 @@ defmodule Playwright.LocatorTest do
 
     test "returns :ok on a successful 'uncheck'", %{options: options, page: page} do
       locator = Page.locator(page, "input#checkbox")
-      assert {:ok, true} = Locator.is_checked(locator)
+      assert Locator.is_checked(locator) === true
 
       assert :ok = Locator.uncheck(locator, options)
-      assert {:ok, false} = Locator.is_checked(locator)
+      assert Locator.is_checked(locator) === false
     end
 
     test "returns a timeout error when unable to 'uncheck'", %{options: options, page: page} do
