@@ -395,7 +395,7 @@ defmodule Playwright.LocatorTest do
       locator = Page.locator(page, "#outer")
 
       Page.goto(page, assets.dom)
-      assert {:ok, ^content} = Locator.inner_html(locator)
+      assert Locator.inner_html(locator) == content
     end
   end
 
@@ -405,7 +405,7 @@ defmodule Playwright.LocatorTest do
       locator = Page.locator(page, "#inner")
 
       Page.goto(page, assets.dom)
-      assert {:ok, ^content} = Locator.inner_text(locator)
+      assert Locator.inner_text(locator) == content
     end
   end
 
@@ -416,7 +416,7 @@ defmodule Playwright.LocatorTest do
       Page.goto(page, assets.dom)
       Page.fill(page, "#input", "input value")
 
-      assert {:ok, "input value"} = Locator.input_value(locator)
+      assert Locator.input_value(locator) == "input value"
     end
   end
 
@@ -541,7 +541,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.set_content("<input type='text' />")
 
       Locator.press(locator, "x")
-      assert {:ok, %{s: "x"}} = Page.eval_on_selector(page, "input", "(input) => input.value")
+      assert Page.eval_on_selector(page, "input", "(input) => input.value") == "x"
     end
   end
 
@@ -656,7 +656,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.set_content("<input type='text' />")
 
       Locator.type(locator, "hello")
-      assert {:ok, %{s: "hello"}} = Page.eval_on_selector(page, "input", "(input) => input.value")
+      assert Page.eval_on_selector(page, "input", "(input) => input.value") == "hello"
     end
   end
 

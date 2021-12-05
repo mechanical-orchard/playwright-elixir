@@ -443,7 +443,7 @@ defmodule Playwright.BrowserContext do
   > - The handling of `predicate` is not yet implemented.
   > - The handling of `timeout` is not yet implemented.
   """
-  @spec expect_page(t(), fun(), function_or_options(), map()) :: Playwright.Runner.EventInfo.t()
+  @spec expect_page(t(), fun(), function_or_options(), map()) :: {:ok, Playwright.Runner.EventInfo.t()}
   def expect_page(context, trigger, predicate \\ nil, options \\ %{})
 
   def expect_page(%BrowserContext{} = context, trigger, predicate, options)

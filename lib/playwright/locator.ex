@@ -211,7 +211,8 @@ defmodule Playwright.Locator do
   """
   @spec check(t(), options()) :: :ok
   def check(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :check, options)
+    options = Map.merge(options, %{strict: true})
+    Frame.check(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -249,7 +250,8 @@ defmodule Playwright.Locator do
   """
   @spec click(t(), options_click()) :: :ok
   def click(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :click, options)
+    options = Map.merge(options, %{strict: true})
+    Frame.click(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -656,9 +658,8 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec inner_html(t(), options()) :: {:ok, binary()}
+  @spec inner_html(t(), options()) :: binary()
   def inner_html(%Locator{} = locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
     Frame.inner_html(locator.frame, locator.selector, options)
   end
 
@@ -671,9 +672,8 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec inner_text(t(), options()) :: {:ok, binary()}
+  @spec inner_text(t(), options()) :: binary()
   def inner_text(%Locator{} = locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
     Frame.inner_text(locator.frame, locator.selector, options)
   end
 
@@ -689,9 +689,8 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec input_value(t(), options()) :: {:ok, binary()}
+  @spec input_value(t(), options()) :: binary()
   def input_value(%Locator{} = locator, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
     Frame.input_value(locator.frame, locator.selector, options)
   end
 
@@ -708,7 +707,7 @@ defmodule Playwright.Locator do
   """
   @spec is_checked(t(), options()) :: boolean()
   def is_checked(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :is_checked, options)
+    Frame.is_checked(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -722,7 +721,7 @@ defmodule Playwright.Locator do
   """
   @spec is_disabled(t(), options()) :: boolean()
   def is_disabled(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :is_disabled, options)
+    Frame.is_disabled(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -736,7 +735,7 @@ defmodule Playwright.Locator do
   """
   @spec is_editable(t(), options()) :: boolean()
   def is_editable(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :is_editable, options)
+    Frame.is_editable(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -750,7 +749,7 @@ defmodule Playwright.Locator do
   """
   @spec is_enabled(t(), options()) :: boolean()
   def is_enabled(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :is_enabled, options)
+    Frame.is_enabled(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -764,7 +763,7 @@ defmodule Playwright.Locator do
   """
   @spec is_hidden(t(), options()) :: boolean()
   def is_hidden(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :is_hidden, options)
+    Frame.is_hidden(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -778,7 +777,7 @@ defmodule Playwright.Locator do
   """
   @spec is_visible(t(), options()) :: boolean()
   def is_visible(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :is_visible, options)
+    Frame.is_visible(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -1113,7 +1112,7 @@ defmodule Playwright.Locator do
   """
   @spec text_content(t(), options()) :: boolean()
   def text_content(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :text_content, options)
+    Frame.text_content(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -1172,7 +1171,7 @@ defmodule Playwright.Locator do
   """
   @spec uncheck(t(), options()) :: boolean()
   def uncheck(%Locator{} = locator, options \\ %{}) do
-    post_simple(locator, :uncheck, options)
+    Frame.uncheck(locator.frame, locator.selector, options)
   end
 
   @doc """
@@ -1184,16 +1183,12 @@ defmodule Playwright.Locator do
   """
   @spec wait_for(t(), options()) :: :ok
   def wait_for(%Locator{} = locator, options \\ %{}) do
-    %{guid: _} = post_simple(locator, :wait_for_selector, options)
+    {:ok, _} = Frame.wait_for_selector(locator.frame, locator.selector, options)
     :ok
   end
 
   # private
   # ---------------------------------------------------------------------------
-
-  defp post_simple(locator, method, options) do
-    Channel.post!(locator.frame, method, Map.merge(options, %{selector: locator.selector}))
-  end
 
   defp with_element(locator, options, task) do
     case Channel.await(locator.frame, {:selector, locator.selector}, options) do

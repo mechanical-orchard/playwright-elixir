@@ -233,9 +233,7 @@ defmodule Playwright.Page do
   # ---
 
   @spec eval_on_selector(t(), binary(), binary(), term(), map()) :: term()
-  def eval_on_selector(owner, selector, expression, arg \\ nil, options \\ %{})
-
-  def eval_on_selector(%Page{} = owner, selector, expression, arg, options) do
+  def eval_on_selector(%Page{} = owner, selector, expression, arg \\ nil, options \\ %{}) do
     main_frame(owner)
     |> Frame.eval_on_selector(selector, expression, arg, options)
   end
@@ -387,7 +385,7 @@ defmodule Playwright.Page do
 
   defdelegate q(page, selector, options \\ %{}), to: __MODULE__, as: :query_selector
 
-  @spec query_selector_all(t(), binary(), map()) :: {atom(), [ElementHandle.t()]}
+  @spec query_selector_all(t(), binary(), map()) :: [ElementHandle.t()]
   def query_selector_all(%Page{} = page, selector, options \\ %{}) do
     main_frame(page) |> Frame.query_selector_all(selector, options)
   end
