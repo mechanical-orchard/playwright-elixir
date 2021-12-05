@@ -7,8 +7,8 @@ defmodule Playwright.BrowserContext.NetworkTest do
     test "on :request", %{assets: assets, browser: browser} do
       this = self()
 
-      {:ok, context} = Browser.new_context(browser)
-      {:ok, page} = BrowserContext.new_page(context)
+      context = Browser.new_context(browser)
+      page = BrowserContext.new_page(context)
 
       BrowserContext.on(context, "request", fn %{params: %{request: request}} ->
         send(this, request.url)

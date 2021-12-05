@@ -72,8 +72,8 @@ defmodule Playwright.BrowserContext.PermissionsTest do
 
     @tag exclude: [:page]
     test "grants permissions on `Browser.new_context/1`", %{assets: assets, browser: browser} do
-      context = Browser.new_context!(browser, %{permissions: ["geolocation"]})
-      {:ok, page} = BrowserContext.new_page(context)
+      context = Browser.new_context(browser, %{permissions: ["geolocation"]})
+      page = BrowserContext.new_page(context)
 
       page |> Page.goto(assets.empty)
       assert get_permission(page, "geolocation") == "granted"
@@ -109,6 +109,6 @@ defmodule Playwright.BrowserContext.PermissionsTest do
   # ---
 
   defp get_permission(page, name) do
-    Page.evaluate!(page, "(name) => navigator.permissions.query({name: name}).then(result => result.state)", name)
+    Page.evaluate(page, "(name) => navigator.permissions.query({name: name}).then(result => result.state)", name)
   end
 end

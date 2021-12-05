@@ -7,7 +7,7 @@ defmodule Playwright.BrowserContextTest do
     test "creates and binds a new context", %{browser: browser} do
       assert Browser.contexts(browser) == {:ok, []}
 
-      {:ok, _} = Browser.new_context(browser)
+      Browser.new_context(browser)
       assert {:ok, [%BrowserContext{} = context]} = Browser.contexts(browser)
       assert context.browser == browser
 
@@ -21,7 +21,7 @@ defmodule Playwright.BrowserContextTest do
     test "creates and binds a new context", %{browser: browser} do
       assert Browser.contexts(browser) == {:ok, []}
 
-      {:ok, page} = Browser.new_page(browser)
+      page = Browser.new_page(browser)
       assert {:ok, [%BrowserContext{} = context]} = Browser.contexts(browser)
       assert context.browser == browser
 
@@ -47,7 +47,7 @@ defmodule Playwright.BrowserContextTest do
     # pending implementation of some equivalent of `wait_helper.reject_on_event(...)`
     # @tag exclude: [:page]
     # test "aborts :wait_for/:expect events", %{browser: browser} do
-    #   context = Browser.new_context!(browser)
+    #   context = Browser.new_context(browser)
 
     #   BrowserContext.expect_page(context, fn ->
     #     BrowserContext.close(context)
@@ -63,9 +63,9 @@ defmodule Playwright.BrowserContextTest do
 
     @tag exclude: [:page]
     test "closes all belonging pages", %{browser: browser} do
-      context = Browser.new_context!(browser)
+      context = Browser.new_context(browser)
 
-      {:ok, _} = BrowserContext.new_page(context)
+      BrowserContext.new_page(context)
       assert length(BrowserContext.pages!(context)) == 1
 
       BrowserContext.close(context)
@@ -83,7 +83,7 @@ defmodule Playwright.BrowserContextTest do
       end
 
       BrowserContext.expose_binding(context, "add", handler)
-      assert Page.evaluate!(page, "add(5, 6)") == 11
+      assert Page.evaluate(page, "add(5, 6)") == 11
     end
   end
 
@@ -96,16 +96,16 @@ defmodule Playwright.BrowserContextTest do
       end
 
       BrowserContext.expose_function(context, "add", handler)
-      assert Page.evaluate!(page, "add(9, 4)") == 13
+      assert Page.evaluate(page, "add(9, 4)") == 13
     end
   end
 
   describe "BrowserContext.pages/1" do
     @tag exclude: [:page]
     test "returns the pages", %{browser: browser} do
-      context = Browser.new_context!(browser)
-      {:ok, _} = BrowserContext.new_page(context)
-      {:ok, _} = BrowserContext.new_page(context)
+      context = Browser.new_context(browser)
+      BrowserContext.new_page(context)
+      BrowserContext.new_page(context)
 
       {:ok, pages} = BrowserContext.pages(context)
       assert length(pages) == 2
@@ -137,7 +137,7 @@ defmodule Playwright.BrowserContextTest do
       end
 
       BrowserContext.route(context, "**/empty.html", handler)
-      response = Page.goto!(page, assets.empty)
+      response = Page.goto(page, assets.empty)
 
       assert Response.ok(response)
       assert_received(:intercepted)
@@ -193,7 +193,7 @@ defmodule Playwright.BrowserContextTest do
         Route.fulfill(route, %{status: 200, body: "from page"})
       end)
 
-      response = Page.goto!(page, assets.empty)
+      response = Page.goto(page, assets.empty)
       assert Response.ok(response)
       assert Response.text!(response) == "from page"
     end
@@ -212,7 +212,7 @@ defmodule Playwright.BrowserContextTest do
     #     Route.fulfill(route, %{status: 200, body: "from page"})
     #   end)
 
-    #   response = Page.goto!(page, assets.empty)
+    #   response = Page.goto(page, assets.empty)
     #   assert Response.ok(response)
     #   assert Response.text!(response) == "from context"
     # end
@@ -221,14 +221,14 @@ defmodule Playwright.BrowserContextTest do
   describe "BrowserContext.set_offline/2" do
     @tag without: [:page]
     test "using initial option", %{assets: assets, browser: browser} do
-      context = Browser.new_context!(browser, %{offline: true})
-      page = BrowserContext.new_page!(context)
+      context = Browser.new_context(browser, %{offline: true})
+      page = BrowserContext.new_page(context)
 
       assert {:error, error} = Page.goto(page, assets.empty)
       assert String.contains?(error.message, "net::ERR_INTERNET_DISCONNECTED")
 
       BrowserContext.set_offline(context, false)
-      response = Page.goto!(page, assets.empty)
+      response = Page.goto(page, assets.empty)
       assert Response.ok(response)
 
       BrowserContext.close(context)
@@ -236,13 +236,13 @@ defmodule Playwright.BrowserContextTest do
 
     test "emulating navigator.onLine", %{page: page} do
       context = Page.context(page)
-      assert Page.evaluate!(page, "window.navigator.onLine")
+      assert Page.evaluate(page, "window.navigator.onLine")
 
       BrowserContext.set_offline(context, true)
-      refute Page.evaluate!(page, "window.navigator.onLine")
+      refute Page.evaluate(page, "window.navigator.onLine")
 
       BrowserContext.set_offline(context, false)
-      assert Page.evaluate!(page, "window.navigator.onLine")
+      assert Page.evaluate(page, "window.navigator.onLine")
     end
   end
 end

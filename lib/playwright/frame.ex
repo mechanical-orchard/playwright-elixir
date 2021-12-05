@@ -295,33 +295,18 @@ defmodule Playwright.Frame do
 
   @doc """
   Returns the return value of `expression`.
-
   !!!
   """
-  @spec evaluate(t() | Page.t() | {:ok, t() | Page.t()}, expression(), any()) :: {:ok, serializable()}
+  @spec evaluate(t(), expression(), any()) :: :ok
   def evaluate(owner, expression, arg \\ nil)
 
   def evaluate(%Frame{} = frame, expression, arg) do
-    Channel.post(frame, :evaluate_expression, %{
-      expression: expression,
-      is_function: Helpers.Expression.function?(expression),
-      arg: Helpers.Serialization.serialize(arg)
-    })
-    |> Helpers.Serialization.deserialize()
-  end
-
-  def evaluate(%Page{} = page, expression, arg) do
-    from(page) |> evaluate(expression, arg)
-  end
-
-  def evaluate({:ok, owner}, expression, arg) do
-    evaluate(owner, expression, arg)
-  end
-
-  @doc false
-  def evaluate!(owner, expression, arg \\ nil) do
-    {:ok, result} = evaluate(owner, expression, arg)
-    result
+    parse_result(fn ->
+      Channel.post!(frame, :evaluate_expression, %{
+        expression: expression,
+        arg: serialize(arg)
+      })
+    end)
   end
 
   @doc """
@@ -457,12 +442,12 @@ defmodule Playwright.Frame do
   @doc """
   !!!
   """
-  @spec goto(t() | {:ok, t()}, binary(), options()) :: {:ok, Response.t()} | {:error, term()}
+  @spec goto(t() | {:ok, t()}, binary(), options()) :: Response.t() | nil | {:error, term()}
   def goto(frame, url, options \\ %{})
 
   def goto(%Frame{} = frame, url, options) do
     params = Map.merge(options, %{url: url})
-    Channel.post(frame, :goto, params)
+    Channel.post!(frame, :goto, params)
   end
 
   def goto({:ok, frame}, url, params) do
@@ -647,7 +632,9 @@ defmodule Playwright.Frame do
   match the selector, returns `nil`.
 
   ## Returns
-    - `{:ok, Playwright.ElementHandle.t() | nil}`
+
+    - `Playwright.ElementHandle.t()`
+    - `nil`
 
   ## Arguments
 
@@ -656,46 +643,36 @@ defmodule Playwright.Frame do
   | `selector` | param  | `binary()`  | A selector to query for. See "working with selectors (guide)" for more details. |
   | `strict`   | option | `boolean()` | When true, the call requires `selector` to resolve to a single element. If the given `selector` resolves to more then one element, the call raises an error. |
   """
-  @spec query_selector(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: {:ok, ElementHandle.t() | nil}
-  def query_selector(owner, selector, options \\ %{})
-
-  def query_selector(%Page{} = page, selector, options) do
-    from(page) |> query_selector(selector, options)
-  end
-
-  def query_selector(%Frame{} = frame, selector, options) do
+  @spec query_selector(t(), binary(), map()) :: ElementHandle.t() | nil | {:error, :timeout}
+  def query_selector(%Frame{} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :query_selector, params)
-  end
-
-  def query_selector({:ok, owner}, selector, options) do
-    query_selector(owner, selector, options)
+    Channel.post!(frame, :query_selector, params)
   end
 
   defdelegate q(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector
 
-  # NOTE: this should either delegate to `query_selector` w/ `strict: true`, or
-  # be removed.
-  @doc false
-  @spec query_selector!(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: struct()
-  def query_selector!(owner, selector, options \\ %{})
+  # # NOTE: this should either delegate to `query_selector` w/ `strict: true`, or
+  # # be removed.
+  # @doc false
+  # @spec query_selector!(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: struct()
+  # def query_selector!(owner, selector, options \\ %{})
 
-  def query_selector!(%Page{} = page, selector, options) do
-    from(page) |> query_selector!(selector, options)
-  end
+  # def query_selector!(%Page{} = page, selector, options) do
+  #   from(page) |> query_selector!(selector, options)
+  # end
 
-  def query_selector!(%Frame{} = frame, selector, options) do
-    case query_selector(frame, selector, options) do
-      {:ok, nil} -> raise "No element found for selector: #{selector}"
-      {:ok, handle} -> handle
-    end
-  end
+  # def query_selector!(%Frame{} = frame, selector, options) do
+  #   case query_selector(frame, selector, options) do
+  #     {:ok, nil} -> raise "No element found for selector: #{selector}"
+  #     {:ok, handle} -> handle
+  #   end
+  # end
 
-  def query_selector!({:ok, owner}, selector, options) do
-    query_selector!(owner, selector, options)
-  end
+  # def query_selector!({:ok, owner}, selector, options) do
+  #   query_selector!(owner, selector, options)
+  # end
 
-  defdelegate q!(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector!
+  # defdelegate q!(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector!
 
   @doc """
   Returns the list of `Playwright.ElementHandle` pointing to the frame elements.
@@ -814,23 +791,13 @@ defmodule Playwright.Frame do
   | key / name | type   |             | description |
   | ---------- | ------ | ----------- | ----------- |
   | `html`     | param  | `binary()`  | HTML markup to assign to the page. |
-  | `timeout`  | option | `number()`  | Maximum operation time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_navigation_timeout/2`, `Playwright.BrowserContext.set_default_timeout/2`, `Playwright.Page.set_default_navigation_timeout/2` or `Playwright.Page.set_default_timeout/` functions. `(default: 30 seconds)` |
+  | `:timeout` | option | `number()`  | Maximum operation time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_navigation_timeout/2`, `Playwright.BrowserContext.set_default_timeout/2`, `Playwright.Page.set_default_navigation_timeout/2` or `Playwright.Page.set_default_timeout/` functions. `(default: 30 seconds)` |
   """
-  @spec set_content(t() | Page.t() | {:ok, t() | Page.t()}, binary(), options()) :: :ok
-  def set_content(owner, html, options \\ %{})
-
-  def set_content(%Frame{} = frame, html, options) do
+  @spec set_content(t(), binary(), options()) :: :ok
+  def set_content(%Frame{} = frame, html, options \\ %{}) do
     params = Map.merge(%{html: html, timeout: 30_000, wait_until: "load"}, options)
     {:ok, _response} = Channel.post(frame, :set_content, params)
     :ok
-  end
-
-  def set_content(%Page{} = page, html, options) do
-    from(page) |> set_content(html, options)
-  end
-
-  def set_content({:ok, owner}, html, options) do
-    set_content(owner, html, options)
   end
 
   @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
@@ -1012,6 +979,10 @@ defmodule Playwright.Frame do
     }
   end
 
+  defp parse_result(task) when is_function(task) do
+    task.() |> Helpers.Serialization.deserialize()
+  end
+
   # NOTE: these might all want to move to ElementHandle
   defp select_option_values(values) when is_nil(values) do
     %{}
@@ -1061,5 +1032,9 @@ defmodule Playwright.Frame do
 
   defp select_option_value(%ElementHandle{guid: guid}) do
     %{guid: guid}
+  end
+
+  defp serialize(arg) do
+    Helpers.Serialization.serialize(arg)
   end
 end

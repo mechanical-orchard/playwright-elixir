@@ -10,9 +10,9 @@ defmodule Playwright.BrowserContext.ProxyTest do
           proxy: %{server: assets.prefix}
         })
 
-      {:ok, page} = BrowserContext.new_page(context)
+      page = BrowserContext.new_page(context)
+      response = Page.goto(page, "http://non-existent.com/dom.html")
 
-      {:ok, response} = Page.goto(page, "http://non-existent.com/dom.html")
       assert Response.ok(response)
       assert {:ok, "Text,\nmore text"} = Page.text_content(page, "#inner")
     end

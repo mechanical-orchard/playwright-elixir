@@ -12,7 +12,7 @@ defmodule Playwright.BrowserContext.AddCookiesTest do
         %{url: assets.empty, name: "password", value: "123456"}
       ])
 
-      assert Page.evaluate!(page, "() => document.cookie") == "password=123456"
+      assert Page.evaluate(page, "() => document.cookie") == "password=123456"
     end
 
     # test_should_roundtrip_cookie

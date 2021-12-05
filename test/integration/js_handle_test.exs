@@ -28,8 +28,7 @@ defmodule Playwright.JSHandleTest do
       result = JSHandle.as_element(handle)
       assert is_struct(result, ElementHandle)
 
-      result = Page.evaluate(page, "function(e) { return e.nodeType === Node.TEXT_NODE; }", result)
-      assert result === {:ok, true}
+      assert Page.evaluate(page, "function(e) { return e.nodeType === Node.TEXT_NODE; }", result) == true
     end
   end
 end

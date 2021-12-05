@@ -11,7 +11,7 @@ defmodule Playwright.Mimic.PyLocatorsTest do
       page |> Page.goto(assets.prefix <> "/input/button.html")
 
       Locator.click(locator, %{timeout: 200})
-      assert {:ok, "Clicked"} = Page.evaluate(page, "window['result']")
+      assert Page.evaluate(page, "window['result']") == "Clicked"
     end
 
     # NOTE: Not implemented/mimicked.
@@ -34,8 +34,8 @@ defmodule Playwright.Mimic.PyLocatorsTest do
       """)
 
       Locator.dblclick(locator, %{timeout: 200})
-      assert {:ok, true} = Page.evaluate(page, "window['double']")
-      assert {:ok, "Clicked"} = Page.evaluate(page, "window['result']")
+      assert Page.evaluate(page, "window['double']") == true
+      assert Page.evaluate(page, "window['result']") == "Clicked"
     end
 
     # NOTE: Not implemented/mimicked.

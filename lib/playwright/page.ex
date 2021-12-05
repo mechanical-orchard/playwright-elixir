@@ -41,7 +41,7 @@ defmodule Playwright.Page do
   """
   use Playwright.ChannelOwner
 
-  alias Playwright.{BrowserContext, Frame, Page, Response}
+  alias Playwright.{BrowserContext, ElementHandle, Frame, Page, Response}
   alias Playwright.ChannelOwner
   alias Playwright.Runner.Helpers
 
@@ -51,8 +51,10 @@ defmodule Playwright.Page do
   @property :routes
 
   @type dimensions :: map()
+  @type expression :: binary()
   @type function_or_options :: fun() | options() | nil
   @type options :: map()
+  @type selector :: binary()
   @type serializable :: any()
 
   require Logger
@@ -88,12 +90,6 @@ defmodule Playwright.Page do
 
   # defdelegate drag_and_drop(page, source, target, options \\ %{}),
   #   to: Playwright.Frame
-
-  defdelegate evaluate(page, expression, arg \\ nil),
-    to: Playwright.Frame
-
-  defdelegate evaluate!(page, expression, arg \\ nil),
-    to: Playwright.Frame
 
   defdelegate evaluate_handle(page, expression, arg \\ nil),
     to: Playwright.Frame
@@ -147,18 +143,6 @@ defmodule Playwright.Page do
   defdelegate press(page, selector, key, options \\ %{}),
     to: Playwright.Frame
 
-  defdelegate q(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  defdelegate q!(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  defdelegate query_selector(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  defdelegate query_selector!(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
   defdelegate qq(page, selector, options \\ %{}),
     to: Playwright.Frame
 
@@ -167,9 +151,6 @@ defmodule Playwright.Page do
 
   # defdelegate pause(page),
   #   to: Playwright.BrowserContext
-
-  defdelegate set_content(page, html, options \\ %{}),
-    to: Playwright.Frame
 
   # defdelegate set_input_files(page, selector, files, options \\ %{}),
   #   to: Playwright.Frame
@@ -252,8 +233,7 @@ defmodule Playwright.Page do
   @spec add_init_script(t(), binary() | map()) :: :ok
   def add_init_script(%Page{} = page, script) when is_binary(script) do
     params = %{source: script}
-    {:ok, _} = Channel.post(page, :add_init_script, params)
-    :ok
+    Channel.post!(page, :add_init_script, params)
   end
 
   def add_init_script(%Page{} = page, %{path: path} = script) when is_map(script) do
@@ -308,10 +288,6 @@ defmodule Playwright.Page do
     end
 
     :ok
-  end
-
-  def close({:ok, owner}, options) do
-    close(owner, options)
   end
 
   @doc """
@@ -384,6 +360,13 @@ defmodule Playwright.Page do
     eval_on_selector(owner, selector, expression, arg, options)
   end
 
+  @spec evaluate(t(), expression(), any()) :: serializable()
+  def evaluate(page, expression, arg \\ nil)
+
+  def evaluate(%Page{} = page, expression, arg) do
+    main_frame(page) |> Frame.evaluate(expression, arg)
+  end
+
   # ---
 
   # @spec expect_event(t(), atom() | binary(), function(), options()) :: :ok
@@ -419,8 +402,17 @@ defmodule Playwright.Page do
   # @spec frame(t(), binary()) :: Frame.t() | nil
   # def frame(page, selector)
 
-  # @spec frames(t()) :: [Frame.t()]
-  # def frames(page)
+  # ---
+
+  @spec frames(t()) :: [Frame.t()]
+  def frames(%Page{} = page) do
+    Channel.all(page.connection, %{
+      parent: page,
+      type: "Frame"
+    })
+  end
+
+  # ---
 
   # @spec frame_locator(t(), binary()) :: FrameLocator.t()
   # def frame_locator(page, selector)
@@ -433,7 +425,7 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec goto(t() | {:ok, t()}, binary(), options()) :: {:ok, Response.t() | nil}
+  @spec goto(t() | {:ok, t()}, binary(), options()) :: Response.t() | nil | {:error, term()}
   def goto(owner, url, options \\ %{})
 
   def goto(%Page{} = page, url, options) do
@@ -442,12 +434,6 @@ defmodule Playwright.Page do
 
   def goto({:ok, page}, url, options) do
     goto(page, url, options)
-  end
-
-  @spec goto!(t(), binary(), options()) :: Response.t() | nil
-  def goto!(page, url, options \\ %{}) do
-    {:ok, response} = goto(page, url, options)
-    response
   end
 
   @doc """
@@ -464,7 +450,7 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec locator(t(), binary()) :: Playwright.Locator.t()
+  @spec locator(t(), selector()) :: Playwright.Locator.t()
   def locator(%Page{} = page, selector) do
     Playwright.Locator.new(page, selector)
   end
@@ -494,6 +480,13 @@ defmodule Playwright.Page do
   # def pdf(page, options \\ %{})
 
   # ---
+
+  @spec query_selector(t(), selector(), options()) :: ElementHandle.t() | nil | {:error, :timeout}
+  def query_selector(%Page{} = page, selector, options \\ %{}) do
+    main_frame(page) |> Frame.query_selector(selector, options)
+  end
+
+  defdelegate q(page, selector, options \\ %{}), to: __MODULE__, as: :query_selector
 
   @doc """
   Reloads the current page.
@@ -539,7 +532,7 @@ defmodule Playwright.Page do
         Channel.post(page, :set_network_interception_enabled, %{enabled: true})
       end
 
-      {:ok, _} = Channel.patch(page.connection, page.guid, %{routes: [handler | routes]})
+      Channel.patch(page.connection, page.guid, %{routes: [handler | routes]})
       :ok
     end)
   end
@@ -578,6 +571,13 @@ defmodule Playwright.Page do
   # @spec set_checked(t(), binary(), boolean(), options()) :: :ok
   # def set_checked(page, selector, checked, options \\ %{})
 
+  # ---
+
+  @spec set_content(t(), binary(), options()) :: :ok
+  def set_content(%Page{} = page, html, options \\ %{}) do
+    main_frame(page) |> Frame.set_content(html, options)
+  end
+
   # NOTE: these 2 are good examples of functions that should `cast` instead of `call`.
   # ...
   # @spec set_default_navigation_timeout(t(), number()) :: nil (???)
@@ -589,11 +589,15 @@ defmodule Playwright.Page do
   # @spec set_extra_http_headers(t(), map()) :: :ok
   # def set_extra_http_headers(page, headers)
 
+  # ---
+
   @spec set_viewport_size(t(), dimensions()) :: :ok
   def set_viewport_size(%Page{} = page, dimensions) do
     {:ok, _} = Channel.post(page, :set_viewport_size, %{viewport_size: dimensions})
     :ok
   end
+
+  # ---
 
   # @spec unroute(t(), function()) :: :ok
   # def unroute(owner, handler \\ nil)

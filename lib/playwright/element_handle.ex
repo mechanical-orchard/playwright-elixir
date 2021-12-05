@@ -120,30 +120,17 @@ defmodule Playwright.ElementHandle do
   disables this.
   """
   @spec click(t() | {:ok, t()}, options()) :: :ok
-  def click(handle, _options \\ %{})
-
-  def click(%ElementHandle{} = handle, _options) do
-    {:ok, _} = Channel.post(handle, :click)
-    :ok
-  end
-
-  def click({:ok, handle}, options) do
-    click(handle, options)
+  def click(%ElementHandle{} = handle, options \\ %{}) do
+    Channel.post!(handle, :click, options)
   end
 
   @doc """
   Returns the `Playwright.Frame` for element handles referencing iframe nodes,
-  or `nil otherwise.
+  or `nil` otherwise.
   """
-  @spec content_frame(t() | {:ok, t()}) :: {:ok, Frame.t() | nil}
-  def content_frame(handle)
-
+  @spec content_frame(t()) :: Frame.t() | nil
   def content_frame(%ElementHandle{} = handle) do
-    Channel.post(handle, :content_frame)
-  end
-
-  def content_frame({:ok, handle}) do
-    content_frame(handle)
+    Channel.post!(handle, :content_frame)
   end
 
   # ---

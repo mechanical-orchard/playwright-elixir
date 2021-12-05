@@ -86,7 +86,7 @@ defmodule Playwright.Locator do
 
   @type param_input_button() :: :left | :right | :middle
 
-  @type selector() :: String.t()
+  @type selector() :: binary()
 
   @type serializable :: any()
 
@@ -422,7 +422,7 @@ defmodule Playwright.Locator do
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   | `:timeout`   | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec evaluate(t(), binary(), ElementHandle.t() | nil, options()) :: {:ok, serializable()}
+  @spec evaluate(t(), binary(), ElementHandle.t() | nil, options()) :: serializable()
   def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
   # NOTE: need to do all of the map-like things before a plain `map()`,
@@ -445,12 +445,6 @@ defmodule Playwright.Locator do
     with_element(locator, options, fn handle ->
       ElementHandle.evaluate(handle, expression, arg)
     end)
-  end
-
-  @doc false
-  def evaluate!(%Locator{} = locator, expression, arg \\ nil, options \\ %{}) do
-    {:ok, result} = evaluate(locator, expression, arg, options)
-    result
   end
 
   @doc """

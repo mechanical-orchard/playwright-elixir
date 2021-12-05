@@ -260,32 +260,24 @@ defmodule Playwright.Page.AccessibilityTest do
     test "with a button", %{page: page} do
       Page.set_content(page, "<button>My Button</button>")
 
-      case Page.query_selector(page, "button") do
-        {:ok, element} ->
-          assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-                   role: "button",
-                   name: "My Button"
-                 }
+      element = Page.query_selector(page, "button")
 
-        {:error, :timeout} ->
-          log_element_handle_error()
-      end
+      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
+               role: "button",
+               name: "My Button"
+             }
     end
 
     test "with an input", %{page: page} do
       Page.set_content(page, "<input title='My Input' value='My Value'>")
 
-      case Page.query_selector(page, "input") do
-        {:ok, element} ->
-          assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-                   role: "textbox",
-                   name: "My Input",
-                   value: "My Value"
-                 }
+      element = Page.query_selector(page, "input")
 
-        {:error, :timeout} ->
-          log_element_handle_error()
-      end
+      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
+               role: "textbox",
+               name: "My Input",
+               value: "My Value"
+             }
     end
 
     test "with a menu", %{page: page} do
@@ -297,27 +289,23 @@ defmodule Playwright.Page.AccessibilityTest do
       </div>
       """)
 
-      case Page.query_selector(page, "div[role='menu']") do
-        {:ok, element} ->
-          assert Page.Accessibility.snapshot(page, %{root: element}) == %{
-                   role: "menu",
-                   name: "My Menu",
-                   children: [
-                     %{role: "menuitem", name: "First Item"},
-                     %{role: "menuitem", name: "Second Item"},
-                     %{role: "menuitem", name: "Third Item"}
-                   ]
-                 }
+      element = Page.query_selector(page, "div[role='menu']")
 
-        {:error, :timeout} ->
-          log_element_handle_error()
-      end
+      assert Page.Accessibility.snapshot(page, %{root: element}) == %{
+               role: "menu",
+               name: "My Menu",
+               children: [
+                 %{role: "menuitem", name: "First Item"},
+                 %{role: "menuitem", name: "Second Item"},
+                 %{role: "menuitem", name: "Third Item"}
+               ]
+             }
     end
 
     test "when the DOM node is removed, returns nil", %{page: page} do
       Page.set_content(page, "<button>My Button</button>")
 
-      element = Page.query_selector!(page, "button")
+      element = Page.query_selector(page, "button")
       Page.eval_on_selector(page, "button", "button => button.remove()")
 
       refute Page.Accessibility.snapshot(page, %{root: element})
@@ -337,7 +325,7 @@ defmodule Playwright.Page.AccessibilityTest do
       </div>
       """)
 
-      element = Page.query_selector!(page, "#root")
+      element = Page.query_selector(page, "#root")
       snapshot = Page.Accessibility.snapshot(page, %{root: element, interesting_only: false})
       assert snapshot.role == "textbox"
       assert String.contains?(snapshot.value, "hello")

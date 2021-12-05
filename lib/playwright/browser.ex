@@ -118,15 +118,9 @@ defmodule Playwright.Browser do
   | `accept_downloads` | option | `boolean()` | Whether to automatically download all the attachments. If false, all the downloads are canceled. `(default: false)` |
   | `...`              | option | `...`       | ... |
   """
-  @spec new_context(t(), options()) :: {:ok, BrowserContext.t()}
+  @spec new_context(t(), options()) :: BrowserContext.t()
   def new_context(%Browser{} = browser, options \\ %{}) do
-    Channel.post(browser, :new_context, prepare(options))
-  end
-
-  @doc false
-  def new_context!(browser, options \\ %{}) do
-    {:ok, context} = new_context(browser, options)
-    context
+    Channel.post!(browser, :new_context, prepare(options))
   end
 
   @doc """
@@ -144,20 +138,16 @@ defmodule Playwright.Browser do
   `Playwright.BrowserContext.new_page/2`, given the new context, to manage
   resource lifecycles.
   """
-  @spec new_page(t() | {:ok, t()}, options()) :: {:ok, Page.t()}
+  @spec new_page(t(), options()) :: Page.t()
   def new_page(browser, options \\ %{})
 
   def new_page(%Browser{connection: connection} = browser, options) do
-    {:ok, context} = new_context(browser, options)
-    {:ok, page} = BrowserContext.new_page(context)
+    context = new_context(browser, options)
+    page = BrowserContext.new_page(context)
 
     # establish co-dependency
-    {:ok, _} = Channel.patch(connection, context.guid, %{owner_page: page})
-    {:ok, _} = Channel.patch(connection, page.guid, %{owned_context: context})
-  end
-
-  def new_page({:ok, browser}, options) do
-    new_page(browser, options)
+    Channel.patch(connection, context.guid, %{owner_page: page})
+    Channel.patch(connection, page.guid, %{owned_context: context})
   end
 
   # ---

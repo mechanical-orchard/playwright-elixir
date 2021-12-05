@@ -18,39 +18,32 @@ defmodule Playwright.Page.EvaluateHandleTest do
 
     test "returns a handle that can be used as a later argument, as a handle to an object", %{page: page} do
       {:ok, handle} = Page.evaluate_handle(page, "function() { return navigator; }")
-      {:ok, result} = Page.evaluate(page, "function(h) { return h.userAgent; }", handle)
-      assert result =~ "Mozilla"
+      assert Page.evaluate(page, "function(h) { return h.userAgent; }", handle) =~ "Mozilla"
     end
 
     test "returns a handle that can be used as a later argument, as a handle to a primitive type", %{page: page} do
       {:ok, handle} = Page.evaluate_handle(page, "function() { return 42; }")
 
-      {:ok, result} = Page.evaluate(page, "function(h) { return Object.is(h, 42); }", handle)
-      assert result === true
-
-      {:ok, result} = Page.evaluate(page, "function(n) { return n; }", handle)
-      assert result === 42
+      assert Page.evaluate(page, "function(h) { return Object.is(h, 42); }", handle) === true
+      assert Page.evaluate(page, "function(n) { return n; }", handle) === 42
     end
 
     test "works with a handle that references an object", %{page: page} do
       {:ok, handle} = Page.evaluate_handle(page, "function() { return { x: 1, y: 'lala' }; }")
-      {:ok, result} = Page.evaluate(page, "function(o) { return o; }", handle)
-      assert result == %{x: 1, y: "lala"}
+      assert Page.evaluate(page, "function(o) { return o; }", handle) == %{x: 1, y: "lala"}
     end
 
     test "works with a handle that references an object with nesting", %{page: page} do
       {:ok, handle} = Page.evaluate_handle(page, "function() { return { x: 1, y: { lala: 'lulu' } }; }")
-      {:ok, result} = Page.evaluate(page, "function(o) { return o; }", handle)
-      assert result == %{x: 1, y: %{lala: "lulu"}}
+      assert Page.evaluate(page, "function(o) { return o; }", handle) == %{x: 1, y: %{lala: "lulu"}}
     end
 
     test "works with a handle that references the window", %{page: page} do
       {:ok, handle} = Page.evaluate_handle(page, "function() { return window; }")
-      {:ok, result} = Page.evaluate(page, "function(w) { return w === window; }", handle)
-      assert result === true
+      assert Page.evaluate(page, "function(w) { return w === window; }", handle) === true
 
       {:ok, handle} = Page.evaluate_handle(page, "window")
-      {:ok, result} = Page.evaluate(page, "function(w) { return w === window; }", handle)
+      result = Page.evaluate(page, "function(w) { return w === window; }", handle)
       assert result === true
     end
 
@@ -60,7 +53,7 @@ defmodule Playwright.Page.EvaluateHandleTest do
       {:ok, baz} = Page.evaluate_handle(page, "function() { return ['baz']; }")
       {:ok, bam} = Page.evaluate_handle(page, "function() { return ['bam']; }")
 
-      {:ok, result} =
+      result =
         Page.evaluate(page, "function(x) { return JSON.stringify(x); }", %{
           a1: %{foo: foo},
           a2: %{bar: bar, arr: [%{baz: baz}, %{bam: bam}]}
@@ -91,7 +84,7 @@ defmodule Playwright.Page.EvaluateHandleTest do
 
     test "...primitive write/read", %{page: page} do
       {:ok, handle} = Page.evaluate_handle(page, "function() { window['LALA'] = 'LULU'; return window; }")
-      {:ok, result} = Page.evaluate(page, "function(h) { return h['LALA']; }", handle)
+      result = Page.evaluate(page, "function(h) { return h['LALA']; }", handle)
       assert result == "LULU"
     end
   end

@@ -8,14 +8,14 @@ defmodule Playwright.PageTest do
       page |> Page.goto(assets.prefix <> "/input/scrollable.html")
       page |> Page.hover("#button-6")
 
-      assert {:ok, "button-6"} = Page.evaluate(page, "document.querySelector('button:hover').id")
+      assert Page.evaluate(page, "document.querySelector('button:hover').id") == "button-6"
     end
   end
 
   describe "Page.on/3" do
     @tag exclude: [:page]
     test "on :close (atom)", %{browser: browser} do
-      {:ok, page} = Browser.new_page(browser)
+      page = Browser.new_page(browser)
       this = self()
       guid = page.guid
 
@@ -29,7 +29,7 @@ defmodule Playwright.PageTest do
 
     @tag exclude: [:page]
     test "on 'close' (string)", %{browser: browser} do
-      {:ok, page} = Browser.new_page(browser)
+      page = Browser.new_page(browser)
       this = self()
       guid = page.guid
 
@@ -47,8 +47,8 @@ defmodule Playwright.PageTest do
     test "on 'close' of one Page does not affect another", %{browser: browser} do
       this = self()
 
-      {:ok, %{guid: guid_one}} = page_one = Browser.new_page(browser)
-      {:ok, %{guid: guid_two}} = page_two = Browser.new_page(browser)
+      %{guid: guid_one} = page_one = Browser.new_page(browser)
+      %{guid: guid_two} = page_two = Browser.new_page(browser)
 
       Page.on(page_one, "close", fn %{target: target} ->
         send(this, target.guid)
@@ -167,48 +167,48 @@ defmodule Playwright.PageTest do
       page |> Page.goto(assets.prefix <> "/input/select.html")
       page |> Page.select_option("select", "blue")
 
-      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onChange")
-      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onInput")
+      assert Page.evaluate(page, "() => window['result'].onChange") == ["blue"]
+      assert Page.evaluate(page, "() => window['result'].onInput") == ["blue"]
     end
 
     test "with a single option by :value", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
       page |> Page.select_option("select", %{value: "blue"})
 
-      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onChange")
-      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onInput")
+      assert Page.evaluate(page, "() => window['result'].onChange") == ["blue"]
+      assert Page.evaluate(page, "() => window['result'].onInput") == ["blue"]
     end
 
     test "with a single option by :label", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
       page |> Page.select_option("select", %{label: "Indigo"})
 
-      assert {:ok, ["indigo"]} = Page.evaluate(page, "() => window['result'].onChange")
-      assert {:ok, ["indigo"]} = Page.evaluate(page, "() => window['result'].onInput")
+      assert Page.evaluate(page, "() => window['result'].onChange") == ["indigo"]
+      assert Page.evaluate(page, "() => window['result'].onInput") == ["indigo"]
     end
 
     test "with a single option by ElementHandle", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
-      page |> Page.select_option("select", Page.query_selector!(page, "[id=whiteOption]"))
+      page |> Page.select_option("select", Page.query_selector(page, "[id=whiteOption]"))
 
-      assert {:ok, ["white"]} = Page.evaluate(page, "() => window['result'].onChange")
-      assert {:ok, ["white"]} = Page.evaluate(page, "() => window['result'].onInput")
+      assert Page.evaluate(page, "() => window['result'].onChange") == ["white"]
+      assert Page.evaluate(page, "() => window['result'].onInput") == ["white"]
     end
 
     test "with a single option by :index", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
       page |> Page.select_option("select", %{index: 2})
 
-      assert {:ok, ["brown"]} = Page.evaluate(page, "() => window['result'].onChange")
-      assert {:ok, ["brown"]} = Page.evaluate(page, "() => window['result'].onInput")
+      assert Page.evaluate(page, "() => window['result'].onChange") == ["brown"]
+      assert Page.evaluate(page, "() => window['result'].onInput") == ["brown"]
     end
 
     test "with a single option by multiple attributes", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
       page |> Page.select_option("select", %{value: "green", label: "Green"})
 
-      assert {:ok, ["green"]} = Page.evaluate(page, "() => window['result'].onChange")
-      assert {:ok, ["green"]} = Page.evaluate(page, "() => window['result'].onInput")
+      assert Page.evaluate(page, "() => window['result'].onChange") == ["green"]
+      assert Page.evaluate(page, "() => window['result'].onInput") == ["green"]
     end
 
     test "with a single option given mismatched attributes, returns a timeout", %{assets: assets, page: page} do
@@ -222,8 +222,8 @@ defmodule Playwright.PageTest do
       page |> Page.goto(assets.prefix <> "/input/select.html")
       page |> Page.select_option("select", ["blue", "green", "red"])
 
-      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onChange")
-      assert {:ok, ["blue"]} = Page.evaluate(page, "() => window['result'].onInput")
+      assert Page.evaluate(page, "() => window['result'].onChange") == ["blue"]
+      assert Page.evaluate(page, "() => window['result'].onInput") == ["blue"]
     end
 
     # test "does not throw when select causes navigation"
@@ -252,19 +252,11 @@ defmodule Playwright.PageTest do
     test ".query_selector/2", %{assets: assets, connection: connection, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      assert {:ok, %ElementHandle{type: "ElementHandle", connection: ^connection, guid: guid}} =
+      assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: guid} =
                page |> Page.query_selector("css=#outer")
 
-      assert guid != {:ok, nil}
-      assert page |> Page.query_selector("css=#non-existent") == {:ok, nil}
-    end
-
-    test "query_selector!/2", %{assets: assets, page: page} do
-      Page.goto(page, assets.prefix <> "/dom.html")
-
-      assert_raise RuntimeError, "No element found for selector: #non-existent", fn ->
-        page |> Page.query_selector!("#non-existent")
-      end
+      assert guid != nil
+      assert page |> Page.query_selector("css=#non-existent") === nil
     end
 
     # NOTE: query_selector_all, and ElementHandles, are somewhat problematic.
@@ -302,7 +294,7 @@ defmodule Playwright.PageTest do
 
     @tag without: [:page]
     test ".close/1", %{browser: browser, connection: connection} do
-      {:ok, page} = Browser.new_page(browser)
+      page = Browser.new_page(browser)
 
       Connection.get(connection, %{guid: page.guid}, nil)
       |> assert()
@@ -320,13 +312,11 @@ defmodule Playwright.PageTest do
       page
       |> Page.click("css=button")
 
-      result = Page.evaluate(page, "function () { return window['result']; }")
-      assert result == {:ok, "Clicked"}
+      assert Page.evaluate(page, "function () { return window['result']; }") == "Clicked"
     end
 
     test ".evaluate/2", %{page: page} do
-      value = Page.evaluate(page, "function () { return 7 * 3; }")
-      assert value == {:ok, 21}
+      assert Page.evaluate(page, "function () { return 7 * 3; }") == 21
     end
 
     test ".fill/3", %{assets: assets, page: page} do
@@ -336,8 +326,7 @@ defmodule Playwright.PageTest do
       page
       |> Page.fill("textarea", "some value")
 
-      value = Page.evaluate(page, "function () { return window['result']; }")
-      assert value == {:ok, "some value"}
+      assert Page.evaluate(page, "function () { return window['result']; }") == "some value"
     end
 
     test ".get_attribute/3", %{assets: assets, page: page} do
@@ -356,8 +345,7 @@ defmodule Playwright.PageTest do
       page
       |> Page.press("textarea", "A")
 
-      value = Page.evaluate(page, "function () { return document.querySelector('textarea').value; }")
-      assert value == {:ok, "A"}
+      assert Page.evaluate(page, "function () { return document.querySelector('textarea').value; }") == "A"
     end
 
     test ".set_content/2", %{page: page} do

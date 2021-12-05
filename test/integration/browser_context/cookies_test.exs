@@ -14,7 +14,7 @@ defmodule Playwright.BrowserContext.CookiesTest do
 
       cookie =
         page
-        |> Page.evaluate!("""
+        |> Page.evaluate("""
           () => {
             document.cookie = "username=Jane";
             return document.cookie;

@@ -28,7 +28,7 @@ defmodule Playwright.Chromium.CDPSessionTest do
         })
 
       assert result == %{result: %{type: "string", value: "expression result"}}
-      assert "bar" == Page.evaluate!(page, "() => window.foo")
+      assert "bar" == Page.evaluate(page, "() => window.foo")
     end
   end
 
@@ -96,8 +96,8 @@ defmodule Playwright.Chromium.CDPSessionTest do
 
     @tag exclude: [:page]
     test "does not break Page.close/2", %{browser: browser} do
-      context = Browser.new_context!(browser)
-      page = BrowserContext.new_page!(context)
+      context = Browser.new_context(browser)
+      page = BrowserContext.new_page(context)
 
       {:ok, session} = BrowserContext.new_cdp_session(context, page)
 
@@ -110,8 +110,8 @@ defmodule Playwright.Chromium.CDPSessionTest do
   describe "CDPSession lifecycle" do
     @tag without: [:page]
     test "detaches on Page.close/2", %{browser: browser} do
-      context = Browser.new_context!(browser)
-      page = BrowserContext.new_page!(context)
+      context = Browser.new_context(browser)
+      page = BrowserContext.new_page(context)
       {:ok, session} = BrowserContext.new_cdp_session(context, page)
 
       Page.close(page)

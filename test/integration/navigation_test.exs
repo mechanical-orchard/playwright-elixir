@@ -22,18 +22,18 @@ defmodule Playwright.NavigationTest do
     end
 
     test "navigates to about:blank", %{assets: assets, page: page} do
-      {:ok, response} = Page.goto(page, assets.blank)
+      response = Page.goto(page, assets.blank)
       refute response
     end
 
     test "returns response when page changes its URL after load", %{assets: assets, page: page} do
-      {:ok, response} = Page.goto(page, assets.prefix <> "/historyapi.html")
+      response = Page.goto(page, assets.prefix <> "/historyapi.html")
       assert response.status == 200
     end
 
     # !!! works w/out implementation
     test "navigates to empty page with domcontentloaded", %{assets: assets, page: page} do
-      {:ok, response} = Page.goto(page, assets.empty, %{wait_until: "domcontentloaded"})
+      response = Page.goto(page, assets.empty, %{wait_until: "domcontentloaded"})
       assert response.status == 200
     end
 
@@ -46,7 +46,7 @@ defmodule Playwright.NavigationTest do
       }
       """)
 
-      {:ok, response} = Page.goto(page, assets.prefix <> "/grid.html")
+      response = Page.goto(page, assets.prefix <> "/grid.html")
       assert response.status == 200
     end
 
@@ -59,7 +59,7 @@ defmodule Playwright.NavigationTest do
     end
 
     test "works when navigating to valid URL", %{assets: assets, page: page} do
-      {:ok, response} = Page.goto(page, assets.empty)
+      response = Page.goto(page, assets.empty)
       assert Response.ok(response)
 
       response = Page.goto(page, assets.empty)

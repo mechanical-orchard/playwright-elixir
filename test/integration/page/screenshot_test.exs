@@ -16,14 +16,14 @@ defmodule Page.ScreenshotTest do
   describe "screenshot/2" do
     test "caputures a screenshot, returning the base64 encoded binary", %{page: page} do
       case Page.goto(page, "https://playwright.dev", %{timeout: 1000}) do
-        {:ok, _} ->
+        {:error, error} ->
+          Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
+
+        _ ->
           max_frame_size = 32_768
           {:ok, raw} = Page.screenshot(page, %{full_page: true, type: "png"})
 
           assert byte_size(raw) > max_frame_size
-
-        {:error, error} ->
-          Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
       end
     end
 
@@ -34,7 +34,10 @@ defmodule Page.ScreenshotTest do
       refute(File.exists?(path))
 
       case Page.goto(page, "https://playwright.dev", %{timeout: 1000}) do
-        {:ok, _} ->
+        {:error, error} ->
+          Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
+
+        _ ->
           Page.screenshot(page, %{
             full_page: true,
             path: path
@@ -42,9 +45,6 @@ defmodule Page.ScreenshotTest do
 
           assert(File.exists?(path))
           File.rm!(path)
-
-        {:error, error} ->
-          Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
       end
     end
   end

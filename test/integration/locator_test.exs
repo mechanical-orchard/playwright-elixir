@@ -95,7 +95,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.goto(assets.prefix <> "/input/button.html")
 
       Locator.dispatch_event(locator, :click)
-      assert {:ok, "Clicked"} = Page.evaluate(page, "result")
+      assert Page.evaluate(page, "result") == "Clicked"
     end
   end
 
@@ -119,7 +119,7 @@ defmodule Playwright.LocatorTest do
       inner = Locator.locator(outer, ".inner")
 
       {:ok, handle} = Locator.element_handle(inner)
-      assert {:ok, "A"} = Page.evaluate(page, "e => e.textContent", handle)
+      assert Page.evaluate(page, "e => e.textContent", handle) == "A"
     end
   end
 
@@ -194,7 +194,6 @@ defmodule Playwright.LocatorTest do
 
       Locator.evaluate(locator, "function (input) { return input.checked = false; }", handle)
 
-      # flaky
       {:ok, checked} = Locator.is_checked(locator)
       refute checked
     end
@@ -215,7 +214,7 @@ defmodule Playwright.LocatorTest do
       """)
 
       case Locator.evaluate(locator, "node => node.innerText") do
-        {:ok, "100"} ->
+        "100" ->
           assert true
 
         {:error, :timeout} ->
@@ -235,7 +234,7 @@ defmodule Playwright.LocatorTest do
         </html>
       """)
 
-      assert {:ok, 42} = Locator.evaluate(locator, "(node, number) => parseInt(node.innerText) - number", 58)
+      assert Locator.evaluate(locator, "(node, number) => parseInt(node.innerText) - number", 58) === 42
     end
 
     test "accepts `option: timeout` for expression evaluation", %{page: page} do
@@ -284,7 +283,7 @@ defmodule Playwright.LocatorTest do
         """)
 
       case Locator.evaluate(locator, "node => node.innerText") do
-        {:ok, "desired content"} ->
+        "desired content" ->
           assert true
 
         {:error, :timeout} ->
@@ -339,7 +338,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.goto(assets.prefix <> "/input/textarea.html")
 
       Locator.fill(locator, "some value")
-      assert {:ok, "some value"} = Page.evaluate(page, "result")
+      assert Page.evaluate(page, "result") == "some value"
     end
   end
 
@@ -382,9 +381,9 @@ defmodule Playwright.LocatorTest do
       button = Page.locator(page, "button")
       page |> Page.goto(assets.prefix <> "/input/button.html")
 
-      assert {:ok, false} = Locator.evaluate(button, "(button) => document.activeElement === button")
+      assert Locator.evaluate(button, "(button) => document.activeElement === button") === false
       Locator.focus(button)
-      assert {:ok, true} = Locator.evaluate(button, "(button) => document.activeElement === button")
+      assert Locator.evaluate(button, "(button) => document.activeElement === button") === true
     end
   end
 
@@ -405,7 +404,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.goto(assets.prefix <> "/input/scrollable.html")
 
       Locator.hover(locator)
-      assert {:ok, "button-6"} = Page.evaluate(page, "document.querySelector('button:hover').id")
+      assert Page.evaluate(page, "document.querySelector('button:hover').id") == "button-6"
     end
   end
 
@@ -451,7 +450,7 @@ defmodule Playwright.LocatorTest do
 
       assert {:ok, true} = Locator.is_checked(locator)
 
-      assert {:ok, false} = Locator.evaluate(locator, "input => input.checked = false")
+      assert Locator.evaluate(locator, "input => input.checked = false") === false
       assert {:ok, false} = Locator.is_checked(locator)
     end
   end
@@ -589,12 +588,12 @@ defmodule Playwright.LocatorTest do
         locator = Page.locator(page, "#btn#{i}")
         expression = "(btn) => btn.getBoundingClientRect().right - window.innerWidth"
 
-        initial = Locator.evaluate!(locator, expression)
+        initial = Locator.evaluate(locator, expression)
         assert initial == 10 * i
 
         Locator.scroll_into_view(locator)
 
-        updated = Locator.evaluate!(locator, expression)
+        updated = Locator.evaluate(locator, expression)
         assert updated <= 0
 
         Page.evaluate(page, "() => window.scrollTo(0, 0)")
@@ -608,8 +607,8 @@ defmodule Playwright.LocatorTest do
       page |> Page.goto(assets.prefix <> "/input/select.html")
 
       Locator.select_option(locator, "blue")
-      assert {:ok, ["blue"]} = Page.evaluate(page, "result.onChange")
-      assert {:ok, ["blue"]} = Page.evaluate(page, "result.onInput")
+      assert Page.evaluate(page, "result.onChange") == ["blue"]
+      assert Page.evaluate(page, "result.onInput") == ["blue"]
     end
   end
 
@@ -621,7 +620,7 @@ defmodule Playwright.LocatorTest do
       Locator.evaluate(locator, "(textarea) => textarea.value = 'some value'")
       Locator.select_text(locator)
 
-      assert "some value" = Page.evaluate!(page, "window.getSelection().toString()")
+      assert "some value" = Page.evaluate(page, "window.getSelection().toString()")
     end
   end
 
@@ -631,10 +630,10 @@ defmodule Playwright.LocatorTest do
       page |> Page.set_content("<input id='checkbox' type='checkbox'></input>")
 
       Locator.set_checked(locator, true)
-      assert {:ok, true} = Page.evaluate(page, "checkbox.checked")
+      assert Page.evaluate(page, "checkbox.checked") == true
 
       Locator.set_checked(locator, false)
-      assert {:ok, false} = Page.evaluate(page, "checkbox.checked")
+      assert Page.evaluate(page, "checkbox.checked") == false
     end
   end
 
@@ -645,19 +644,19 @@ defmodule Playwright.LocatorTest do
       page |> Page.goto(assets.prefix <> "/input/fileupload.html")
 
       Locator.set_input_files(locator, fixture)
-      assert {:ok, "file-to-upload.txt"} = Page.evaluate(page, "e => e.files[0].name", Locator.element_handle!(locator))
+      assert Page.evaluate(page, "e => e.files[0].name", Locator.element_handle!(locator)) == "file-to-upload.txt"
     end
   end
 
   describe "Locator.tap/1" do
     @tag exclude: [:page]
     test "registers 'click' events, when touch is enabled", %{browser: browser} do
-      {:ok, context} = Playwright.Browser.new_context(browser, %{has_touch: true})
-      {:ok, page} = Playwright.BrowserContext.new_page(context)
+      context = Playwright.Browser.new_context(browser, %{has_touch: true})
+      page = Playwright.BrowserContext.new_page(context)
 
       locator = Page.locator(page, "button")
       page |> Page.set_content("<button />")
-      page |> Page.evaluate("(btn) => btn.onclick = () => btn.textContent = 'clicked'", Page.q!(page, "button"))
+      page |> Page.evaluate("(btn) => btn.onclick = () => btn.textContent = 'clicked'", Page.q(page, "button"))
 
       Locator.tap(locator)
       assert {:ok, "clicked"} = Page.text_content(page, "button")

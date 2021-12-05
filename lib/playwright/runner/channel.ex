@@ -42,6 +42,14 @@ defmodule Playwright.Runner.Channel do
     Connection.post(connection, Channel.Command.new(owner.guid, method, params))
   end
 
+  def post!(owner, method, params \\ %{}) do
+    case post(owner, method, params) do
+      {:ok, %{id: _}} -> :ok
+      {:ok, resource} -> resource
+      {:error, error} -> {:error, error}
+    end
+  end
+
   # def send(%{connection: connection} = owner, method, params \\ %{})
   #     when is_atom(method) do
   #   Connection.post(connection, Channel.Command.new(owner.guid, method, params))
@@ -73,8 +81,7 @@ defmodule Playwright.Runner.Channel do
   end
 
   def patch(connection, guid, data) do
-    result = Connection.patch(connection, {:guid, guid}, data)
-    {:ok, result}
+    Connection.patch(connection, {:guid, guid}, data)
   end
 
   # private

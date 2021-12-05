@@ -478,11 +478,10 @@ defmodule Playwright.BrowserContext do
   @spec expose_binding(t(), String.t(), function(), options()) :: :ok
   def expose_binding(context, name, callback, options \\ %{}) do
     bindings = context.bindings
-    {:ok, _} = Channel.patch(context.connection, context.guid, %{bindings: Map.merge(bindings, %{name => callback})})
+    Channel.patch(context.connection, context.guid, %{bindings: Map.merge(bindings, %{name => callback})})
 
     params = Map.merge(%{name: name, needs_handle: false}, options)
-    {:ok, _} = Channel.post(context, :expose_binding, params)
-    :ok
+    Channel.post!(context, :expose_binding, params)
   end
 
   @spec expose_function(t(), String.t(), function()) :: :ok
@@ -523,25 +522,17 @@ defmodule Playwright.BrowserContext do
   as a side effect of `Playwright.Browser.new_page/1`), will raise an error
   because there should be a 1-to-1 mapping in that case.
   """
-  @spec new_page(t() | {:ok, t()}) :: {:ok, Page.t()}
+  @spec new_page(t()) :: Page.t()
   def new_page(context)
 
   def new_page(%BrowserContext{} = context) do
     case context.owner_page do
       nil ->
-        Channel.post(context, :new_page)
+        Channel.post!(context, :new_page)
 
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")
     end
-  end
-
-  def new_page({:ok, context}) do
-    new_page(context)
-  end
-
-  def new_page!(context) do
-    new_page(context) |> bang!
   end
 
   @doc """
@@ -589,7 +580,7 @@ defmodule Playwright.BrowserContext do
         Channel.post(context, :set_network_interception_enabled, %{enabled: true})
       end
 
-      {:ok, _} = Channel.patch(context.connection, context.guid, %{routes: [handler | routes]})
+      Channel.patch(context.connection, context.guid, %{routes: [handler | routes]})
       :ok
     end)
   end
@@ -637,7 +628,7 @@ defmodule Playwright.BrowserContext do
           handler.matcher.match != pattern || (callback && handler.callback != callback)
         end)
 
-      {:ok, _} = Channel.patch(context.connection, context.guid, %{routes: remaining})
+      Channel.patch(context.connection, context.guid, %{routes: remaining})
       :ok
     end)
   end
