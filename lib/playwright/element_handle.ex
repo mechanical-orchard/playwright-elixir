@@ -86,9 +86,9 @@ defmodule Playwright.ElementHandle do
   # API
   # ---------------------------------------------------------------------------
 
-  @spec bounding_box(ElementHandle.t()) :: {:ok, map() | nil}
+  @spec bounding_box(ElementHandle.t()) :: map() | nil
   def bounding_box(handle) do
-    Channel.post(handle, :bounding_box)
+    Channel.post!(handle, :bounding_box)
   end
 
   # ---

@@ -34,8 +34,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.set_viewport_size(%{width: 500, height: 500})
       page |> Page.goto(assets.prefix <> "/grid.html")
 
-      {:ok, bounds} = Locator.bounding_box(locator)
-      assert bounds == %{x: 100, y: 50, width: 50, height: 50}
+      assert Locator.bounding_box(locator) == %{x: 100, y: 50, width: 50, height: 50}
     end
   end
 

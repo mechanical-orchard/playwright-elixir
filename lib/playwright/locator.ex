@@ -162,8 +162,8 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, %{x: x, y: y, width: width, height: height}}`
-    - `{:ok, nil}`
+    - `%{x: x, y: y, width: width, height: height}`
+    - `nil`
 
   ## Arguments
 
@@ -171,7 +171,7 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   """
-  @spec bounding_box(t(), options()) :: {:ok, map() | nil}
+  @spec bounding_box(t(), options()) :: map() | nil
   def bounding_box(%Locator{} = locator, options \\ %{}) do
     with_element(locator, options, fn handle ->
       ElementHandle.bounding_box(handle)
