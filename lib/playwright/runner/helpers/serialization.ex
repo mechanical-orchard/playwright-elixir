@@ -2,10 +2,6 @@ defmodule Playwright.Runner.Helpers.Serialization do
   @moduledoc false
   import Playwright.Extra.Map
 
-  def deserialize({:ok, value}) when is_map(value) do
-    {:ok, deserialize(value)}
-  end
-
   def deserialize(value) when is_map(value) do
     case value do
       %{a: array} ->

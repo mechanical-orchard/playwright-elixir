@@ -12,7 +12,7 @@ defmodule Playwright.LocatorTest do
         Page.locator(page, "div")
         |> Locator.all_inner_texts()
 
-      assert {:ok, ["A", "B", "C"]} = texts
+      assert texts == ["A", "B", "C"]
     end
   end
 
@@ -24,7 +24,7 @@ defmodule Playwright.LocatorTest do
         Page.locator(page, "div")
         |> Locator.all_text_contents()
 
-      assert {:ok, ["A", "B", "C"]} = texts
+      assert texts == ["A", "B", "C"]
     end
   end
 
@@ -305,7 +305,7 @@ defmodule Playwright.LocatorTest do
         </div>
       """)
 
-      assert {:ok, ["one", "two"]} = Locator.evaluate_all(locator, "nodes => nodes.map(n => n.innerText)")
+      assert Locator.evaluate_all(locator, "nodes => nodes.map(n => n.innerText)") == ["one", "two"]
     end
 
     test "does not throw in case of a selector 'miss'", %{page: page} do
@@ -317,7 +317,7 @@ defmodule Playwright.LocatorTest do
         <div id="myId"></div>
       """)
 
-      assert {:ok, 0} = Locator.evaluate_all(locator, "nodes => nodes.length")
+      assert Locator.evaluate_all(locator, "nodes => nodes.length") == 0
     end
   end
 
@@ -353,26 +353,22 @@ defmodule Playwright.LocatorTest do
       </section>
       """)
 
-      assert {:ok, 6} =
-               Page.locator(page, "div >> p")
-               |> Locator.count()
+      assert Page.locator(page, "div >> p")
+             |> Locator.count() == 6
 
-      assert {:ok, 6} =
-               Page.locator(page, "div")
-               |> Locator.locator("p")
-               |> Locator.count()
+      assert Page.locator(page, "div")
+             |> Locator.locator("p")
+             |> Locator.count() == 6
 
-      assert {:ok, 1} =
-               Page.locator(page, "div")
-               |> Locator.first()
-               |> Locator.locator("p")
-               |> Locator.count()
+      assert Page.locator(page, "div")
+             |> Locator.first()
+             |> Locator.locator("p")
+             |> Locator.count() == 1
 
-      assert {:ok, 3} =
-               Page.locator(page, "div")
-               |> Locator.last()
-               |> Locator.locator("p")
-               |> Locator.count()
+      assert Page.locator(page, "div")
+             |> Locator.last()
+             |> Locator.locator("p")
+             |> Locator.count() == 3
     end
   end
 
@@ -393,8 +389,8 @@ defmodule Playwright.LocatorTest do
 
       Page.goto(page, assets.dom)
 
-      assert {:ok, "value"} = Locator.get_attribute(locator, "name")
-      assert {:ok, nil} = Locator.get_attribute(locator, "bogus")
+      assert Locator.get_attribute(locator, "name") == "value"
+      assert Locator.get_attribute(locator, "bogus") == nil
     end
   end
 
@@ -538,22 +534,19 @@ defmodule Playwright.LocatorTest do
       </section>
       """)
 
-      assert {:ok, 1} =
-               Page.locator(page, "div >> p")
-               |> Locator.nth(0)
-               |> Locator.count()
+      assert Page.locator(page, "div >> p")
+             |> Locator.nth(0)
+             |> Locator.count() == 1
 
-      assert {:ok, 2} =
-               Page.locator(page, "div")
-               |> Locator.nth(1)
-               |> Locator.locator("p")
-               |> Locator.count()
+      assert Page.locator(page, "div")
+             |> Locator.nth(1)
+             |> Locator.locator("p")
+             |> Locator.count() == 2
 
-      assert {:ok, 3} =
-               Page.locator(page, "div")
-               |> Locator.nth(2)
-               |> Locator.locator("p")
-               |> Locator.count()
+      assert Page.locator(page, "div")
+             |> Locator.nth(2)
+             |> Locator.locator("p")
+             |> Locator.count() == 3
     end
   end
 
@@ -659,7 +652,7 @@ defmodule Playwright.LocatorTest do
       page |> Page.evaluate("(btn) => btn.onclick = () => btn.textContent = 'clicked'", Page.q(page, "button"))
 
       Locator.tap(locator)
-      assert {:ok, "clicked"} = Page.text_content(page, "button")
+      assert Page.text_content(page, "button") == "clicked"
     end
   end
 

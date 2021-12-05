@@ -38,11 +38,6 @@ defmodule Playwright.JSHandle do
     nil
   end
 
-  @doc false
-  def as_element({:ok, handle}) do
-    as_element(handle)
-  end
-
   def evaluate(handle, expression, arg \\ nil) do
     params = %{
       expression: expression,
@@ -81,7 +76,7 @@ defmodule Playwright.JSHandle do
   | `expression`  | param  | `binary()` | Function to be evaluated in the page context. |
   | `arg`         | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   """
-  @spec evaluate_handle(t() | ElementHandle.t() | {:ok, t() | ElementHandle.t()}, binary(), any()) ::
+  @spec evaluate_handle(t() | ElementHandle.t(), binary(), any()) ::
           {:ok, t() | ElementHandle.t()}
   def evaluate_handle(handle, expression, arg \\ nil)
 
@@ -95,15 +90,7 @@ defmodule Playwright.JSHandle do
     Channel.post(handle, :evaluate_expression_handle, params)
   end
 
-  def evaluate_handle({:ok, handle}, expression, arg) do
-    evaluate_handle(handle, expression, arg)
-  end
-
   def string(%{} = handle) do
     handle.preview
-  end
-
-  def string({:ok, handle}) do
-    string(handle)
   end
 end

@@ -47,13 +47,9 @@ defmodule Playwright.Response do
 
   # ---
 
-  @spec ok(t() | {:ok, t()}) :: boolean()
+  @spec ok(t()) :: boolean()
   def ok(%Response{} = response) do
     response.status === 0 || (response.status >= 200 && response.status <= 299)
-  end
-
-  def ok({:ok, response}) do
-    ok(response)
   end
 
   # ---

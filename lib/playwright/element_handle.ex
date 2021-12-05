@@ -152,15 +152,11 @@ defmodule Playwright.ElementHandle do
   @doc """
   Returns the value of an element's attribute.
   """
-  @spec get_attribute(t() | {:ok, t()}, binary()) :: {:ok, binary() | nil}
+  @spec get_attribute(t(), binary()) :: {:ok, binary() | nil}
   def get_attribute(handle, name)
 
   def get_attribute(%ElementHandle{} = handle, name) do
     Channel.post(handle, :get_attribute, %{name: name})
-  end
-
-  def get_attribute({:ok, handle}, name) do
-    get_attribute(handle, name)
   end
 
   # ---
@@ -202,10 +198,6 @@ defmodule Playwright.ElementHandle do
     {:ok, result == true}
   end
 
-  def is_visible({:ok, handle}) do
-    is_visible(handle)
-  end
-
   # ---
 
   # @spec press(ElementHandle.t(), binary(), options()) :: :ok
@@ -221,15 +213,11 @@ defmodule Playwright.ElementHandle do
 
   If no elements match the selector, returns `nil`.
   """
-  @spec query_selector(t() | {:ok, t()}, binary()) :: {:ok, ElementHandle.t() | nil}
+  @spec query_selector(t(), binary()) :: ElementHandle.t() | nil
   def query_selector(handle, selector)
 
   def query_selector(%ElementHandle{} = handle, selector) do
-    handle |> Channel.post(:query_selector, %{selector: selector})
-  end
-
-  def query_selector({:ok, handle}, selector) do
-    query_selector(handle, selector)
+    handle |> Channel.post!(:query_selector, %{selector: selector})
   end
 
   defdelegate q(handle, selector), to: __MODULE__, as: :query_selector
@@ -294,15 +282,11 @@ defmodule Playwright.ElementHandle do
   @doc """
   Returns the `node.textContent` (all text within the element).
   """
-  @spec text_content(t() | {:ok, t()}) :: {:ok, binary() | nil}
+  @spec text_content(t()) :: binary() | nil
   def text_content(handle)
 
   def text_content(%ElementHandle{} = handle) do
-    handle |> Channel.post(:text_content)
-  end
-
-  def text_content({:ok, handle}) do
-    text_content(handle)
+    handle |> Channel.post!(:text_content)
   end
 
   # ---

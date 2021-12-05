@@ -76,115 +76,6 @@ defmodule Playwright.Page do
     {:ok, %{page | routes: []}}
   end
 
-  # delegates (should these be reworked as a Protocol?)
-  # ---------------------------------------------------------------------------
-
-  # defdelegate add_style_tag(page, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate check(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  defdelegate click(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  # defdelegate drag_and_drop(page, source, target, options \\ %{}),
-  #   to: Playwright.Frame
-
-  defdelegate evaluate_handle(page, expression, arg \\ nil),
-    to: Playwright.Frame
-
-  defdelegate expect_event(owner, event, trigger),
-    to: Playwright.BrowserContext
-
-  # defdelegate expect_navigation(owner, event, trigger),
-  #   to: Playwright.Frame
-  # ... also wait_for_navigation
-
-  defdelegate fill(page, selector, value),
-    to: Playwright.Frame
-
-  defdelegate get_attribute(page, selector, name, options \\ %{}),
-    to: Playwright.Frame
-
-  # defdelegate hover(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate inner_html(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate inner_text(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate input_value(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate is_checked(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate is_disabled(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate is_editable(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate is_enabled(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate is_hidden(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate is_visible(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate locator(page, selector),
-  #   to: Playwright.Frame
-
-  defdelegate press(page, selector, key, options \\ %{}),
-    to: Playwright.Frame
-
-  defdelegate qq(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  defdelegate query_selector_all(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  # defdelegate pause(page),
-  #   to: Playwright.BrowserContext
-
-  # defdelegate set_input_files(page, selector, files, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate tap(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  defdelegate text_content(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  defdelegate title(page),
-    to: Playwright.Frame
-
-  # defdelegate type(page, selector, text, options \\ %{}),
-  #   to: Playwright.Frame
-
-  # defdelegate uncheck(page, selector, options \\ %{}),
-  #   to: Playwright.Frame
-
-  defdelegate url(page),
-    to: Playwright.Frame
-
-  # defdelegate wait_for_function(page, expression, arg \\ nil, options \\ %{}),
-  #   to: Playwright.Frame
-
-  defdelegate wait_for_selector(page, selector, options \\ %{}),
-    to: Playwright.Frame
-
-  # defdelegate wait_for_timeout(page, timeout),
-  #   to: Playwright.Frame
-
-  # defdelegate wait_for_url(page, url, options \\ %{}),
-  #   to: Playwright.Frame
-
   # API
   # ---------------------------------------------------------------------------
 
@@ -247,6 +138,11 @@ defmodule Playwright.Page do
 
   # ---
 
+  @spec click(t(), binary(), options()) :: :ok
+  def click(%Page{} = page, selector, options \\ %{}) do
+    main_frame(page) |> Frame.click(selector, options)
+  end
+
   @doc """
   Closes the `Page`.
 
@@ -293,21 +189,17 @@ defmodule Playwright.Page do
   @doc """
   Get the full HTML contents of the page, including the doctype.
   """
-  @spec content(t() | {:ok, t()}) :: {:ok, binary()}
+  @spec content(t()) :: {:ok, binary()}
   def content(owner)
 
   def content(%Page{} = owner) do
     Channel.post(owner, :content)
   end
 
-  def content({:ok, owner}) do
-    content(owner)
-  end
-
   @doc """
   Get the `Playwright.BrowserContext` that the page belongs to.
   """
-  @spec context(t() | {:ok, t()}) :: BrowserContext.t()
+  @spec context(t()) :: BrowserContext.t()
   def context(owner)
 
   def context(%Page{} = owner) do
@@ -315,22 +207,14 @@ defmodule Playwright.Page do
     ctx
   end
 
-  def context({:ok, owner}) do
-    context(owner)
-  end
-
   @doc """
   A shortcut for the main frame's `Playwright.Frame.dblclick/3`.
   """
-  @spec dblclick(t() | {:ok, t()}, binary(), options()) :: :ok
+  @spec dblclick(t(), binary(), options()) :: :ok
   def dblclick(page, selector, options \\ %{})
 
   def dblclick(%Page{} = page, selector, options) do
     main_frame(page) |> Frame.dblclick(selector, options)
-  end
-
-  def dblclick({:ok, page}, selector, options) do
-    dblclick(page, selector, options)
   end
 
   @doc """
@@ -356,10 +240,6 @@ defmodule Playwright.Page do
     |> Frame.eval_on_selector(selector, expression, arg, options)
   end
 
-  def eval_on_selector({:ok, owner}, selector, expression, arg, options) do
-    eval_on_selector(owner, selector, expression, arg, options)
-  end
-
   @spec evaluate(t(), expression(), any()) :: serializable()
   def evaluate(page, expression, arg \\ nil)
 
@@ -367,11 +247,19 @@ defmodule Playwright.Page do
     main_frame(page) |> Frame.evaluate(expression, arg)
   end
 
-  # ---
+  @spec evaluate_handle(t(), expression(), any()) :: serializable()
+  def evaluate_handle(%Page{} = page, expression, arg \\ nil) do
+    main_frame(page) |> Frame.evaluate_handle(expression, arg)
+  end
 
-  # @spec expect_event(t(), atom() | binary(), function(), options()) :: :ok
-  # def expect_event(page, event, predicate \\ nil, options \\ %{})
-  # ...defdelegate wait_for_event
+  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: {:ok, Playwright.Runner.EventInfo.t()}
+  def expect_event(page, event, trigger, predicate \\ nil, options \\ %{})
+
+  def expect_event(%Page{} = page, event, trigger, predicate, options) do
+    context(page) |> BrowserContext.expect_event(event, trigger, predicate, options)
+  end
+
+  # ---
 
   # @spec expect_request(t(), binary() | function(), options()) :: :ok
   # def expect_request(page, url_or_predicate, options \\ %{})
@@ -388,6 +276,11 @@ defmodule Playwright.Page do
   # def expose_function(page, name, callback)
 
   # ---
+
+  @spec fill(t(), binary(), binary(), options()) :: :ok
+  def fill(%Page{} = page, selector, value, options \\ %{}) do
+    main_frame(page) |> Frame.fill(selector, value, options)
+  end
 
   @doc """
   A shortcut for the main frame's `Playwright.Frame.focus/3`.
@@ -417,6 +310,15 @@ defmodule Playwright.Page do
   # @spec frame_locator(t(), binary()) :: FrameLocator.t()
   # def frame_locator(page, selector)
 
+  # ---
+
+  @spec get_attribute(t(), binary(), binary(), map()) :: binary() | nil
+  def get_attribute(%Page{} = page, selector, name, options \\ %{}) do
+    main_frame(page) |> Frame.get_attribute(selector, name, options)
+  end
+
+  # ---
+
   # @spec go_back(t(), options()) :: {:ok, Response.t() | nil}
   # def go_back(page, options \\ %{})
 
@@ -425,15 +327,11 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec goto(t() | {:ok, t()}, binary(), options()) :: Response.t() | nil | {:error, term()}
+  @spec goto(t(), binary(), options()) :: Response.t() | nil | {:error, term()}
   def goto(owner, url, options \\ %{})
 
   def goto(%Page{} = page, url, options) do
     main_frame(page) |> Frame.goto(url, options)
-  end
-
-  def goto({:ok, page}, url, options) do
-    goto(page, url, options)
   end
 
   @doc """
@@ -467,10 +365,6 @@ defmodule Playwright.Page do
     Channel.bind(owner, event, callback)
   end
 
-  def on({:ok, owner}, event, callback) do
-    on(owner, event, callback)
-  end
-
   # ---
 
   # @spec opener(t()) :: {:ok, Page.t() | nil}
@@ -481,12 +375,24 @@ defmodule Playwright.Page do
 
   # ---
 
+  @spec press(t(), binary(), binary(), options()) :: :ok
+  def press(%Page{} = page, selector, key, options \\ %{}) do
+    main_frame(page) |> Frame.press(selector, key, options)
+  end
+
   @spec query_selector(t(), selector(), options()) :: ElementHandle.t() | nil | {:error, :timeout}
   def query_selector(%Page{} = page, selector, options \\ %{}) do
     main_frame(page) |> Frame.query_selector(selector, options)
   end
 
   defdelegate q(page, selector, options \\ %{}), to: __MODULE__, as: :query_selector
+
+  @spec query_selector_all(t(), binary(), map()) :: {atom(), [ElementHandle.t()]}
+  def query_selector_all(%Page{} = page, selector, options \\ %{}) do
+    main_frame(page) |> Frame.query_selector_all(selector, options)
+  end
+
+  defdelegate qq(page, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
 
   @doc """
   Reloads the current page.
@@ -554,10 +460,6 @@ defmodule Playwright.Page do
     end
   end
 
-  def screenshot({:ok, owner}, options) do
-    screenshot(owner, options)
-  end
-
   @doc """
   A shortcut for the main frame's `Playwright.Frame.select_option/4`.
   """
@@ -597,10 +499,29 @@ defmodule Playwright.Page do
     :ok
   end
 
+  @spec text_content(t(), binary(), map()) :: binary() | nil
+  def text_content(%Page{} = page, selector, options \\ %{}) do
+    main_frame(page) |> Frame.text_content(selector, options)
+  end
+
+  @spec title(t()) :: binary()
+  def title(%Page{} = page) do
+    main_frame(page) |> Frame.title()
+  end
+
   # ---
 
   # @spec unroute(t(), function()) :: :ok
   # def unroute(owner, handler \\ nil)
+
+  # ---
+
+  @spec url(t()) :: binary()
+  def url(%Page{} = page) do
+    main_frame(page) |> Frame.url()
+  end
+
+  # ---
 
   # @spec video(t()) :: Video.t() | nil
   # def video(owner, handler \\ nil)
@@ -631,6 +552,11 @@ defmodule Playwright.Page do
 
   def wait_for_load_state(%Page{} = owner, options, _) when is_map(options) do
     wait_for_load_state(owner, "load", options)
+  end
+
+  @spec wait_for_selector(t(), binary(), map()) :: {:ok, ElementHandle.t() | nil}
+  def wait_for_selector(%Page{} = page, selector, options \\ %{}) do
+    main_frame(page) |> Frame.wait_for_selector(selector, options)
   end
 
   # ---

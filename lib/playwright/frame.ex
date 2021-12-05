@@ -15,14 +15,8 @@ defmodule Playwright.Frame do
       the page.  A Frame can be detached from the page only once.
   """
   use Playwright.ChannelOwner
-  alias Playwright.{ChannelOwner, ElementHandle, Frame, Page, Response}
+  alias Playwright.{ChannelOwner, ElementHandle, Frame, Response}
   alias Playwright.Runner.{EventInfo, Helpers}
-
-  # temp/hack to get navigation_test passing. a better fix is to replace the
-  # current delegate+property approach.
-  def url(%Page{} = page) do
-    from(page) |> url()
-  end
 
   @property :load_states
   @property :url
@@ -94,12 +88,8 @@ defmodule Playwright.Frame do
   `option: timeout`, `/click/3` raises a `TimeoutError`. Passing zero for
   `option: timeout` disables this.
   """
-  @spec click(t() | Page.t() | {:ok, t() | Page.t()}, binary(), options()) :: :ok
+  @spec click(t(), binary(), options()) :: :ok
   def click(owner, selector, options \\ %{})
-
-  def click(%Page{} = page, selector, options) do
-    from(page) |> click(selector, options)
-  end
 
   def click(%Frame{} = frame, selector, options) do
     params =
@@ -114,10 +104,6 @@ defmodule Playwright.Frame do
 
     {:ok, _} = Channel.post(frame, :click, params)
     :ok
-  end
-
-  def click({:ok, owner}, selector, options) do
-    click(owner, selector, options)
   end
 
   # ---
@@ -285,7 +271,7 @@ defmodule Playwright.Frame do
   end
 
   def eval_on_selector_all(%Frame{} = frame, selector, expression, arg \\ nil) do
-    Channel.post(frame, :eval_on_selector_all, %{
+    Channel.post!(frame, :eval_on_selector_all, %{
       selector: selector,
       expression: expression,
       arg: Helpers.Serialization.serialize(arg)
@@ -313,23 +299,13 @@ defmodule Playwright.Frame do
   Returns the return value of `expression` as a `Playwright.JSHandle`.
   !!!
   """
-  @spec evaluate_handle(t() | Page.t() | {:ok, t() | Page.t()}, expression(), any()) :: {:ok, serializable()}
-  def evaluate_handle(owner, expression, arg \\ nil)
-
-  def evaluate_handle(%Frame{} = frame, expression, arg) do
-    Channel.post(frame, :evaluate_expression_handle, %{
+  @spec evaluate_handle(t(), expression(), any()) :: serializable()
+  def evaluate_handle(%Frame{} = frame, expression, arg \\ nil) do
+    Channel.post!(frame, :evaluate_expression_handle, %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
     })
-  end
-
-  def evaluate_handle(%Page{} = page, expression, arg) do
-    from(page) |> evaluate_handle(expression, arg)
-  end
-
-  def evaluate_handle({:ok, owner}, expression, arg) do
-    evaluate_handle(owner, expression, arg)
   end
 
   # ---
@@ -371,17 +347,10 @@ defmodule Playwright.Frame do
   | `:strict`        | option | `boolean()`                       | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec fill(t() | Page.t(), binary(), binary(), options()) :: :ok
-  def fill(frame, selector, value, options \\ %{})
-
-  def fill(%Frame{} = frame, selector, value, options) do
+  @spec fill(t(), binary(), binary(), options()) :: :ok
+  def fill(%Frame{} = frame, selector, value, options \\ %{}) do
     params = Map.merge(options, %{selector: selector, value: value})
-    {:ok, _} = Channel.post(frame, :fill, params)
-    :ok
-  end
-
-  def fill(%Page{} = page, selector, value, options) do
-    from(page) |> fill(selector, value, options)
+    Channel.post!(frame, :fill, params)
   end
 
   # ---
@@ -422,36 +391,26 @@ defmodule Playwright.Frame do
   Returns element attribute value.
   !!!
   """
-  @spec get_attribute(t() | Page.t() | {:ok, t() | Page.t()}, binary(), binary(), map()) :: {:ok, binary() | nil}
-  def get_attribute(owner, selector, name, options \\ %{})
-
-  def get_attribute(%Frame{} = frame, selector, name, options) do
+  @spec get_attribute(t(), binary(), binary(), map()) :: binary() | nil
+  def get_attribute(%Frame{} = frame, selector, name, options \\ %{}) do
     params =
       Map.merge(options, %{
         selector: selector,
         name: name
       })
 
-    Channel.post(frame, :get_attribute, params)
-  end
-
-  def get_attribute(%Page{} = page, selector, name, options) do
-    from(page) |> get_attribute(selector, name, options)
+    Channel.post!(frame, :get_attribute, params)
   end
 
   @doc """
   !!!
   """
-  @spec goto(t() | {:ok, t()}, binary(), options()) :: Response.t() | nil | {:error, term()}
+  @spec goto(t(), binary(), options()) :: Response.t() | nil | {:error, term()}
   def goto(frame, url, options \\ %{})
 
   def goto(%Frame{} = frame, url, options) do
     params = Map.merge(options, %{url: url})
     Channel.post!(frame, :goto, params)
-  end
-
-  def goto({:ok, frame}, url, params) do
-    goto(frame, url, params)
   end
 
   @doc """
@@ -612,16 +571,9 @@ defmodule Playwright.Frame do
   | `:strict`        | option | `boolean()`  | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
   | `:timeout`       | option | `number()`   | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec press(Frame.t() | Page.t(), binary(), binary(), options()) :: :ok
-  def press(owner, selector, key, options \\ %{})
-
-  def press(%Page{} = page, selector, key, options) do
-    from(page) |> press(selector, key, options)
-  end
-
-  def press(%Frame{} = frame, selector, key, options) do
-    {:ok, _} = Channel.post(frame, :press, Map.merge(%{selector: selector, key: key}, options))
-    :ok
+  @spec press(t(), binary(), binary(), options()) :: :ok
+  def press(%Frame{} = frame, selector, key, options \\ %{}) do
+    Channel.post!(frame, :press, Map.merge(%{selector: selector, key: key}, options))
   end
 
   @doc """
@@ -669,23 +621,13 @@ defmodule Playwright.Frame do
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to query for. See "working with selectors (guide)" for more details. |
   """
-  @spec query_selector_all(t() | Page.t() | {:ok, t() | Page.t()}, binary(), map()) :: {atom(), [ElementHandle.t()]}
-  def query_selector_all(owner, selector, options \\ %{})
-
-  def query_selector_all(%Page{} = page, selector, options) do
-    from(page) |> query_selector_all(selector, options)
-  end
-
-  def query_selector_all(%Frame{} = frame, selector, options) do
+  @spec query_selector_all(t(), binary(), map()) :: {atom(), [ElementHandle.t()]}
+  def query_selector_all(%Frame{} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
     Channel.post(frame, :query_selector_all, params)
   end
 
-  def query_selector_all({:ok, owner}, selector, options) do
-    query_selector_all(owner, selector, options)
-  end
-
-  defdelegate qq(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
+  defdelegate qq(frame, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
 
   @doc """
   Selects one or more options from a `<select>` element.
@@ -820,15 +762,9 @@ defmodule Playwright.Frame do
   | `:strict`  | option | `boolean()` | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
   | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec text_content(Frame.t() | Page.t(), binary(), map()) :: {:ok, binary() | nil}
-  def text_content(owner, selector, options \\ %{})
-
-  def text_content(%Frame{} = frame, selector, options) do
-    Channel.post(frame, :text_content, Map.merge(%{selector: selector}, options))
-  end
-
-  def text_content(%Page{} = page, selector, options) do
-    from(page) |> text_content(selector, options)
+  @spec text_content(t(), binary(), map()) :: binary() | nil
+  def text_content(%Frame{} = frame, selector, options \\ %{}) do
+    Channel.post!(frame, :text_content, Map.merge(%{selector: selector}, options))
   end
 
   @doc """
@@ -838,15 +774,9 @@ defmodule Playwright.Frame do
 
     - `{:ok, binary()}`
   """
-  @spec title(Frame.t() | Page.t()) :: {:ok, binary()}
-  def title(owner)
-
+  @spec title(t()) :: binary()
   def title(%Frame{} = frame) do
-    Channel.post(frame, :title)
-  end
-
-  def title(%Page{} = page) do
-    from(page) |> title()
+    Channel.post!(frame, :title)
   end
 
   @spec type(Frame.t(), binary(), binary(), options()) :: :ok
@@ -908,15 +838,11 @@ defmodule Playwright.Frame do
 
   Returns `nil` if waiting for a hidden or detached element.
   """
-  @spec wait_for_selector(Frame.t() | Page.t(), binary(), map()) :: {:ok, ElementHandle.t() | nil}
+  @spec wait_for_selector(t(), binary(), map()) :: {:ok, ElementHandle.t() | nil}
   def wait_for_selector(owner, selector, options \\ %{})
 
   def wait_for_selector(%Frame{} = frame, selector, options) do
     Channel.post(frame, :wait_for_selector, Map.merge(%{selector: selector}, options))
-  end
-
-  def wait_for_selector(%Page{} = page, selector, options) do
-    from(page) |> wait_for_selector(selector, options)
   end
 
   # ---
@@ -931,11 +857,6 @@ defmodule Playwright.Frame do
 
   # private
   # ---------------------------------------------------------------------------
-
-  defp from(%Page{} = page) do
-    {:ok, frame} = Channel.find(page, page.main_frame)
-    frame
-  end
 
   defp normalize_file_payloads(files) when is_binary(files) do
     normalize_file_payloads([files])

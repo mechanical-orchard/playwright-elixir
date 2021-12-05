@@ -286,10 +286,10 @@ defmodule Playwright.PageTest do
       assert inner_guid != nil
       assert outer_preview == "JSHandle@<div id=\"outer\" name=\"value\">…</div>"
       assert inner_preview == "JSHandle@<div id=\"inner\">Text,↵more text</div>"
-      assert ElementHandle.text_content(outer) == {:ok, "Text,\nmore text"}
+      assert ElementHandle.text_content(outer) == "Text,\nmore text"
 
       elements = Page.query_selector_all(page, "css=non-existent")
-      assert elements == {:ok, []}
+      assert elements == []
     end
 
     @tag without: [:page]
@@ -332,8 +332,8 @@ defmodule Playwright.PageTest do
     test ".get_attribute/3", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      assert page |> Page.get_attribute("div#outer", "name") == {:ok, "value"}
-      assert page |> Page.get_attribute("div#outer", "foo") == {:ok, nil}
+      assert page |> Page.get_attribute("div#outer", "name") == "value"
+      assert page |> Page.get_attribute("div#outer", "foo") == nil
 
       assert({:error, %Channel.Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 200}))
     end
@@ -352,14 +352,14 @@ defmodule Playwright.PageTest do
       page
       |> Page.set_content("<div id='content'>text</div>")
 
-      assert Page.text_content(page, "div#content") == {:ok, "text"}
+      assert Page.text_content(page, "div#content") == "text"
     end
 
     test ".text_content/2", %{assets: assets, page: page} do
       page
       |> Page.goto(assets.prefix <> "/dom.html")
 
-      assert Page.text_content(page, "div#inner") == {:ok, "Text,\nmore text"}
+      assert Page.text_content(page, "div#inner") == "Text,\nmore text"
     end
 
     test ".title/1", %{assets: assets, page: page} do
@@ -367,7 +367,7 @@ defmodule Playwright.PageTest do
       |> Page.goto(assets.prefix <> "/title.html")
 
       text = page |> Page.title()
-      assert text == {:ok, "Woof-Woof"}
+      assert text == "Woof-Woof"
     end
 
     test ".wait_for_selector/2", %{page: page} do
@@ -384,7 +384,7 @@ defmodule Playwright.PageTest do
       end)
 
       Page.wait_for_selector(page, "span.inner")
-      assert Page.text_content(page, "span.inner") == {:ok, "target"}
+      assert Page.text_content(page, "span.inner") == "target"
     end
 
     test ".wait_for_selector/3", %{page: page} do
@@ -401,7 +401,7 @@ defmodule Playwright.PageTest do
       end)
 
       Page.wait_for_selector(page, "span.inner", %{state: "attached"})
-      assert Page.text_content(page, "span.inner") == {:ok, "target"}
+      assert Page.text_content(page, "span.inner") == "target"
     end
   end
 end

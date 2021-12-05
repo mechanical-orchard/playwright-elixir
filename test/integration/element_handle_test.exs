@@ -73,8 +73,7 @@ defmodule Playwright.ElementHandleTest do
              |> Page.query_selector("html")
              |> ElementHandle.query_selector(".second")
              |> ElementHandle.query_selector(".inner")
-             |> ElementHandle.text_content() ==
-               {:ok, "A"}
+             |> ElementHandle.text_content() == "A"
     end
   end
 
@@ -83,7 +82,7 @@ defmodule Playwright.ElementHandleTest do
       Page.goto(page, assets.prefix <> "/dom.html")
 
       handle = Page.q(page, "css=#inner")
-      assert ElementHandle.text_content(handle) == {:ok, "Text,\nmore text"}
+      assert ElementHandle.text_content(handle) == "Text,\nmore text"
     end
   end
 

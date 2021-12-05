@@ -351,10 +351,6 @@ defmodule Playwright.BrowserContext do
     end
   end
 
-  def close({:ok, context}) do
-    close(context)
-  end
-
   @doc """
   Returns cookies for the `Playwright.BrowserContext`.
 
@@ -407,8 +403,7 @@ defmodule Playwright.BrowserContext do
   > - The "throw an error if the context closes..." is not yet implemented.
   > - The handling of :predicate is not yet implemented.
   """
-  @spec expect_event(t() | Page.t(), atom() | binary(), fun(), function_or_options(), map()) ::
-          {:ok, Playwright.Runner.EventInfo.t()}
+  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: {:ok, Playwright.Runner.EventInfo.t()}
   def expect_event(context, event, trigger, predicate \\ nil, options \\ %{})
 
   def expect_event(%BrowserContext{} = context, event, trigger, _predicate, _options)
@@ -420,14 +415,6 @@ defmodule Playwright.BrowserContext do
       when is_map(options) do
     expect_event(context, event, trigger, nil, options)
   end
-
-  def expect_event(%Page{} = context, event, trigger, predicate, options) do
-    Page.context(context) |> expect_event(event, trigger, predicate, options)
-  end
-
-  # def expect_event({:ok, context}, event, trigger, predicate, options) do
-  #   expect_event(context, event, trigger, predicate, options)
-  # end
 
   defdelegate wait_for_event(context, event, trigger, predicate \\ nil, options \\ %{}),
     to: __MODULE__,
@@ -456,7 +443,7 @@ defmodule Playwright.BrowserContext do
   > - The handling of `predicate` is not yet implemented.
   > - The handling of `timeout` is not yet implemented.
   """
-  @spec expect_page(t(), fun(), function_or_options(), map()) :: {:ok, Playwright.Runner.EventInfo.t()}
+  @spec expect_page(t(), fun(), function_or_options(), map()) :: Playwright.Runner.EventInfo.t()
   def expect_page(context, trigger, predicate \\ nil, options \\ %{})
 
   def expect_page(%BrowserContext{} = context, trigger, predicate, options)

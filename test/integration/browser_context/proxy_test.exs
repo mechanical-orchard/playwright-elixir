@@ -14,7 +14,7 @@ defmodule Playwright.BrowserContext.ProxyTest do
       response = Page.goto(page, "http://non-existent.com/dom.html")
 
       assert Response.ok(response)
-      assert {:ok, "Text,\nmore text"} = Page.text_content(page, "#inner")
+      assert Page.text_content(page, "#inner") == "Text,\nmore text"
     end
 
     # test_should_use_proxy_for_second_page

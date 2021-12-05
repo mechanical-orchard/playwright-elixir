@@ -16,17 +16,13 @@ defmodule Playwright.Route do
 
   # ---
 
-  @spec continue(t() | {:ok, t()}, options()) :: :ok
+  @spec continue(t(), options()) :: :ok
   def continue(route, options \\ %{})
 
   def continue(%Route{} = route, options) do
     params = Map.merge(options, %{intercept_response: false})
     {:ok, _} = Channel.post(route, :continue, params)
     :ok
-  end
-
-  def continue({:ok, route}, options) do
-    continue(route, options)
   end
 
   @spec fulfill(t(), options()) :: :ok
