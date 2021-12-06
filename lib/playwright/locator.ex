@@ -463,10 +463,8 @@ defmodule Playwright.Locator do
   | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   """
-  @spec evaluate_all(t(), binary(), any()) :: [serializable()]
-  def evaluate_all(locator, expression, arg \\ nil)
-
-  def evaluate_all(%Locator{} = locator, expression, arg) do
+  @spec evaluate_all(t(), binary(), any()) :: serializable()
+  def evaluate_all(%Locator{} = locator, expression, arg \\ nil) do
     Frame.eval_on_selector_all(locator.frame, locator.selector, expression, arg)
   end
 

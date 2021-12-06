@@ -86,6 +86,36 @@ defmodule Playwright.LocatorTest do
       locator = Locator.new(frame, "a#bogus")
       assert {:error, %Channel.Error{message: "Timeout 200ms exceeded."}} = Locator.click(locator, options)
     end
+
+    test "clicking a button", %{assets: assets, page: page} do
+      locator = Page.locator(page, "button")
+      page |> Page.goto(assets.prefix <> "/input/button.html")
+
+      Locator.click(locator, %{timeout: 200})
+      assert Page.evaluate(page, "window['result']") == "Clicked"
+    end
+  end
+
+  describe "Locator.dblclick" do
+    test "with a button", %{assets: assets, page: page} do
+      locator = Page.locator(page, "button")
+      page |> Page.goto(assets.prefix <> "/input/button.html")
+
+      page
+      |> Page.evaluate("""
+      () => {
+        window['double'] = false;
+        const button = document.querySelector('button');
+        button.addEventListener('dblclick', event => {
+          window['double'] = true;
+        });
+      }
+      """)
+
+      Locator.dblclick(locator, %{timeout: 200})
+      assert Page.evaluate(page, "window['double']") == true
+      assert Page.evaluate(page, "window['result']") == "Clicked"
+    end
   end
 
   describe "Locator.dispatch_event/4" do
