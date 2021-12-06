@@ -117,7 +117,7 @@ defmodule Playwright.MixProject do
         homepage: @source_url,
         source: @source_url
       },
-      files: ~w(assets/js lib priv LICENSE mix.exs package.json README.md)
+      files: ~w(lib priv LICENSE mix.exs package.json README.md)
     ]
   end
 
