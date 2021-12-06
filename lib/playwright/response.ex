@@ -17,12 +17,12 @@ defmodule Playwright.Response do
 
   # ---
 
-  # @spec all_headers(t()) :: {:ok, map()}
+  # @spec all_headers(t()) :: map()
   # def all_headers(response)
 
   # ---
 
-  @spec body(t() | {:ok, t()}) :: binary()
+  @spec body(t()) :: binary()
   def body(%Response{} = response) do
     Channel.post(response, :body)
     |> Base.decode64!()
@@ -33,16 +33,16 @@ defmodule Playwright.Response do
   # @spec finished(t()) :: :ok | {:error, SomeError.t()}
   # def finished(response)
 
-  # @spec header_value(t(), binary()) :: {:ok, binary() | nil}
+  # @spec header_value(t(), binary()) :: binary() | nil
   # def header_value(response, name)
 
-  # @spec header_values(t()) :: {:ok, [binary()]}
+  # @spec header_values(t()) :: [binary()]
   # def header_values(response)
 
-  # @spec headers_array(t()) :: {:ok, [map()]}
+  # @spec headers_array(t()) :: [map()]
   # def headers_array(response)
 
-  # @spec json(t()) :: {:ok, Serializable.t()}
+  # @spec json(t()) :: Serializable.t()
   # def json(response)
 
   # ---
@@ -54,10 +54,10 @@ defmodule Playwright.Response do
 
   # ---
 
-  # @spec security_details(t()) :: {:ok, map() | nil)}
+  # @spec security_details(t()) :: map() | nil)
   # def security_details(response)
 
-  # @spec server_addr(t()) :: {:ok, map() | nil)}
+  # @spec server_addr(t()) :: map() | nil)
   # def server_addr(response)
 
   # ---

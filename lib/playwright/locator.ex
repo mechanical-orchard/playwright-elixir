@@ -20,7 +20,7 @@ defmodule Playwright.Locator do
   component, `handle` is still pointing to that very DOM element. This can lead
   to unexpected behaviors.
 
-      {:ok, handle} = Page.query_selector(page, "text=Submit")
+      handle = Page.query_selector(page, "text=Submit")
       ElementHandle.hover(handle)
       ElementHandle.click(handle)
 
@@ -121,9 +121,9 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, [binary()]}`
+    - `[binary()]`
   """
-  @spec all_inner_texts(t()) :: {:ok, [binary()]}
+  @spec all_inner_texts(t()) :: [binary()]
   def all_inner_texts(%Locator{} = locator) do
     Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.innerText)")
   end
@@ -133,9 +133,9 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, [binary()]}`
+    - `[binary()]`
   """
-  @spec all_text_contents(t()) :: {:ok, [binary()]}
+  @spec all_text_contents(t()) :: [binary()]
   def all_text_contents(%Locator{} = locator) do
     Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.textContent || '')")
   end
@@ -259,9 +259,9 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, number()}`
+    - `number()`
   """
-  @spec count(t()) :: {:ok, term()}
+  @spec count(t()) :: number()
   def count(%Locator{} = locator) do
     evaluate_all(locator, "ee => ee.length")
   end
@@ -374,7 +374,7 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-  - `{:ok, Playwright.ElementHandle.t()}`
+  - `Playwright.ElementHandle.t()`
   - `{:error, Playwright.Runner.Channel.Error.t()}`
 
   ## Arguments
@@ -383,7 +383,7 @@ defmodule Playwright.Locator do
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec element_handle(t(), options()) :: {:ok, ElementHandle.t()} | {:error, Channel.Error.t()}
+  @spec element_handle(t(), options()) :: ElementHandle.t() | {:error, Channel.Error.t()}
   def element_handle(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(%{strict: true, state: "attached"}, options)
 
@@ -411,7 +411,7 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, Serializable.t()}`
+    - `Serializable.t()`
 
   ## Arguments
 
@@ -421,7 +421,7 @@ defmodule Playwright.Locator do
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   | `:timeout`   | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec evaluate(t(), binary(), ElementHandle.t() | nil, options()) :: serializable()
+  @spec evaluate(t(), binary(), any(), options()) :: serializable()
   def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
   # NOTE: need to do all of the map-like things before a plain `map()`,
@@ -454,7 +454,7 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, Serializable.t()}`
+    - `Serializable.t()`
 
   ## Arguments
 
@@ -463,7 +463,7 @@ defmodule Playwright.Locator do
   | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   """
-  @spec evaluate_all(t(), binary(), ElementHandle.t() | nil) :: {:ok, [serializable()]}
+  @spec evaluate_all(t(), binary(), any()) :: [serializable()]
   def evaluate_all(locator, expression, arg \\ nil)
 
   def evaluate_all(%Locator{} = locator, expression, arg) do
@@ -483,7 +483,7 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, Playwright.ElementHandle.t()}`
+    - `Playwright.ElementHandle.t()`
     - `{:error, Playwright.Runner.Channel.Error.t()}`
 
   ## Arguments
@@ -940,7 +940,7 @@ defmodule Playwright.Locator do
 
   ## Returns
 
-    - `{:ok, [binary()]}`
+    - `[binary()]`
 
   ## Arguments
 
@@ -965,7 +965,7 @@ defmodule Playwright.Locator do
   - `label <binary>` Matches by `option.label`. `(optional)`.
   - `index <number>` Matches by the index. `(optional)`.
   """
-  @spec select_option(t(), any(), options()) :: {:ok, [binary()]}
+  @spec select_option(t(), any(), options()) :: [binary()]
   def select_option(%Locator{} = locator, values, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.select_option(locator.frame, locator.selector, values, options)

@@ -5,7 +5,7 @@ defmodule Playwright.JSHandle do
 
   ## Example
 
-      {:ok, handle} = Page.evaluate_handle(page, "() => window")
+      handle = Page.evaluate_handle(page, "() => window")
 
   `JSHandle` prevents the referenced JavaScript object from being garbage
   collected unless the handle is disposed with `Playwright.JSHandle.dispose/1`.
@@ -67,7 +67,7 @@ defmodule Playwright.JSHandle do
 
   ## Returns
 
-    - `{:ok, %Playwright.JSHandle{}}`
+    - `Playwright.ElementHandle.t()`
 
   ## Arguments
 

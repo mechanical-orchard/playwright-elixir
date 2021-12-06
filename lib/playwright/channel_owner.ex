@@ -60,7 +60,7 @@ defmodule Playwright.ChannelOwner do
 
       ## Returns
 
-        - `{:ok, %{}}`
+        - `{:ok, struct()}`
 
       ## Arguments
 
@@ -98,8 +98,7 @@ defmodule Playwright.ChannelOwner do
       end
 
       defp with_latest(owner, task) do
-        {:ok, latest} = Channel.find(owner)
-        task.(latest)
+        Channel.find(owner) |> task.()
       end
     end
   end
@@ -152,15 +151,13 @@ defmodule Playwright.ChannelOwner do
             if Map.has_key?(owner, :is_closed) && owner.is_closed do
               owner
             else
-              {:ok, refreshed} = Channel.find(owner)
-              refreshed
+              Channel.find(owner)
             end
 
           property = Map.get(owner, unquote(arg))
 
           if is_map(property) && Map.has_key?(property, :guid) do
-            {:ok, result} = Channel.find(owner, property)
-            result
+            Channel.find(owner, property)
           else
             property
           end

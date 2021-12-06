@@ -521,7 +521,7 @@ defmodule Playwright.BrowserContext do
 
   ## Returns
 
-    - `{:ok, [Page.t()]}`
+    - `[Page.t()]`
   """
   @spec pages(t()) :: [Page.t()]
   def pages(%BrowserContext{} = context) do
@@ -552,7 +552,7 @@ defmodule Playwright.BrowserContext do
   # ---
 
   # ???
-  # @spec service_workers(t()) :: {:ok, [Playwright.Worker.t()]}
+  # @spec service_workers(t()) :: [Playwright.Worker.t()]
   # def service_workers(context)
 
   # test_navigation.py

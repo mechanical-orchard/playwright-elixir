@@ -8,13 +8,8 @@ defmodule Playwright.Runner.Transport.Driver do
   alias Playwright.Runner.Connection
   alias Playwright.Runner.Transport.DriverMessage
 
-  def start_link(arg) do
-    # Logger.warn("Driver.start_link with args: #{inspect(arg)}")
-    GenServer.start_link(__MODULE__, arg)
-  end
-
   def start_link!({_connection, _config} = arg) do
-    {:ok, pid} = start_link(arg)
+    {:ok, pid} = GenServer.start_link(__MODULE__, arg)
     pid
   end
 

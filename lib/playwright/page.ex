@@ -11,10 +11,9 @@ defmodule Playwright.Page do
   Create a page, navigate it to a URL, and save a screenshot:
 
       page = Browser.new_page(browser)
-      resp =  = Page.goto(page, "https://example.com")
+      resp = Page.goto(page, "https://example.com")
 
-      {:ok _} = Page.screenshot(page, %{path: "screenshot.png"})
-
+      Page.screenshot(page, %{path: "screenshot.png"})
       :ok = Page.close(page)
 
   The Page module is capable of hanlding various emitted events (described below).
@@ -171,7 +170,7 @@ defmodule Playwright.Page do
   > dialog might be summoned and should be handled manually via
   > `Playwright.Page.on/3`.
   """
-  @spec close(t() | {:ok, t()}, options()) :: :ok
+  @spec close(t(), options()) :: :ok
   def close(owner, options \\ %{})
 
   def close(%Page{} = owner, options) do
@@ -201,8 +200,7 @@ defmodule Playwright.Page do
   def context(owner)
 
   def context(%Page{} = owner) do
-    {:ok, ctx} = Channel.find(owner, owner.parent)
-    ctx
+    Channel.find(owner, owner.parent)
   end
 
   @doc """
@@ -315,10 +313,10 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec go_back(t(), options()) :: {:ok, Response.t() | nil}
+  # @spec go_back(t(), options()) :: Response.t() | nil
   # def go_back(page, options \\ %{})
 
-  # @spec go_forward(t(), options()) :: {:ok, Response.t() | nil}
+  # @spec go_forward(t(), options()) :: Response.t() | nil
   # def go_forward(page, options \\ %{})
 
   # ---
@@ -363,10 +361,10 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec opener(t()) :: {:ok, Page.t() | nil}
+  # @spec opener(t()) :: Page.t() | nil
   # def opener(page)
 
-  # @spec pdf(t(), options()) :: {:ok, binary()}
+  # @spec pdf(t(), options()) :: binary()
   # def pdf(page, options \\ %{})
 
   # ---
@@ -400,7 +398,7 @@ defmodule Playwright.Page do
 
   ## Returns
 
-    - `{:ok, Playwright.Response.t() | nil}`
+    - `Playwright.Response.t() | nil`
 
   ## Arguments
 
@@ -457,7 +455,7 @@ defmodule Playwright.Page do
   @doc """
   A shortcut for the main frame's `Playwright.Frame.select_option/4`.
   """
-  @spec select_option(t(), binary(), any(), options()) :: {:ok, [binary()]}
+  @spec select_option(t(), binary(), any(), options()) :: [binary()]
   def select_option(%Page{} = page, selector, values \\ nil, options \\ %{}) do
     main_frame(page) |> Frame.select_option(selector, values, options)
   end

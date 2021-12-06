@@ -14,12 +14,8 @@ defmodule Playwright.Runner.Transport.WebSocket do
     :gun_stream_ref
   ])
 
-  def start_link({_connection, _ws_endpoint} = arg) do
-    GenServer.start_link(__MODULE__, arg)
-  end
-
   def start_link!(arg) do
-    {:ok, pid} = start_link(arg)
+    {:ok, pid} = GenServer.start_link(__MODULE__, arg)
     pid
   end
 

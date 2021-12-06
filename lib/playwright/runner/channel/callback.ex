@@ -64,8 +64,7 @@ defmodule Playwright.Runner.Channel.Callback do
       case handle.preview do
         "JSHandle@node" ->
           :timer.sleep(5)
-          {:ok, handle} = Channel.find(handle)
-          await_preview(handle, timeout)
+          Channel.find(handle) |> await_preview(timeout)
 
         _hydrated ->
           {:ok, handle}

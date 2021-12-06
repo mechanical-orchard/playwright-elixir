@@ -34,7 +34,7 @@ defmodule Playwright.CDPSession do
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(t(), event(), function()) :: {:ok, CDPSession.t()}
+  @spec on(t(), event(), function()) :: CDPSession.t()
   def on(%CDPSession{bindings: bindings} = session, event, callback) do
     scoped = Map.get(bindings, event, [])
     bindings = Map.put(bindings, event, [callback | scoped])

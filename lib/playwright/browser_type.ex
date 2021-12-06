@@ -79,7 +79,7 @@ defmodule Playwright.BrowserType do
 
   # ---
 
-  # @spec connect_over_cdp(BrowserType.t(), url(), options()) :: {:ok, Playwright.Browser.t()}
+  # @spec connect_over_cdp(BrowserType.t(), url(), options()) :: Playwright.Browser.t()
   # def connect_over_cdp(browser_type, endpoint_url, options \\ %{})
 
   # @spec executable_path(BrowserType.t()) :: String.t()
@@ -150,10 +150,10 @@ defmodule Playwright.BrowserType do
 
   # ---
 
-  # @spec launch_persistent_context(BrowserType.t(), String.t(), options()) :: {:ok, Playwright.BrowserContext.t()}
+  # @spec launch_persistent_context(BrowserType.t(), String.t(), options()) :: Playwright.BrowserContext.t()
   # def launch_persistent_context(browser_type, user_data_dir, options \\ %{})
 
-  # @spec launch_server(BrowserType.t(), options()) :: {:ok, Playwright.BrowserServer.t()}
+  # @spec launch_server(BrowserType.t(), options()) :: Playwright.BrowserServer.t()
   # def launch_server(browser_type, options \\ %{})
 
   # @spec name(BrowserType.t()) :: client()

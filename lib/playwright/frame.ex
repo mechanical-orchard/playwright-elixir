@@ -56,10 +56,10 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec add_script_tag(Frame.t(), options()) :: {:ok, ElementHandle.t()}
+  # @spec add_script_tag(Frame.t(), options()) :: ElementHandle.t()
   # def add_script_tag(frame, options \\ %{})
 
-  # @spec add_style_tag(Frame.t(), options()) :: {:ok, ElementHandle.t()}
+  # @spec add_style_tag(Frame.t(), options()) :: ElementHandle.t()
   # def add_style_tag(frame, options \\ %{})
 
   # ---
@@ -72,7 +72,7 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec child_frames(Frame.t()) :: {:ok, [Frame.t()]}
+  # @spec child_frames(Frame.t()) :: [Frame.t()]
   # def child_frames(frame)
 
   # ---
@@ -114,7 +114,7 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec content(Frame.t()) :: {:ok, binary()}
+  # @spec content(Frame.t()) :: binary()
   # def content(frame)
 
   # ---
@@ -316,7 +316,7 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec expect_navigation(Frame.t(), function(), options()) :: {:ok, Playwright.Response.t() | nil}
+  # @spec expect_navigation(Frame.t(), function(), options()) :: Playwright.Response.t() | nil
   # def expect_navigation(frame, trigger, options \\ %{})
 
   # ---
@@ -384,10 +384,10 @@ defmodule Playwright.Frame do
     Channel.post(frame, :focus, params)
   end
 
-  # @spec frame_element(Frame.t()) :: {:ok, ElementHandle.t()}
+  # @spec frame_element(Frame.t()) :: ElementHandle.t()
   # def frame_element(frame)
 
-  # @spec frame_locator(Frame.t(), binary()) :: {:ok, Locator.t()}
+  # @spec frame_locator(Frame.t(), binary()) :: FrameLocator.t()
   # def frame_locator(frame, selector)
 
   # ---
@@ -664,7 +664,7 @@ defmodule Playwright.Frame do
 
   ## Returns
 
-    - `{:ok, [binary()]}`
+    - `[binary()]`
 
   ## Arguments
 
@@ -753,7 +753,7 @@ defmodule Playwright.Frame do
 
   ## Returns
 
-    - `{:ok, binary() | nil}`
+    - `binary() | nil`
 
   ## Arguments
 
@@ -773,7 +773,7 @@ defmodule Playwright.Frame do
 
   ## Returns
 
-    - `{:ok, binary()}`
+    - `binary()`
   """
   @spec title(t()) :: binary()
   def title(%Frame{} = frame) do
@@ -794,7 +794,7 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec wait_for_function(Frame.t(), expression(), any(), options()) :: {:ok, JSHandle.t()}
+  # @spec wait_for_function(Frame.t(), expression(), any(), options()) :: JSHandle.t()
   # def wait_for_function(frame, expression, arg \\ nil, options \\ %{})
 
   # ---

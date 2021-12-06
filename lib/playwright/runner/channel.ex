@@ -16,14 +16,14 @@ defmodule Playwright.Runner.Channel do
     owner
   end
 
-  @spec find(struct()) :: {:ok, struct()}
+  @spec find(struct()) :: struct()
   def find(%{connection: _} = owner) do
-    {:ok, item(owner)}
+    item(owner)
   end
 
-  @spec find(struct(), struct()) :: {:ok, struct()}
+  @spec find(struct(), struct()) :: struct()
   def find(%{connection: _} = proxy, %{guid: _} = owner) do
-    {:ok, item(proxy, owner)}
+    item(proxy, owner)
   end
 
   # @spec on(struct(), atom(), function()) :: struct()

@@ -62,15 +62,15 @@ defmodule Playwright.Browser do
 
   ## Example
 
-      {:ok, contexts} = Browser.contexts(browser)
+      contexts = Browser.contexts(browser)
       asset Enum.empty?(contexts)
 
       Browser.new_context(browser)
 
-      {:ok, contexts} = Browser.contexts(browser)
+      contexts = Browser.contexts(browser)
       assert length(contexts) == 1
   """
-  @spec contexts(t()) :: {:ok, [BrowserContext.t()]}
+  @spec contexts(t()) :: [BrowserContext.t()]
   def contexts(%Browser{} = browser) do
     Channel.all(browser.connection, %{
       parent: browser,
@@ -83,7 +83,7 @@ defmodule Playwright.Browser do
   # @spec is_connected(BrowserContext.t()) :: boolean()
   # def is_connected(browser)
 
-  # @spec new_browser_cdp_session(BrowserContext.t()) :: {:ok, Playwright.CDPSession.t()}
+  # @spec new_browser_cdp_session(BrowserContext.t()) :: Playwright.CDPSession.t()
   # def new_browser_cdp_session(browser)
 
   # ---
@@ -106,7 +106,7 @@ defmodule Playwright.Browser do
 
   ## Returns
 
-    - `{:ok, Playwright.BrowserContext.t()}`
+    - `Playwright.BrowserContext.t()`
 
   ## Arguments
 
@@ -150,7 +150,7 @@ defmodule Playwright.Browser do
   # ---
 
   # test_browsertype_connect.py
-  # @spec on(t(), event(), function()) :: {:ok, Browser.t()}
+  # @spec on(t(), event(), function()) :: Browser.t()
   # def on(browser, event, callback)
 
   # test_chromium_tracing.py
@@ -158,7 +158,7 @@ defmodule Playwright.Browser do
   # def start_tracing(browser, page \\ nil, options \\ %{})
 
   # test_chromium_tracing.py
-  # @spec stop_tracing(t()) :: {:ok, binary()}
+  # @spec stop_tracing(t()) :: binary()
   # def stop_tracing(browser)
 
   # ---

@@ -12,7 +12,7 @@ defmodule Playwright.ElementHandle do
 
   ## Example
 
-      {:ok, handle} = Page.q(page, "a")
+      handle = Page.q(page, "a")
       :ok = ElementHandle.click(handle)
 
   `ElementHandle` prevents DOM elements from garbage collection unless the
@@ -38,7 +38,7 @@ defmodule Playwright.ElementHandle do
   entirely different component, `handle` still points to that very DOM element.
   This can lead to unexpected behaviors.
 
-      {:ok, handle} = Page.q("text=Submit")
+      handle = Page.q("text=Submit")
       ElementHandle.hover(handle)
       ElementHandle.click(handle)
 
@@ -46,7 +46,7 @@ defmodule Playwright.ElementHandle do
   up-to-date DOM element is located in the page using the selector. So, in the
   snippet below, the underlying DOM element is going to be located twice.
 
-      {:ok, locator} = Page.locator("text=Submit")
+      locator = Page.locator("text=Submit")
       Locator.hover(locator)
       Locator.click(locator)
 
@@ -121,7 +121,7 @@ defmodule Playwright.ElementHandle do
   this function raises a `TimeoutError`. Passing zero (`0`) for timeout
   disables this.
   """
-  @spec click(t() | {:ok, t()}, options()) :: :ok
+  @spec click(t(), options()) :: :ok
   def click(%ElementHandle{} = handle, options \\ %{}) do
     Channel.post(handle, :click, options)
   end
@@ -164,13 +164,13 @@ defmodule Playwright.ElementHandle do
   # @spec hover(ElementHandle.t(), options()) :: :ok
   # def hover(handle, options \\ %{})
 
-  # @spec inner_html(ElementHandle.t()) :: {:ok, binary() | nil}
+  # @spec inner_html(ElementHandle.t()) :: binary() | nil
   # def inner_html(handle)
 
-  # @spec inner_text(ElementHandle.t()) :: {:ok, binary() | nil}
+  # @spec inner_text(ElementHandle.t()) :: binary() | nil
   # def inner_text(handle)
 
-  # @spec input_value(ElementHandle.t(), options()) :: {:ok, binary()}
+  # @spec input_value(ElementHandle.t(), options()) :: binary()
   # def input_value(handle, options)
 
   # @spec is_checked(ElementHandle.t()) :: boolean()
@@ -190,7 +190,7 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
-  @spec is_visible(t() | {:ok, t()}) :: boolean()
+  @spec is_visible(t()) :: boolean()
   def is_visible(%ElementHandle{} = handle) do
     Channel.post(handle, :is_visible)
   end
@@ -221,7 +221,7 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
-  # @spec query_selector_all(ElementHandle.t(), binary()) :: {:ok, [ElementHandle.t()]}
+  # @spec query_selector_all(ElementHandle.t(), binary()) :: [ElementHandle.t()]
   # def query_selector_all(handle, selector)
   # defdelegate qq(handle, selector), to: __MODULE__, as: :query_selector_all
 
@@ -251,7 +251,7 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
-  # @spec select_option(ElementHandle.t(), selection(), options()) :: {:ok, [binary()]}
+  # @spec select_option(ElementHandle.t(), selection(), options()) :: [binary()]
   # def select_option(handle, values, options \\ %{})
 
   # ---
@@ -295,7 +295,7 @@ defmodule Playwright.ElementHandle do
   # @spec wait_for_element_state(ElementHandle.t(), state(), options()) :: :ok
   # def wait_for_element_state(handle, state, options \\ %{})
 
-  # @spec wait_for_selector(ElementHandle.t(), binary(), options()) :: {:ok, ElementHandle.t() | nil}
+  # @spec wait_for_selector(ElementHandle.t(), binary(), options()) :: ElementHandle.t() | nil
   # def wait_for_selector(handle, selector, options \\ %{})
 
   # ---

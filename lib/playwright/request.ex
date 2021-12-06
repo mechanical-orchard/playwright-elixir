@@ -43,19 +43,19 @@ defmodule Playwright.Request do
 
   # ---
 
-  # @spec all_headers(Request.t()) :: {:ok, map()}
+  # @spec all_headers(Request.t()) :: map()
   # def all_headers(request)
 
-  # @spec header_value(Request.t(), binary()) :: {:ok, binary() | nil}
+  # @spec header_value(Request.t(), binary()) :: binary() | nil
   # def header_value(request, name)
 
-  # @spec headers_array(Request.t()) :: {:ok, [map()]}
+  # @spec headers_array(Request.t()) :: [map()]
   # def headers_array(request)
 
-  # @spec response(Request.t()) :: {:ok, Response.t() | nil}
+  # @spec response(Request.t()) :: Response.t() | nil
   # def response(request)
 
-  # @spec sizes(Request.t()) :: {:ok, map()}
+  # @spec sizes(Request.t()) :: map()
   # def sizes(request)
 
   # ---
