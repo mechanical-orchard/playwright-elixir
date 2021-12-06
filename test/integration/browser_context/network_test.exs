@@ -15,7 +15,7 @@ defmodule Playwright.BrowserContext.NetworkTest do
       end)
 
       page |> Page.goto(assets.prefix <> "/empty.html")
-      page |> Page.set_content("<a target=_blank rel=noopener href='/one-style.html'>yo</a>")
+      page |> Page.set_content("<a target=_blank rel=noopener href='/assets/one-style.html'>yo</a>")
 
       BrowserContext.expect_event(context, "page", fn ->
         page |> Page.click("a")

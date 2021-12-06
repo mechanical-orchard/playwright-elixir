@@ -29,7 +29,7 @@ defmodule Playwright.BrowserContext.CookiesTest do
                  expires: -1,
                  httpOnly: false,
                  name: "username",
-                 path: "/",
+                 path: "/assets",
                  sameSite: "Lax",
                  secure: false,
                  value: "Jane"

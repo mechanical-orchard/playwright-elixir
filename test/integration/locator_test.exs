@@ -647,7 +647,7 @@ defmodule Playwright.LocatorTest do
 
   describe "Locator.set_input_files/3" do
     test "file upload", %{assets: assets, page: page} do
-      fixture = "test/support/assets_server/assets/file-to-upload.txt"
+      fixture = "test/support/fixtures/file-to-upload.txt"
       locator = Page.locator(page, "input[type=file]")
       page |> Page.goto(assets.prefix <> "/input/fileupload.html")
 

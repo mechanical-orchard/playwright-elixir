@@ -10,8 +10,9 @@ defmodule Playwright.AddInitScriptTest do
       assert Page.evaluate(page, "window.result") == 123
     end
 
-    test "providing `param: script` as a file path", %{assets: assets, page: page} do
-      :ok = Page.add_init_script(page, %{path: assets.path <> "/injectedfile.js"})
+    test "providing `param: script` as a file path", %{page: page} do
+      fixture = "test/support/fixtures/injectedfile.js"
+      :ok = Page.add_init_script(page, %{path: fixture})
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
       assert Page.evaluate(page, "window.result") == 123
@@ -41,11 +42,12 @@ defmodule Playwright.AddInitScriptTest do
     end
 
     @tag exclude: [:page]
-    test "providing `param: script` as a file path", %{assets: assets, browser: browser} do
+    test "providing `param: script` as a file path", %{browser: browser} do
       context = Browser.new_context(browser)
+      fixture = "test/support/fixtures/injectedfile.js"
       page = BrowserContext.new_page(context)
 
-      :ok = BrowserContext.add_init_script(context, %{path: assets.path <> "/injectedfile.js"})
+      :ok = BrowserContext.add_init_script(context, %{path: fixture})
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
       assert Page.evaluate(page, "window.result") == 123

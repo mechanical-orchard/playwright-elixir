@@ -60,18 +60,21 @@ defmodule Playwright.TestCase do
   setup %{transport: transport} do
     prefix =
       case transport do
-        :driver -> "http://localhost:3002"
-        :websocket -> "http://playwright-assets:3002"
+        :driver -> "http://localhost:4002"
+        :websocket -> "http://playwright-assets:4002"
       end
+
+    assets = prefix <> "/assets"
+    extras = prefix <> "/extras"
 
     [
       assets: %{
+        prefix: assets,
+        extras: extras,
         blank: "about:blank",
-        dom: prefix <> "/dom.html",
-        extras: prefix <> "/extras",
-        path: Path.expand("assets_server/assets", __DIR__),
-        prefix: prefix,
-        empty: prefix <> "/empty.html"
+        dom: assets <> "/dom.html",
+        # path: Path.expand("assets_server/assets", __DIR__),
+        empty: assets <> "/empty.html"
       }
     ]
   end

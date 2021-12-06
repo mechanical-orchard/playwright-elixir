@@ -13,7 +13,6 @@ jobs:
     env:
       MIX_ENV: test
       PLAYWRIGHT_TRANSPORT: driver
-      PLAYWRIGHT_RUN_ASSET_SERVER: true
     steps:
     - uses: actions/checkout@v2
     - name: Set up Elixir
