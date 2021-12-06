@@ -4,7 +4,7 @@ defmodule Playwright.Runner.Channel do
   alias Playwright.Runner.{Channel, Connection, EventInfo}
   require Logger
 
-  # def bind...      (instead of on)
+  # def bind...
   # def find/item... (???)
   # def post...      (call)
   # def send...      (cast)
@@ -16,6 +16,8 @@ defmodule Playwright.Runner.Channel do
     owner
   end
 
+  # -----------------
+
   @spec find(struct()) :: struct()
   def find(%{connection: _} = owner) do
     item(owner)
@@ -24,17 +26,6 @@ defmodule Playwright.Runner.Channel do
   @spec find(struct(), struct()) :: struct()
   def find(%{connection: _} = proxy, %{guid: _} = owner) do
     item(proxy, owner)
-  end
-
-  # @spec on(struct(), atom(), function()) :: struct()
-  def on(%{} = owner, event, callback)
-      when is_atom(event)
-      when is_function(callback) do
-    Connection.on(owner.connection, {event, owner}, callback)
-  end
-
-  def on(connection, {event, owner}, handler) do
-    Connection.on(connection, {event, owner}, handler)
   end
 
   def post(%{connection: connection} = owner, method, params \\ %{}) do
