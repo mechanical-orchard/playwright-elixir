@@ -6,12 +6,10 @@ defmodule Playwright.CLI do
   require Logger
 
   def install_browsers do
+    Logger.info("Installing playwright browsers")
     cli_path = Application.get_env(:playwright, LaunchOptions)[:playwright_cli_path]
-    {output_lines, 0} = System.cmd(cli_path, ["install"])
-
-    output_lines
-    |> String.split("\n")
-    |> Enum.reject(&(&1 == ""))
-    |> Enum.map(&Logger.info(inspect(&1)))
+    {result, exit_status} = System.cmd(cli_path, ["install"])
+    Logger.info(result)
+    if exit_status != 0, do: raise("Failed to install playwright browsers")
   end
 end
