@@ -100,5 +100,15 @@ defmodule Playwright.Runner.Transport.DriverMessageTest do
                buffer: "a partial"
              }
     end
+
+    test "when contents include special unicode characters" do
+      frame = "elipsis: …" <> <<13, 0, 0, 0>> <> "carriage: ↵"
+
+      assert DriverMessage.parse(frame, 12, "", []) == %{
+               frames: ["elipsis: …", "carriage: ↵"],
+               remaining: 0,
+               buffer: ""
+             }
+    end
   end
 end

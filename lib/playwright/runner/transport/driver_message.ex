@@ -59,7 +59,7 @@ defmodule Playwright.Runner.Transport.DriverMessage do
 
   def parse(<<data::binary>>, read_length, buffer, accumulated)
       when byte_size(data) > read_length do
-    {message, tail} = String.split_at(data, read_length)
+    {message, tail} = bytewise_split(data, read_length)
     parse(tail, 0, "", accumulated ++ [buffer <> message])
   end
 
@@ -70,5 +70,15 @@ defmodule Playwright.Runner.Transport.DriverMessage do
       frames: accumulated,
       remaining: read_length - byte_size(data)
     }
+  end
+
+  # private
+  # ---------------------------------------------------------------------------
+
+  # `String.split_at/2` does not account for length with unicode characters,
+  # so...
+  defp bytewise_split(input, offset) do
+    <<head::size(offset)-binary, tail::binary>> = input
+    {head, tail}
   end
 end
