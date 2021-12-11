@@ -168,7 +168,7 @@ defmodule Playwright.BrowserType do
     Channel.post(browser_type, :launch, Config.launch_options(true))
   end
 
-  defp chromium(connection) do
+  def chromium(connection) do
     playwright = Channel.get(connection, {:guid, "Playwright"})
 
     case playwright do

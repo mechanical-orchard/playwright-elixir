@@ -58,6 +58,7 @@ defmodule Playwright.MixProject do
       {:playwright_assets, "~> 1.17", only: [:dev, :test]},
       {:plug_cowboy, "~> 2.5", only: [:dev, :test]},
       {:plug, "~> 1.12", only: [:dev, :test]},
+      {:poolboy, "~> 1.5"},
       {:recase, "~> 0.7"},
       {:uuid, "~> 1.1"}
     ]
