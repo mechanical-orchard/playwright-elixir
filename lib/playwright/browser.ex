@@ -48,13 +48,32 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
-  # ---
+  @doc """
+  Closes the browser.
 
-  # test_launcher.py
-  # @spec close(t()) :: :ok
-  # def close(browser)
+  Given a `Playwright.Browser` obtained from `Playwright.BrowserType.launch/2`,
+  closes the `Browser` and all of its `Pages` (if any were opened).
 
-  # ---
+  Given a `Playwright.Browser` obtained via `Playwright.BrowserType.connect/2`,
+  clears all created `Contexts` belonging to this `Browser` and disconnects
+  from the browser server.
+
+  The Browser object itself is considered to be disposed and cannot be used anymore.
+
+  ## Returns
+
+    - `:ok`
+
+  """
+  def close(browser) do
+    case Channel.post(browser, :close) do
+      :ok ->
+        :ok
+
+      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
+        :ok
+    end
+  end
 
   @doc """
   Returns an array of all open browser contexts. In a newly created browser,
