@@ -228,7 +228,7 @@ defmodule Playwright.Runner.Config do
         :downloads_path,
         :executable_path,
         :headless,
-        playwright_cli_path: "#{__DIR__}/../../../assets/node_modules/playwright/cli.js"
+        :playwright_cli_path
       ]
     end
 
