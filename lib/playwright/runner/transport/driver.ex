@@ -22,7 +22,7 @@ defmodule Playwright.Runner.Transport.Driver do
 
   @impl GenServer
   def init({connection, config}) do
-    cli = Map.get(config, :playwright_cli_path, "#{__DIR__}/../../../../assets/node_modules/playwright/cli.js")
+    cli = Map.get(config, :playwright_cli_path, Path.join(:code.priv_dir(:playwright), "static/playwright_cli.js"))
     cmd = "run-driver"
 
     port = Port.open({:spawn, "#{cli} #{cmd}"}, [:binary, :exit_status])
