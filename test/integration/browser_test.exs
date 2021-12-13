@@ -2,6 +2,14 @@ defmodule Playwright.BrowserTest do
   use Playwright.TestCase
   alias Playwright.{Browser, BrowserContext, Page}
 
+  describe "Browser.close/1" do
+    @tag exclude: [:page]
+    test "is callable twice", %{browser: browser} do
+      assert :ok = Browser.close(browser)
+      assert :ok = Browser.close(browser)
+    end
+  end
+
   describe "Browser.new_page/1" do
     @tag exclude: [:page]
     test "builds a new Page, incl. context", %{browser: browser} do

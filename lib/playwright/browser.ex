@@ -48,13 +48,18 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
-  # ---
+  @doc """
+  Closes the browser. Careful as all pages and contexts are closed and now invalid.
+  """
+  def close(browser) do
+    case Channel.post(browser, :close) do
+      :ok ->
+        :ok
 
-  # test_launcher.py
-  # @spec close(t()) :: :ok
-  # def close(browser)
-
-  # ---
+      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
+        :ok
+    end
+  end
 
   @doc """
   Returns an array of all open browser contexts. In a newly created browser,
@@ -145,13 +150,6 @@ defmodule Playwright.Browser do
     # establish co-dependency
     Channel.patch(connection, context.guid, %{owner_page: page})
     Channel.patch(connection, page.guid, %{owned_context: context})
-  end
-
-  @doc """
-  Closes the browser. Careful as all pages and contexts are closed and now invalid.
-  """
-  def close(browser) do
-    Channel.post(browser, :close, %{})
   end
 
   # ---
