@@ -147,6 +147,13 @@ defmodule Playwright.Browser do
     Channel.patch(connection, page.guid, %{owned_context: context})
   end
 
+  @doc """
+  Closes the browser. Careful as all pages and contexts are closed and now invalid.
+  """
+  def close(browser) do
+    Channel.post(browser, :close, %{})
+  end
+
   # ---
 
   # test_browsertype_connect.py
