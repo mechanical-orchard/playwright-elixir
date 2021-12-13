@@ -49,7 +49,21 @@ defmodule Playwright.Browser do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Closes the browser. Careful as all pages and contexts are closed and now invalid.
+  Closes the browser.
+
+  Given a `Playwright.Browser` obtained from `Playwright.BrowserType.launch/2`,
+  closes the `Browser` and all of its `Pages` (if any were opened).
+
+  Given a `Playwright.Browser` obtained via `Playwright.BrowserType.connect/2`,
+  clears all created `Contexts` belonging to this `Browser` and disconnects
+  from the browser server.
+
+  The Browser object itself is considered to be disposed and cannot be used anymore.
+
+  ## Returns
+
+    - `:ok`
+
   """
   def close(browser) do
     case Channel.post(browser, :close) do
