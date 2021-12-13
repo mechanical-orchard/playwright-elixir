@@ -55,7 +55,7 @@ defmodule PlaywrightTest.Case do
         Application.put_env(:playwright, LaunchOptions, launch_options)
         {:ok, _} = Application.ensure_all_started(:playwright)
 
-        {connection, browser} = setup_browser(runner_options)
+        {connection, browser} = setup_browser(runner_options.transport)
         [browser: browser, connection: connection, transport: runner_options.transport]
       end
 
@@ -79,8 +79,8 @@ defmodule PlaywrightTest.Case do
 
       # ---
 
-      defp setup_browser(runner_options) do
-        case runner_options.transport do
+      defp setup_browser(transport) do
+        case transport do
           :driver ->
             options = Config.launch_options()
             Playwright.BrowserType.launch(options)

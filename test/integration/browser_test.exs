@@ -4,9 +4,10 @@ defmodule Playwright.BrowserTest do
 
   describe "Browser.close/1" do
     @tag exclude: [:page]
-    test "is callable twice", %{browser: browser} do
-      assert :ok = Browser.close(browser)
-      assert :ok = Browser.close(browser)
+    test "is callable twice", %{transport: transport} do
+      {_session, inline_browser} = setup_browser(transport)
+      assert :ok = Browser.close(inline_browser)
+      assert :ok = Browser.close(inline_browser)
     end
   end
 
