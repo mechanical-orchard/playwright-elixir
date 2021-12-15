@@ -1,5 +1,5 @@
 defmodule Playwright.Chromium.CDPSessionTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, CDPSession, Page}
 
   describe "BrowserContext.new_cdp_session/1" do

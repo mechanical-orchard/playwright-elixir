@@ -15,8 +15,8 @@ defmodule Playwright.Frame do
       the page.  A Frame can be detached from the page only once.
   """
   use Playwright.ChannelOwner
-  alias Playwright.{ChannelOwner, ElementHandle, Frame, Response}
-  alias Playwright.Runner.{EventInfo, Helpers}
+  alias Playwright.{ChannelOwner, ElementHandle, Frame, Helpers, Response}
+  alias Playwright.Channel.Event
 
   @property :load_states
   @property :url
@@ -31,8 +31,8 @@ defmodule Playwright.Frame do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(frame, _initializer) do
-    Channel.bind(frame, :loadstate, fn %{params: params} = event ->
+  def init(%Frame{session: session} = frame, _initializer) do
+    Channel.bind(session, {:guid, frame.guid}, :loadstate, fn %{params: params} = event ->
       target = event.target
 
       case params do
@@ -44,7 +44,7 @@ defmodule Playwright.Frame do
       end
     end)
 
-    Channel.bind(frame, :navigated, fn event ->
+    Channel.bind(session, {:guid, frame.guid}, :navigated, fn event ->
       {:patch, %{event.target | url: event.params.url}}
     end)
 
@@ -65,9 +65,9 @@ defmodule Playwright.Frame do
   # ---
 
   @spec check(t(), binary(), options()) :: :ok
-  def check(frame, selector, options \\ %{}) do
+  def check(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :check, params)
+    Channel.post(session, {:guid, frame.guid}, :check, params)
   end
 
   # ---
@@ -98,7 +98,7 @@ defmodule Playwright.Frame do
   @spec click(t(), binary(), options()) :: :ok
   def click(owner, selector, options \\ %{})
 
-  def click(%Frame{} = frame, selector, options) do
+  def click(%Frame{session: session} = frame, selector, options) do
     params =
       Map.merge(
         %{
@@ -109,7 +109,7 @@ defmodule Playwright.Frame do
         options
       )
 
-    Channel.post(frame, :click, params)
+    Channel.post(session, {:guid, frame.guid}, :click, params)
   end
 
   # ---
@@ -150,7 +150,7 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name       | type   |                                   | description |
+  | key/name       | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
@@ -164,7 +164,7 @@ defmodule Playwright.Frame do
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
   @spec dblclick(Frame.t(), binary(), options()) :: :ok
-  def dblclick(frame, selector, options \\ %{}) do
+  def dblclick(%Frame{session: session} = frame, selector, options \\ %{}) do
     params =
       Map.merge(
         %{
@@ -173,7 +173,7 @@ defmodule Playwright.Frame do
         options
       )
 
-    Channel.post(frame, :dblclick, params)
+    Channel.post(session, {:guid, frame.guid}, :dblclick, params)
   end
 
   @doc """
@@ -217,7 +217,7 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name       | type   |                         | description |
+  | key/name       | type   |                         | description |
   | ---------------- | ------ | ----------------------- | ----------- |
   | `selector`       | param  | `binary()`              | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `type`           | param  | `atom()` or `binary()`  | DOM event type: `:click`, `:dragstart`, etc. |
@@ -233,7 +233,7 @@ defmodule Playwright.Frame do
     dispatch_event(frame, selector, type, nil, options)
   end
 
-  def dispatch_event(%Frame{} = frame, selector, type, event_init, options) do
+  def dispatch_event(%Frame{session: session} = frame, selector, type, event_init, options) do
     params =
       Map.merge(options, %{
         selector: selector,
@@ -241,7 +241,7 @@ defmodule Playwright.Frame do
         event_init: Helpers.Serialization.serialize(event_init)
       })
 
-    Channel.post(frame, :dispatch_event, params)
+    Channel.post(session, {:guid, frame.guid}, :dispatch_event, params)
   end
 
   # ---
@@ -265,9 +265,9 @@ defmodule Playwright.Frame do
   @spec eval_on_selector(Frame.t(), binary(), binary(), term(), map()) :: term()
   def eval_on_selector(frame, selector, expression, arg \\ nil, options \\ %{})
 
-  def eval_on_selector(%Frame{} = frame, selector, expression, arg, _options) do
+  def eval_on_selector(%Frame{session: session} = frame, selector, expression, arg, _options) do
     parse_result(fn ->
-      Channel.post(frame, :eval_on_selector, %{
+      Channel.post(session, {:guid, frame.guid}, :eval_on_selector, %{
         selector: selector,
         expression: expression,
         arg: serialize(arg)
@@ -275,9 +275,9 @@ defmodule Playwright.Frame do
     end)
   end
 
-  def eval_on_selector_all(%Frame{} = frame, selector, expression, arg \\ nil) do
+  def eval_on_selector_all(%Frame{session: session} = frame, selector, expression, arg \\ nil) do
     parse_result(fn ->
-      Channel.post(frame, :eval_on_selector_all, %{
+      Channel.post(session, {:guid, frame.guid}, :eval_on_selector_all, %{
         selector: selector,
         expression: expression,
         arg: Helpers.Serialization.serialize(arg)
@@ -292,9 +292,9 @@ defmodule Playwright.Frame do
   @spec evaluate(t(), expression(), any()) :: :ok
   def evaluate(owner, expression, arg \\ nil)
 
-  def evaluate(%Frame{} = frame, expression, arg) do
+  def evaluate(%Frame{session: session} = frame, expression, arg) do
     parse_result(fn ->
-      Channel.post(frame, :evaluate_expression, %{
+      Channel.post(session, {:guid, frame.guid}, :evaluate_expression, %{
         expression: expression,
         arg: serialize(arg)
       })
@@ -306,8 +306,8 @@ defmodule Playwright.Frame do
   !!!
   """
   @spec evaluate_handle(t(), expression(), any()) :: serializable()
-  def evaluate_handle(%Frame{} = frame, expression, arg \\ nil) do
-    Channel.post(frame, :evaluate_expression_handle, %{
+  def evaluate_handle(%Frame{session: session} = frame, expression, arg \\ nil) do
+    Channel.post(session, {:guid, frame.guid}, :evaluate_expression_handle, %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
@@ -344,7 +344,7 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name       | type   |                                   | description |
+  | key/name       | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `value`          | param  | `binary()`                        | Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element |
@@ -354,9 +354,9 @@ defmodule Playwright.Frame do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @spec fill(t(), binary(), binary(), options()) :: :ok
-  def fill(%Frame{} = frame, selector, value, options \\ %{}) do
+  def fill(%Frame{session: session} = frame, selector, value, options \\ %{}) do
     params = Map.merge(options, %{selector: selector, value: value})
-    Channel.post(frame, :fill, params)
+    Channel.post(session, {:guid, frame.guid}, :fill, params)
   end
 
   # ---
@@ -372,16 +372,16 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name | type   |             | description |
+  | key/name | type   |             | description |
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:strict`  | option | `boolean()` | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
   | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @spec focus(t(), binary(), options()) :: :ok
-  def focus(%Frame{} = frame, selector, options \\ %{}) do
+  def focus(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(options, %{selector: selector})
-    Channel.post(frame, :focus, params)
+    Channel.post(session, {:guid, frame.guid}, :focus, params)
   end
 
   # @spec frame_element(Frame.t()) :: ElementHandle.t()
@@ -397,14 +397,14 @@ defmodule Playwright.Frame do
   !!!
   """
   @spec get_attribute(t(), binary(), binary(), map()) :: binary() | nil
-  def get_attribute(%Frame{} = frame, selector, name, options \\ %{}) do
+  def get_attribute(%Frame{session: session} = frame, selector, name, options \\ %{}) do
     params =
       Map.merge(options, %{
         selector: selector,
         name: name
       })
 
-    Channel.post(frame, :get_attribute, params)
+    Channel.post(session, {:guid, frame.guid}, :get_attribute, params)
   end
 
   @doc """
@@ -413,9 +413,9 @@ defmodule Playwright.Frame do
   @spec goto(t(), binary(), options()) :: Response.t() | nil | {:error, term()}
   def goto(frame, url, options \\ %{})
 
-  def goto(%Frame{} = frame, url, options) do
+  def goto(%Frame{session: session} = frame, url, options) do
     params = Map.merge(options, %{url: url})
-    Channel.post(frame, :goto, params)
+    Channel.post(session, {:guid, frame.guid}, :goto, params)
   end
 
   @doc """
@@ -443,7 +443,7 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name       | type   |                                   | description |
+  | key/name       | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
@@ -455,66 +455,66 @@ defmodule Playwright.Frame do
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
   @spec hover(Frame.t(), binary(), options()) :: :ok
-  def hover(frame, selector, options \\ %{}) do
+  def hover(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :hover, params)
+    Channel.post(session, {:guid, frame.guid}, :hover, params)
   end
 
   @spec inner_html(Frame.t(), binary(), options()) :: binary()
-  def inner_html(frame, selector, options \\ %{}) do
+  def inner_html(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, "innerHTML", params)
+    Channel.post(session, {:guid, frame.guid}, "innerHTML", params)
   end
 
   @spec inner_text(Frame.t(), binary(), options()) :: binary()
-  def inner_text(frame, selector, options \\ %{}) do
+  def inner_text(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :inner_text, params)
+    Channel.post(session, {:guid, frame.guid}, :inner_text, params)
   end
 
   @spec input_value(Frame.t(), binary(), options()) :: binary()
-  def input_value(frame, selector, options \\ %{}) do
+  def input_value(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :input_value, params)
+    Channel.post(session, {:guid, frame.guid}, :input_value, params)
   end
 
   @spec is_checked(Frame.t(), binary(), options()) :: boolean()
-  def is_checked(frame, selector, options \\ %{}) do
+  def is_checked(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :is_checked, params)
+    Channel.post(session, {:guid, frame.guid}, :is_checked, params)
   end
 
   # # @spec is_detached(Frame.t(), binary(), options()) :: boolean()
   # # def is_detached(frame, selector, options \\ %{})
 
   @spec is_disabled(Frame.t(), binary(), options()) :: boolean()
-  def is_disabled(frame, selector, options \\ %{}) do
+  def is_disabled(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :is_disabled, params)
+    Channel.post(session, {:guid, frame.guid}, :is_disabled, params)
   end
 
   @spec is_editable(Frame.t(), binary(), options()) :: boolean()
-  def is_editable(frame, selector, options \\ %{}) do
+  def is_editable(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :is_editable, params)
+    Channel.post(session, {:guid, frame.guid}, :is_editable, params)
   end
 
   @spec is_enabled(Frame.t(), binary(), options()) :: boolean()
-  def is_enabled(frame, selector, options \\ %{}) do
+  def is_enabled(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :is_enabled, params)
+    Channel.post(session, {:guid, frame.guid}, :is_enabled, params)
   end
 
   @spec is_hidden(Frame.t(), binary(), options()) :: boolean()
-  def is_hidden(frame, selector, options \\ %{}) do
+  def is_hidden(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :is_hidden, params)
+    Channel.post(session, {:guid, frame.guid}, :is_hidden, params)
   end
 
   @spec is_visible(Frame.t(), binary(), options()) :: boolean()
-  def is_visible(frame, selector, options \\ %{}) do
+  def is_visible(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :is_visible, params)
+    Channel.post(session, {:guid, frame.guid}, :is_visible, params)
   end
 
   # ---
@@ -566,7 +566,7 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name       | type   |              | description |
+  | key/name       | type   |              | description |
   | ---------------- | ------ | ------------ | ----------- |
   | `selector`       | param  | `binary()`   | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `key`            | param  | `binary()`   | Name of the key to press or a character to generate, such as `ArrowLeft` or `a`. |
@@ -576,8 +576,8 @@ defmodule Playwright.Frame do
   | `:timeout`       | option | `number()`   | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @spec press(t(), binary(), binary(), options()) :: :ok
-  def press(%Frame{} = frame, selector, key, options \\ %{}) do
-    Channel.post(frame, :press, Map.merge(%{selector: selector, key: key}, options))
+  def press(%Frame{session: session} = frame, selector, key, options \\ %{}) do
+    Channel.post(session, {:guid, frame.guid}, :press, Map.merge(%{selector: selector, key: key}, options))
   end
 
   @doc """
@@ -594,15 +594,15 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name | type   |             | description |
+  | key/name | type   |             | description |
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to query for. See "working with selectors (guide)" for more details. |
   | `strict`   | option | `boolean()` | When true, the call requires `selector` to resolve to a single element. If the given `selector` resolves to more then one element, the call raises an error. |
   """
   @spec query_selector(t(), binary(), map()) :: ElementHandle.t() | nil | {:error, :timeout}
-  def query_selector(%Frame{} = frame, selector, options \\ %{}) do
+  def query_selector(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :query_selector, params)
+    Channel.post(session, {:guid, frame.guid}, :query_selector, params)
   end
 
   defdelegate q(owner, selector, options \\ %{}), to: __MODULE__, as: :query_selector
@@ -621,14 +621,14 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name | type   |             | description |
+  | key/name | type   |             | description |
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to query for. See "working with selectors (guide)" for more details. |
   """
   @spec query_selector_all(t(), binary(), map()) :: [ElementHandle.t()]
-  def query_selector_all(%Frame{} = frame, selector, options \\ %{}) do
+  def query_selector_all(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :query_selector_all, params)
+    Channel.post(session, {:guid, frame.guid}, :query_selector_all, params)
   end
 
   defdelegate qq(frame, selector, options \\ %{}), to: __MODULE__, as: :query_selector_all
@@ -668,7 +668,7 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name       | type   |                 | description |
+  | key/name       | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `selector`       | param  | `binary()`      | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `values`         | param  | `any()`         | Options to select. |
@@ -692,9 +692,9 @@ defmodule Playwright.Frame do
   - `index <number>` Matches by the index. `(optional)`.
   """
   @spec select_option(Frame.t(), binary(), any(), options()) :: [binary()]
-  def select_option(%Frame{} = frame, selector, values, options \\ %{}) do
+  def select_option(%Frame{session: session} = frame, selector, values, options \\ %{}) do
     params = Map.merge(options, Map.merge(select_option_values(values), %{selector: selector}))
-    Channel.post(frame, :select_option, params)
+    Channel.post(session, {:guid, frame.guid}, :select_option, params)
   end
 
   # ---
@@ -711,26 +711,26 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name | type   |             | description |
+  | key/name | type   |             | description |
   | ---------- | ------ | ----------- | ----------- |
   | `html`     | param  | `binary()`  | HTML markup to assign to the page. |
   | `:timeout` | option | `number()`  | Maximum operation time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_navigation_timeout/2`, `Playwright.BrowserContext.set_default_timeout/2`, `Playwright.Page.set_default_navigation_timeout/2` or `Playwright.Page.set_default_timeout/` functions. `(default: 30 seconds)` |
   """
   @spec set_content(t(), binary(), options()) :: :ok
-  def set_content(%Frame{} = frame, html, options \\ %{}) do
+  def set_content(%Frame{session: session} = frame, html, options \\ %{}) do
     params = Map.merge(%{html: html, timeout: 30_000, wait_until: "load"}, options)
-    Channel.post(frame, :set_content, params)
+    Channel.post(session, {:guid, frame.guid}, :set_content, params)
   end
 
   @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
-  def set_input_files(frame, selector, files, options \\ %{}) do
+  def set_input_files(%Frame{session: session} = frame, selector, files, options \\ %{}) do
     params =
       Map.merge(options, %{
         selector: selector,
         files: normalize_file_payloads(files)
       })
 
-    Channel.post(frame, :set_input_files, params)
+    Channel.post(session, {:guid, frame.guid}, :set_input_files, params)
   end
 
   # when it's a `FilePayload`...
@@ -743,9 +743,9 @@ defmodule Playwright.Frame do
   # end
 
   @spec tap(Frame.t(), binary(), options()) :: :ok
-  def tap(%Frame{} = frame, selector, options \\ %{}) do
+  def tap(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(options, %{selector: selector})
-    Channel.post(frame, :tap, params)
+    Channel.post(session, {:guid, frame.guid}, :tap, params)
   end
 
   @doc """
@@ -757,15 +757,15 @@ defmodule Playwright.Frame do
 
   ## Arguments
 
-  | key / name | type   |             | description |
+  | key/name | type   |             | description |
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:strict`  | option | `boolean()` | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
   | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @spec text_content(t(), binary(), map()) :: binary() | nil
-  def text_content(%Frame{} = frame, selector, options \\ %{}) do
-    Channel.post(frame, :text_content, Map.merge(%{selector: selector}, options))
+  def text_content(%Frame{session: session} = frame, selector, options \\ %{}) do
+    Channel.post(session, {:guid, frame.guid}, :text_content, Map.merge(%{selector: selector}, options))
   end
 
   @doc """
@@ -776,20 +776,20 @@ defmodule Playwright.Frame do
     - `binary()`
   """
   @spec title(t()) :: binary()
-  def title(%Frame{} = frame) do
-    Channel.post(frame, :title)
+  def title(%Frame{session: session} = frame) do
+    Channel.post(session, {:guid, frame.guid}, :title)
   end
 
   @spec type(Frame.t(), binary(), binary(), options()) :: :ok
-  def type(%Frame{} = frame, selector, text, options \\ %{}) do
+  def type(%Frame{session: session} = frame, selector, text, options \\ %{}) do
     params = Map.merge(%{selector: selector, text: text}, options)
-    Channel.post(frame, :type, params)
+    Channel.post(session, {:guid, frame.guid}, :type, params)
   end
 
   @spec uncheck(t(), binary(), options()) :: :ok
-  def uncheck(frame, selector, options \\ %{}) do
+  def uncheck(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(frame, :uncheck, params)
+    Channel.post(session, {:guid, frame.guid}, :uncheck, params)
   end
 
   # ---
@@ -810,24 +810,25 @@ defmodule Playwright.Frame do
   @spec wait_for_load_state(Frame.t(), binary(), options()) :: Frame.t()
   def wait_for_load_state(frame, state \\ "load", options \\ %{})
 
-  def wait_for_load_state(%Frame{} = frame, state, _options)
+  def wait_for_load_state(%Frame{session: session} = frame, state, _options)
       when is_binary(state)
       when state in ["load", "domcontentloaded", "networkidle", "commit"] do
     if Enum.member?(frame.load_states, state) do
       frame
     else
-      e = Channel.wait_for(frame, :loadstate)
+      # e = Channel.wait_for(frame, :loadstate)
+      {:ok, e} = Channel.wait(session, {:guid, frame.guid}, :loadstate)
       e.target
     end
   end
 
-  def wait_for_load_state(%Frame{} = frame, state, options) when is_binary(state) do
-    wait_for_load_state(frame, state, options)
-  end
+  # def wait_for_load_state(%Frame{} = frame, state, options) when is_binary(state) do
+  #   wait_for_load_state(frame, state, options)
+  # end
 
-  def wait_for_load_state(%Frame{} = frame, options, _) when is_map(options) do
-    wait_for_load_state(frame, "load", options)
-  end
+  # def wait_for_load_state(%Frame{} = frame, options, _) when is_map(options) do
+  #   wait_for_load_state(frame, "load", options)
+  # end
 
   # ---
 
@@ -842,8 +843,8 @@ defmodule Playwright.Frame do
   Returns `nil` if waiting for a hidden or detached element.
   """
   @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | nil
-  def wait_for_selector(%Frame{} = frame, selector, options \\ %{}) do
-    Channel.post(frame, :wait_for_selector, Map.merge(%{selector: selector}, options))
+  def wait_for_selector(%Frame{session: session} = frame, selector, options \\ %{}) do
+    Channel.post(session, {:guid, frame.guid}, :wait_for_selector, Map.merge(%{selector: selector}, options))
   end
 
   # ---

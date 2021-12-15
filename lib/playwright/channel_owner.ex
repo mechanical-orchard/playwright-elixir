@@ -12,9 +12,10 @@ defmodule Playwright.ChannelOwner do
       @derive {Inspect, only: [:guid] ++ @properties}
 
       import Playwright.Extra.Map
-      alias Playwright.Runner.{Channel, EventInfo}
+      alias Playwright.Channel
+      alias Playwright.Channel.Event
 
-      defstruct @properties ++ [:connection, :guid, :initializer, :listeners, :parent, :type]
+      defstruct @properties ++ [:session, :guid, :initializer, :listeners, :parent, :type]
 
       @typedoc """
       %#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}{}
@@ -25,7 +26,7 @@ defmodule Playwright.ChannelOwner do
       @spec new(struct(), map()) :: {term(), struct()}
       def new(parent, %{guid: guid, type: type, initializer: initializer} = args) do
         base = %__MODULE__{
-          connection: parent.connection,
+          session: parent.session,
           guid: guid,
           initializer: initializer,
           listeners: %{},
@@ -50,8 +51,8 @@ defmodule Playwright.ChannelOwner do
 
       ## Example
 
-          def init(owner, _initializer) do
-            Channel.bind(owner, :close, fn event ->
+          def init(%{session: session} = owner, _initializer) do
+            Channel.bind(session, {:guid, owner.guid}, :close, fn event ->
               Logger.warn("Closing \#{inspect(event.target)}")
             end)
 
@@ -64,7 +65,7 @@ defmodule Playwright.ChannelOwner do
 
       ## Arguments
 
-      | key / name    | type   |            | description |
+      | key/name    | type   |            | description |
       | ------------- | ------ | ---------- | ----------- |
       | `owner`       | param  | `struct()` | The newly created channel owner (resource). |
       | `initializer` | param  | `struct()` | The initializer received from with the channel owner instance was derived. |
@@ -79,8 +80,8 @@ defmodule Playwright.ChannelOwner do
       require Logger
 
       @doc false
-      @spec on_event(struct(), EventInfo.t()) :: {term(), struct()}
-      def on_event(owner, %EventInfo{} = event) do
+      @spec on_event(struct(), Event.t()) :: {term(), struct()}
+      def on_event(owner, %Event{} = event) do
         listeners = Map.get(owner.listeners, event.type, [])
 
         event =
@@ -97,8 +98,9 @@ defmodule Playwright.ChannelOwner do
         {:ok, event.target}
       end
 
-      defp with_latest(owner, task) do
-        Channel.find(owner) |> task.()
+      # def find(session, {:guid, guid}) when is_binary(guid) do
+      defp with_latest(%{session: session} = owner, task) do
+        Channel.find(session, {:guid, owner.guid}) |> task.()
       end
     end
   end
@@ -128,7 +130,7 @@ defmodule Playwright.ChannelOwner do
 
   defmodule Macros do
     @moduledoc false
-    alias Playwright.Runner.Channel
+    alias Playwright.Channel
 
     defmacro __using__(_args) do
       Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
@@ -151,15 +153,15 @@ defmodule Playwright.ChannelOwner do
             if Map.has_key?(owner, :is_closed) && owner.is_closed do
               owner
             else
-              Channel.find(owner)
+              Channel.find(owner.session, {:guid, owner.guid})
             end
 
-          property = Map.get(owner, unquote(arg))
+          field = Map.get(owner, unquote(arg))
 
-          if is_map(property) && Map.has_key?(property, :guid) do
-            Channel.find(owner, property)
+          if is_map(field) && Map.has_key?(field, :guid) do
+            Channel.find(owner.session, {:guid, field.guid})
           else
-            property
+            field
           end
         end
       end

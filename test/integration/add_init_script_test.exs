@@ -1,5 +1,5 @@
 defmodule Playwright.AddInitScriptTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, Page}
 
   describe "Page.add_init_script/2" do

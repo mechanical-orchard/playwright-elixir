@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserType.ConnectCDPTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   # test_connect_to_an_existing_cdp_session
   # test_connect_to_an_existing_cdp_session_twice

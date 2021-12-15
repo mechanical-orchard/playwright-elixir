@@ -22,26 +22,29 @@ defmodule Playwright do
   @property :chromium
 
   @typedoc "The web client type used for `launch` and `connect` functions."
-  @type client :: :chromium | :firefox | :webkit
+  @type client_type :: :chromium | :firefox | :webkit
 
   @doc """
-  Launch an instance of `Playwright.Browser`.map()
+  Launch an instance of `Playwright.Browser`.
 
   ## Arguments
 
-  - `client`: The type of client (browser) to launch.
+  - `type`: The type of client (browser) to launch.
     `(:chromium | nil)` with default `:chromium`
   """
-  @spec launch(atom()) :: Playwright.Browser.t()
-  def launch(client \\ nil)
+  @spec launch(client_type()) :: Playwright.Browser.t()
+  def launch(type \\ nil)
 
-  def launch(client) when is_nil(client) do
+  def launch(type) when is_nil(type) do
     launch(:chromium)
   end
 
-  def launch(client) when client in [:chromium, :firefox, :webkit] do
-    options = Playwright.Runner.Config.launch_options()
-    {_connection, browser} = Playwright.BrowserType.launch(client, options)
+  def launch(type) when type in [:chromium, :firefox, :webkit] do
+    options = Playwright.Config.launch_options()
+
+    {_session, browser} = Playwright.BrowserType.launch(type, options)
+    # {_session, browser} = Playwright.Channel.Session.launch(type, options)
+
     browser
   end
 end

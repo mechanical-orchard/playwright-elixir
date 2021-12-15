@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserContext.ProxyTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, Page, Response}
 
   describe "BrowserContext created with a proxy" do

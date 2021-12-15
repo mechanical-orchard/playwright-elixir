@@ -1,5 +1,5 @@
 defmodule Playwright.ClickTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{ElementHandle, Frame, Page}
 
   describe "Frame.click/3" do

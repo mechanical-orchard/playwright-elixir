@@ -1,8 +1,6 @@
 defmodule Playwright.BrowserContext.ExpectTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, Page}
-
-  require Logger
 
   describe "BrowserContext.expect_*/*" do
     @tag exclude: [:page]
@@ -10,12 +8,12 @@ defmodule Playwright.BrowserContext.ExpectTest do
       context = Browser.new_context(browser)
       page = BrowserContext.new_page(context)
 
-      event_info =
+      %{params: params} =
         BrowserContext.expect_page(context, fn ->
           Page.evaluate(page, "url => window.open(url)", assets.empty)
         end)
 
-      assert event_info.params.url == assets.empty
+      assert Page.url(params.page) == assets.empty
     end
   end
 end

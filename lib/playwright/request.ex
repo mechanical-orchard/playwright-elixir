@@ -25,7 +25,7 @@ defmodule Playwright.Request do
   new request is issued to the target redirected URL.
   """
   use Playwright.ChannelOwner
-  alias Playwright.Runner.Connection
+  alias Playwright.Response
 
   @property :failure
   @property :frame
@@ -62,9 +62,8 @@ defmodule Playwright.Request do
 
   # NOTE: it might be better to use `Response.request/1`
   @doc false
-  def for_response(response) do
-    Connection.get(response.connection, response.initializer.request)
-    |> List.first()
+  def for_response(%Response{} = response) do
+    Response.request(response)
   end
 
   @doc false

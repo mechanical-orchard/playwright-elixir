@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserContext.CookiesTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{BrowserContext, Page}
 
   describe "BrowserContext.cookies/1" do

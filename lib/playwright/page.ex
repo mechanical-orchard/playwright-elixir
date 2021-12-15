@@ -42,7 +42,7 @@ defmodule Playwright.Page do
 
   alias Playwright.{BrowserContext, ElementHandle, Frame, Page, Response}
   alias Playwright.ChannelOwner
-  alias Playwright.Runner.Helpers
+  alias Playwright.Helpers
 
   @property :is_closed
   @property :main_frame
@@ -62,12 +62,12 @@ defmodule Playwright.Page do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(page, _intializer) do
-    Channel.bind(page, :close, fn event ->
+  def init(%Page{session: session} = page, _intializer) do
+    Channel.bind(session, {:guid, page.guid}, :close, fn event ->
       {:patch, %{event.target | is_closed: true}}
     end)
 
-    Channel.bind(page, :route, fn %{target: target} = e ->
+    Channel.bind(session, {:guid, page.guid}, :route, fn %{target: target} = e ->
       on_route(target, e)
       # NOTE: will patch here
     end)
@@ -97,7 +97,7 @@ defmodule Playwright.Page do
 
   ## Arguments
 
-  | key / name  | type   |                       | description |
+  | key/name  | type   |                       | description |
   | ----------- | ------ | --------------------- | ----------- |
   | `script`    | param  | `binary()` or `map()` | As `binary()`: an inlined script to be evaluated; As `%{path: path}`: a path to a JavaScript file. |
 
@@ -121,9 +121,9 @@ defmodule Playwright.Page do
   > `Playwright.Page.add_init_script/2` is not defined.
   """
   @spec add_init_script(t(), binary() | map()) :: :ok
-  def add_init_script(%Page{} = page, script) when is_binary(script) do
+  def add_init_script(%Page{session: session} = page, script) when is_binary(script) do
     params = %{source: script}
-    Channel.post(page, :add_init_script, params)
+    Channel.post(session, {:guid, page.guid}, :add_init_script, params)
   end
 
   def add_init_script(%Page{} = page, %{path: path} = script) when is_map(script) do
@@ -160,7 +160,7 @@ defmodule Playwright.Page do
 
   ## Arguments
 
-  | key / name          | type   |             | description |
+  | key/name          | type   |             | description |
   | ------------------- | ------ | ----------- | ----------- |
   | `run_before_unload` | option | `boolean()` | Whether to run the before unload page handlers. `(default: false)` |
 
@@ -171,15 +171,13 @@ defmodule Playwright.Page do
   > `Playwright.Page.on/3`.
   """
   @spec close(t(), options()) :: :ok
-  def close(owner, options \\ %{})
-
-  def close(%Page{} = owner, options) do
-    Channel.post(owner, :close, options)
+  def close(%Page{session: session} = page, options \\ %{}) do
+    Channel.post(session, {:guid, page.guid}, :close, options)
 
     # NOTE: this *might* prefer to be done on `__dispose__`
     # ...OR, `.on(_, "close", _)`
-    if owner.owned_context do
-      context(owner) |> BrowserContext.close()
+    if page.owned_context do
+      context(page) |> BrowserContext.close()
     end
 
     :ok
@@ -189,8 +187,8 @@ defmodule Playwright.Page do
   # Get the full HTML contents of the page, including the doctype.
   # """
   # @spec content(t()) :: binary()
-  # def content(%Page{} = page) do
-  #   Channel.post(page, :content)
+  # def content(%Page{session: session} = page) do
+  #   Channel.post(session, {:guid, page.guid}, :content)
   # end
 
   @doc """
@@ -199,8 +197,8 @@ defmodule Playwright.Page do
   @spec context(t()) :: BrowserContext.t()
   def context(owner)
 
-  def context(%Page{} = owner) do
-    Channel.find(owner, owner.parent)
+  def context(%Page{session: session} = owner) do
+    Channel.find(session, {:guid, owner.parent.guid})
   end
 
   @doc """
@@ -246,11 +244,17 @@ defmodule Playwright.Page do
     main_frame(page) |> Frame.evaluate_handle(expression, arg)
   end
 
-  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.Runner.EventInfo.t()
-  def expect_event(page, event, trigger, predicate \\ nil, options \\ %{})
+  # @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.Channel.Event.t()
+  # def expect_event(page, event, trigger, predicate \\ nil, options \\ %{})
 
-  def expect_event(%Page{} = page, event, trigger, predicate, options) do
-    context(page) |> BrowserContext.expect_event(event, trigger, predicate, options)
+  # def expect_event(%Page{} = page, event, trigger, predicate, options) do
+  #   context(page) |> BrowserContext.expect_event(event, trigger, predicate, options)
+  # end
+
+  def expect_event(page, event, options \\ %{}, trigger \\ nil)
+
+  def expect_event(%Page{} = page, event, options, trigger) do
+    context(page) |> BrowserContext.expect_event(event, options, trigger)
   end
 
   # ---
@@ -293,10 +297,7 @@ defmodule Playwright.Page do
 
   @spec frames(t()) :: [Frame.t()]
   def frames(%Page{} = page) do
-    Channel.all(page.connection, %{
-      parent: page,
-      type: "Frame"
-    })
+    Channel.list(page.session, {:guid, page.guid}, "Frame")
   end
 
   # ---
@@ -322,9 +323,7 @@ defmodule Playwright.Page do
   # ---
 
   @spec goto(t(), binary(), options()) :: Response.t() | nil | {:error, term()}
-  def goto(owner, url, options \\ %{})
-
-  def goto(%Page{} = page, url, options) do
+  def goto(%Page{} = page, url, options \\ %{}) do
     main_frame(page) |> Frame.goto(url, options)
   end
 
@@ -350,13 +349,13 @@ defmodule Playwright.Page do
   # NOTE: these events will be recv'd from Playwright server with
   # the parent BrowserContext as the context/bound :guid. So, we need to
   # add our handlers there, on that (BrowserContext) parent.
-  def on(%Page{} = owner, event, callback)
+  def on(%Page{session: session} = page, event, callback)
       when event in [:request, :response, :request_finished, "request", "response", "requestFinished"] do
-    context(owner) |> Channel.bind(event, callback)
+    Channel.bind(session, {:guid, context(page).guid}, event, callback)
   end
 
-  def on(%Page{} = owner, event, callback) do
-    Channel.bind(owner, event, callback)
+  def on(%Page{session: session} = page, event, callback) do
+    Channel.bind(session, {:guid, page.guid}, event, callback)
   end
 
   # ---
@@ -402,7 +401,7 @@ defmodule Playwright.Page do
 
   ## Arguments
 
-  | key / name    | type   |            | description |
+  | key/name    | type   |            | description |
   | ------------- | ------ | ---------- | ----------- |
   | `:timeout`    | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:wait_until` | option | `binary()` | "load", "domcontentloaded", "networkidle", or "commit". When to consider the operation as having succeeded. `(default: "load")` |
@@ -415,38 +414,38 @@ defmodule Playwright.Page do
   - `commit` - consider operation to be finished when network response is received and the document started loading.
   """
   @spec reload(t(), options()) :: Response.t() | nil
-  def reload(page, options \\ %{}) do
-    Channel.post(page, :reload, options)
+  def reload(%Page{session: session} = page, options \\ %{}) do
+    Channel.post(session, {:guid, page.guid}, :reload, options)
   end
 
   @spec route(t(), binary(), function(), map()) :: :ok
   def route(page, pattern, handler, options \\ %{})
 
-  def route(%Page{} = page, pattern, handler, _options) do
+  def route(%Page{session: session} = page, pattern, handler, _options) do
     with_latest(page, fn page ->
       matcher = Helpers.URLMatcher.new(pattern)
       handler = Helpers.RouteHandler.new(matcher, handler)
       routes = page.routes
 
       if Enum.empty?(routes) do
-        Channel.post(page, :set_network_interception_enabled, %{enabled: true})
+        Channel.post(session, {:guid, page.guid}, :set_network_interception_enabled, %{enabled: true})
       end
 
-      Channel.patch(page.connection, page.guid, %{routes: [handler | routes]})
+      Channel.patch(session, {:guid, page.guid}, %{routes: [handler | routes]})
       :ok
     end)
   end
 
   @spec screenshot(t(), options()) :: binary()
-  def screenshot(%Page{} = page, options \\ %{}) do
+  def screenshot(%Page{session: session} = page, options \\ %{}) do
     case Map.pop(options, :path) do
       {nil, params} ->
-        Channel.post(page, :screenshot, params)
+        Channel.post(session, {:guid, page.guid}, :screenshot, params)
 
       {path, params} ->
         [_, filetype] = String.split(path, ".")
 
-        data = Channel.post(page, :screenshot, Map.put(params, :type, filetype))
+        data = Channel.post(session, {:guid, page.guid}, :screenshot, Map.put(params, :type, filetype))
         File.write!(path, Base.decode64!(data))
         data
     end
@@ -486,8 +485,8 @@ defmodule Playwright.Page do
   # ---
 
   @spec set_viewport_size(t(), dimensions()) :: :ok
-  def set_viewport_size(%Page{} = page, dimensions) do
-    Channel.post(page, :set_viewport_size, %{viewport_size: dimensions})
+  def set_viewport_size(%Page{session: session} = page, dimensions) do
+    Channel.post(session, {:guid, page.guid}, :set_viewport_size, %{viewport_size: dimensions})
   end
 
   @spec text_content(t(), binary(), map()) :: binary() | nil
@@ -528,8 +527,6 @@ defmodule Playwright.Page do
   def wait_for_load_state(%Page{} = page, state, _options)
       when is_binary(state)
       when state in ["load", "domcontentloaded", "networkidle", "commit"] do
-    Logger.warn("Page.wait_for_load_state (not fully implemented)")
-
     main_frame(page) |> Frame.wait_for_load_state(state)
     page
   end

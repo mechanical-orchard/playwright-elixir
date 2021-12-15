@@ -7,7 +7,7 @@ defmodule Playwright.BrowserType do
 
       alias Playwright.{Browser, BrowserType, Page}
 
-      {connection, browser} = BrowserType.launch(:chromium)
+      {session, browser} = BrowserType.launch(:chromium)
       page = Browser.new_page(browser)
 
       Page.goto(page, "https://example.com")
@@ -19,17 +19,17 @@ defmodule Playwright.BrowserType do
 
   Open a new chromium via the CLI driver:
 
-      {connection, browser} = Playwright.BrowserType.launch()
+      {session, browser} = Playwright.BrowserType.launch()
 
   Connect to a running playwright instances:
 
-      {connection, browser} =
+      {session, browser} =
         Playwright.BrowserType.connect("ws://localhost:3000/playwright")
   """
 
   use Playwright.ChannelOwner
-  alias Playwright.BrowserType
-  alias Playwright.Runner.{Config, Connection, Transport}
+  alias Playwright.{BrowserType, Config, Transport}
+  alias Playwright.Channel.Session
 
   @typedoc "The web client type used for `launch/1` and `connect/2` functions."
   @type client :: :chromium | :firefox | :webkit
@@ -51,11 +51,11 @@ defmodule Playwright.BrowserType do
 
   ## Returns
 
-    - `{connection, %Playwright.Browser{}}`
+    - `{session, %Playwright.Browser{}}`
 
   ## Arguments
 
-  | key / name    | type   |                             | description |
+  | key/name    | type   |                             | description |
   | ------------- | ------ | --------------------------- | ----------- |
   | `ws_endpoint` | param  | `BrowserType.ws_endpoint()` | A browser websocket endpoint to connect to. |
   | `:headers`    | option | `map()`                     | Additional HTTP headers to be sent with websocket connect request |
@@ -67,10 +67,10 @@ defmodule Playwright.BrowserType do
   def connect(ws_endpoint, options \\ %{})
 
   def connect(ws_endpoint, _options) do
-    with {:ok, connection} <- new_session(Transport.WebSocket, [ws_endpoint]),
-         launched <- launched_browser(connection),
-         browser <- Channel.get(connection, {:guid, launched}) do
-      {connection, browser}
+    with {:ok, session} <- new_session(Transport.WebSocket, [ws_endpoint]),
+         %{guid: guid} <- launched_browser(session),
+         browser <- Channel.find(session, {:guid, guid}) do
+      {session, browser}
     else
       {:error, error} -> {:error, {"Error connecting to #{inspect(ws_endpoint)}", error}}
       error -> {:error, {"Error connecting to #{inspect(ws_endpoint)}", error}}
@@ -99,7 +99,7 @@ defmodule Playwright.BrowserType do
 
   ## Returns
 
-    - `{connection, %Playwright.Browser{}}`
+    - `{session, %Playwright.Browser{}}`
 
   ## Arguments
 
@@ -134,8 +134,8 @@ defmodule Playwright.BrowserType do
   def launch(client, options)
       when is_atom(client)
       when client in [:chromium] do
-    {:ok, connection} = new_session(Transport.Driver, options)
-    {connection, chromium(connection)}
+    {:ok, session} = new_session(Transport.Driver, options)
+    {session, chromium(session)}
   end
 
   def launch(client, _options)
@@ -165,33 +165,29 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp browser(%BrowserType{} = browser_type) do
-    Channel.post(browser_type, :launch, Config.launch_options(true))
+    Channel.post(browser_type.session, {:guid, browser_type.guid}, :launch, Config.launch_options(true))
   end
 
-  defp chromium(connection) do
-    playwright = Channel.get(connection, {:guid, "Playwright"})
-
-    case playwright do
-      %Playwright{} ->
+  defp chromium(session) do
+    case Channel.find(session, {:guid, "Playwright"}) do
+      %Playwright{} = playwright ->
         %{guid: guid} = playwright.chromium
+        Channel.find(session, {:guid, guid}) |> browser()
 
-        Channel.get(connection, {:guid, guid}) |> browser()
-
-      _other ->
-        raise("expected chromium to return a  `Playwright`, received: #{inspect(playwright)}")
+      other ->
+        raise("expected chromium to return a  `Playwright`, received: #{inspect(other)}")
     end
   end
 
   defp new_session(transport, args) do
     DynamicSupervisor.start_child(
-      BrowserType.Supervisor,
-      {Connection, {transport, args}}
+      Session.Supervisor,
+      {Session, {transport, args}}
     )
   end
 
-  defp launched_browser(connection) do
-    playwright = Channel.get(connection, {:guid, "Playwright"})
-    %{guid: guid} = playwright.initializer.preLaunchedBrowser
-    guid
+  defp launched_browser(session) do
+    playwright = Channel.find(session, {:guid, "Playwright"})
+    playwright.initializer.preLaunchedBrowser
   end
 end

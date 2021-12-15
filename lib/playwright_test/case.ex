@@ -45,7 +45,7 @@ defmodule PlaywrightTest.Case do
 
   defmacro __using__(options \\ %{}) do
     quote do
-      alias Playwright.Runner.Config
+      alias Playwright.Config
 
       setup_all(context) do
         inline_options = unquote(options) |> Enum.into(%{})
@@ -55,8 +55,8 @@ defmodule PlaywrightTest.Case do
         Application.put_env(:playwright, LaunchOptions, launch_options)
         {:ok, _} = Application.ensure_all_started(:playwright)
 
-        {connection, browser} = setup_browser(runner_options.transport)
-        [browser: browser, connection: connection, transport: runner_options.transport]
+        {_session, browser} = setup_browser(runner_options.transport)
+        [browser: browser, transport: runner_options.transport]
       end
 
       setup(context) do

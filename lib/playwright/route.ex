@@ -19,15 +19,15 @@ defmodule Playwright.Route do
   @spec continue(t(), options()) :: :ok
   def continue(route, options \\ %{})
 
-  def continue(%Route{} = route, options) do
+  def continue(%Route{session: session} = route, options) do
     params = Map.merge(options, %{intercept_response: false})
-    Channel.post(route, :continue, params)
+    Channel.post(session, {:guid, route.guid}, :continue, params)
   end
 
   @spec fulfill(t(), options()) :: :ok
   # def fulfill(route, options \\ %{})
 
-  def fulfill(route, %{status: status, body: body}) when is_binary(body) do
+  def fulfill(%Route{session: session} = route, %{status: status, body: body}) when is_binary(body) do
     length = String.length(body)
 
     params = %{
@@ -41,7 +41,7 @@ defmodule Playwright.Route do
         })
     }
 
-    Channel.post(route, :fulfill, params)
+    Channel.post(session, {:guid, route.guid}, :fulfill, params)
   end
 
   # ---

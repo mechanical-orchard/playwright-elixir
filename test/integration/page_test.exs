@@ -1,7 +1,7 @@
 defmodule Playwright.PageTest do
-  use Playwright.TestCase
-  alias Playwright.{Browser, ElementHandle, Frame, Page, Request, Response, Route}
-  alias Playwright.Runner.{Channel, Connection, EventInfo}
+  use Playwright.TestCase, async: true
+  alias Playwright.{Browser, Channel, ElementHandle, Frame, Page, Request, Response, Route}
+  alias Playwright.Channel.{Error, Event}
 
   describe "Page.hover/2" do
     test "triggers hover state", %{assets: assets, page: page} do
@@ -24,7 +24,7 @@ defmodule Playwright.PageTest do
       end)
 
       Page.close(page)
-      assert_received(%EventInfo{params: %{}, target: %Page{guid: ^guid, is_closed: true}, type: :close})
+      assert_received(%Event{params: nil, target: %Page{guid: ^guid, is_closed: true}, type: :close})
     end
 
     @tag exclude: [:page]
@@ -39,7 +39,7 @@ defmodule Playwright.PageTest do
       end)
 
       Page.close(page)
-      assert_received(%EventInfo{params: %{}, target: %Page{guid: ^guid, is_closed: true}, type: :close})
+      assert_received(%Event{params: nil, target: %Page{guid: ^guid, is_closed: true}, type: :close})
     end
 
     # NOTE: this is really about *any* `on` event handling
@@ -71,67 +71,65 @@ defmodule Playwright.PageTest do
       Page.evaluate(page, "function () { console.info('lala!'); }")
       Page.evaluate(page, "console.error('lulu!')")
 
-      assert_received(%EventInfo{params: %{message: %{message_text: "lala!", message_type: "info"}}, type: :console})
-      assert_received(%EventInfo{params: %{message: %{message_text: "lulu!", message_type: "error"}}, type: :console})
+      assert_received(%Event{params: %{message: %{message_text: "lala!", message_type: "info"}}, type: :console})
+      assert_received(%Event{params: %{message: %{message_text: "lulu!", message_type: "error"}}, type: :console})
     end
   end
 
-  describe "Page.on(_, event, _) for `request` event" do
-    test "fires for navigation requests", %{assets: assets, page: page} do
-      pid = self()
-      url = assets.empty
+  test "on 'request' fires for navigation requests", %{assets: assets, page: page} do
+    pid = self()
+    url = assets.empty
 
-      Page.on(page, "request", fn %{params: %{request: request}} ->
-        send(pid, {:request, request.url})
-      end)
+    Page.on(page, "request", fn %{params: %{request: request}} ->
+      send(pid, {:request, request.url})
+    end)
 
-      Page.goto(page, url)
-      assert_next_receive({:request, ^url})
+    Page.goto(page, url)
+    assert_next_receive({:request, ^url})
+  end
+
+  test "on 'reqeust' accepts a callback", %{assets: assets, page: page} do
+    pid = self()
+    url = assets.empty
+
+    fun = fn event ->
+      send(pid, event)
     end
 
-    test "accepts a callback", %{assets: assets, page: page} do
-      pid = self()
-      url = assets.empty
+    Page.on(page, "request", fun)
+    Page.goto(page, url)
 
-      fun = fn event ->
-        send(pid, event)
-      end
+    assert_next_receive(%Event{type: :request})
+  end
 
-      Page.on(page, "request", fun)
-      Page.goto(page, url)
+  test "on 'request' fires for iframes", %{assets: assets, page: page} do
+    pid = self()
+    url = assets.empty
 
-      assert_next_receive(%EventInfo{type: :request})
-    end
+    Page.on(page, "request", fn %{params: %{request: request}} ->
+      send(pid, {:request, request.url})
+    end)
 
-    test "fires for iframes", %{assets: assets, page: page} do
-      pid = self()
-      url = assets.empty
+    Page.goto(page, url)
+    attach_frame(page, "frame1", url)
 
-      Page.on(page, "request", fn %{params: %{request: request}} ->
-        send(pid, {:request, request.url})
-      end)
+    assert_next_receive({:request, ^url})
+    assert_next_receive({:request, ^url})
+  end
 
-      Page.goto(page, url)
-      attach_frame(page, "frame1", url)
+  test "on 'request' fires for fetches", %{assets: assets, page: page} do
+    pid = self()
+    url = assets.empty
 
-      assert_next_receive({:request, ^url})
-      assert_next_receive({:request, ^url})
-    end
+    Page.on(page, "request", fn %{params: %{request: request}} ->
+      send(pid, {:request, request.url})
+    end)
 
-    test "fires for fetches", %{assets: assets, page: page} do
-      pid = self()
-      url = assets.empty
+    Page.goto(page, url)
+    Page.evaluate(page, "() => { fetch('#{url}') }")
 
-      Page.on(page, "request", fn %{params: %{request: request}} ->
-        send(pid, {:request, request.url})
-      end)
-
-      Page.goto(page, url)
-      Page.evaluate(page, "() => { fetch('#{url}') }")
-
-      assert_next_receive({:request, ^url})
-      assert_next_receive({:request, ^url})
-    end
+    assert_next_receive({:request, ^url})
+    assert_next_receive({:request, ^url})
   end
 
   describe "Page.route/3" do
@@ -248,32 +246,29 @@ defmodule Playwright.PageTest do
     # test "waits for multiple options to be present',async ({ page, server }) => {
   end
 
-  describe "more Page stuff..." do
-    test ".query_selector/2", %{assets: assets, connection: connection, page: page} do
+  describe "Page.query_selector/2" do
+    test "returns an ElementHandle or nil", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
-      assert %ElementHandle{type: "ElementHandle", connection: ^connection, guid: guid} =
-               page |> Page.query_selector("css=#outer")
+      assert %ElementHandle{guid: guid} = page |> Page.query_selector("css=#outer")
 
       assert guid != nil
       assert page |> Page.query_selector("css=#non-existent") === nil
     end
+  end
 
-    test ".query_selector_all/2", %{assets: assets, connection: connection, page: page} do
+  describe "Page.query_selector_all/2" do
+    test "returns a list of ElementHandles", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
       [outer, inner] = Page.query_selector_all(page, "css=div")
 
       assert %ElementHandle{
-               type: "ElementHandle",
-               connection: ^connection,
                guid: outer_guid,
                preview: outer_preview
              } = outer
 
       assert %ElementHandle{
-               type: "ElementHandle",
-               connection: ^connection,
                guid: inner_guid,
                preview: inner_preview
              } = inner
@@ -287,21 +282,23 @@ defmodule Playwright.PageTest do
       elements = Page.query_selector_all(page, "css=non-existent")
       assert elements == []
     end
+  end
 
+  describe "Page.close/1" do
     @tag without: [:page]
-    test ".close/1", %{browser: browser, connection: connection} do
+    test "removes the Page", %{browser: browser} do
       page = Browser.new_page(browser)
-
-      Connection.get(connection, %{guid: page.guid})
-      |> assert()
+      assert %Page{} = Channel.find(page.session, {:guid, page.guid})
 
       page |> Page.close()
 
-      Connection.get(connection, %{guid: page.guid})
-      |> refute()
+      assert {:error, %Error{message: "Timeout 100ms exceeded."}} =
+               Channel.find(page.session, {:guid, page.guid}, %{timeout: 100})
     end
+  end
 
-    test ".click/2", %{assets: assets, page: page} do
+  describe "Page.click/2" do
+    test "fires JS click handlers", %{assets: assets, page: page} do
       page
       |> Page.goto(assets.prefix <> "/input/button.html")
 
@@ -310,12 +307,16 @@ defmodule Playwright.PageTest do
 
       assert Page.evaluate(page, "function () { return window['result']; }") == "Clicked"
     end
+  end
 
-    test ".evaluate/2", %{page: page} do
+  describe "Page.evaluate/2" do
+    test "execute JS", %{page: page} do
       assert Page.evaluate(page, "function () { return 7 * 3; }") == 21
     end
+  end
 
-    test ".fill/3", %{assets: assets, page: page} do
+  describe "Page.fill/3" do
+    test "sets text content", %{assets: assets, page: page} do
       page
       |> Page.goto(assets.prefix <> "/input/textarea.html")
 
@@ -324,8 +325,10 @@ defmodule Playwright.PageTest do
 
       assert Page.evaluate(page, "function () { return window['result']; }") == "some value"
     end
+  end
 
-    test ".get_attribute/3", %{assets: assets, page: page} do
+  describe "Page.get_attribute/3" do
+    test "returns an element's attribute value or nil", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/dom.html")
 
       assert page |> Page.get_attribute("div#outer", "name") == "value"
@@ -333,8 +336,10 @@ defmodule Playwright.PageTest do
 
       assert({:error, %Channel.Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 200}))
     end
+  end
 
-    test ".press/2", %{assets: assets, page: page} do
+  describe "Page.press/s" do
+    test "triggers a key press on the focused element", %{assets: assets, page: page} do
       page
       |> Page.goto(assets.prefix <> "/input/textarea.html")
 
@@ -343,30 +348,38 @@ defmodule Playwright.PageTest do
 
       assert Page.evaluate(page, "function () { return document.querySelector('textarea').value; }") == "A"
     end
+  end
 
-    test ".set_content/2", %{page: page} do
+  describe "Page.set_content/2" do
+    test "sets content", %{page: page} do
       page
       |> Page.set_content("<div id='content'>text</div>")
 
       assert Page.text_content(page, "div#content") == "text"
     end
+  end
 
-    test ".text_content/2", %{assets: assets, page: page} do
+  describe "Page.test_content/2" do
+    test "retrieves content", %{assets: assets, page: page} do
       page
       |> Page.goto(assets.prefix <> "/dom.html")
 
       assert Page.text_content(page, "div#inner") == "Text,\nmore text"
     end
+  end
 
-    test ".title/1", %{assets: assets, page: page} do
+  describe "Page.title/1" do
+    test "retrieves the title text", %{assets: assets, page: page} do
       page
       |> Page.goto(assets.prefix <> "/title.html")
 
       text = page |> Page.title()
       assert text == "Woof-Woof"
     end
+  end
 
-    test ".wait_for_selector/2", %{page: page} do
+  describe "Page.wait_for_selector/3" do
+    test "blocks until the selector matches", %{page: page} do
       page
       |> Page.set_content("<div id='outer'></div>")
 
@@ -383,7 +396,7 @@ defmodule Playwright.PageTest do
       assert Page.text_content(page, "span.inner") == "target"
     end
 
-    test ".wait_for_selector/3", %{page: page} do
+    test "takes an optional state on which to wait", %{page: page} do
       page
       |> Page.set_content("<div id='outer'></div>")
 

@@ -22,7 +22,7 @@ defmodule Playwright.Browser do
   """
   use Playwright.ChannelOwner
   alias Playwright.{Browser, BrowserContext, ChannelOwner, Extra, Page}
-  alias Playwright.Runner.Channel
+  alias Playwright.Channel
 
   @property :name
   @property(:version, %{doc: "Returns the browser version"})
@@ -38,10 +38,6 @@ defmodule Playwright.Browser do
 
   @impl ChannelOwner
   def init(browser, _initializer) do
-    # Channel.bind(browser, :close, fn event ->
-    #   {:patch, }
-    # end)
-
     {:ok, %{browser | version: cut_version(browser.version)}}
   end
 
@@ -65,8 +61,8 @@ defmodule Playwright.Browser do
     - `:ok`
 
   """
-  def close(browser) do
-    case Channel.post(browser, :close) do
+  def close(%Browser{session: session} = browser) do
+    case Channel.post(session, {:guid, browser.guid}, :close) do
       :ok ->
         :ok
 
@@ -91,10 +87,7 @@ defmodule Playwright.Browser do
   """
   @spec contexts(t()) :: [BrowserContext.t()]
   def contexts(%Browser{} = browser) do
-    Channel.all(browser.connection, %{
-      parent: browser,
-      type: "BrowserContext"
-    })
+    Channel.list(browser.session, {:guid, browser.guid}, "BrowserContext")
   end
 
   # ---
@@ -129,14 +122,14 @@ defmodule Playwright.Browser do
 
   ## Arguments
 
-  | key / name         | type   |             | description |
+  | key/name         | type   |             | description |
   | ------------------ | ------ | ----------- | ----------- |
   | `accept_downloads` | option | `boolean()` | Whether to automatically download all the attachments. If false, all the downloads are canceled. `(default: false)` |
   | `...`              | option | `...`       | ... |
   """
   @spec new_context(t(), options()) :: BrowserContext.t()
-  def new_context(%Browser{} = browser, options \\ %{}) do
-    Channel.post(browser, :new_context, prepare(options))
+  def new_context(%Browser{guid: guid} = browser, options \\ %{}) do
+    Channel.post(browser.session, {:guid, guid}, :new_context, prepare(options))
   end
 
   @doc """
@@ -157,13 +150,13 @@ defmodule Playwright.Browser do
   @spec new_page(t(), options()) :: Page.t()
   def new_page(browser, options \\ %{})
 
-  def new_page(%Browser{connection: connection} = browser, options) do
+  def new_page(%Browser{session: session} = browser, options) do
     context = new_context(browser, options)
     page = BrowserContext.new_page(context)
 
     # establish co-dependency
-    Channel.patch(connection, context.guid, %{owner_page: page})
-    Channel.patch(connection, page.guid, %{owned_context: context})
+    Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
+    Channel.patch(session, {:guid, page.guid}, %{owned_context: context})
   end
 
   # ---

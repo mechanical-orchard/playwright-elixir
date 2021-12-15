@@ -20,7 +20,7 @@ defmodule Playwright.JSHandle do
   """
   use Playwright.ChannelOwner
   alias Playwright.{ElementHandle, JSHandle}
-  alias Playwright.Runner.Helpers
+  alias Playwright.Helpers
 
   @property :preview
 
@@ -38,14 +38,14 @@ defmodule Playwright.JSHandle do
     nil
   end
 
-  def evaluate(handle, expression, arg \\ nil) do
+  def evaluate(%{session: session} = handle, expression, arg \\ nil) do
     params = %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
     }
 
-    Channel.post(handle, :evaluate_expression, params)
+    Channel.post(session, {:guid, handle.guid}, :evaluate_expression, params)
     |> Helpers.Serialization.deserialize()
   end
 
@@ -71,20 +71,20 @@ defmodule Playwright.JSHandle do
 
   ## Arguments
 
-  | key / name    | type   |            | description |
+  | key/name    | type   |            | description |
   | ------------- | ------ | ---------- | ----------- |
   | `expression`  | param  | `binary()` | Function to be evaluated in the page context. |
   | `arg`         | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   """
   @spec evaluate_handle(t() | ElementHandle.t(), binary(), any()) :: ElementHandle.t()
-  def evaluate_handle(%{} = handle, expression, arg \\ nil) do
+  def evaluate_handle(%{session: session} = handle, expression, arg \\ nil) do
     params = %{
       expression: expression,
       is_function: Helpers.Expression.function?(expression),
       arg: Helpers.Serialization.serialize(arg)
     }
 
-    Channel.post(handle, :evaluate_expression_handle, params)
+    Channel.post(session, {:guid, handle.guid}, :evaluate_expression_handle, params)
   end
 
   def string(%{} = handle) do

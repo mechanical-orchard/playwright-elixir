@@ -19,7 +19,7 @@ defmodule Playwright.Page.Accessibility do
   """
 
   alias Playwright.{ElementHandle, Extra, Page}
-  alias Playwright.Runner.Channel
+  alias Playwright.Channel
 
   @typedoc """
   Options given to `snapshot/2`
@@ -119,8 +119,8 @@ defmodule Playwright.Page.Accessibility do
   @spec snapshot(Page.t(), options) :: snapshot
   def snapshot(page, options \\ %{})
 
-  def snapshot(%Page{} = page, options) do
-    Channel.post(page, :accessibility_snapshot, prepare(options))
+  def snapshot(%Page{session: session} = page, options) do
+    Channel.post(session, {:guid, page.guid}, :accessibility_snapshot, prepare(options))
     |> ax_node_from_protocol()
   end
 

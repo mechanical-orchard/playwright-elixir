@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserContext.ClearCookiesTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{BrowserContext, Page}
 
   describe "BrowserContext.clear_cookies/1" do

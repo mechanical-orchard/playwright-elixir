@@ -29,7 +29,7 @@ defmodule Playwright.BrowserContext do
   The second argument is the event type.
 
   The third argument is a callback function that will be executed when the
-  event fires, and is passed an instance of `Playwright.Runner.EventInfo`.
+  event fires, and is passed an instance of `Playwright.Channel.Event`.
 
   ### Details for `expect_event/5`
 
@@ -161,7 +161,7 @@ defmodule Playwright.BrowserContext do
 
   use Playwright.ChannelOwner
   alias Playwright.{BrowserContext, ChannelOwner, Frame, Page}
-  alias Playwright.Runner.{Channel, Helpers}
+  alias Playwright.{Channel, Helpers}
 
   @property :bindings
   @property :browser
@@ -205,12 +205,12 @@ defmodule Playwright.BrowserContext do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(%BrowserContext{} = context, _initializer) do
-    Channel.bind(context, :binding_call, fn %{params: %{binding: binding}, target: target} ->
+  def init(%BrowserContext{session: session} = context, _initializer) do
+    Channel.bind(session, {:guid, context.guid}, :binding_call, fn %{params: %{binding: binding}, target: target} ->
       on_binding(target, binding)
     end)
 
-    Channel.bind(context, :route, fn %{target: target} = e ->
+    Channel.bind(session, {:guid, context.guid}, :route, fn %{target: target} = e ->
       on_route(target, e)
       # NOTE: will patch here
     end)
@@ -252,8 +252,8 @@ defmodule Playwright.BrowserContext do
   @spec add_cookies(t(), [cookie]) :: :ok
   def add_cookies(context, cookies)
 
-  def add_cookies(%BrowserContext{} = context, cookies) do
-    Channel.post(context, :add_cookies, %{cookies: cookies})
+  def add_cookies(%BrowserContext{session: session} = context, cookies) do
+    Channel.post(session, {:guid, context.guid}, :add_cookies, %{cookies: cookies})
   end
 
   @doc """
@@ -276,7 +276,7 @@ defmodule Playwright.BrowserContext do
 
   ## Arguments
 
-  | key / name  | type   |                       | description |
+  | key/name  | type   |                       | description |
   | ----------- | ------ | --------------------- | ----------- |
   | `script`    | param  | `binary()` or `map()` | As `binary()`: an inlined script to be evaluated; As `%{path: path}`: a path to a JavaScript file. |
 
@@ -300,9 +300,9 @@ defmodule Playwright.BrowserContext do
   > `Playwright.Page.add_init_script/2` is not defined.
   """
   @spec add_init_script(t(), binary() | map()) :: :ok
-  def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
+  def add_init_script(%BrowserContext{session: session} = context, script) when is_binary(script) do
     params = %{source: script}
-    Channel.post(context, :add_init_script, params)
+    Channel.post(session, {:guid, context.guid}, :add_init_script, params)
   end
 
   def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
@@ -320,13 +320,13 @@ defmodule Playwright.BrowserContext do
   Clears `Playwright.BrowserContext` cookies.
   """
   @spec clear_cookies(t()) :: :ok
-  def clear_cookies(context) do
-    Channel.post(context, :clear_cookies)
+  def clear_cookies(%BrowserContext{session: session} = context) do
+    Channel.post(session, {:guid, context.guid}, :clear_cookies)
   end
 
   @spec clear_permissions(t()) :: :ok
-  def clear_permissions(context) do
-    Channel.post(context, :clear_permissions)
+  def clear_permissions(%BrowserContext{session: session} = context) do
+    Channel.post(session, {:guid, context.guid}, :clear_permissions)
   end
 
   @doc """
@@ -337,8 +337,8 @@ defmodule Playwright.BrowserContext do
   > - The default browser context cannot be closed.
   """
   @spec close(t()) :: :ok
-  def close(%BrowserContext{} = context) do
-    case Channel.post(context, :close) do
+  def close(%BrowserContext{session: session} = context) do
+    case Channel.post(session, {:guid, context.guid}, :close) do
       :ok ->
         :ok
 
@@ -359,13 +359,13 @@ defmodule Playwright.BrowserContext do
 
   ## Arguments
 
-  | key / name | type  |                            | description |
+  | key/name | type  |                            | description |
   | ---------- | ----- | -------------------------- | ----------- |
   | `urls`     | param | `binary()` or `[binary()]` | List of URLs. `(optional)` |
   """
   @spec cookies(t(), url | [url]) :: [cookie]
-  def cookies(%BrowserContext{} = context, urls \\ []) do
-    Channel.post(context, :cookies, %{urls: urls})
+  def cookies(%BrowserContext{session: session} = context, urls \\ []) do
+    Channel.post(session, {:guid, context.guid}, :cookies, %{urls: urls})
   end
 
   @doc """
@@ -373,12 +373,12 @@ defmodule Playwright.BrowserContext do
   predicate function.
 
   Returns when the predicate returns a truthy value. Throws an error if the
-  context closes before the event is fired. Returns a `Playwright.Runner.EventInfo`.
+  context closes before the event is fired. Returns a `Playwright.Channel.Event`.
 
   ## Arguments
 
   - `event`: Event name; the same as those passed to `Playwright.BrowserContext.on/3`
-  - `predicate`: Receives the `Playwright.Runner.EventInfo` and resolves to a
+  - `predicate`: Receives the `Playwright.Channel.Event` and resolves to a
     "truthy" value when the waiting should resolve.
   - `options`:
     - `predicate`: ...
@@ -391,34 +391,19 @@ defmodule Playwright.BrowserContext do
       event_info = BrowserContext.expect_event(context, :page, fn ->
         BrowserContext.new_page(context)
       end)
-
-  > NOTE:
-  > - The "throw an error if the context closes..." is not yet implemented.
-  > - The handling of :predicate is not yet implemented.
   """
-  @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.Runner.EventInfo.t()
-  def expect_event(context, event, trigger, predicate \\ nil, options \\ %{})
+  def expect_event(context, event, options \\ %{}, trigger \\ nil)
 
-  def expect_event(%BrowserContext{} = context, event, trigger, _predicate, _options)
-      when is_function(trigger) do
-    Channel.wait_for(context, event, trigger)
+  def expect_event(%BrowserContext{session: session} = context, event, options, trigger) do
+    Channel.wait(session, {:guid, context.guid}, event, options, trigger)
   end
-
-  def expect_event(%BrowserContext{} = context, event, trigger, options, _)
-      when is_map(options) do
-    expect_event(context, event, trigger, nil, options)
-  end
-
-  defdelegate wait_for_event(context, event, trigger, predicate \\ nil, options \\ %{}),
-    to: __MODULE__,
-    as: :expect_event
 
   @doc """
   Executes `trigger` and waits for a new `Playwright.Page` to be created within
   the `Playwright.BrowserContext`.
 
   If `predicate` is provided, it passes the `Playwright.Page` value into the
-  predicate function, wrapped in `Playwright.Runner.EventInfo`, and waits for
+  predicate function, wrapped in `Playwright.Channel.Event`, and waits for
   `predicate/1` to return a "truthy" value. Throws an error if the context
   closes before new `Playwright.Page` is created.
 
@@ -431,37 +416,23 @@ defmodule Playwright.BrowserContext do
     - `timeout`: The maximum time to wait in milliseconds. Defaults to 30000
       (30 seconds). Pass 0 to disable timeout. The default value can be changed
       via `Playwright.BrowserContext.set_default_timeout/2`.
-
-  > NOTE:
-  > - The handling of `predicate` is not yet implemented.
-  > - The handling of `timeout` is not yet implemented.
   """
-  @spec expect_page(t(), fun(), function_or_options(), map()) :: Playwright.Runner.EventInfo.t()
-  def expect_page(context, trigger, predicate \\ nil, options \\ %{})
-
-  def expect_page(%BrowserContext{} = context, trigger, predicate, options)
-      when is_function(trigger) do
-    expect_event(context, :page, trigger, predicate, options)
+  @spec expect_page(t(), map(), function()) :: Playwright.Channel.Event.t()
+  def expect_page(context, options \\ %{}, trigger \\ nil) do
+    expect_event(context, :page, options, trigger)
   end
-
-  def expect_page(%BrowserContext{} = context, trigger, options, _)
-      when is_map(options) do
-    expect_page(context, trigger, nil, options)
-  end
-
-  defdelegate wait_for_page(context, trigger, predicate \\ nil, options \\ %{}), to: __MODULE__, as: :expect_page
 
   @doc """
-  WIP: Adds a function called `param: name` on the `window` object of every
+  Adds a function called `param: name` on the `window` object of every
   frame in every page in the context.
   """
   @spec expose_binding(t(), String.t(), function(), options()) :: :ok
-  def expose_binding(context, name, callback, options \\ %{}) do
+  def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
     bindings = context.bindings
-    Channel.patch(context.connection, context.guid, %{bindings: Map.merge(bindings, %{name => callback})})
+    Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(bindings, %{name => callback})})
 
     params = Map.merge(%{name: name, needs_handle: false}, options)
-    Channel.post(context, :expose_binding, params)
+    Channel.post(session, {:guid, context.guid}, :expose_binding, params)
   end
 
   @spec expose_function(t(), String.t(), function()) :: :ok
@@ -472,20 +443,20 @@ defmodule Playwright.BrowserContext do
   end
 
   @spec grant_permissions(t(), [String.t()], options()) :: :ok | {:error, Channel.Error.t()}
-  def grant_permissions(context, permissions, options \\ %{}) do
+  def grant_permissions(%BrowserContext{session: session} = context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
-    Channel.post(context, :grant_permissions, params)
+    Channel.post(session, {:guid, context.guid}, :grant_permissions, params)
   end
 
   @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
   def new_cdp_session(context, owner)
 
-  def new_cdp_session(%BrowserContext{} = context, %Frame{} = frame) do
-    Channel.post(context, "newCDPSession", %{frame: %{guid: frame.guid}})
+  def new_cdp_session(%BrowserContext{session: session} = context, %Frame{} = frame) do
+    Channel.post(session, {:guid, context.guid}, "newCDPSession", %{frame: %{guid: frame.guid}})
   end
 
-  def new_cdp_session(%BrowserContext{} = context, %Page{} = page) do
-    Channel.post(context, "newCDPSession", %{page: %{guid: page.guid}})
+  def new_cdp_session(%BrowserContext{session: session} = context, %Page{} = page) do
+    Channel.post(session, {:guid, context.guid}, "newCDPSession", %{page: %{guid: page.guid}})
   end
 
   @doc """
@@ -498,10 +469,10 @@ defmodule Playwright.BrowserContext do
   @spec new_page(t()) :: Page.t()
   def new_page(context)
 
-  def new_page(%BrowserContext{} = context) do
+  def new_page(%BrowserContext{session: session} = context) do
     case context.owner_page do
       nil ->
-        Channel.post(context, :new_page)
+        Channel.post(session, {:guid, context.guid}, :new_page)
 
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")
@@ -512,8 +483,8 @@ defmodule Playwright.BrowserContext do
   Register a (non-blocking) callback/handler for various types of events.
   """
   @spec on(t(), event(), function()) :: BrowserContext.t()
-  def on(%BrowserContext{} = context, event, callback) do
-    Channel.bind(context, event, callback)
+  def on(%BrowserContext{session: session} = context, event, callback) do
+    Channel.bind(session, {:guid, context.guid}, event, callback)
   end
 
   @doc """
@@ -525,26 +496,23 @@ defmodule Playwright.BrowserContext do
   """
   @spec pages(t()) :: [Page.t()]
   def pages(%BrowserContext{} = context) do
-    Channel.all(context.connection, %{
-      parent: context,
-      type: "Page"
-    })
+    Channel.list(context.session, {:guid, context.guid}, "Page")
   end
 
   @spec route(t(), binary(), function(), map()) :: :ok
   def route(context, pattern, handler, options \\ %{})
 
-  def route(%BrowserContext{} = context, pattern, handler, _options) do
+  def route(%BrowserContext{session: session} = context, pattern, handler, _options) do
     with_latest(context, fn context ->
       matcher = Helpers.URLMatcher.new(pattern)
       handler = Helpers.RouteHandler.new(matcher, handler)
       routes = context.routes
 
       if Enum.empty?(routes) do
-        Channel.post(context, :set_network_interception_enabled, %{enabled: true})
+        Channel.post(session, {:guid, context.guid}, :set_network_interception_enabled, %{enabled: true})
       end
 
-      Channel.patch(context.connection, context.guid, %{routes: [handler | routes]})
+      Channel.patch(session, {:guid, context.guid}, %{routes: [handler | routes]})
       :ok
     end)
   end
@@ -579,8 +547,8 @@ defmodule Playwright.BrowserContext do
   # ---
 
   @spec set_offline(t(), boolean()) :: :ok
-  def set_offline(context, offline) do
-    Channel.post(context, :set_offline, %{offline: offline})
+  def set_offline(%BrowserContext{session: session} = context, offline) do
+    Channel.post(session, {:guid, context.guid}, :set_offline, %{offline: offline})
   end
 
   # ---
@@ -591,14 +559,14 @@ defmodule Playwright.BrowserContext do
   # ---
 
   @spec unroute(t(), binary(), function() | nil) :: :ok
-  def unroute(%BrowserContext{} = context, pattern, callback \\ nil) do
+  def unroute(%BrowserContext{session: session} = context, pattern, callback \\ nil) do
     with_latest(context, fn context ->
       remaining =
         Enum.filter(context.routes, fn handler ->
           handler.matcher.match != pattern || (callback && handler.callback != callback)
         end)
 
-      Channel.patch(context.connection, context.guid, %{routes: remaining})
+      Channel.patch(session, {:guid, context.guid}, %{routes: remaining})
       :ok
     end)
   end

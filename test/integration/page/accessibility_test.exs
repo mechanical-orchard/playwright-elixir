@@ -1,5 +1,5 @@
 defmodule Playwright.Page.AccessibilityTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   # doctest Playwright.Page.Accessibility
 
   alias Playwright.Page

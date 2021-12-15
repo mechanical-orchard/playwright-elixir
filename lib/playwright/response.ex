@@ -23,8 +23,8 @@ defmodule Playwright.Response do
   # ---
 
   @spec body(t()) :: binary()
-  def body(%Response{} = response) do
-    Channel.post(response, :body)
+  def body(%Response{session: session} = response) do
+    Channel.post(session, {:guid, response.guid}, :body)
     |> Base.decode64!()
   end
 

@@ -1,6 +1,6 @@
 defmodule Playwright.NavigationTest do
-  use Playwright.TestCase
-  alias Playwright.{Page, Response}
+  use Playwright.TestCase, async: true
+  alias Playwright.{Channel, Page, Response}
 
   describe "Page.goto/2" do
     test "works (and updates the page's URL)", %{assets: assets, page: page} do
@@ -51,7 +51,7 @@ defmodule Playwright.NavigationTest do
     end
 
     test "fails when navigating to bad URL", %{page: page} do
-      error = %Playwright.Runner.Channel.Error{
+      error = %Channel.Error{
         message: "Protocol error (Page.navigate): Cannot navigate to invalid URL"
       }
 

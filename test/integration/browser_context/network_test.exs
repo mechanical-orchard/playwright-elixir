@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserContext.NetworkTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, Page}
 
   describe "BrowserContext network events" do

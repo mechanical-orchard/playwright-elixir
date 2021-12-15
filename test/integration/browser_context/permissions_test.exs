@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserContext.PermissionsTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, Page}
 
   describe "Permissions" do

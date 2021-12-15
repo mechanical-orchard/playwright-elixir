@@ -1,5 +1,5 @@
 defmodule Page.ScreenshotTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   require Logger
   alias Playwright.Page
 
@@ -15,7 +15,7 @@ defmodule Page.ScreenshotTest do
   #   is a good idea is left to the imagination of the consumer.
   describe "screenshot/2" do
     test "caputures a screenshot, returning the base64 encoded binary", %{page: page} do
-      case Page.goto(page, "https://playwright.dev", %{timeout: 1000}) do
+      case Page.goto(page, "https://playwright.dev", %{timeout: 2000}) do
         {:error, error} ->
           Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
 
@@ -32,7 +32,7 @@ defmodule Page.ScreenshotTest do
 
       refute(File.exists?(path))
 
-      case Page.goto(page, "https://playwright.dev", %{timeout: 1000}) do
+      case Page.goto(page, "https://playwright.dev", %{timeout: 2000}) do
         {:error, error} ->
           Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
 

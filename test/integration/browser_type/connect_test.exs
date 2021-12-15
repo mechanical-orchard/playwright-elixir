@@ -1,5 +1,5 @@
 defmodule Playwright.BrowserType.ConnectTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
 
   # test_browser_type_connect_should_be_able_to_reconnect_to_a_browser
   # test_browser_type_connect_should_be_able_to_connect_two_browsers_at_the_same_time

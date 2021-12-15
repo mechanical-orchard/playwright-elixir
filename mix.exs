@@ -55,7 +55,7 @@ defmodule Playwright.MixProject do
       {:jason, "~> 1.2"},
       {:json_diff, "~> 0.1"},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:playwright_assets, "~> 1.17", only: [:dev, :test]},
+      {:playwright_assets, "~> 1.17", only: [:test]},
       {:plug_cowboy, "~> 2.5", only: [:dev, :test]},
       {:plug, "~> 1.12", only: [:dev, :test]},
       {:recase, "~> 0.7"},
@@ -98,7 +98,7 @@ defmodule Playwright.MixProject do
           Playwright.Worker
         ],
         Runner: [
-          Playwright.Runner.Config
+          Playwright.Config
         ],
         Utilities: [
           Playwright.CLI

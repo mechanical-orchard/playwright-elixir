@@ -54,7 +54,7 @@ defmodule Playwright.ElementHandle do
 
   use Playwright.ChannelOwner
   alias Playwright.{ChannelOwner, ElementHandle, Frame, JSHandle}
-  alias Playwright.Runner.Channel
+  alias Playwright.Channel
 
   @property :preview
 
@@ -65,8 +65,8 @@ defmodule Playwright.ElementHandle do
   # ---------------------------------------------------------------------------
 
   @impl ChannelOwner
-  def init(%ElementHandle{} = handle, _initializer) do
-    Channel.bind(handle, :preview_updated, fn %{params: params} = event ->
+  def init(%ElementHandle{session: session} = handle, _initializer) do
+    Channel.bind(session, {:guid, handle.guid}, :preview_updated, fn %{params: params} = event ->
       {:patch, %{event.target | preview: params.preview}}
     end)
 
@@ -89,8 +89,8 @@ defmodule Playwright.ElementHandle do
   # ---------------------------------------------------------------------------
 
   @spec bounding_box(ElementHandle.t()) :: map() | nil
-  def bounding_box(handle) do
-    Channel.post(handle, :bounding_box)
+  def bounding_box(%ElementHandle{session: session} = handle) do
+    Channel.post(session, {:guid, handle.guid}, :bounding_box)
   end
 
   # ---
@@ -122,8 +122,8 @@ defmodule Playwright.ElementHandle do
   disables this.
   """
   @spec click(t(), options()) :: :ok
-  def click(%ElementHandle{} = handle, options \\ %{}) do
-    Channel.post(handle, :click, options)
+  def click(%ElementHandle{session: session} = handle, options \\ %{}) do
+    Channel.post(session, {:guid, handle.guid}, :click, options)
   end
 
   @doc """
@@ -131,8 +131,8 @@ defmodule Playwright.ElementHandle do
   or `nil` otherwise.
   """
   @spec content_frame(t()) :: Frame.t() | nil
-  def content_frame(%ElementHandle{} = handle) do
-    Channel.post(handle, :content_frame)
+  def content_frame(%ElementHandle{session: session} = handle) do
+    Channel.post(session, {:guid, handle.guid}, :content_frame)
   end
 
   # ---
@@ -155,8 +155,8 @@ defmodule Playwright.ElementHandle do
   Returns the value of an element's attribute.
   """
   @spec get_attribute(t(), binary()) :: binary() | nil
-  def get_attribute(%ElementHandle{} = handle, name) do
-    Channel.post(handle, :get_attribute, %{name: name})
+  def get_attribute(%ElementHandle{session: session} = handle, name) do
+    Channel.post(session, {:guid, handle.guid}, :get_attribute, %{name: name})
   end
 
   # ---
@@ -191,8 +191,8 @@ defmodule Playwright.ElementHandle do
   # ---
 
   @spec is_visible(t()) :: boolean()
-  def is_visible(%ElementHandle{} = handle) do
-    Channel.post(handle, :is_visible)
+  def is_visible(%ElementHandle{session: session} = handle) do
+    Channel.post(session, {:guid, handle.guid}, :is_visible)
   end
 
   # ---
@@ -213,8 +213,8 @@ defmodule Playwright.ElementHandle do
   @spec query_selector(t(), binary()) :: ElementHandle.t() | nil
   def query_selector(handle, selector)
 
-  def query_selector(%ElementHandle{} = handle, selector) do
-    handle |> Channel.post(:query_selector, %{selector: selector})
+  def query_selector(%ElementHandle{session: session} = handle, selector) do
+    Channel.post(session, {:guid, handle.guid}, :query_selector, %{selector: selector})
   end
 
   defdelegate q(handle, selector), to: __MODULE__, as: :query_selector
@@ -228,16 +228,16 @@ defmodule Playwright.ElementHandle do
   # ---
 
   @spec screenshot(ElementHandle.t(), options()) :: binary()
-  def screenshot(%ElementHandle{} = handle, options \\ %{}) do
+  def screenshot(%ElementHandle{session: session} = handle, options \\ %{}) do
     case Map.pop(options, :path) do
       {nil, params} ->
-        encoded = Channel.post(handle, :screenshot, params)
+        encoded = Channel.post(session, {:guid, handle.guid}, :screenshot, params)
         Base.decode64!(encoded)
 
       {path, params} ->
         [_, filetype] = String.split(path, ".")
 
-        encoded = Channel.post(handle, :screenshot, Map.put(params, :type, filetype))
+        encoded = Channel.post(session, {:guid, handle.guid}, :screenshot, Map.put(params, :type, filetype))
         decoded = Base.decode64!(encoded)
         File.write!(path, decoded)
         decoded
@@ -245,8 +245,8 @@ defmodule Playwright.ElementHandle do
   end
 
   @spec scroll_into_view(ElementHandle.t(), options()) :: :ok
-  def scroll_into_view(%ElementHandle{} = handle, options \\ %{}) do
-    Channel.post(handle, :scroll_into_view_if_needed, options)
+  def scroll_into_view(%ElementHandle{session: session} = handle, options \\ %{}) do
+    Channel.post(session, {:guid, handle.guid}, :scroll_into_view_if_needed, options)
   end
 
   # ---
@@ -257,8 +257,8 @@ defmodule Playwright.ElementHandle do
   # ---
 
   @spec select_text(ElementHandle.t(), options()) :: :ok
-  def select_text(handle, options \\ %{}) do
-    Channel.post(handle, :select_text, options)
+  def select_text(%ElementHandle{session: session} = handle, options \\ %{}) do
+    Channel.post(session, {:guid, handle.guid}, :select_text, options)
   end
 
   # ---
@@ -280,8 +280,8 @@ defmodule Playwright.ElementHandle do
   @spec text_content(t()) :: binary() | nil
   def text_content(handle)
 
-  def text_content(%ElementHandle{} = handle) do
-    handle |> Channel.post(:text_content)
+  def text_content(%ElementHandle{session: session} = handle) do
+    Channel.post(session, {:guid, handle.guid}, :text_content)
   end
 
   # ---

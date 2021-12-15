@@ -1,5 +1,5 @@
 defmodule Playwright.JSHandleTest do
-  use Playwright.TestCase
+  use Playwright.TestCase, async: true
   alias Playwright.{ElementHandle, JSHandle, Page}
 
   describe "JSHandle.as_element/1" do
