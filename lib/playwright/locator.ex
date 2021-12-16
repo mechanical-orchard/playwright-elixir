@@ -65,6 +65,12 @@ defmodule Playwright.Locator do
 
   @type options() :: %{optional(:timeout) => non_neg_integer()}
 
+  @type options_with_delay() :: %{
+    optional(:delay) => non_neg_integer(),
+    optional(:no_wait_after) => boolean(),
+    optional(:timeout) => non_neg_integer()
+  }
+
   @type options_position() :: %{
           optional(:x) => number(),
           optional(:y) => number()
@@ -859,7 +865,7 @@ defmodule Playwright.Locator do
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec press(t(), binary(), options()) :: :ok
+  @spec press(t(), binary(), options_with_delay()) :: :ok
   def press(%Locator{} = locator, key, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.press(locator.frame, locator.selector, key, options)
@@ -1130,7 +1136,7 @@ defmodule Playwright.Locator do
   | `:no_wait_after` | option | `boolean()` | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:timeout`       | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   """
-  @spec type(t(), binary(), options()) :: :ok
+  @spec type(t(), binary(), options_with_delay()) :: :ok
   def type(%Locator{} = locator, text, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.type(locator.frame, locator.selector, text, options)
