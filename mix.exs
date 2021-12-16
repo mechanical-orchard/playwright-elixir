@@ -78,6 +78,7 @@ defmodule Playwright.MixProject do
       groups_for_modules: [
         "Capabilities (API)": [
           Playwright,
+          Playwright.APIRequestContext,
           Playwright.Browser,
           Playwright.BrowserContext,
           Playwright.BrowserType,

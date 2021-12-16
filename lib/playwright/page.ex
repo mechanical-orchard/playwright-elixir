@@ -346,6 +346,16 @@ defmodule Playwright.Page do
     Playwright.Locator.new(page, selector)
   end
 
+  # ---
+
+  @spec request(t()) :: Playwright.APIRequestContext.t()
+  def request(%Page{} = page) do
+    List.first(Channel.all(page.connection, %{
+      parent: page.owned_context.browser,
+      type: "APIRequestContext"
+    }))
+  end
+
   # NOTE: these events will be recv'd from Playwright server with
   # the parent BrowserContext as the context/bound :guid. So, we need to
   # add our handlers there, on that (BrowserContext) parent.
