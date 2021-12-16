@@ -1,5 +1,11 @@
 defmodule Playwright.APIRequestContext do
-  @moduledoc false
+  @moduledoc """
+  This API is used for the Web API testing. You can use it to trigger API endpoints, configure micro-services,
+  prepare environment or the server to your e2e test.
+
+  Use this at caution as has not been tested.
+
+  """
 
   use Playwright.ChannelOwner
   alias Playwright.APIRequestContext
