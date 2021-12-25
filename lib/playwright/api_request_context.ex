@@ -23,7 +23,7 @@ defmodule Playwright.APIRequestContext do
     optional(:ignoreHTTPSErrors) => boolean()
   }
 
-  @spec post(t(), binary(), fetch_options()) :: t()
+  @spec post(t(), binary(), fetch_options()) :: Playwright.APIResponse.t()
   def post(%APIRequestContext{} = request_context, url, options \\ %{}) do
     Channel.post(request_context, :fetch, Map.merge(%{
       url: url,
@@ -31,6 +31,7 @@ defmodule Playwright.APIRequestContext do
     }, options))
   end
 
+  @spec body(t(), Playwright.APIResponse.t()) :: any()
   def body(%APIRequestContext{} = request_context, response) do
     Channel.post(request_context, :fetch_response_body, %{
       fetchUid: response.fetchUid
