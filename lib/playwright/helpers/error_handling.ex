@@ -1,4 +1,5 @@
 defmodule Playwright.Helpers.ErrorHandling do
+  @moduledoc false
   alias Playwright.Channel.Error
 
   def with_timeout(options, action) when is_map(options) and is_function(action) do

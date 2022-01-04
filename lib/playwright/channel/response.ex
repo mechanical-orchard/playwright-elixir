@@ -1,4 +1,5 @@
 defmodule Playwright.Channel.Response do
+  @moduledoc false
   alias Playwright.ChannelOwner
   alias Playwright.Channel.{Catalog, Error, Event, Session}
 

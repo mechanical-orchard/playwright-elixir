@@ -47,7 +47,7 @@ defmodule Playwright.MixProject do
   defp deps do
     [
       {:cowlib, "~> 2.11"},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.25", only: :dev, runtime: false},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
