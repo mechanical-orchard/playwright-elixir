@@ -245,7 +245,7 @@ defmodule Playwright.Config do
   end
 
   @doc false
-  @spec launch_options(boolean()) :: Types.LaunchOptions
+  @spec launch_options(boolean()) :: map()
   def launch_options(camelcase \\ false) do
     config_for(LaunchOptions, %Types.LaunchOptions{}, camelcase) || %{}
     # |> clean()

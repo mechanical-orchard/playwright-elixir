@@ -417,7 +417,8 @@ defmodule Playwright.BrowserContext do
       (30 seconds). Pass 0 to disable timeout. The default value can be changed
       via `Playwright.BrowserContext.set_default_timeout/2`.
   """
-  @spec expect_page(t(), map(), function()) :: Playwright.Channel.Event.t()
+  # Temporarily disable spec:
+  # @spec expect_page(t(), map(), function()) :: Playwright.Channel.Event.t()
   def expect_page(context, options \\ %{}, trigger \\ nil) do
     expect_event(context, :page, options, trigger)
   end
@@ -482,7 +483,7 @@ defmodule Playwright.BrowserContext do
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(t(), event(), function()) :: BrowserContext.t()
+  @spec on(t(), event(), function()) :: :ok
   def on(%BrowserContext{session: session} = context, event, callback) do
     Channel.bind(session, {:guid, context.guid}, event, callback)
   end

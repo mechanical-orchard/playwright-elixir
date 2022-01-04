@@ -32,12 +32,10 @@ defmodule Playwright do
   - `type`: The type of client (browser) to launch.
     `(:chromium | nil)` with default `:chromium`
   """
-  @spec launch(client_type()) :: Playwright.Browser.t()
+  @spec launch(client_type() | nil) :: Playwright.Browser.t()
   def launch(type \\ nil)
 
-  def launch(type) when is_nil(type) do
-    launch(:chromium)
-  end
+  def launch(nil), do: launch(:chromium)
 
   def launch(type) when type in [:chromium, :firefox, :webkit] do
     options = Playwright.Config.launch_options()
