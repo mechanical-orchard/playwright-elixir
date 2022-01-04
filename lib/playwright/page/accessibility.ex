@@ -18,8 +18,7 @@ defmodule Playwright.Page.Accessibility do
   [2]: https://en.wikipedia.org/wiki/Switch_access
   """
 
-  alias Playwright.{ElementHandle, Extra, Page}
-  alias Playwright.Channel
+  alias Playwright.{Channel, ElementHandle, Extra, Page}
 
   @typedoc """
   Options given to `snapshot/2`

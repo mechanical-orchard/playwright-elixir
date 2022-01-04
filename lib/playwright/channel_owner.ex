@@ -107,7 +107,7 @@ defmodule Playwright.ChannelOwner do
 
   @doc false
   def from(params, parent) do
-    apply(module(params), :new, [parent, params])
+    module(params).new(parent, params)
   end
 
   # private

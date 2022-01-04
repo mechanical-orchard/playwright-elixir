@@ -53,8 +53,7 @@ defmodule Playwright.Locator do
       Locator.count(locator)
   """
 
-  alias Playwright.{ElementHandle, Frame, Locator, Page}
-  alias Playwright.Channel
+  alias Playwright.{Channel, ElementHandle, Frame, Locator, Page}
 
   @enforce_keys [:frame, :selector]
   defstruct [:frame, :selector]

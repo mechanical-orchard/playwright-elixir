@@ -15,8 +15,8 @@ defmodule Playwright.Frame do
       the page.  A Frame can be detached from the page only once.
   """
   use Playwright.ChannelOwner
-  alias Playwright.{ChannelOwner, ElementHandle, Frame, Helpers, Response}
   alias Playwright.Channel.Event
+  alias Playwright.{ChannelOwner, ElementHandle, Frame, Helpers, Response}
 
   @property :load_states
   @property :url
