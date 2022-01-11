@@ -349,11 +349,9 @@ defmodule Playwright.Page do
   # ---
 
   @spec request(t()) :: Playwright.APIRequestContext.t()
-  def request(%Page{} = page) do
-    List.first(Channel.all(page.connection, %{
-      parent: page.owned_context.browser,
-      type: "APIRequestContext"
-    }))
+  def request(%Page{session: session} = page) do
+    Channel.list(session, {:guid, page.owned_context.browser.guid}, "APIRequestContext")
+    |> List.first()
   end
 
   # NOTE: these events will be recv'd from Playwright server with
