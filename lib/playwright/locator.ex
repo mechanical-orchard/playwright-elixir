@@ -4,13 +4,15 @@ defmodule Playwright.Locator do
   It captures the logic sufficient to retrieve the element at any given moment.
   `Locator` can be created with the `Playwright.Locator.new/2` function.
 
+  See also `Playwright.Page.locator/2`.
+
   ## Example
 
-      locator = Page.Locator.new(page, "a#exists")
-      Locator.click(locator)
+      locator = Playwright.Locator.new(page, "a#exists")
+      Playwright.Locator.click(locator)
 
-  The difference between the `Locator` and `Playwright.ElementHandle`
-  is that the latter points to a particular element, while `Locator` captures
+  The difference between the `Playwright.Locator` and `Playwright.ElementHandle`
+  is that the latter points to a particular element, while `Playwright.Locator` captures
   the logic of how to retrieve that element.
 
   ## ElementHandle Example
@@ -30,9 +32,9 @@ defmodule Playwright.Locator do
   located in the page using the selector. So in the snippet below, underlying
   DOM element is going to be located twice.
 
-      locator = Page.Locator.new(page, "a#exists")
-      :ok = Page.Locator.hover(locator)
-      :ok = Page.Locator.click(locator)
+      locator = Playwright.Locator.new(page, "a#exists")
+      :ok = Playwright.Locator.hover(locator)
+      :ok = Playwright.Locator.click(locator)
 
   ## Strictness
 
@@ -40,7 +42,7 @@ defmodule Playwright.Locator do
   some target DOM element will throw if more than one element matches given
   selector.
 
-      alias Page.Locator
+      alias Playwright.Locator
       locator = Locator.new(page, "button")
 
       # Throws if there are several buttons in DOM:
@@ -926,7 +928,8 @@ defmodule Playwright.Locator do
   Triggers a change and input event once all the provided options have been selected.
 
   ## Example
-      locator = Page.locator(page, "select#colors")
+      alias Playwright.Locator
+      locator = Locator.new(page, "select#colors")
 
       # single selection matching the value
       Locator.select_option(locator, "blue")
