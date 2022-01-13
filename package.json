@@ -1,6 +1,6 @@
 {
   "name": "playwright_elixir",
-  "version": "0.1.17-preview-5",
+  "version": "0.1.17-preview-6",
   "description": "The Playwright Elixir JS Code",
   "license": "MIT",
   "cli": "./priv/static/playwright_cli.js",
