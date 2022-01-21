@@ -33,6 +33,8 @@ defmodule Playwright.PlaywrightTest do
       assert page
              |> Page.goto("http://example.com")
              |> Response.ok()
+
+      page |> Page.screenshot(%{path: "example.png"})
     end
 
     @tag exclude: [:page]
