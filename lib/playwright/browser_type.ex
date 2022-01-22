@@ -28,14 +28,19 @@ defmodule Playwright.BrowserType do
   """
 
   use Playwright.ChannelOwner
-  alias Playwright.{BrowserType, Config, Transport}
+  alias Playwright.{BrowserType, Config, Transport, Channel}
   alias Playwright.Channel.Session
 
   @typedoc "The web client type used for `launch/1` and `connect/2` functions."
   @type client :: :chromium | :firefox | :webkit
 
   @typedoc "Options for `connect/2`"
-  @type connect_options :: map()
+  @type connect_options :: %{
+          optional(:headers) => map(),
+          optional(:slow_mo) => integer(),
+          optional(:timeout) => integer()
+        }
+  @type connect_over_cdp_options :: connect_options()
 
   @typedoc "A map/struct providing call options"
   @type options :: map()
@@ -55,12 +60,12 @@ defmodule Playwright.BrowserType do
 
   ## Arguments
 
-  | key/name    | type   |                             | description |
+  | key/name      | type   |                             | description |
   | ------------- | ------ | --------------------------- | ----------- |
   | `ws_endpoint` | param  | `BrowserType.ws_endpoint()` | A browser websocket endpoint to connect to. |
   | `:headers`    | option | `map()`                     | Additional HTTP headers to be sent with websocket connect request |
-  | `:slow_mow`   | option | `integer()`                 | Slows down Playwright operations by the specified amount of milliseconds. Useful so that you can see what is going on. `(default: 0)` |
-  | `:logger`     | option |                             | Logger sink for Playwright logging |
+  | `:slow_mo`    | option | `integer()`                 | Slows down Playwright operations by the specified amount of milliseconds. Useful so that you can see what is going on. `(default: 0)` |
+  | `:logger`     | N/A    |  NOT IMPLEMENTED YET        | Logger sink for Playwright logging |
   | `:timeout`    | option | `integer()`                 | Maximum time in milliseconds to wait for the connection to be established. Pass `0` to disable timeout. `(default: 30_000 (30 seconds))` |
   """
   @spec connect(ws_endpoint(), connect_options()) :: {pid(), Playwright.Browser.t()}
@@ -77,10 +82,59 @@ defmodule Playwright.BrowserType do
     end
   end
 
-  # ---
+  # IMPORTANT: `Browser` instances returned from `connect_over_cdp` are effectively pointers
+  # to existing Chromium devtools sessions. That is, our `Catalog` will contain, for example,
+  # multiple `Page` instances pointing to the same Playwright server browser session.
+  # Or... something like that.
+  @spec connect_over_cdp(Playwright.Browser.t(), url(), connect_over_cdp_options()) :: Playwright.Browser.t()
+  def connect_over_cdp(%Playwright.Browser{} = browser, endpoint_url, options \\ %{}) do
+    params =
+      %{
+        "endpointURL" => endpoint_url,
+        "sdkLanguage" => "elixir"
+      }
+      |> Map.merge(options)
 
-  # @spec connect_over_cdp(BrowserType.t(), url(), options()) :: Playwright.Browser.t()
-  # def connect_over_cdp(browser_type, endpoint_url, options \\ %{})
+    connect_over_cdp = fn browser_type, params ->
+      Channel.post(browser_type.session, {:guid, browser_type.guid}, "connectOverCDP", Map.merge(params, options))
+    end
+
+    with browser_type <- get_browser_type(browser, :chromium),
+         %{browser: browser} = response <- connect_over_cdp.(browser_type, params) do
+      if response.default_context do
+        Channel.patch(
+          browser_type.session,
+          {:guid, response.default_context.guid},
+          %{browser: browser}
+        )
+      end
+
+      browser
+    else
+      {:error, :browser_type_not_found, client} ->
+        raise RuntimeError,
+          message: """
+          Attempted to use #{__MODULE__}.connect_over_cdp/3 with incompatible browser 
+          client #{inspect(client)}. It is only availabe for use with chromium
+          """
+    end
+  end
+
+  defp get_browser_type(%Playwright.Browser{} = browser, client) do
+    find_playwright = fn -> {:playwright, Playwright.Channel.find(browser.session, {:guid, "Playwright"})} end
+    find_client_guid = fn playwright, client -> {:client_guid, get_in(playwright, [Access.key(client), Access.key(:guid)])} end
+
+    with {:playwright, playwright} <- find_playwright.(),
+         {:client_guid, client_guid} <- find_client_guid.(playwright, client) do
+      Playwright.Channel.find(browser.session, {:guid, client_guid})
+    else
+      {:client_guid, nil} ->
+        {:error, :browser_type_not_found, client}
+
+      _ ->
+        {:error, :unexpected_error}
+    end
+  end
 
   # @spec executable_path(BrowserType.t()) :: String.t()
   # def executable_path(browser_type)
