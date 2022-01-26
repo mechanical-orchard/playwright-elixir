@@ -1182,6 +1182,22 @@ defmodule Playwright.Locator do
   If target element already satisfies the condition, the method returns
   immediately. Otherwise, waits for up to `option: timeout` milliseconds until
   the condition is met.
+
+  ## Options
+
+  | key/name   | type   |              | description |
+  | ---------- | ------ | ------------ | ----------- |
+  | `:state`   | option | state option | Defaults to `visible`. See "state options" below" |
+  | `:timeout` | option | float        | Maximum time in milliseconds, defaults to 30 seconds, pass 0 to disable timeout. The default value can be changed by using the browser_context.set_default_timeout(timeout) or page.set_default_timeout(timeout) methods. |
+
+  ## State options
+
+  | value      | description |
+  | ---------- | ----------- |
+  | 'attached' | wait for element to be present in DOM. |
+  | 'detached' | wait for element to not be present in DOM. |
+  | 'visible'  | wait for element to have non-empty bounding box and no visibility:hidden. Note that element without any content or with display:none has an empty bounding box and is not considered visible. |
+  | 'hidden'   | wait for element to be either detached from DOM, or have an empty bounding box or visibility:hidden. This is opposite to the 'visible' option. |
   """
   @spec wait_for(t(), options()) :: :ok
   def wait_for(%Locator{} = locator, options \\ %{}) do
