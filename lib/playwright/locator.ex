@@ -1076,7 +1076,7 @@ defmodule Playwright.Locator do
       `option: no_wait_after` is set.
 
   If the element is detached from the DOM at any moment during the action,
-  throws an erro.
+  throws an error.
 
   When all steps combined have not finished during the specified timeout,
   throws a `TimeoutError`. Passing `0` timeout disables this.

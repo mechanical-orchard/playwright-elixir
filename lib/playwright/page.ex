@@ -16,7 +16,7 @@ defmodule Playwright.Page do
       Page.screenshot(page, %{path: "screenshot.png"})
       :ok = Page.close(page)
 
-  The Page module is capable of hanlding various emitted events (described below).
+  The Page module is capable of handling various emitted events (described below).
 
   ## Example
 
