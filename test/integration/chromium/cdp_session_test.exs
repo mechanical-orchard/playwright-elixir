@@ -71,7 +71,7 @@ defmodule Playwright.Chromium.CDPSessionTest do
   end
 
   describe "CDPSession.detach/1" do
-    test "detaches the sesssion", %{page: page} do
+    test "detaches the session", %{page: page} do
       context = Page.context(page)
       session = BrowserContext.new_cdp_session(context, page)
 
