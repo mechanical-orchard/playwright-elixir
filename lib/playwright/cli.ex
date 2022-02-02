@@ -5,7 +5,7 @@ defmodule Playwright.CLI do
 
   require Logger
 
-  def install_browsers do
+  def install do
     Logger.info("Installing playwright browsers")
     cli_path = config_cli() || default_cli()
     {result, exit_status} = System.cmd(cli_path, ["install"])
