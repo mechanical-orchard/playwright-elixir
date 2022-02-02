@@ -71,13 +71,15 @@ defmodule Playwright.MixProject do
       homepage_url: @source_url,
       main: "README",
       extras: [
-        "README.md": [filename: "README"],
+        "README.md": [title: "Read Me"],
+        # basics...
         "man/basics/getting-started.md": [filename: "basics-getting-started"],
         "man/basics/inspector.md": [filename: "basics-inspector"],
         "man/basics/trace-viewer.md": [filename: "basics-trace-viewer"],
         "man/basics/test-generator.md": [filename: "basics-test-generator"],
         "man/basics/debugging-tools.md": [filename: "basics-debugging-tools"],
         "man/basics/release-notes.md": [filename: "basics-release-notes"],
+        # guides...
         "man/guides/assertions.md": [filename: "guides-assertions"],
         "man/guides/authentication.md": [filename: "guides-authentication"],
         "man/guides/auto-waiting.md": [filename: "guides-auto-waiting"],
@@ -105,6 +107,7 @@ defmodule Playwright.MixProject do
         "man/guides/videos.md": [filename: "guides-videos"]
       ],
       groups_for_extras: [
+        # Basics: ["README.md"] ++ Path.wildcard("man/basics/*.md"),
         Basics: Path.wildcard("man/basics/*.md"),
         Guides: Path.wildcard("man/guides/*.md")
       ],
@@ -132,6 +135,7 @@ defmodule Playwright.MixProject do
           Playwright.Worker
         ],
         Runner: [
+          Playwright.Channel.Catalog,
           Playwright.Config
         ],
         Utilities: [
