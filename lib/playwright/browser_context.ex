@@ -1,3 +1,9 @@
+# self._request: APIRequestContext = from_channel(
+#   initializer["APIRequestContext"]
+# )
+
+# ---
+
 defmodule Playwright.BrowserContext do
   @moduledoc """
   `Playwright.BrowserContext` provides a way to operate multiple independent

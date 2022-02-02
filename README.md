@@ -21,7 +21,7 @@ end
 ## Usage
 
 - [README](https://hexdocs.pm/playwright/README.html)
-- [Getting started](https://hexdocs.pm/playwright/getting-started.html)
+- [Getting started](https://hexdocs.pm/playwright/basics-getting-started.html)
 - [API Reference](https://hexdocs.pm/playwright/api-reference.html)
 
 ## Example
