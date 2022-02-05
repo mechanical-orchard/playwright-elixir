@@ -1,3 +1,8 @@
 #!/bin/bash
 
+export PLAYWRIGHT_TRANSPORT=driver
+elixir -r .medic/require.exs -e "Medic.Test.run()" $*
+
+export PLAYWRIGHT_TRANSPORT=websocket
+export PLAYWRIGHT_ENDPOINT="ws://localhost:3000/chromium"
 elixir -r .medic/require.exs -e "Medic.Test.run()" $*
