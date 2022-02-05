@@ -298,7 +298,8 @@ defmodule Playwright.Page.AccessibilityTest do
                  %{role: "menuitem", name: "First Item"},
                  %{role: "menuitem", name: "Second Item"},
                  %{role: "menuitem", name: "Third Item"}
-               ]
+               ],
+               orientation: "vertical"
              }
     end
 
