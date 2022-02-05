@@ -21,7 +21,7 @@ if config_env() == :dev do
     version: "0.14.0",
     cli: [
       args:
-        ~w(./node_modules/playwright/cli.js --bundle --platform=node --format=cjs --target=es2016 --outfile=../priv/static/playwright_cli.js --external:ws --external:*.png),
+        ~w(./node_modules/playwright/cli.js --bundle --platform=node --format=cjs --target=es2016 --outfile=../priv/static/playwright_cli.js --external:ws --external:*.png --external:*/gridWorker.js),
       cd: Path.expand("../assets", __DIR__)
     ]
 end
