@@ -108,7 +108,7 @@ defmodule Playwright.ElementHandle do
     1. Wait for "actionability (guide)" checks on the element, unless `force: true`
        option is set.
     2. Scroll the element into view, if needed.
-    3. Use `Playwright.Page.Mouse` to click the center of the elemnt, or the
+    3. Use `Playwright.Page.Mouse` to click the center of the element, or the
        specified option: `position`.
     4. Wait for initiated navigations to either succeed or fail, unless
       `no_wait_after: true` option is set.

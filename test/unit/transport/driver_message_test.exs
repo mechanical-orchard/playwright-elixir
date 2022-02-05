@@ -24,7 +24,7 @@ defmodule Playwright.Transport.DriverMessageTest do
              }
     end
 
-    test "when the frame contains a single UTF-8 messsage, prefixed with a UTF-32 read-length padding character" do
+    test "when the frame contains a single UTF-8 message, prefixed with a UTF-32 read-length padding character" do
       pad = <<11, 0, 0, 0>>
       txt = "new-message"
       frame = pad <> txt
@@ -102,10 +102,10 @@ defmodule Playwright.Transport.DriverMessageTest do
     end
 
     test "when contents include special unicode characters" do
-      frame = "elipsis: …" <> <<13, 0, 0, 0>> <> "carriage: ↵"
+      frame = "ellipsis: …" <> <<13, 0, 0, 0>> <> "carriage: ↵"
 
-      assert DriverMessage.parse(frame, 12, "", []) == %{
-               frames: ["elipsis: …", "carriage: ↵"],
+      assert DriverMessage.parse(frame, 13, "", []) == %{
+               frames: ["ellipsis: …", "carriage: ↵"],
                remaining: 0,
                buffer: ""
              }
