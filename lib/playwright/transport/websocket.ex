@@ -4,9 +4,8 @@ defmodule Playwright.Transport.WebSocket do
   # server.
 
   defstruct([
-    :gun,
-    :process_monitor,
-    :stream_ref
+    :process,
+    :monitor
   ])
 
   # module API
@@ -15,27 +14,26 @@ defmodule Playwright.Transport.WebSocket do
   def setup([ws_endpoint]) do
     uri = URI.parse(ws_endpoint)
 
-    with {:ok, gun_pid} <- :gun.open(to_charlist(uri.host), port(uri), %{connect_timeout: 30_000}),
-         {:ok, _protocol} <- :gun.await_up(gun_pid, :timer.seconds(5)),
-         {:ok, stream_ref} <- ws_upgrade(gun_pid, uri.path),
+    with {:ok, process} <- :gun.open(to_charlist(uri.host), port(uri), %{connect_timeout: 30_000}),
+         {:ok, _protocol} <- :gun.await_up(process, :timer.seconds(5)),
+         {:ok, _stream_ref} <- ws_upgrade(process, uri.path),
          :ok <- wait_for_ws_upgrade() do
-      ref = Process.monitor(gun_pid)
+      monitor = Process.monitor(process)
 
       %__MODULE__{
-        gun: gun_pid,
-        process_monitor: ref,
-        stream_ref: stream_ref
+        process: process,
+        monitor: monitor
       }
     else
       error -> error
     end
   end
 
-  def post(message, %{gun: gun, stream_ref: stream_ref}) do
-    :gun.ws_send(gun, stream_ref, {:text, message})
+  def post(message, %{process: process}) do
+    :gun.ws_send(process, {:text, message})
   end
 
-  def parse({:gun_ws, _gun_pid, _stream_ref, {:text, message}}, state) do
+  def parse({:gun_ws, _process, _stream_ref, {:text, message}}, state) do
     {[message], state}
   end
 
@@ -62,5 +60,5 @@ defmodule Playwright.Transport.WebSocket do
     end
   end
 
-  defp ws_upgrade(gun_pid, path), do: {:ok, :gun.ws_upgrade(gun_pid, path)}
+  defp ws_upgrade(process, path), do: {:ok, :gun.ws_upgrade(process, path)}
 end
