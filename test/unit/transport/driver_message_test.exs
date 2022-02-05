@@ -104,7 +104,7 @@ defmodule Playwright.Transport.DriverMessageTest do
     test "when contents include special unicode characters" do
       frame = "ellipsis: …" <> <<13, 0, 0, 0>> <> "carriage: ↵"
 
-      assert DriverMessage.parse(frame, 12, "", []) == %{
+      assert DriverMessage.parse(frame, 13, "", []) == %{
                frames: ["ellipsis: …", "carriage: ↵"],
                remaining: 0,
                buffer: ""
