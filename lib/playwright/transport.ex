@@ -10,7 +10,7 @@ defmodule Playwright.Transport do
   # ---------------------------------------------------------------------------
 
   def start_link(arg) do
-    GenServer.start_link(__MODULE__, arg)
+    GenServer.start_link(__MODULE__, arg, timeout: 1000)
   end
 
   def start_link!(arg) do
