@@ -161,10 +161,15 @@ defmodule Playwright.MixProject do
     ]
   end
 
+  # NOTES:
+  # - the `api.json` file is created to satisfy a `require('../../api.json')`
+  #   call found in Playwright's `driver.js` file. We don't actually have any
+  #   use for the "print-api-json" command, so an empty `api.json` works.
   defp aliases do
     [
       "assets.build": [
         "cmd mkdir -p priv/static/node_modules ; cp -r assets/node_modules/ws priv/static/node_modules",
+        "cmd echo '{}' > assets/node_modules/playwright-core/api.json",
         "esbuild cli"
       ],
       "assets.watch": ["esbuild module --watch"]
