@@ -13,7 +13,7 @@ The package can be installed by adding `playwright` to your list of dependencies
 ```elixir
 def deps do
   [
-    {:playwright, "~> 0.1.17-preview-7"}
+    {:playwright, "~> 1.18.0-alpha.1"}
   ]
 end
 ```
@@ -51,7 +51,7 @@ end
 
 1. Clone the repo
 2. Run `bin/dev/doctor` and for each problem, either use the suggested remedies or fix it some other way
-3. Run `bin/dev/test` and then `bin/dev/start` to make sure everything is working
+3. Run `bin/dev/test` to run the test suite make sure everything is working
 
 ### Day-to-day
 
