@@ -10,7 +10,7 @@ The package can be installed by adding `playwright` to your list of dependencies
 ```elixir
 def deps do
   [
-    {:playwright, "~> 0.1.17-preview-7"}
+    {:playwright, "~> 1.18.0-alpha.1"}
   ]
 end
 ```
