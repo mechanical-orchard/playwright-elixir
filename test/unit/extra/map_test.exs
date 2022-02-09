@@ -21,6 +21,15 @@ defmodule Playwright.Extra.MapTest do
   end
 
   describe "deep_camelize_keys" do
+    test "deeply converts keys from atoms" do
+      map = %{key: "value", key_with_converted_case: %{nested_pair: "value"}}
+
+      assert map |> Extra.Map.deep_camelize_keys() == %{
+               "key" => "value",
+               "keyWithConvertedCase" => %{"nestedPair" => "value"}
+             }
+    end
+
     test "deeply converts keys from strings" do
       map = %{"key" => "value", "key_with_converted_case" => %{"nested_pair" => "value"}}
 
@@ -30,13 +39,10 @@ defmodule Playwright.Extra.MapTest do
              }
     end
 
-    test "deeply converts keys from atoms" do
-      map = %{key: "value", key_with_converted_case: %{nested_pair: "value"}}
+    test "retains special-case, already camelized strings" do
+      map = %{"camelizedKey" => "value", "CamelizedKey" => %{"nestedAPIKey" => "value"}}
 
-      assert map |> Extra.Map.deep_camelize_keys() == %{
-               "key" => "value",
-               "keyWithConvertedCase" => %{"nestedPair" => "value"}
-             }
+      assert map |> Extra.Map.deep_camelize_keys() == map
     end
   end
 end

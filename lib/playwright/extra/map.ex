@@ -1,5 +1,6 @@
 defmodule Playwright.Extra.Map do
   @moduledoc false
+  require Logger
   alias Playwright.Extra.Atom
 
   def deep_atomize_keys(map) when is_map(map) do
@@ -57,8 +58,20 @@ defmodule Playwright.Extra.Map do
   # private
   # ----------------------------------------------------------------------------
 
-  defp camelize(key) do
+  defp camelize(key) when is_atom(key) do
     Atom.to_string(key) |> Recase.to_camel()
+  end
+
+  defp camelize(key) when is_binary(key) do
+    # key
+
+    case(String.match?(key, ~r/[A-Z]+/)) do
+      true ->
+        key
+
+      false ->
+        Atom.to_string(key) |> Recase.to_camel()
+    end
   end
 
   defp snakecase(key) do
