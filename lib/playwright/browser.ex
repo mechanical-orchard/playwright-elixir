@@ -198,6 +198,10 @@ defmodule Playwright.Browser do
     Enum.reduce(opts, %{}, fn {k, v}, acc -> Map.put(acc, prepare(k), v) end)
   end
 
+  defp prepare(string) when is_binary(string) do
+    string
+  end
+
   defp prepare(atom) when is_atom(atom) do
     Extra.Atom.to_string(atom)
     |> Recase.to_camel()
