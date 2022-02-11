@@ -40,6 +40,8 @@ defmodule Playwright.BrowserType do
           optional(:slow_mo) => integer(),
           optional(:timeout) => integer()
         }
+
+  @typedoc "Options for `connect_over_cdp/3`"
   @type connect_over_cdp_options :: connect_options()
 
   @typedoc "A map/struct providing call options"
