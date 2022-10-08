@@ -114,8 +114,18 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec content(Frame.t()) :: binary()
-  # def content(frame)
+  @doc """
+  Returns `Playwright.ElementHandle.content/1`
+  ## Returns
+    - `binary() | nil`
+  ## Arguments
+  | key/name | type   |             | description |
+  | ---------- | ------ | ----------- | ----------- |
+  """
+  @spec content(t()) :: binary() | nil
+  def content(%Frame{session: session} = frame) do
+    Channel.post(session, {:guid, frame.guid}, :content)
+  end
 
   # ---
 

@@ -497,6 +497,11 @@ defmodule Playwright.Page do
     Channel.post(session, {:guid, page.guid}, :set_viewport_size, %{viewport_size: dimensions})
   end
 
+  @spec content(t()) :: binary() | nil
+  def content(%Page{} = page) do
+    main_frame(page) |> Frame.content()
+  end
+
   @spec text_content(t(), binary(), map()) :: binary() | nil
   def text_content(%Page{} = page, selector, options \\ %{}) do
     main_frame(page) |> Frame.text_content(selector, options)
