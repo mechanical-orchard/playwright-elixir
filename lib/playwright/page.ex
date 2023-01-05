@@ -270,10 +270,12 @@ defmodule Playwright.Page do
   # @spec expose_binding(t(), binary(), function(), options()) :: :ok
   # def expose_binding(page, name, callback, options \\ %{})
 
-  # @spec expose_function(t(), binary(), function()) :: :ok
-  # def expose_function(page, name, callback)
-
   # ---
+
+  @spec expose_function(t(), binary(), function()) :: :ok
+  def expose_function(%Page{} = page, name, callback) do
+    context(page) |> BrowserContext.expose_function(name, callback)
+  end
 
   @spec fill(t(), binary(), binary(), options()) :: :ok
   def fill(%Page{} = page, selector, value, options \\ %{}) do

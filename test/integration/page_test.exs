@@ -315,6 +315,17 @@ defmodule Playwright.PageTest do
     end
   end
 
+  describe "Page.expose_function/3" do
+    test "binds a local function", %{page: page} do
+      handler = fn [a, b] ->
+        a * b
+      end
+
+      Page.expose_function(page, "add", handler)
+      assert Page.evaluate(page, "add(9, 4)") == 36
+    end
+  end
+
   describe "Page.fill/3" do
     test "sets text content", %{assets: assets, page: page} do
       page
