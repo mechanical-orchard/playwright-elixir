@@ -52,6 +52,7 @@ defmodule Playwright.MixProject do
       {:ex_doc, "~> 0.25", only: :dev, runtime: false},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
       {:gun, "~> 1.3.3"},
+      {:httpoison, "~> 1.8", only: [:test]},
       {:jason, "~> 1.2"},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
       {:playwright_assets, "~> 1.18.1", only: [:test]},
