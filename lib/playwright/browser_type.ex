@@ -77,10 +77,46 @@ defmodule Playwright.BrowserType do
     end
   end
 
-  # ---
+  @doc """
+  Attaches Playwright to an existing browser instance using the Chrome DevTools Protocol.
 
-  # @spec connect_over_cdp(BrowserType.t(), url(), options()) :: Playwright.Browser.t()
-  # def connect_over_cdp(browser_type, endpoint_url, options \\ %{})
+  ## Returns
+
+    - `{session, %Playwright.Browser{}}`
+
+  ## Arguments
+
+    ... (many)
+
+  ## Example
+
+      {_, browser} = Playwright.BrowserType.connect_over_cdp(:chromium, "http://127.0.0.1:9222")
+
+  """
+  @spec connect_over_cdp(client(), url(), options()) :: Playwright.Browser.t()
+  def connect_over_cdp(client, endpoint_url \\ nil, options \\ %{})
+
+  def connect_over_cdp(client, endpoint_url, options)
+      when is_atom(client)
+      when client in [:chromium] do
+    with {:ok, session} <- new_session(Transport.Driver, options),
+         browser_type <- chromium(session),
+         browser <- _connect_over_cdp(browser_type, Map.merge(%{"endpointURL" => endpoint_url}, options)) do
+      {session, browser}
+    end
+  end
+
+  def connect_over_cdp(client, _endpoint_url, _options)
+      when is_atom(client)
+      when client in [:firefox, :webkit] do
+    raise RuntimeError, message: "not yet implemented"
+  end
+
+  defp _connect_over_cdp(%BrowserType{session: session, guid: guid}, params) do
+    %{browser: browser, default_context: browser_context} = Channel.post(session, {:guid, guid}, "connectOverCDP", params)
+    if browser_context, do: Channel.patch(browser_context.session, {:guid, browser_context.guid}, %{browser: browser})
+    browser
+  end
 
   # @spec executable_path(BrowserType.t()) :: String.t()
   # def executable_path(browser_type)
@@ -125,7 +161,7 @@ defmodule Playwright.BrowserType do
   > describes some differences for Linux users.
   """
   @spec launch(client() | nil, any()) :: {pid(), Playwright.Browser.t()}
-  def launch(client \\ nil, options \\ %{})
+  def launch(client \\ nil, options \\ Config.launch_options(true))
 
   def launch(nil, options) do
     launch(:chromium, options)
@@ -134,8 +170,11 @@ defmodule Playwright.BrowserType do
   def launch(client, options)
       when is_atom(client)
       when client in [:chromium] do
-    {:ok, session} = new_session(Transport.Driver, options)
-    {session, chromium(session)}
+    with {:ok, session} <- new_session(Transport.Driver, options),
+         browser_type <- chromium(session),
+         browser <- browser(browser_type, options) do
+      {session, browser}
+    end
   end
 
   def launch(client, _options)
@@ -164,19 +203,14 @@ defmodule Playwright.BrowserType do
   # private
   # ----------------------------------------------------------------------------
 
-  defp browser(%BrowserType{} = browser_type) do
-    Channel.post(browser_type.session, {:guid, browser_type.guid}, :launch, Config.launch_options(true))
+  defp browser(%BrowserType{} = browser_type, launch_options) do
+    Channel.post(browser_type.session, {:guid, browser_type.guid}, :launch, launch_options)
   end
 
   defp chromium(session) do
-    case Channel.find(session, {:guid, "Playwright"}) do
-      %Playwright{} = playwright ->
-        %{guid: guid} = playwright.chromium
-        Channel.find(session, {:guid, guid}) |> browser()
-
-      other ->
-        raise("expected chromium to return a  `Playwright`, received: #{inspect(other)}")
-    end
+    playwright = playwright(session)
+    %{guid: guid} = playwright.chromium
+    Channel.find(session, {:guid, guid})
   end
 
   defp new_session(transport, args) do
@@ -187,7 +221,17 @@ defmodule Playwright.BrowserType do
   end
 
   defp launched_browser(session) do
-    playwright = Channel.find(session, {:guid, "Playwright"})
+    playwright = playwright(session)
     playwright.initializer.preLaunchedBrowser
+  end
+
+  defp playwright(session) do
+    case Channel.find(session, {:guid, "Playwright"}) do
+      %Playwright{} = playwright ->
+        playwright
+
+      other ->
+        raise("expected to return a `Playwright`, received: #{inspect(other)}")
+    end
   end
 end
