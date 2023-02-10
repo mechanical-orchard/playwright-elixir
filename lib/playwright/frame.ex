@@ -827,9 +827,15 @@ defmodule Playwright.Frame do
       frame
     else
       # e = Channel.wait_for(frame, :loadstate)
-      {:ok, e} = Channel.wait(session, {:guid, frame.guid}, :loadstate)
-      e.target
+      case Channel.wait(session, {:guid, frame.guid}, :loadstate) do
+        {:ok, e} -> e.target
+        e -> e.target
+      end
     end
+  end
+
+  def wait_for_load_state(%Event{target: %Frame{} = frame}, state, options) do
+    wait_for_load_state(frame, state, options)
   end
 
   # def wait_for_load_state(%Frame{} = frame, state, options) when is_binary(state) do
