@@ -20,7 +20,7 @@ defmodule Playwright.MixProject do
       preferred_cli_env: [credo: :test, dialyzer: :test, docs: :docs],
       source_url: @source_url,
       start_permanent: Mix.env() == :prod,
-      version: "1.18.0-alpha.1"
+      version: "1.18.0-db.2"
     ]
   end
 
@@ -46,12 +46,12 @@ defmodule Playwright.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowlib, "~> 2.7.0"},
+      {:cowlib, "~> 2.11.0", override: true},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.25", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.28.5", only: :dev, runtime: false},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
-      {:gun, "~> 1.3.3"},
+      {:gun, "2.0.0-rc.2", override: true},
       {:jason, "~> 1.2"},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
       {:playwright_assets, "~> 1.28.0", only: [:test]},

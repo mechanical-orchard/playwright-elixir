@@ -63,15 +63,7 @@ defmodule Playwright.Extra.Map do
   end
 
   defp camelize(key) when is_binary(key) do
-    # key
-
-    case(String.match?(key, ~r/[A-Z]+/)) do
-      true ->
-        key
-
-      false ->
-        Atom.to_string(key) |> Recase.to_camel()
-    end
+    key |> Recase.to_camel()
   end
 
   defp snakecase(key) do
