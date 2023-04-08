@@ -3,7 +3,7 @@ defmodule Playwright.PlaywrightTest do
   use Playwright.UnitTest
   alias Playwright.API.{Browser, Page}
 
-  describe "Playwright.launch/1" do
+  describe "Playwright.launch/2" do
     test "with :chromium" do
       with {:ok, br} <- Playwright.launch(:chromium),
            {:ok, pg} <- Browser.new_page(br),
@@ -30,6 +30,17 @@ defmodule Playwright.PlaywrightTest do
            {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
         assert Playwright.Response.ok(rs)
         assert Playwright.Page.text_content(pg, "h2.header") =~ "Safari"
+      end
+      |> pass()
+    end
+
+    @tag :headed
+    test "with options: `%{headless: false}`" do
+      with {:ok, br} <- Playwright.launch(:chromium, %{headless: false}),
+           {:ok, pg} <- Browser.new_page(br),
+           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
+        assert Playwright.Response.ok(rs)
+        assert Playwright.Page.text_content(pg, "h2.header") =~ "Chrome"
       end
       |> pass()
     end
