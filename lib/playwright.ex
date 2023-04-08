@@ -1,18 +1,18 @@
 defmodule Playwright do
   @moduledoc """
-  `Playwright` module provides functions to launch a `Playwright.Browser`.
+  `Playwright` launches and manages with Playwright browser-server instances.
 
-  The following is a typical example of using `Playwright` to drive automation.
+  An example of using `Playwright` to drive automation:
 
   ## Example
 
-      alias Playwright.{Browser, Page, Response}
+      alias Playwright.API.{Browser, Page, Response}
 
-      browser = Playwright.launch(:chromium)
+      {:ok, browser}  = Playwright.launch(:chromium)
+      {:ok, page}     = Browser.new_page(browser)
+      {:ok, response} = Page.goto(browser, "http://example.com")
 
-      assert Browser.new_page(browser)
-      |> Page.goto("http://example.com")
-      |> Response.ok()
+      assert Response.ok(response)
 
       Browser.close(browser)
   """
@@ -20,6 +20,8 @@ defmodule Playwright do
   use Playwright.ChannelOwner
 
   @property :chromium
+  @property :firefox
+  @property :webkit
 
   @typedoc "The web client type used for `launch` and `connect` functions."
   @type client_type :: :chromium | :firefox | :webkit
@@ -30,19 +32,31 @@ defmodule Playwright do
   ## Arguments
 
   - `type`: The type of client (browser) to launch.
-    `(:chromium | nil)` with default `:chromium`
+    `(:chromium | :firefox | :webkit)`
   """
   @spec launch(client_type() | nil) :: Playwright.Browser.t()
-  def launch(type \\ nil)
+  def launch(type, options \\ %{}) do
+    options = Map.merge(Playwright.Config.launch_options(), options)
+    {:ok, session} = new_session(Playwright.Transport.Driver, options)
+    {:ok, browser} = new_browser(session, type, options)
+    {:ok, browser}
+  end
 
-  def launch(nil), do: launch(:chromium)
+  # private
+  # ----------------------------------------------------------------------------
 
-  def launch(type) when type in [:chromium, :firefox, :webkit] do
-    options = Playwright.Config.launch_options()
+  defp new_browser(session, type, options)
+       when is_atom(type) and type in [:chromium, :firefox, :webkit] do
+    with play <- Playwright.Channel.find(session, {:guid, "Playwright"}),
+         guid <- Map.get(play, type)[:guid] do
+      {:ok, Playwright.Channel.post(session, {:guid, guid}, :launch, options)}
+    end
+  end
 
-    {_session, browser} = Playwright.BrowserType.launch(type, options)
-    # {_session, browser} = Playwright.Channel.Session.launch(type, options)
-
-    browser
+  defp new_session(transport, args) do
+    DynamicSupervisor.start_child(
+      Playwright.Channel.Session.Supervisor,
+      {Playwright.Channel.Session, {transport, args}}
+    )
   end
 end

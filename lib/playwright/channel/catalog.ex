@@ -49,6 +49,10 @@ defmodule Playwright.Channel.Catalog do
   # module API
   # ---------------------------------------------------------------------------
 
+  def all(catalog) do
+    GenServer.call(catalog, :all)
+  end
+
   @doc """
   Retrieves a resource from the `Catalog` by its `param: guid`.
 
@@ -140,6 +144,11 @@ defmodule Playwright.Channel.Catalog do
 
   # @impl callbacks
   # ---------------------------------------------------------------------------
+
+  @impl GenServer
+  def handle_call(:all, _, %{storage: storage} = state) do
+    {:reply, storage, state}
+  end
 
   @impl GenServer
   def handle_call({:get, {:guid, guid}}, from, %{awaiting: awaiting, storage: storage} = state) do

@@ -52,6 +52,11 @@ defmodule Playwright.Response do
     response.status === 0 || (response.status >= 200 && response.status <= 299)
   end
 
+  @spec ok({t(), t()}) :: boolean()
+  def ok({:error, %Playwright.Channel.Error{}}) do
+    false
+  end
+
   # ---
 
   # @spec security_details(t()) :: map() | nil)

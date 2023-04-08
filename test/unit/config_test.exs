@@ -28,14 +28,6 @@ defmodule Playwright.ConfigTest do
       assert config == %{}
     end
 
-    test "optionally transforms snake-case keys to camelcase", context do
-      config = helper(context, downloads_path: "./tmp")
-      assert config == %{downloads_path: "./tmp"}
-
-      config = Config.config_for(context.test, %Config.Types.LaunchOptions{}, true)
-      assert config == %{"downloadsPath" => "./tmp"}
-    end
-
     defp helper(context, settings) do
       key = context.test
       Application.put_env(:playwright, key, settings)

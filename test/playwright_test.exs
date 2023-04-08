@@ -1,44 +1,37 @@
 defmodule Playwright.PlaywrightTest do
-  use ExUnit.Case, async: true
-  use PlaywrightTest.Case
-  alias Playwright.{Browser, Page, Response}
-
-  describe "Playwright.launch/0" do
-    test "launches and returns an instance of the default Browser" do
-      assert Playwright.launch()
-             |> Browser.new_page()
-             |> Page.goto("http://example.com")
-             |> Response.ok()
-    end
-  end
+  use ExUnit.Case
+  use Playwright.UnitTest
+  alias Playwright.API.{Browser, Page}
 
   describe "Playwright.launch/1" do
-    test "launches and returns an instance of the requested Browser" do
-      assert Playwright.launch(:chromium)
-             |> Browser.new_page()
-             |> Page.goto("http://example.com")
-             |> Response.ok()
-    end
-  end
-
-  describe "PlaywrightTest.Case context" do
-    test "using `:browser`", %{browser: browser} do
-      assert browser
-             |> Browser.new_page()
-             |> Page.goto("http://example.com")
-             |> Response.ok()
+    test "with :chromium" do
+      with {:ok, br} <- Playwright.launch(:chromium),
+           {:ok, pg} <- Browser.new_page(br),
+           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
+        assert Playwright.Response.ok(rs)
+        assert Playwright.Page.text_content(pg, "h2.header") =~ "Chrome"
+      end
+      |> pass()
     end
 
-    test "using `:page`", %{page: page} do
-      assert page
-             |> Page.goto("http://example.com")
-             |> Response.ok()
+    test "with :firefox" do
+      with {:ok, br} <- Playwright.launch(:firefox),
+           {:ok, pg} <- Browser.new_page(br),
+           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
+        assert Playwright.Response.ok(rs)
+        assert Playwright.Page.text_content(pg, "h2.header") =~ "Firefox"
+      end
+      |> pass()
     end
 
-    @tag exclude: [:page]
-    test "excluding `:page` via `@tag`", context do
-      assert Map.has_key?(context, :browser)
-      refute Map.has_key?(context, :page)
+    test "with :webkit" do
+      with {:ok, br} <- Playwright.launch(:webkit),
+           {:ok, pg} <- Browser.new_page(br),
+           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
+        assert Playwright.Response.ok(rs)
+        assert Playwright.Page.text_content(pg, "h2.header") =~ "Safari"
+      end
+      |> pass()
     end
   end
 end

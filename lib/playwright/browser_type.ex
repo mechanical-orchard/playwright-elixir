@@ -21,7 +21,7 @@ defmodule Playwright.BrowserType do
 
       {session, browser} = Playwright.BrowserType.launch()
 
-  Connect to a running playwright instances:
+  Connect to a running playwright instance:
 
       {session, browser} =
         Playwright.BrowserType.connect("ws://localhost:3000/playwright")
@@ -132,16 +132,14 @@ defmodule Playwright.BrowserType do
   end
 
   def launch(client, options)
-      when is_atom(client)
-      when client in [:chromium] do
+      when is_atom(client) and client in [:chromium] do
     {:ok, session} = new_session(Transport.Driver, options)
     {session, chromium(session)}
   end
 
   def launch(client, _options)
-      when is_atom(client)
-      when client in [:firefox, :webkit] do
-    raise RuntimeError, message: "not yet implemented"
+      when is_atom(client) and client in [:firefox, :webkit] do
+    raise RuntimeError, message: "not yet implemented: #{inspect(client)}"
   end
 
   def launch(options, _) do
@@ -165,7 +163,7 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp browser(%BrowserType{} = browser_type) do
-    Channel.post(browser_type.session, {:guid, browser_type.guid}, :launch, Config.launch_options(true))
+    Channel.post(browser_type.session, {:guid, browser_type.guid}, :launch, Config.launch_options())
   end
 
   defp chromium(session) do

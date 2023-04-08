@@ -185,7 +185,6 @@ defmodule Playwright.Config do
   """
 
   alias Playwright.Config.Types
-  alias Playwright.Extra
 
   @typedoc false
   @type connect_options :: %{
@@ -239,33 +238,33 @@ defmodule Playwright.Config do
   end
 
   @doc false
-  @spec connect_options(boolean()) :: connect_options
-  def connect_options(camelcase \\ false) do
-    config_for(ConnectOptions, %Types.ConnectOptions{}, camelcase) || %{}
+  @spec connect_options() :: connect_options
+  def connect_options() do
+    config_for(ConnectOptions, %Types.ConnectOptions{}) || %{}
   end
 
   @doc false
-  @spec launch_options(boolean()) :: map()
-  def launch_options(camelcase \\ false) do
-    config_for(LaunchOptions, %Types.LaunchOptions{}, camelcase) || %{}
+  @spec launch_options() :: map()
+  def launch_options() do
+    config_for(LaunchOptions, %Types.LaunchOptions{}) || %{}
     # |> clean()
   end
 
   @doc false
-  @spec playwright_test(boolean()) :: Types.PlaywrightTest
-  def playwright_test(camelcase \\ false) do
-    config_for(PlaywrightTest, %Types.PlaywrightTest{}, camelcase)
+  @spec playwright_test() :: Types.PlaywrightTest
+  def playwright_test() do
+    config_for(PlaywrightTest, %Types.PlaywrightTest{})
     # |> Map.from_struct()
   end
 
   @doc false
-  def config_for(key, mod, camelcase \\ false) do
+  def config_for(key, mod) do
     configured =
       Application.get_env(:playwright, key, %{})
       |> Enum.into(%{})
 
-    result = build(configured, mod) |> clean()
-    if camelcase, do: camelize(result), else: result
+    build(configured, mod)
+    |> clean()
   end
 
   # private
@@ -295,9 +294,5 @@ defmodule Playwright.Config do
       _otherwise_ -> false
     end)
     |> Enum.into(%{})
-  end
-
-  defp camelize(source) do
-    Extra.Map.deep_camelize_keys(source)
   end
 end
