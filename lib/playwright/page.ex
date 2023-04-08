@@ -97,7 +97,7 @@ defmodule Playwright.Page do
 
   ## Arguments
 
-  | key/name  | type   |                       | description |
+  | key/name    | type   |                       | description |
   | ----------- | ------ | --------------------- | ----------- |
   | `script`    | param  | `binary()` or `map()` | As `binary()`: an inlined script to be evaluated; As `%{path: path}`: a path to a JavaScript file. |
 
@@ -409,7 +409,7 @@ defmodule Playwright.Page do
 
   ## Arguments
 
-  | key/name    | type   |            | description |
+  | key/name      | type   |            | description |
   | ------------- | ------ | ---------- | ----------- |
   | `:timeout`    | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:wait_until` | option | `binary()` | "load", "domcontentloaded", "networkidle", or "commit". When to consider the operation as having succeeded. `(default: "load")` |

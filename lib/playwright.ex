@@ -24,31 +24,40 @@ defmodule Playwright do
   @property :webkit
 
   @typedoc "The web client type used for `launch` and `connect` functions."
-  @type client_type :: :chromium | :firefox | :webkit
+  @type client :: :chromium | :firefox | :webkit
+
+  @typedoc "Options for `launch` and `connect` functions."
+  @type options :: Playwright.Config.launch_options()
 
   @doc """
-  Launch an instance of `Playwright.Browser`.
+  Launches an instance of `Playwright.Browser`.
+
+  ## Returns
+
+    - `{:ok, Playwright.Browser.t()}`
 
   ## Arguments
 
-  - `type`: The type of client (browser) to launch.
-    `(:chromium | :firefox | :webkit)`
+  | key/name  | typ   |             | description |
+  | ----------| ----- | ----------- | ----------- |
+  | `type`    | param | `client()`  | The type of client (browser) to launch. |
+  | `options` | param | `options()` | `Playwright.Config.launch_options()` |
   """
-  @spec launch(client_type() | nil) :: Playwright.Browser.t()
-  def launch(type, options \\ %{}) do
+  @spec launch(client(), options() | map()) :: {:ok, Playwright.Browser.t()}
+  def launch(client, options \\ %{}) do
     options = Map.merge(Playwright.Config.launch_options(), options)
     {:ok, session} = new_session(Playwright.Transport.Driver, options)
-    {:ok, browser} = new_browser(session, type, options)
+    {:ok, browser} = new_browser(session, client, options)
     {:ok, browser}
   end
 
   # private
   # ----------------------------------------------------------------------------
 
-  defp new_browser(session, type, options)
-       when is_atom(type) and type in [:chromium, :firefox, :webkit] do
+  defp new_browser(session, client, options)
+       when is_atom(client) and client in [:chromium, :firefox, :webkit] do
     with play <- Playwright.Channel.find(session, {:guid, "Playwright"}),
-         guid <- Map.get(play, type)[:guid] do
+         guid <- Map.get(play, client)[:guid] do
       {:ok, Playwright.Channel.post(session, {:guid, guid}, :launch, options)}
     end
   end
