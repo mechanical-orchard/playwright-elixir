@@ -1,4 +1,6 @@
 # Playwright for Elixir
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmechanical-orchard%2Fplaywright-elixir.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmechanical-orchard%2Fplaywright-elixir?ref=badge_shield)
+
 
 **NOTE:** This package is currently in "preview". The features are not yet at parity with other Playwright implementations. Once `playwright-elixir` is at or near parity with [`playwright`](https://github.com/microsoft/playwright), the version number will be updated to mirror the supported version of `playwright`.
 
@@ -63,3 +65,7 @@ end
 ### Building assets for a release
 
 `mix assets.build`
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmechanical-orchard%2Fplaywright-elixir.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmechanical-orchard%2Fplaywright-elixir?ref=badge_large)
