@@ -219,10 +219,12 @@ defmodule Playwright.ElementHandle do
   defdelegate q(handle, selector), to: __MODULE__, as: :query_selector
 
   # ---
+  @spec query_selector_all(t(), binary()) :: [ElementHandle.t()]
+  def query_selector_all(%ElementHandle{session: session} = handle, selector) do
+    Channel.post(session, {:guid, handle.guid}, :query_selector_all, %{selector: selector})
+  end
 
-  # @spec query_selector_all(ElementHandle.t(), binary()) :: [ElementHandle.t()]
-  # def query_selector_all(handle, selector)
-  # defdelegate qq(handle, selector), to: __MODULE__, as: :query_selector_all
+  defdelegate qq(page, selector), to: __MODULE__, as: :query_selector_all
 
   # ---
 
