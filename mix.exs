@@ -136,7 +136,7 @@ defmodule Playwright.MixProject do
           Playwright.Config
         ],
         Utilities: [
-          Playwright.CLI
+          Playwright.SDK.CLI
         ],
         "Test Helpers": [
           PlaywrightTest.Case,

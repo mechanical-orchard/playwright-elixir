@@ -12,6 +12,6 @@ defmodule Mix.Tasks.Playwright.InstallDeps do
 
   @impl true
   def run(_args) do
-    Playwright.CLI.install_deps()
+    Playwright.SDK.CLI.install_deps()
   end
 end
