@@ -28,9 +28,9 @@ defmodule Playwright.BrowserType do
   """
 
   use Playwright.SDK.ChannelOwner
-  alias Playwright.{BrowserType, Transport}
+  alias Playwright.BrowserType
   alias Playwright.Channel.Session
-  alias Playwright.SDK.Config
+  alias Playwright.SDK.{Config, Transport}
 
   @typedoc "The web client type used for `launch/1` and `connect/2` functions."
   @type client :: :chromium | :firefox | :webkit

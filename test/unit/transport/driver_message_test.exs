@@ -1,6 +1,6 @@
-defmodule Playwright.Transport.DriverMessageTest do
+defmodule Playwright.SDK.Transport.DriverMessageTest do
   use ExUnit.Case, async: true
-  alias Playwright.Transport.DriverMessage
+  alias Playwright.SDK.Transport.DriverMessage
 
   describe "parse/4" do
     test "when the frame is only a UTF-32 character (a standalone length padding)" do
