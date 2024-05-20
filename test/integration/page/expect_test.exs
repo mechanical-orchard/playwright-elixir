@@ -1,7 +1,7 @@
 defmodule Playwright.Page.NetworkTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{BrowserContext, Channel, Page, Response}
-  alias Playwright.Channel.Event
+  alias Playwright.{BrowserContext, Page, Response}
+  alias Playwright.Channel.{Error, Event}
 
   describe "Page.expect_event/3 without a 'trigger" do
     test "w/ an event", %{assets: assets, page: page} do
@@ -35,7 +35,7 @@ defmodule Playwright.Page.NetworkTest do
     end
 
     test "w/ an event and a timeout", %{page: page} do
-      {:error, %Channel.Error{message: message}} =
+      {:error, %Error{message: message}} =
         Page.expect_event(page, :request_finished, %{
           timeout: 200
         })
@@ -60,7 +60,7 @@ defmodule Playwright.Page.NetworkTest do
     test "w/ an event, a (falsy) predicate, and (incidentally) a timeout", %{assets: assets, page: page} do
       Task.start(fn -> Page.goto(page, assets.empty) end)
 
-      {:error, %Channel.Error{message: message}} =
+      {:error, %Error{message: message}} =
         Page.expect_event(page, :request_finished, %{
           predicate: fn _, _ ->
             false
@@ -107,7 +107,7 @@ defmodule Playwright.Page.NetworkTest do
     end
 
     test "w/ an event and a (falsy) predicate", %{assets: assets, page: page} do
-      {:error, %Channel.Error{message: message}} =
+      {:error, %Error{message: message}} =
         Page.expect_event(
           page,
           :request_finished,

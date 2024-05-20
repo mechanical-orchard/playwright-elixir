@@ -56,9 +56,9 @@ defmodule Playwright do
 
   defp new_browser(session, client, options)
        when is_atom(client) and client in [:chromium, :firefox, :webkit] do
-    with play <- Playwright.Channel.find(session, {:guid, "Playwright"}),
+    with play <- Playwright.SDK.Channel.find(session, {:guid, "Playwright"}),
          guid <- Map.get(play, client)[:guid] do
-      {:ok, Playwright.Channel.post(session, {:guid, guid}, :launch, options)}
+      {:ok, Playwright.SDK.Channel.post(session, {:guid, guid}, :launch, options)}
     end
   end
 

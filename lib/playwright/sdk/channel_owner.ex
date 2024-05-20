@@ -12,8 +12,8 @@ defmodule Playwright.SDK.ChannelOwner do
       @derive {Inspect, only: [:guid] ++ @properties}
 
       import Playwright.Extra.Map
-      alias Playwright.Channel
       alias Playwright.Channel.Event
+      alias Playwright.SDK.Channel
 
       defstruct @properties ++ [:session, :guid, :initializer, :listeners, :parent, :type]
 
@@ -130,7 +130,7 @@ defmodule Playwright.SDK.ChannelOwner do
 
   defmodule Macros do
     @moduledoc false
-    alias Playwright.Channel
+    alias Playwright.SDK.Channel
 
     defmacro __using__(_args) do
       Module.register_attribute(__CALLER__.module, :properties, accumulate: true)

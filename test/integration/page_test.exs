@@ -1,7 +1,8 @@
 defmodule Playwright.PageTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Browser, Channel, ElementHandle, Frame, Page, Request, Response, Route}
+  alias Playwright.{Browser, ElementHandle, Frame, Page, Request, Response, Route}
   alias Playwright.Channel.{Error, Event}
+  alias Playwright.SDK.Channel
 
   describe "Page.hover/2" do
     test "triggers hover state", %{assets: assets, page: page} do
@@ -212,7 +213,7 @@ defmodule Playwright.PageTest do
     test "with a single option given mismatched attributes, returns a timeout", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
 
-      assert {:error, %Channel.Error{message: "Timeout 200ms exceeded."}} =
+      assert {:error, %Error{message: "Timeout 200ms exceeded."}} =
                Page.select_option(page, "select", %{value: "green", label: "Brown"}, %{timeout: 200})
     end
 
@@ -334,7 +335,7 @@ defmodule Playwright.PageTest do
       assert page |> Page.get_attribute("div#outer", "name") == "value"
       assert page |> Page.get_attribute("div#outer", "foo") == nil
 
-      assert({:error, %Channel.Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 200}))
+      assert({:error, %Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 200}))
     end
   end
 

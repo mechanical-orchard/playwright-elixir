@@ -21,8 +21,9 @@ defmodule Playwright.Browser do
     - `:version`
   """
   use Playwright.SDK.ChannelOwner
-  alias Playwright.{Browser, BrowserContext, ChannelOwner, Extra, Page}
-  alias Playwright.Channel
+  alias Playwright.{Browser, BrowserContext, Extra, Page}
+  alias Playwright.Channel.Error
+  alias Playwright.SDK.{Channel, ChannelOwner}
 
   @property :name
   @property(:version, %{doc: "Returns the browser version"})
@@ -69,7 +70,7 @@ defmodule Playwright.Browser do
       :ok ->
         :ok
 
-      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
+      {:error, %Error{message: "Target page, context or browser has been closed"}} ->
         :ok
     end
   end

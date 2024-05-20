@@ -1,7 +1,8 @@
 defmodule Playwright.LocatorTest do
   use Playwright.TestCase, async: true
 
-  alias Playwright.{Channel, ElementHandle, Locator, Page}
+  alias Playwright.{ElementHandle, Locator, Page}
+  alias Playwright.Channel.Error
 
   describe "Locator.all_inner_texts/1" do
     test "...", %{page: page} do
@@ -58,7 +59,7 @@ defmodule Playwright.LocatorTest do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "input#bogus")
-      assert {:error, %Channel.Error{message: "Timeout 200ms exceeded."}} = Locator.check(locator, options)
+      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.check(locator, options)
     end
   end
 
@@ -83,7 +84,7 @@ defmodule Playwright.LocatorTest do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "a#bogus")
-      assert {:error, %Channel.Error{message: "Timeout 200ms exceeded."}} = Locator.click(locator, options)
+      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.click(locator, options)
     end
 
     test "clicking a button", %{assets: assets, page: page} do
@@ -255,7 +256,7 @@ defmodule Playwright.LocatorTest do
     test "accepts `option: timeout` for expression evaluation", %{page: page} do
       locator = Page.locator(page, ".missing")
       options = %{timeout: 500}
-      errored = {:error, %Channel.Error{message: "Timeout 500ms exceeded."}}
+      errored = {:error, %Error{message: "Timeout 500ms exceeded."}}
 
       page
       |> Page.set_content("""
@@ -272,7 +273,7 @@ defmodule Playwright.LocatorTest do
     test "accepts `option: timeout` without a `param: arg`", %{page: page} do
       locator = Page.locator(page, ".missing")
       options = %{timeout: 500}
-      errored = {:error, %Channel.Error{message: "Timeout 500ms exceeded."}}
+      errored = {:error, %Error{message: "Timeout 500ms exceeded."}}
 
       page
       |> Page.set_content("""
@@ -709,7 +710,7 @@ defmodule Playwright.LocatorTest do
 
     test "returns a timeout error when unable to 'uncheck'", %{options: options, page: page} do
       locator = Page.locator(page, "input#bogus")
-      assert {:error, %Channel.Error{message: "Timeout 200ms exceeded."}} = Locator.uncheck(locator, options)
+      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.uncheck(locator, options)
     end
   end
 

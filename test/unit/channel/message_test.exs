@@ -1,4 +1,4 @@
-defmodule Playwright.Channel.MessageTest do
+defmodule Playwright.SDK.Channel.MessageTest do
   use ExUnit.Case, async: true
   alias Playwright.Channel.Message
 
