@@ -1,4 +1,4 @@
-defmodule Playwright.Channel.Connection do
+defmodule Playwright.SDK.Channel.Connection do
   @moduledoc false
   use GenServer
   require Logger

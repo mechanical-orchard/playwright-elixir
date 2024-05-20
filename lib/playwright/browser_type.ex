@@ -29,7 +29,7 @@ defmodule Playwright.BrowserType do
 
   use Playwright.SDK.ChannelOwner
   alias Playwright.BrowserType
-  alias Playwright.Channel.Session
+  alias Playwright.SDK.Channel.Session
   alias Playwright.SDK.{Config, Transport}
 
   @typedoc "The web client type used for `launch/1` and `connect/2` functions."

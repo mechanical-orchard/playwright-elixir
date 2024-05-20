@@ -1,7 +1,6 @@
-defmodule Playwright.Channel.Response do
+defmodule Playwright.SDK.Channel.Response do
   @moduledoc false
-  alias Playwright.Channel.{Catalog, Error, Event, Session}
-  alias Playwright.SDK.ChannelOwner
+  alias Playwright.SDK.{Channel, ChannelOwner}
 
   defstruct [:message, :parsed]
 
@@ -11,22 +10,22 @@ defmodule Playwright.Channel.Response do
   def recv(session, message)
 
   def recv(session, %{guid: guid, method: "__create__", params: %{guid: _} = params}) when is_binary(guid) do
-    catalog = Session.catalog(session)
+    catalog = Channel.Session.catalog(session)
     parent = (guid == "" && "Root") || guid
 
-    {:ok, owner} = ChannelOwner.from(params, Catalog.get(catalog, parent))
-    Catalog.put(catalog, owner)
+    {:ok, owner} = ChannelOwner.from(params, Channel.Catalog.get(catalog, parent))
+    Channel.Catalog.put(catalog, owner)
   end
 
   def recv(session, %{guid: guid, method: "__dispose__"}) when is_binary(guid) do
-    catalog = Session.catalog(session)
-    Catalog.rm_r(catalog, guid)
+    catalog = Channel.Session.catalog(session)
+    Channel.Catalog.rm_r(catalog, guid)
   end
 
   def recv(session, %{guid: guid, method: method, params: params}) when is_binary(guid) do
-    catalog = Session.catalog(session)
-    owner = Catalog.get(catalog, guid)
-    event = Event.new(owner, method, params, catalog)
+    catalog = Channel.Session.catalog(session)
+    owner = Channel.Catalog.get(catalog, guid)
+    event = Channel.Event.new(owner, method, params, catalog)
     resolve(session, catalog, owner, event)
   end
 
@@ -39,11 +38,11 @@ defmodule Playwright.Channel.Response do
   end
 
   def recv(_session, %{error: error, id: _}) do
-    Error.new(error, nil)
+    Channel.Error.new(error, nil)
   end
 
   def recv(session, %{id: _} = message) do
-    catalog = Session.catalog(session)
+    catalog = Channel.Session.catalog(session)
     build(message, catalog)
   end
 
@@ -66,7 +65,7 @@ defmodule Playwright.Channel.Response do
   end
 
   defp parse([{_key, %{guid: guid}}], catalog) do
-    Catalog.get(catalog, guid)
+    Channel.Catalog.get(catalog, guid)
   end
 
   # e.g., [rootAXNode: %{children: [%{name: "Hello World", role: "text"}], name: "", role: "WebArea"}],
@@ -83,7 +82,7 @@ defmodule Playwright.Channel.Response do
   end
 
   defp parse([{:elements, value}], catalog) do
-    Enum.map(value, fn %{guid: guid} -> Catalog.get(catalog, guid) end)
+    Enum.map(value, fn %{guid: guid} -> Channel.Catalog.get(catalog, guid) end)
   end
 
   defp parse([{:value, value}], _catalog) do
@@ -99,7 +98,7 @@ defmodule Playwright.Channel.Response do
   end
 
   defp resolve(session, catalog, owner, event) do
-    bindings = Map.get(Session.bindings(session), {owner.guid, event.type}, [])
+    bindings = Map.get(Channel.Session.bindings(session), {owner.guid, event.type}, [])
 
     resolved =
       Enum.reduce(bindings, event, fn callback, acc ->
@@ -112,7 +111,7 @@ defmodule Playwright.Channel.Response do
         end
       end)
 
-    Catalog.put(catalog, resolved.target)
+    Channel.Catalog.put(catalog, resolved.target)
     resolved
   end
 end

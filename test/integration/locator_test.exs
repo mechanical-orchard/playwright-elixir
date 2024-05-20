@@ -2,7 +2,7 @@ defmodule Playwright.LocatorTest do
   use Playwright.TestCase, async: true
 
   alias Playwright.{ElementHandle, Locator, Page}
-  alias Playwright.Channel.Error
+  alias Playwright.SDK.Channel.Error
 
   describe "Locator.all_inner_texts/1" do
     test "...", %{page: page} do

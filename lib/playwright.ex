@@ -64,8 +64,8 @@ defmodule Playwright do
 
   defp new_session(transport, args) do
     DynamicSupervisor.start_child(
-      Playwright.Channel.Session.Supervisor,
-      {Playwright.Channel.Session, {transport, args}}
+      Playwright.SDK.Channel.Session.Supervisor,
+      {Playwright.SDK.Channel.Session, {transport, args}}
     )
   end
 end

@@ -1,6 +1,6 @@
 defmodule Playwright.SDK.Channel.MessageTest do
   use ExUnit.Case, async: true
-  alias Playwright.Channel.Message
+  alias Playwright.SDK.Channel.Message
 
   describe "new/3" do
     test "returns a Message struct" do

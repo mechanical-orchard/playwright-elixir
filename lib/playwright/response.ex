@@ -62,7 +62,7 @@ defmodule Playwright.Response do
   end
 
   @spec ok({t(), t()}) :: boolean()
-  def ok({:error, %Playwright.Channel.Error{}}) do
+  def ok({:error, %Playwright.SDK.Channel.Error{}}) do
     false
   end
 

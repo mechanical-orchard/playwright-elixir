@@ -1,7 +1,7 @@
-defmodule Playwright.Channel.ConnectionTest do
+defmodule Playwright.SDK.Channel.ConnectionTest do
   # use ExUnit.Case, async: true
   # alias Playwright.Catalog
-  # alias Playwright.Channel
+  # alias Playwright.SDK.Channel
   # alias Playwright.Connection
   # alias Playwright.ConnectionTest.TestTransport
 
@@ -98,7 +98,7 @@ defmodule Playwright.Channel.ConnectionTest do
 
   #     {response, _} = Connection.handle_call({:get, {:guid, "Root"}}, from, state)
   #     assert response == :noreply
-  #     assert_received({:tag, %Playwright.Channel.Root{}})
+  #     assert_received({:tag, %Playwright.SDK.Channel.Root{}})
   #   end
   # end
 

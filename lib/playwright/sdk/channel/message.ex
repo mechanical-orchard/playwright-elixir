@@ -1,10 +1,10 @@
-defmodule Playwright.Channel.Message do
+defmodule Playwright.SDK.Channel.Message do
   @moduledoc false
   # `Message` represents communication to and from the Playwright server.
   # The `id` is used to match responses and reply to the caller.
 
   import Playwright.Extra.Map
-  alias Playwright.Channel.Message
+  alias Playwright.SDK.Channel
 
   @enforce_keys [:guid, :id, :method, :params]
 
@@ -29,7 +29,7 @@ defmodule Playwright.Channel.Message do
   # are optional here and are passed to the Playwright server. They may actually
   # be required for the server-side `method` to make sense.
   def new(guid, method, params \\ %{}) do
-    %Message{
+    %Channel.Message{
       guid: guid,
       id: System.unique_integer([:monotonic, :positive]),
       method: camelize(method),

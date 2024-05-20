@@ -1,7 +1,7 @@
 defmodule Playwright.NavigationTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Page, Response}
-  alias Playwright.Channel.Error
+  alias Playwright.SDK.Channel.Error
 
   describe "Page.goto/2" do
     test "works (and updates the page's URL)", %{assets: assets, page: page} do
