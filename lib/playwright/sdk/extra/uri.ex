@@ -1,4 +1,4 @@
-defmodule Playwright.Extra.URI do
+defmodule Playwright.SDK.Extra.URI do
   @moduledoc false
   def absolute?(uri) do
     uri = URI.parse(uri)

@@ -3,7 +3,7 @@ defmodule Playwright.SDK.Channel.Message do
   # `Message` represents communication to and from the Playwright server.
   # The `id` is used to match responses and reply to the caller.
 
-  import Playwright.Extra.Map
+  import Playwright.SDK.Extra.Map
   alias Playwright.SDK.Channel
 
   @enforce_keys [:guid, :id, :method, :params]

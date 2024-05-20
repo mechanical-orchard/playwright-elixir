@@ -1,7 +1,7 @@
-defmodule Playwright.Extra.URITest do
+defmodule Playwright.SDK.Extra.URITest do
   use ExUnit.Case, async: true
 
-  alias Playwright.Extra
+  alias Playwright.SDK.Extra
 
   describe "absolute?" do
     test "returns true if the URI has a scheme and a host" do

@@ -1,6 +1,6 @@
 defmodule Playwright.Helpers.Serialization do
   @moduledoc false
-  import Playwright.Extra.Map
+  import Playwright.SDK.Extra.Map
 
   # NOTE: this is (probably) the desired API; need to work toward it.
   def deserialize({:ok, value}) do

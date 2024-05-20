@@ -1,4 +1,4 @@
-defmodule Playwright.Extra.Atom do
+defmodule Playwright.SDK.Extra.Atom do
   @moduledoc false
   def from_string(nil), do: raise(ArgumentError, message: "Unable to convert nil into an atom")
   def from_string(s) when is_binary(s), do: String.to_atom(s)

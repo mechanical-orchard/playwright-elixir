@@ -1,6 +1,6 @@
 defmodule Playwright.SDK.Channel.Event do
   @moduledoc false
-  alias Playwright.Extra
+  alias Playwright.SDK.Extra
   alias Playwright.SDK.Channel
 
   @type t() :: %__MODULE__{

@@ -1,7 +1,7 @@
 defmodule Playwright.SDK.Channel.Session do
   @moduledoc false
   use GenServer
-  import Playwright.Extra.Atom
+  import Playwright.SDK.Extra.Atom
   alias Playwright.SDK.Channel
 
   defstruct [:bindings, :catalog, :connection]
