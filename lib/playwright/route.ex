@@ -2,7 +2,7 @@ defmodule Playwright.Route do
   @moduledoc """
   ...
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.Route
 
   @type options :: map()

@@ -27,7 +27,7 @@ defmodule Playwright.BrowserType do
         Playwright.BrowserType.connect("ws://localhost:3000/playwright")
   """
 
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.{BrowserType, Config, Transport}
   alias Playwright.Channel.Session
 

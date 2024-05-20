@@ -17,7 +17,7 @@ defmodule Playwright do
       Browser.close(browser)
   """
 
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   @property :chromium
   @property :firefox

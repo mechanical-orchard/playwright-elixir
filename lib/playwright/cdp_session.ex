@@ -1,6 +1,6 @@
 defmodule Playwright.CDPSession do
   @moduledoc false
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.{CDPSession, ChannelOwner}
 
   @property :bindings

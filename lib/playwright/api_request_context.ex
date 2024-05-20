@@ -7,7 +7,7 @@ defmodule Playwright.APIRequestContext do
 
   """
 
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.APIRequestContext
 
   @type fetch_options() :: %{

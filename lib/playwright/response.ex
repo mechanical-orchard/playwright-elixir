@@ -2,7 +2,7 @@ defmodule Playwright.Response do
   @moduledoc """
   ...
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.Response
 
   @property :frame

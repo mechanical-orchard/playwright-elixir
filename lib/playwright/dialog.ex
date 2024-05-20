@@ -1,6 +1,6 @@
 defmodule Playwright.Dialog do
   @moduledoc false
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   # @spec accept(Dialog.t(), binary()) :: :ok
   # def accept(dialog, prompt \\ "")
@@ -19,5 +19,4 @@ defmodule Playwright.Dialog do
 
   # @spec type(Dialog.t()) :: binary()
   # def type(dialog)
-
 end

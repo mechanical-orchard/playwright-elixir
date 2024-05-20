@@ -1,9 +1,3 @@
-# self._request: APIRequestContext = from_channel(
-#   initializer["APIRequestContext"]
-# )
-
-# ---
-
 defmodule Playwright.BrowserContext do
   @moduledoc """
   `Playwright.BrowserContext` provides a way to operate multiple independent
@@ -165,7 +159,7 @@ defmodule Playwright.BrowserContext do
       > - Service workers are only supported on Chromium-based browsers.
   """
 
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.{BrowserContext, ChannelOwner, Frame, Page}
   alias Playwright.{Channel, Helpers}
 

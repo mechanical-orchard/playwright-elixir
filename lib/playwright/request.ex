@@ -24,7 +24,7 @@ defmodule Playwright.Request do
   If a request gets a "redirect" response, the request is successfully finished with the "requestFinished" event, and a
   new request is issued to the target redirected URL.
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.Response
 
   @property :failure

@@ -2,7 +2,7 @@ defmodule Playwright.WebSocket do
   @moduledoc """
   ...
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   @property :is_closed
   @property :url
