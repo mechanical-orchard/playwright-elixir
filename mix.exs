@@ -133,7 +133,7 @@ defmodule Playwright.MixProject do
         ],
         Runner: [
           Playwright.Channel.Catalog,
-          Playwright.Config
+          Playwright.SDK.Config
         ],
         Utilities: [
           Playwright.SDK.CLI

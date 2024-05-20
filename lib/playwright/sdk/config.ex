@@ -1,4 +1,4 @@
-defmodule Playwright.Config do
+defmodule Playwright.SDK.Config do
   @moduledoc """
   Configuration for Playwright.
 
@@ -184,7 +184,7 @@ defmodule Playwright.Config do
         transport: :websocket
   """
 
-  alias Playwright.Config.Types
+  alias Playwright.SDK.Config.Types
 
   @typedoc false
   @type connect_options :: %{
