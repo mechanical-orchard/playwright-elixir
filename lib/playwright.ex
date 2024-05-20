@@ -27,7 +27,7 @@ defmodule Playwright do
   @type client :: :chromium | :firefox | :webkit
 
   @typedoc "Options for `launch` and `connect` functions."
-  @type options :: Playwright.Config.launch_options()
+  @type options :: Playwright.SDK.Config.launch_options()
 
   @doc """
   Launches an instance of `Playwright.Browser`.
@@ -41,11 +41,11 @@ defmodule Playwright do
   | key/name  | typ   |             | description |
   | ----------| ----- | ----------- | ----------- |
   | `type`    | param | `client()`  | The type of client (browser) to launch. |
-  | `options` | param | `options()` | `Playwright.Config.launch_options()` |
+  | `options` | param | `options()` | `Playwright.SDK.Config.launch_options()` |
   """
   @spec launch(client(), options() | map()) :: {:ok, Playwright.Browser.t()}
   def launch(client, options \\ %{}) do
-    options = Map.merge(Playwright.Config.launch_options(), options)
+    options = Map.merge(Playwright.SDK.Config.launch_options(), options)
     {:ok, session} = new_session(Playwright.Transport.Driver, options)
     {:ok, browser} = new_browser(session, client, options)
     {:ok, browser}

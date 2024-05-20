@@ -45,7 +45,7 @@ defmodule PlaywrightTest.Case do
 
   defmacro __using__(options \\ %{}) do
     quote do
-      alias Playwright.Config
+      alias Playwright.SDK.Config
 
       setup_all(context) do
         inline_options = unquote(options) |> Enum.into(%{})

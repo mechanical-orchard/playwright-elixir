@@ -1,6 +1,6 @@
-defmodule Playwright.ConfigTest do
+defmodule Playwright.SDK.ConfigTest do
   use ExUnit.Case, async: true
-  alias Playwright.Config
+  alias Playwright.SDK.Config
 
   require Logger
 
