@@ -1,7 +1,7 @@
 defmodule Playwright.Channel.Response do
   @moduledoc false
-  alias Playwright.SDK.ChannelOwner
   alias Playwright.Channel.{Catalog, Error, Event, Session}
+  alias Playwright.SDK.ChannelOwner
 
   defstruct [:message, :parsed]
 

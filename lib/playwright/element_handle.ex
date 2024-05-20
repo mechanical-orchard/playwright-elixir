@@ -53,7 +53,8 @@ defmodule Playwright.ElementHandle do
   """
 
   use Playwright.SDK.ChannelOwner
-  alias Playwright.{Channel, ChannelOwner, ElementHandle, Frame, JSHandle}
+  alias Playwright.{ElementHandle, Frame, JSHandle}
+  alias Playwright.SDK.{Channel, ChannelOwner}
 
   @property :preview
 
