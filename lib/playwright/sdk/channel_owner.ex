@@ -12,7 +12,7 @@ defmodule Playwright.SDK.ChannelOwner do
       @derive {Inspect, only: [:guid] ++ @properties}
 
       import Playwright.Extra.Map
-      alias Playwright.Channel.Event
+      alias Playwright.SDK.Channel.Event
       alias Playwright.SDK.Channel
 
       defstruct @properties ++ [:session, :guid, :initializer, :listeners, :parent, :type]

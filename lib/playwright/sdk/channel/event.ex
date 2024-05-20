@@ -1,7 +1,7 @@
-defmodule Playwright.Channel.Event do
+defmodule Playwright.SDK.Channel.Event do
   @moduledoc false
-  alias Playwright.Channel.Catalog
   alias Playwright.Extra
+  alias Playwright.SDK.Channel
 
   @type t() :: %__MODULE__{
           target: struct(),
@@ -44,7 +44,7 @@ defmodule Playwright.Channel.Event do
   defp hydrate(map, catalog) when is_map(map) do
     Map.new(map, fn
       {k, %{guid: guid}} ->
-        {k, Catalog.get(catalog, guid)}
+        {k, Channel.Catalog.get(catalog, guid)}
 
       {k, v} when is_map(v) ->
         {k, hydrate(v, catalog)}
@@ -63,13 +63,13 @@ end
 # end
 
 # defp prepare(%{newDocument: %{request: request}} = params, type, catalog) when type in ["navigated"] do
-#   document = %{request: Catalog.get(catalog, request.guid)}
+#   document = %{request: Channel.Catalog.get(catalog, request.guid)}
 #   Map.put(params, :newDocument, document)
 # end
 
 # defp prepare(params, type, catalog) when type in ["page"] do
-#   page = Catalog.get(catalog, params.page.guid)
-#   frame = Catalog.get(catalog, page.main_frame.guid)
+#   page = Channel.Catalog.get(catalog, params.page.guid)
+#   frame = Channel.Catalog.get(catalog, page.main_frame.guid)
 
 #   Map.merge(params, %{
 #     page: page,

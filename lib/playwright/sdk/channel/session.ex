@@ -1,8 +1,8 @@
-defmodule Playwright.Channel.Session do
+defmodule Playwright.SDK.Channel.Session do
   @moduledoc false
   use GenServer
   import Playwright.Extra.Atom
-  alias Playwright.Channel.{Catalog, Connection, SessionID}
+  alias Playwright.SDK.Channel
 
   defstruct [:bindings, :catalog, :connection]
 
@@ -11,7 +11,7 @@ defmodule Playwright.Channel.Session do
 
   def child_spec(transport) do
     %{
-      id: {__MODULE__, SessionID.next()},
+      id: {__MODULE__, Channel.SessionID.next()},
       start: {__MODULE__, :start_link, [transport]},
       restart: :transient
     }
@@ -28,8 +28,8 @@ defmodule Playwright.Channel.Session do
   def init(transport) do
     pid = self()
     root = %{session: pid}
-    {:ok, catalog} = Catalog.start_link(root)
-    {:ok, connection} = Connection.start_link({pid, transport})
+    {:ok, catalog} = Channel.Catalog.start_link(root)
+    {:ok, connection} = Channel.Connection.start_link({pid, transport})
 
     {:ok,
      %__MODULE__{

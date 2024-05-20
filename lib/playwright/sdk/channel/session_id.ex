@@ -1,4 +1,4 @@
-defmodule Playwright.Channel.SessionID do
+defmodule Playwright.SDK.Channel.SessionID do
   @moduledoc false
 
   use Agent

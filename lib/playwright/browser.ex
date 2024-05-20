@@ -22,7 +22,7 @@ defmodule Playwright.Browser do
   """
   use Playwright.SDK.ChannelOwner
   alias Playwright.{Browser, BrowserContext, Extra, Page}
-  alias Playwright.Channel.Error
+  alias Playwright.SDK.Channel.Error
   alias Playwright.SDK.{Channel, ChannelOwner}
 
   @property :name

@@ -29,7 +29,7 @@ defmodule Playwright.BrowserContext do
   The second argument is the event type.
 
   The third argument is a callback function that will be executed when the
-  event fires, and is passed an instance of `Playwright.Channel.Event`.
+  event fires, and is passed an instance of `Playwright.SDK.Channel.Event`.
 
   ### Details for `expect_event/5`
 
@@ -161,7 +161,7 @@ defmodule Playwright.BrowserContext do
 
   use Playwright.SDK.ChannelOwner
   alias Playwright.{BrowserContext, Frame, Page}
-  alias Playwright.Channel.Error
+  alias Playwright.SDK.Channel.Error
   alias Playwright.Helpers
   alias Playwright.SDK.{Channel, ChannelOwner}
 
@@ -385,12 +385,12 @@ defmodule Playwright.BrowserContext do
   predicate function.
 
   Returns when the predicate returns a truthy value. Throws an error if the
-  context closes before the event is fired. Returns a `Playwright.Channel.Event`.
+  context closes before the event is fired. Returns a `Playwright.SDK.Channel.Event`.
 
   ## Arguments
 
   - `event`: Event name; the same as those passed to `Playwright.BrowserContext.on/3`
-  - `predicate`: Receives the `Playwright.Channel.Event` and resolves to a
+  - `predicate`: Receives the `Playwright.SDK.Channel.Event` and resolves to a
     "truthy" value when the waiting should resolve.
   - `options`:
     - `predicate`: ...
@@ -415,7 +415,7 @@ defmodule Playwright.BrowserContext do
   the `Playwright.BrowserContext`.
 
   If `predicate` is provided, it passes the `Playwright.Page` value into the
-  predicate function, wrapped in `Playwright.Channel.Event`, and waits for
+  predicate function, wrapped in `Playwright.SDK.Channel.Event`, and waits for
   `predicate/1` to return a "truthy" value. Throws an error if the context
   closes before new `Playwright.Page` is created.
 
@@ -430,7 +430,7 @@ defmodule Playwright.BrowserContext do
       via `Playwright.BrowserContext.set_default_timeout/2`.
   """
   # Temporarily disable spec:
-  # @spec expect_page(t(), map(), function()) :: Playwright.Channel.Event.t()
+  # @spec expect_page(t(), map(), function()) :: Playwright.SDK.Channel.Event.t()
   def expect_page(context, options \\ %{}, trigger \\ nil) do
     expect_event(context, :page, options, trigger)
   end

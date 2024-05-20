@@ -1,6 +1,6 @@
 defmodule Playwright.Helpers.ErrorHandling do
   @moduledoc false
-  alias Playwright.Channel.Error
+  alias Playwright.SDK.Channel.Error
 
   def with_timeout(options, action) when is_map(options) and is_function(action) do
     timeout = options |> Map.get(:timeout, 30_000)

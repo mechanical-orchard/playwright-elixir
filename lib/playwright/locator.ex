@@ -248,7 +248,7 @@ defmodule Playwright.Locator do
   If the element is detached from the DOM at any moment during the action, this method throws.
 
   When all steps combined have not finished during the specified timeout, this method throws a
-  `Playwright.Channel.Error.t()`. Passing `0` timeout disables this.
+  `Playwright.SDK.Channel.Error.t()`. Passing `0` timeout disables this.
 
   ## Returns
 
@@ -401,7 +401,7 @@ defmodule Playwright.Locator do
   ## Returns
 
   - `Playwright.ElementHandle.t()`
-  - `{:error, Playwright.Channel.Error.t()}`
+  - `{:error, Playwright.SDK.Channel.Error.t()}`
 
   ## Arguments
 
@@ -510,7 +510,7 @@ defmodule Playwright.Locator do
   ## Returns
 
     - `Playwright.ElementHandle.t()`
-    - `{:error, Playwright.Channel.Error.t()}`
+    - `{:error, Playwright.SDK.Channel.Error.t()}`
 
   ## Arguments
 

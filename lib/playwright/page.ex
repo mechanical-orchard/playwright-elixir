@@ -278,7 +278,7 @@ defmodule Playwright.Page do
     main_frame(page) |> Frame.evaluate_handle(expression, arg)
   end
 
-  # @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.Channel.Event.t()
+  # @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.SDK.Channel.Event.t()
   # def expect_event(page, event, trigger, predicate \\ nil, options \\ %{})
 
   # def expect_event(%Page{} = page, event, trigger, predicate, options) do

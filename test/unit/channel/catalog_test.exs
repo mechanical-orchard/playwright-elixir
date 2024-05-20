@@ -1,6 +1,6 @@
 defmodule Plawyeright.Channel.CatalogTest do
   use ExUnit.Case, async: true
-  alias Playwright.Channel.{Catalog, Error}
+  alias Playwright.SDK.Channel.{Catalog, Error}
 
   setup do
     %{

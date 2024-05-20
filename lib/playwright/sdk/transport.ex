@@ -2,7 +2,7 @@ defmodule Playwright.SDK.Transport do
   @moduledoc false
   use GenServer
   import Playwright.Extra.Map
-  alias Playwright.Channel.Connection
+  alias Playwright.SDK.Channel.Connection
 
   defstruct [:connection, :transport]
 

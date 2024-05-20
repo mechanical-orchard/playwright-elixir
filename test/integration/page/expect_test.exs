@@ -1,7 +1,7 @@
 defmodule Playwright.Page.NetworkTest do
   use Playwright.TestCase, async: true
   alias Playwright.{BrowserContext, Page, Response}
-  alias Playwright.Channel.{Error, Event}
+  alias Playwright.SDK.Channel.{Error, Event}
 
   describe "Page.expect_event/3 without a 'trigger" do
     test "w/ an event", %{assets: assets, page: page} do

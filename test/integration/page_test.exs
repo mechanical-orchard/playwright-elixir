@@ -1,7 +1,7 @@
 defmodule Playwright.PageTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, ElementHandle, Frame, Page, Request, Response, Route}
-  alias Playwright.Channel.{Error, Event}
+  alias Playwright.SDK.Channel.{Error, Event}
   alias Playwright.SDK.Channel
 
   describe "Page.hover/2" do
