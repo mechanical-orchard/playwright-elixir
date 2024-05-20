@@ -1,4 +1,4 @@
-defmodule Playwright.CLI do
+defmodule Playwright.SDK.CLI do
   @moduledoc """
   A wrapper to the Playwright Javascript CLI
   """
