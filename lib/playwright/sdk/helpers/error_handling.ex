@@ -1,4 +1,4 @@
-defmodule Playwright.Helpers.ErrorHandling do
+defmodule Playwright.SDK.Helpers.ErrorHandling do
   @moduledoc false
   alias Playwright.SDK.Channel.Error
 

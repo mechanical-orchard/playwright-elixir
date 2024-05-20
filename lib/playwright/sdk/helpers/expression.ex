@@ -1,4 +1,4 @@
-defmodule Playwright.Helpers.Expression do
+defmodule Playwright.SDK.Helpers.Expression do
   @moduledoc false
 
   # Page.evaluate(page, "function () { return 'lala'; }")

@@ -1,4 +1,4 @@
-defmodule Playwright.Helpers.URLMatcher do
+defmodule Playwright.SDK.Helpers.URLMatcher do
   @moduledoc false
 
   defstruct([:match, :regex])

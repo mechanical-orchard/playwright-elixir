@@ -41,8 +41,7 @@ defmodule Playwright.Page do
   use Playwright.SDK.ChannelOwner
 
   alias Playwright.{BrowserContext, ElementHandle, Frame, Page, Response}
-  alias Playwright.SDK.ChannelOwner
-  alias Playwright.Helpers
+  alias Playwright.SDK.{ChannelOwner, Helpers}
 
   @property :is_closed
   @property :main_frame

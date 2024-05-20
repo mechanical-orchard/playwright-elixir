@@ -1,6 +1,6 @@
 defmodule Playwright.SDK.Channel do
   @moduledoc false
-  import Playwright.Helpers.ErrorHandling
+  import Playwright.SDK.Helpers.ErrorHandling
   alias Playwright.SDK.Channel.{Catalog, Connection, Error, Event, Message, Response, Session}
 
   # API
