@@ -46,7 +46,7 @@ defmodule Playwright do
   @spec launch(client(), options() | map()) :: {:ok, Playwright.Browser.t()}
   def launch(client, options \\ %{}) do
     options = Map.merge(Playwright.SDK.Config.launch_options(), options)
-    {:ok, session} = new_session(Playwright.Transport.Driver, options)
+    {:ok, session} = new_session(Playwright.SDK.Transport.Driver, options)
     {:ok, browser} = new_browser(session, client, options)
     {:ok, browser}
   end

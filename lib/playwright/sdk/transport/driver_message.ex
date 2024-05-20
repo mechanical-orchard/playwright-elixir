@@ -1,4 +1,4 @@
-defmodule Playwright.Transport.DriverMessage do
+defmodule Playwright.SDK.Transport.DriverMessage do
   @moduledoc false
   # A "message" received from the Playwright browser server over the `Driver`
   # transport.

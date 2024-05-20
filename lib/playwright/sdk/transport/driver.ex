@@ -1,9 +1,9 @@
-defmodule Playwright.Transport.Driver do
+defmodule Playwright.SDK.Transport.Driver do
   @moduledoc false
   # A transport for negotiating messages with the embedded Playwright `driver`
   # CLI.
 
-  alias Playwright.Transport.DriverMessage
+  alias Playwright.SDK.Transport.DriverMessage
 
   defstruct([
     :port,

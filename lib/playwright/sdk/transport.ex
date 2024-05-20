@@ -1,4 +1,4 @@
-defmodule Playwright.Transport do
+defmodule Playwright.SDK.Transport do
   @moduledoc false
   use GenServer
   import Playwright.Extra.Map

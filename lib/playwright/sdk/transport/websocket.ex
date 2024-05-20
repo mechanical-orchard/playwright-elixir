@@ -1,4 +1,4 @@
-defmodule Playwright.Transport.WebSocket do
+defmodule Playwright.SDK.Transport.WebSocket do
   @moduledoc false
   # A transport for negotiating messages with a running Playwright websocket
   # server.
