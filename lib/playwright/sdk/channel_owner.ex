@@ -11,7 +11,7 @@ defmodule Playwright.SDK.ChannelOwner do
       @derive {Jason.Encoder, only: [:guid]}
       @derive {Inspect, only: [:guid] ++ @properties}
 
-      import Playwright.Extra.Map
+      import Playwright.SDK.Extra.Map
       alias Playwright.SDK.Channel.Event
       alias Playwright.SDK.Channel
 

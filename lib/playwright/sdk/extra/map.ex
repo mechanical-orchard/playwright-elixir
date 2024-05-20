@@ -1,7 +1,7 @@
-defmodule Playwright.Extra.Map do
+defmodule Playwright.SDK.Extra.Map do
   @moduledoc false
   require Logger
-  alias Playwright.Extra.Atom
+  alias Playwright.SDK.Extra.Atom
 
   def deep_atomize_keys(map) when is_map(map) do
     map

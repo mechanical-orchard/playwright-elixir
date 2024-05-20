@@ -1,7 +1,7 @@
-defmodule Playwright.Extra.AtomTest do
+defmodule Playwright.SDK.Extra.AtomTest do
   use ExUnit.Case, async: true
 
-  alias Playwright.Extra
+  alias Playwright.SDK.Extra
 
   describe "from_string" do
     test "string", do: assert(Extra.Atom.from_string("banana") == :banana)

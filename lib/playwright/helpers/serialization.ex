@@ -1,6 +1,6 @@
 defmodule Playwright.Helpers.Serialization do
   @moduledoc false
-  import Playwright.Extra.Map
+  import Playwright.SDK.Extra.Map
 
   def deserialize(value) when is_map(value) do
     case value do

@@ -21,9 +21,9 @@ defmodule Playwright.Browser do
     - `:version`
   """
   use Playwright.SDK.ChannelOwner
-  alias Playwright.{Browser, BrowserContext, Extra, Page}
+  alias Playwright.{Browser, BrowserContext, Page}
+  alias Playwright.SDK.{Channel, ChannelOwner, Extra}
   alias Playwright.SDK.Channel.Error
-  alias Playwright.SDK.{Channel, ChannelOwner}
 
   @property :name
   @property(:version, %{doc: "Returns the browser version"})
