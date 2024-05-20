@@ -38,10 +38,10 @@ defmodule Playwright.Page do
 
       Page.remove_listener(page, log_request)
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   alias Playwright.{BrowserContext, ElementHandle, Frame, Page, Response}
-  alias Playwright.ChannelOwner
+  alias Playwright.SDK.ChannelOwner
   alias Playwright.Helpers
 
   @property :is_closed

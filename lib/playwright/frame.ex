@@ -14,7 +14,7 @@ defmodule Playwright.Frame do
     - `Page event: :frame_detached` - fired when the frame gets detached from
       the page.  A Frame can be detached from the page only once.
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.Channel.Event
   alias Playwright.{ChannelOwner, ElementHandle, Frame, Helpers, Response}
 

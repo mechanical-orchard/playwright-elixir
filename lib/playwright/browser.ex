@@ -20,7 +20,7 @@ defmodule Playwright.Browser do
     - `:name`
     - `:version`
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.{Browser, BrowserContext, ChannelOwner, Extra, Page}
   alias Playwright.Channel
 

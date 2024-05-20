@@ -2,7 +2,7 @@ defmodule Playwright.Selectors do
   @moduledoc """
   ...
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   @type options :: map()
 

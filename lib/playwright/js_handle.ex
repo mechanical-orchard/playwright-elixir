@@ -18,7 +18,7 @@ defmodule Playwright.JSHandle do
     - `Playwright.Page.evaluate/3`
     - `Playwright.Page.evaluate_handle/3`
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.{ElementHandle, JSHandle}
   alias Playwright.Helpers
 

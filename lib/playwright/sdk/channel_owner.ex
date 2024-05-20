@@ -1,12 +1,12 @@
-defmodule Playwright.ChannelOwner do
+defmodule Playwright.SDK.ChannelOwner do
   @moduledoc false
   @callback init(struct(), map()) :: {atom(), struct()}
   @optional_callbacks init: 2
 
   defmacro __using__(_) do
     quote do
-      use Playwright.ChannelOwner.Macros
-      @behaviour Playwright.ChannelOwner
+      use Playwright.SDK.ChannelOwner.Macros
+      @behaviour Playwright.SDK.ChannelOwner
 
       @derive {Jason.Encoder, only: [:guid]}
       @derive {Inspect, only: [:guid] ++ @properties}
@@ -39,7 +39,7 @@ defmodule Playwright.ChannelOwner do
       end
 
       @doc """
-      Optional **callback** implementation for `Playwright.ChannelOwner.init/2`.
+      Optional **callback** implementation for `Playwright.SDK.ChannelOwner.init/2`.
 
       If implemented, the callback will receive:
 

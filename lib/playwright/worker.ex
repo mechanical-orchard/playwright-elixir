@@ -2,7 +2,7 @@ defmodule Playwright.Worker do
   @moduledoc """
   ...
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   # @spec evaluate(Worker.t(), function() | binary(), EvaluationArgument.t()) :: Serializable.t()
   # def evaluate(worker, page_function, arg \\ nil)
