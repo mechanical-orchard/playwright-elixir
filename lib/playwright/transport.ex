@@ -62,7 +62,7 @@ defmodule Playwright.Transport do
 
   # Transport.Driver...
   # def handle_info({:DOWN, _ref, :port, port, :normal}, state) do
-  #   Logger.warn("[transport@#{inspect(self())}] Handled :DOWN message from port: #{inspect(port)}")
+  #   Logger.warning("[transport@#{inspect(self())}] Handled :DOWN message from port: #{inspect(port)}")
   #   {:noreply, state}
   # end
 

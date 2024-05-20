@@ -53,7 +53,7 @@ defmodule Playwright.ChannelOwner do
 
           def init(%{session: session} = owner, _initializer) do
             Channel.bind(session, {:guid, owner.guid}, :close, fn event ->
-              Logger.warn("Closing \#{inspect(event.target)}")
+              Logger.warning("Closing \#{inspect(event.target)}")
             end)
 
             {:ok, %{owner | version: "1.2.3"}}

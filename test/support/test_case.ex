@@ -49,7 +49,7 @@ defmodule Playwright.TestCase do
       require Logger
 
       def log_element_handle_error do
-        Logger.warn("""
+        Logger.warning("""
         The use of ElementHandle is discouraged in favor of Locator.
         Timeouts indicate an issue within Playwright.
         """)

@@ -17,7 +17,7 @@ defmodule Page.ScreenshotTest do
     test "caputures a screenshot, returning the base64 encoded binary", %{page: page} do
       case Page.goto(page, "https://playwright.dev", %{timeout: 5000}) do
         {:error, error} ->
-          Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
+          Logger.warning("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
 
         _ ->
           max_frame_size = 32_768
@@ -34,7 +34,7 @@ defmodule Page.ScreenshotTest do
 
       case Page.goto(page, "https://playwright.dev", %{timeout: 5000}) do
         {:error, error} ->
-          Logger.warn("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
+          Logger.warning("Unabled to reach 'https://playwright.dev' for screenshot test: #{inspect(error)}")
 
         _ ->
           Page.screenshot(page, %{
