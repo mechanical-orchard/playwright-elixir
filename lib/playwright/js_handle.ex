@@ -20,7 +20,7 @@ defmodule Playwright.JSHandle do
   """
   use Playwright.SDK.ChannelOwner
   alias Playwright.{ElementHandle, JSHandle}
-  alias Playwright.Helpers
+  alias Playwright.SDK.Helpers
 
   @property :preview
 

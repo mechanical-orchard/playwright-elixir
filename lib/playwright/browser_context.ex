@@ -162,8 +162,7 @@ defmodule Playwright.BrowserContext do
   use Playwright.SDK.ChannelOwner
   alias Playwright.{BrowserContext, Frame, Page}
   alias Playwright.SDK.Channel.Error
-  alias Playwright.Helpers
-  alias Playwright.SDK.{Channel, ChannelOwner}
+  alias Playwright.SDK.{Channel, ChannelOwner, Helpers}
 
   @property :bindings
   @property :browser

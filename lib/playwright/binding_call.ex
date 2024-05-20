@@ -1,7 +1,7 @@
 defmodule Playwright.BindingCall do
   @moduledoc false
   use Playwright.SDK.ChannelOwner
-  import Playwright.Helpers.Serialization
+  import Playwright.SDK.Helpers.Serialization
   alias Playwright.BindingCall
 
   @property :args

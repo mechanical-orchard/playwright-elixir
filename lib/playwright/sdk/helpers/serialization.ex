@@ -1,4 +1,4 @@
-defmodule Playwright.Helpers.Serialization do
+defmodule Playwright.SDK.Helpers.Serialization do
   @moduledoc false
   import Playwright.SDK.Extra.Map
 

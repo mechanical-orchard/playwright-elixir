@@ -6,7 +6,7 @@ defmodule Playwright.SDK.Channel.Catalog do
   expected to be handled within caller modules such as `Playwright.SDK.Channel`.
   """
   use GenServer
-  import Playwright.Helpers.ErrorHandling
+  import Playwright.SDK.Helpers.ErrorHandling
   alias Playwright.SDK.Channel
 
   defstruct [:awaiting, :storage]

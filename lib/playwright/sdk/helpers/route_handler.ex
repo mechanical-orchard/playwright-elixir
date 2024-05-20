@@ -1,7 +1,7 @@
-defmodule Playwright.Helpers.RouteHandler do
+defmodule Playwright.SDK.Helpers.RouteHandler do
   @moduledoc false
 
-  alias Playwright.Helpers.{RouteHandler, URLMatcher}
+  alias Playwright.SDK.Helpers.{RouteHandler, URLMatcher}
 
   defstruct([:matcher, :callback, :times, :count])
 

@@ -16,8 +16,8 @@ defmodule Playwright.Frame do
   """
   use Playwright.SDK.ChannelOwner
   alias Playwright.SDK.Channel.Event
-  alias Playwright.{ElementHandle, Frame, Helpers, Response}
-  alias Playwright.SDK.ChannelOwner
+  alias Playwright.{ElementHandle, Frame, Response}
+  alias Playwright.SDK.{ChannelOwner, Helpers}
 
   @property :load_states
   @property :url

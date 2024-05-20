@@ -1,6 +1,6 @@
-defmodule Playwright.Helpers.URLMatcherTest do
+defmodule Playwright.SDK.Helpers.URLMatcherTest do
   use ExUnit.Case, async: true
-  alias Playwright.Helpers.URLMatcher
+  alias Playwright.SDK.Helpers.URLMatcher
 
   describe "new/1" do
     test "returns a URLMatcher struct, with a compiled :regex" do
