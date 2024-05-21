@@ -50,11 +50,10 @@ defmodule Playwright.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.25", only: :dev, runtime: false},
-      {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
       {:gun, "~> 1.3.3"},
       {:jason, "~> 1.2"},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:playwright_assets, "~> 1.32.0", only: [:test]},
+      {:playwright_assets, "~> 1.44.0", only: [:test]},
       {:recase, "~> 0.7"},
       {:uuid, "~> 1.1"}
     ]
@@ -157,18 +156,14 @@ defmodule Playwright.MixProject do
     ]
   end
 
-  # NOTES:
-  # - the `api.json` file is created to satisfy a `require('../../api.json')`
-  #   call found in Playwright's `driver.js` file. We don't actually have any
-  #   use for the "print-api-json" command, so an empty `api.json` works.
   defp aliases do
     [
       "assets.build": [
-        "cmd mkdir -p priv/static/node_modules ; cp -r assets/node_modules/ws priv/static/node_modules",
-        "cmd echo '{}' > assets/node_modules/playwright-core/api.json",
-        "esbuild cli"
-      ],
-      "assets.watch": ["esbuild module --watch"]
+        "cmd rm   -rf priv/static",
+        "cmd mkdir -p priv/static/node_modules",
+        "cmd cp -r assets/node_modules/playwright-core priv/static/node_modules",
+        "cmd cp -r assets/driver.js priv/static"
+      ]
     ]
   end
 end

@@ -46,6 +46,6 @@ defmodule Playwright.SDK.Transport.Driver do
   # ----------------------------------------------------------------------------
 
   defp default_cli do
-    Path.join(:code.priv_dir(:playwright), "static/playwright_cli.js")
+    Path.join(:code.priv_dir(:playwright), "static/driver.js")
   end
 end
