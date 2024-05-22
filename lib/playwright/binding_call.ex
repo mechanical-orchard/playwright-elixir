@@ -1,8 +1,8 @@
 defmodule Playwright.BindingCall do
   @moduledoc false
   use Playwright.SDK.ChannelOwner
-  import Playwright.SDK.Helpers.Serialization
   alias Playwright.BindingCall
+  alias Playwright.SDK.{Channel, Helpers}
 
   @property :args
   @property :frame
@@ -19,9 +19,8 @@ defmodule Playwright.BindingCall do
         page: "TBD"
       }
 
-      result = func.(source, deserialize(binding_call.args))
-
-      Channel.post(session, {:guid, binding_call.guid}, :resolve, %{result: serialize(result)})
+      result = func.(source, Helpers.Serialization.deserialize(binding_call.args))
+      Channel.post(session, {:guid, binding_call.guid}, :resolve, %{result: Helpers.Serialization.serialize(result)})
     end)
   end
 end

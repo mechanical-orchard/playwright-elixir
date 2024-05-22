@@ -15,7 +15,6 @@ defmodule Playwright.Frame do
       the page.  A Frame can be detached from the page only once.
   """
   use Playwright.SDK.ChannelOwner
-  alias Playwright.SDK.Channel.Event
   alias Playwright.{ElementHandle, Frame, Response}
   alias Playwright.SDK.{ChannelOwner, Helpers}
 

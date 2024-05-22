@@ -29,8 +29,7 @@ defmodule Playwright.BrowserType do
 
   use Playwright.SDK.ChannelOwner
   alias Playwright.BrowserType
-  alias Playwright.SDK.Channel.Session
-  alias Playwright.SDK.{Config, Transport}
+  alias Playwright.SDK.{Channel, Config, Transport}
 
   @typedoc "The web client type used for `launch/1` and `connect/2` functions."
   @type client :: :chromium | :firefox | :webkit
@@ -180,8 +179,8 @@ defmodule Playwright.BrowserType do
 
   defp new_session(transport, args) do
     DynamicSupervisor.start_child(
-      Session.Supervisor,
-      {Session, {transport, args}}
+      Channel.Session.Supervisor,
+      {Channel.Session, {transport, args}}
     )
   end
 

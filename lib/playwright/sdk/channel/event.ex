@@ -1,7 +1,6 @@
 defmodule Playwright.SDK.Channel.Event do
   @moduledoc false
-  alias Playwright.SDK.Extra
-  alias Playwright.SDK.Channel
+  alias Playwright.SDK.{Channel, Extra}
 
   @type t() :: %__MODULE__{
           target: struct(),

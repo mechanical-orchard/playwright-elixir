@@ -19,8 +19,7 @@ defmodule Playwright.Page.Accessibility do
   """
 
   alias Playwright.{ElementHandle, Page}
-  alias Playwright.SDK.Channel
-  alias Playwright.SDK.Extra
+  alias Playwright.SDK.{Channel, Extra}
 
   @typedoc """
   Options given to `snapshot/2`
