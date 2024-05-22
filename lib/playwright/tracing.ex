@@ -1,4 +1,6 @@
 defmodule Playwright.Tracing do
-  @moduledoc false
-  use Playwright.ChannelOwner
+  @moduledoc """
+  ...
+  """
+  use Playwright.SDK.ChannelOwner
 end

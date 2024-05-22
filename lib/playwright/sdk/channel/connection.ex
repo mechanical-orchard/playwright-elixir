@@ -36,7 +36,9 @@ defmodule Playwright.SDK.Channel.Connection do
     message = %{
       guid: "",
       method: "initialize",
-      # as of v1.28.0, playwright-core enforces javascript|python|java|csharp. so, we fake it.
+      # playwright v1.38.0 introduced an assertion on `sdkLanguage`.
+      # for now, we fake it.
+      # params: %{sdkLanguage: "elixir"},
       params: %{sdkLanguage: "javascript"},
       metadata: %{}
     }
