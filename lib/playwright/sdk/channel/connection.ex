@@ -2,8 +2,7 @@ defmodule Playwright.SDK.Channel.Connection do
   @moduledoc false
   use GenServer
   require Logger
-  alias Playwright.SDK.Extra
-  alias Playwright.SDK.{Channel, Transport}
+  alias Playwright.SDK.{Channel, Extra, Transport}
 
   defstruct(
     callbacks: %{},

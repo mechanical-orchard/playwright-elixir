@@ -161,7 +161,6 @@ defmodule Playwright.BrowserContext do
 
   use Playwright.SDK.ChannelOwner
   alias Playwright.{BrowserContext, Frame, Page}
-  alias Playwright.SDK.Channel.Error
   alias Playwright.SDK.{Channel, ChannelOwner, Helpers}
 
   @property :bindings
@@ -353,7 +352,7 @@ defmodule Playwright.BrowserContext do
       {:ok, _} ->
         :ok
 
-      {:error, %Error{message: "Target page, context or browser has been closed"}} ->
+      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
         :ok
     end
   end
