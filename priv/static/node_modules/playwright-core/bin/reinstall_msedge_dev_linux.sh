@@ -1,10 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 set -x
 
 if [[ $(arch) == "aarch64" ]]; then
   echo "ERROR: not supported on Linux Arm64"
+  exit 1
+fi
+
+if [[ ! -f "/etc/os-release" ]]; then
+  echo "ERROR: cannot install on unknown linux distribution (/etc/os-release is missing)"
+  exit 1
+fi
+
+ID=$(bash -c 'source /etc/os-release && echo $ID')
+if [[ "${ID}" != "ubuntu" && "${ID}" != "debian" ]]; then
+  echo "ERROR: cannot install on $ID distribution - only Ubuntu and Debian are supported"
   exit 1
 fi
 
