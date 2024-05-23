@@ -8,6 +8,7 @@ var _fs = _interopRequireDefault(require("fs"));
 var _utils = require("../utils");
 var _manualPromise = require("../utils/manualPromise");
 var _instrumentation = require("./instrumentation");
+var _errors = require("./errors");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
@@ -35,7 +36,7 @@ class Artifact extends _instrumentation.SdkObject {
     this._saveCallbacks = [];
     this._finished = false;
     this._deleted = false;
-    this._failureError = null;
+    this._failureError = void 0;
     this._localPath = localPath;
     this._unaccessibleErrorMessage = unaccessibleErrorMessage;
     this._cancelCallback = cancelCallback;
@@ -49,23 +50,24 @@ class Artifact extends _instrumentation.SdkObject {
   async localPathAfterFinished() {
     if (this._unaccessibleErrorMessage) throw new Error(this._unaccessibleErrorMessage);
     await this._finishedPromise;
-    if (this._failureError) return null;
+    if (this._failureError) throw this._failureError;
     return this._localPath;
   }
   saveAs(saveCallback) {
     if (this._unaccessibleErrorMessage) throw new Error(this._unaccessibleErrorMessage);
     if (this._deleted) throw new Error(`File already deleted. Save before deleting.`);
-    if (this._failureError) throw new Error(`File not found on disk. Check download.failure() for details.`);
+    if (this._failureError) throw this._failureError;
     if (this._finished) {
-      saveCallback(this._localPath).catch(e => {});
+      saveCallback(this._localPath).catch(() => {});
       return;
     }
     this._saveCallbacks.push(saveCallback);
   }
   async failureError() {
+    var _this$_failureError;
     if (this._unaccessibleErrorMessage) return this._unaccessibleErrorMessage;
     await this._finishedPromise;
-    return this._failureError;
+    return ((_this$_failureError = this._failureError) === null || _this$_failureError === void 0 ? void 0 : _this$_failureError.message) || null;
   }
   async cancel() {
     (0, _utils.assert)(this._cancelCallback !== undefined);
@@ -84,12 +86,12 @@ class Artifact extends _instrumentation.SdkObject {
     if (this._deleted) return;
     this._deleted = true;
     if (!this._unaccessibleErrorMessage) await _fs.default.promises.unlink(this._localPath).catch(e => {});
-    await this.reportFinished('File deleted upon browser context closure.');
+    await this.reportFinished(new _errors.TargetClosedError());
   }
   async reportFinished(error) {
     if (this._finished) return;
     this._finished = true;
-    this._failureError = error || null;
+    this._failureError = error;
     if (error) {
       for (const callback of this._saveCallbacks) await callback('', error);
     } else {

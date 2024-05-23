@@ -21,5 +21,4 @@ exports.kLifecycleEvents = void 0;
  * limitations under the License.
  */
 
-const kLifecycleEvents = new Set(['load', 'domcontentloaded', 'networkidle', 'commit']);
-exports.kLifecycleEvents = kLifecycleEvents;
+const kLifecycleEvents = exports.kLifecycleEvents = new Set(['load', 'domcontentloaded', 'networkidle', 'commit']);

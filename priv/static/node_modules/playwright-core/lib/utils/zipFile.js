@@ -69,7 +69,7 @@ class ZipFile {
   }
   close() {
     var _this$_zipFile;
-    (_this$_zipFile = this._zipFile) === null || _this$_zipFile === void 0 ? void 0 : _this$_zipFile.close();
+    (_this$_zipFile = this._zipFile) === null || _this$_zipFile === void 0 || _this$_zipFile.close();
   }
 }
 exports.ZipFile = ZipFile;

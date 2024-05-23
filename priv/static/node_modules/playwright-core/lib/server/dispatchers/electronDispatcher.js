@@ -45,9 +45,19 @@ class ElectronApplicationDispatcher extends _dispatcher.Dispatcher {
     });
     this._type_EventTarget = true;
     this._type_ElectronApplication = true;
+    this._subscriptions = new Set();
     this.addObjectListener(_electron.ElectronApplication.Events.Close, () => {
       this._dispatchEvent('close');
       this._dispose();
+    });
+    this.addObjectListener(_electron.ElectronApplication.Events.Console, message => {
+      if (!this._subscriptions.has('console')) return;
+      this._dispatchEvent('console', {
+        type: message.type(),
+        text: message.text(),
+        args: message.args().map(a => _elementHandlerDispatcher.ElementHandleDispatcher.fromJSHandle(this, a)),
+        location: message.location()
+      });
     });
   }
   async browserWindow(params) {
@@ -72,6 +82,9 @@ class ElectronApplicationDispatcher extends _dispatcher.Dispatcher {
     return {
       handle: _elementHandlerDispatcher.ElementHandleDispatcher.fromJSHandle(this, result)
     };
+  }
+  async updateSubscription(params) {
+    if (params.enabled) this._subscriptions.add(params.event);else this._subscriptions.delete(params.event);
   }
   async close() {
     await this._object.close();

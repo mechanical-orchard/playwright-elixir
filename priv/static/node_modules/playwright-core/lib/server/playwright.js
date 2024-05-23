@@ -13,7 +13,7 @@ var _firefox = require("./firefox/firefox");
 var _selectors = require("./selectors");
 var _webkit = require("./webkit/webkit");
 var _instrumentation = require("./instrumentation");
-var _debugLogger = require("../common/debugLogger");
+var _debugLogger = require("../utils/debugLogger");
 var _debugController = require("./debugController");
 /**
  * Copyright (c) Microsoft Corporation.

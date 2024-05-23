@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.PipeTransport = void 0;
 var _utils = require("../utils");
-var _debugLogger = require("../common/debugLogger");
+var _debugLogger = require("../utils/debugLogger");
 /**
  * Copyright 2018 Google Inc. All rights reserved.
  * Modifications copyright (c) Microsoft Corporation.

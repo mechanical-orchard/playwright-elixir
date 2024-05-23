@@ -28,8 +28,8 @@ function spawnAsync(cmd, args, options = {}) {
   return new Promise(resolve => {
     let stdout = '';
     let stderr = '';
-    if (process.stdout) process.stdout.on('data', data => stdout += data);
-    if (process.stderr) process.stderr.on('data', data => stderr += data);
+    if (process.stdout) process.stdout.on('data', data => stdout += data.toString());
+    if (process.stderr) process.stderr.on('data', data => stderr += data.toString());
     process.on('close', code => resolve({
       stdout,
       stderr,

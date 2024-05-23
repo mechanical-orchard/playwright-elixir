@@ -7,11 +7,8 @@ exports.ElementHandleDispatcher = void 0;
 var _dispatcher = require("./dispatcher");
 var _jsHandleDispatcher = require("./jsHandleDispatcher");
 var _frameDispatcher = require("./frameDispatcher");
-var _utils = require("../../utils");
-var _path = _interopRequireDefault(require("path"));
 var _browserContextDispatcher = require("./browserContextDispatcher");
 var _pageDispatcher = require("./pageDispatcher");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -148,22 +145,7 @@ class ElementHandleDispatcher extends _jsHandleDispatcher.JSHandleDispatcher {
     await this._elementHandle.selectText(metadata, params);
   }
   async setInputFiles(params, metadata) {
-    return await this._elementHandle.setInputFiles(metadata, {
-      files: params.files
-    }, params);
-  }
-  async setInputFilePaths(params, metadata) {
-    let {
-      localPaths
-    } = params;
-    if (!localPaths) {
-      if (!params.streams) throw new Error('Neither localPaths nor streams is specified');
-      localPaths = params.streams.map(c => c.path());
-    }
-    for (const p of localPaths) (0, _utils.assert)(_path.default.isAbsolute(p) && _path.default.resolve(p) === p, 'Paths provided to localPaths must be absolute and fully resolved.');
-    return await this._elementHandle.setInputFiles(metadata, {
-      localPaths
-    }, params);
+    return await this._elementHandle.setInputFiles(metadata, params);
   }
   async focus(params, metadata) {
     await this._elementHandle.focus(metadata);

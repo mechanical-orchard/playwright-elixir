@@ -47,7 +47,7 @@ class CDPSession extends _channelOwner.ChannelOwner {
     return result.result;
   }
   async detach() {
-    return this._channel.detach();
+    return await this._channel.detach();
   }
 }
 exports.CDPSession = CDPSession;

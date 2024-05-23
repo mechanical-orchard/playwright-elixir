@@ -21,7 +21,7 @@ exports.macEditingCommands = void 0;
  * limitations under the License.
  */
 
-const macEditingCommands = {
+const macEditingCommands = exports.macEditingCommands = {
   'Backspace': 'deleteBackward:',
   'Enter': 'insertNewline:',
   'NumpadEnter': 'insertNewline:',
@@ -137,4 +137,3 @@ const macEditingCommands = {
   'Meta+KeyZ': 'undo:',
   'Shift+Meta+KeyZ': 'redo:'
 };
-exports.macEditingCommands = macEditingCommands;

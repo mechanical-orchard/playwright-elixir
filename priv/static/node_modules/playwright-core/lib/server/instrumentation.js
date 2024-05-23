@@ -25,8 +25,7 @@ var _utils = require("../utils");
  * limitations under the License.
  */
 
-const kTestSdkObjects = new WeakSet();
-exports.kTestSdkObjects = kTestSdkObjects;
+const kTestSdkObjects = exports.kTestSdkObjects = new WeakSet();
 class SdkObject extends _events.EventEmitter {
   constructor(parent, guidPrefix, guid) {
     super();

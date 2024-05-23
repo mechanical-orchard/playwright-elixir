@@ -48,7 +48,7 @@ class CSharpLanguageGenerator {
   }
   generateAction(actionInContext) {
     const action = this._generateActionInner(actionInContext);
-    if (action) return action + '\n';
+    if (action) return action;
     return '';
   }
   _generateActionInner(actionInContext) {
@@ -56,7 +56,7 @@ class CSharpLanguageGenerator {
     if (this._mode !== 'library' && (action.name === 'openPage' || action.name === 'closePage')) return '';
     let pageAlias = actionInContext.frame.pageAlias;
     if (this._mode !== 'library') pageAlias = pageAlias.replace('page', 'Page');
-    const formatter = new CSharpFormatter(8);
+    const formatter = new CSharpFormatter(this._mode === 'library' ? 0 : 8);
     if (action.name === 'openPage') {
       formatter.add(`var ${pageAlias} = await context.NewPageAsync();`);
       if (action.url && action.url !== 'about:blank' && action.url !== 'chrome://newtab/') formatter.add(`await ${pageAlias}.GotoAsync(${quote(action.url)});`);
@@ -65,13 +65,9 @@ class CSharpLanguageGenerator {
     let subject;
     if (actionInContext.frame.isMainFrame) {
       subject = pageAlias;
-    } else if (actionInContext.frame.selectorsChain && action.name !== 'navigate') {
+    } else {
       const locators = actionInContext.frame.selectorsChain.map(selector => `.FrameLocator(${quote(selector)})`);
       subject = `${pageAlias}${locators.join('')}`;
-    } else if (actionInContext.frame.name) {
-      subject = `${pageAlias}.Frame(${quote(actionInContext.frame.name)})`;
-    } else {
-      subject = `${pageAlias}.FrameByUrl(${quote(actionInContext.frame.url)})`;
     }
     const signals = (0, _language.toSignalMap)(action);
     if (signals.dialog) {
@@ -84,8 +80,7 @@ class CSharpLanguageGenerator {
       ${pageAlias}.Dialog += ${pageAlias}_Dialog${signals.dialog.dialogAlias}_EventHandler;`);
     }
     const lines = [];
-    const actionCall = this._generateActionCall(action, actionInContext.frame.isMainFrame);
-    lines.push(`await ${subject}.${actionCall};`);
+    lines.push(this._generateActionCall(subject, action));
     if (signals.download) {
       lines.unshift(`var download${signals.download.downloadAlias} = await ${pageAlias}.RunAndWaitForDownloadAsync(async () =>\n{`);
       lines.push(`});`);
@@ -97,12 +92,12 @@ class CSharpLanguageGenerator {
     for (const line of lines) formatter.add(line);
     return formatter.format();
   }
-  _generateActionCall(action, isPage) {
+  _generateActionCall(subject, action) {
     switch (action.name) {
       case 'openPage':
         throw Error('Not reached');
       case 'closePage':
-        return 'CloseAsync()';
+        return `await ${subject}.CloseAsync();`;
       case 'click':
         {
           let method = 'Click';
@@ -113,28 +108,39 @@ class CSharpLanguageGenerator {
           if (modifiers.length) options.modifiers = modifiers;
           if (action.clickCount > 2) options.clickCount = action.clickCount;
           if (action.position) options.position = action.position;
-          if (!Object.entries(options).length) return this._asLocator(action.selector) + `.${method}Async()`;
+          if (!Object.entries(options).length) return `await ${subject}.${this._asLocator(action.selector)}.${method}Async();`;
           const optionsString = formatObject(options, '    ', 'Locator' + method + 'Options');
-          return this._asLocator(action.selector) + `.${method}Async(${optionsString})`;
+          return `await ${subject}.${this._asLocator(action.selector)}.${method}Async(${optionsString});`;
         }
       case 'check':
-        return this._asLocator(action.selector) + `.CheckAsync()`;
+        return `await ${subject}.${this._asLocator(action.selector)}.CheckAsync();`;
       case 'uncheck':
-        return this._asLocator(action.selector) + `.UncheckAsync()`;
+        return `await ${subject}.${this._asLocator(action.selector)}.UncheckAsync();`;
       case 'fill':
-        return this._asLocator(action.selector) + `.FillAsync(${quote(action.text)})`;
+        return `await ${subject}.${this._asLocator(action.selector)}.FillAsync(${quote(action.text)});`;
       case 'setInputFiles':
-        return this._asLocator(action.selector) + `.SetInputFilesAsync(${formatObject(action.files)})`;
+        return `await ${subject}.${this._asLocator(action.selector)}.SetInputFilesAsync(${formatObject(action.files)});`;
       case 'press':
         {
           const modifiers = (0, _utils.toModifiers)(action.modifiers);
           const shortcut = [...modifiers, action.key].join('+');
-          return this._asLocator(action.selector) + `.PressAsync(${quote(shortcut)})`;
+          return `await ${subject}.${this._asLocator(action.selector)}.PressAsync(${quote(shortcut)});`;
         }
       case 'navigate':
-        return `GotoAsync(${quote(action.url)})`;
+        return `await ${subject}.GotoAsync(${quote(action.url)});`;
       case 'select':
-        return this._asLocator(action.selector) + `.SelectOptionAsync(${formatObject(action.options)})`;
+        return `await ${subject}.${this._asLocator(action.selector)}.SelectOptionAsync(${formatObject(action.options)});`;
+      case 'assertText':
+        return `await Expect(${subject}.${this._asLocator(action.selector)}).${action.substring ? 'ToContainTextAsync' : 'ToHaveTextAsync'}(${quote(action.text)});`;
+      case 'assertChecked':
+        return `await Expect(${subject}.${this._asLocator(action.selector)})${action.checked ? '' : '.Not'}.ToBeCheckedAsync();`;
+      case 'assertVisible':
+        return `await Expect(${subject}.${this._asLocator(action.selector)}).ToBeVisibleAsync();`;
+      case 'assertValue':
+        {
+          const assertion = action.value ? `ToHaveValueAsync(${quote(action.value)})` : `ToBeEmptyAsync()`;
+          return `await Expect(${subject}.${this._asLocator(action.selector)}).${assertion};`;
+        }
     }
   }
   _asLocator(selector) {
@@ -151,13 +157,9 @@ class CSharpLanguageGenerator {
       using System;
       using System.Threading.Tasks;
 
-      class Program
-      {
-          public static async Task Main()
-          {
-              using var playwright = await Playwright.CreateAsync();
-              await using var browser = await playwright.${toPascal(options.browserName)}.LaunchAsync(${formatObject(options.launchOptions, '    ', 'BrowserTypeLaunchOptions')});
-              var context = await browser.NewContextAsync(${formatContextOptions(options.contextOptions, options.deviceName)});`);
+      using var playwright = await Playwright.CreateAsync();
+      await using var browser = await playwright.${toPascal(options.browserName)}.LaunchAsync(${formatObject(options.launchOptions, '    ', 'BrowserTypeLaunchOptions')});
+      var context = await browser.NewContextAsync(${formatContextOptions(options.contextOptions, options.deviceName)});`);
     formatter.newLine();
     return formatter.format();
   }
@@ -185,9 +187,10 @@ class CSharpLanguageGenerator {
     return formatter.format();
   }
   generateFooter(saveStorage) {
-    const storageStateLine = saveStorage ? `\n        await context.StorageStateAsync(new BrowserContextStorageStateOptions\n        {\n            Path = ${quote(saveStorage)}\n        });\n` : '';
-    return `${storageStateLine}    }
-}\n`;
+    const offset = this._mode === 'library' ? '' : '        ';
+    let storageStateLine = saveStorage ? `\n${offset}await context.StorageStateAsync(new BrowserContextStorageStateOptions\n${offset}{\n${offset}    Path = ${quote(saveStorage)}\n${offset}});\n` : '';
+    if (this._mode !== 'library') storageStateLine += `    }\n}\n`;
+    return storageStateLine;
   }
 }
 exports.CSharpLanguageGenerator = CSharpLanguageGenerator;

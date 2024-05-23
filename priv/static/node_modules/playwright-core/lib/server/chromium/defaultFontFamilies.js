@@ -21,7 +21,7 @@ exports.platformToFontFamilies = void 0;
  */
 
 // DO NOT EDIT: this map is generated from Chromium source code by utils/generate_chromium_default_font_families.js
-const platformToFontFamilies = {
+const platformToFontFamilies = exports.platformToFontFamilies = {
   'linux': {
     'fontFamilies': {
       'standard': 'Times New Roman',
@@ -143,4 +143,3 @@ const platformToFontFamilies = {
     }]
   }
 };
-exports.platformToFontFamilies = platformToFontFamilies;

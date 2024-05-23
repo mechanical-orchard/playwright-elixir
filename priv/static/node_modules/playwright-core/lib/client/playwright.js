@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.Playwright = void 0;
-var _errors = require("../common/errors");
+var _errors = require("./errors");
 var _android = require("./android");
 var _browserType = require("./browserType");
 var _channelOwner = require("./channelOwner");
@@ -29,6 +29,7 @@ var _selectors = require("./selectors");
 
 class Playwright extends _channelOwner.ChannelOwner {
   constructor(parent, type, guid, initializer) {
+    var _this$_connection$loc, _this$_connection$loc2;
     super(parent, type, guid, initializer);
     this._android = void 0;
     this._electron = void 0;
@@ -48,11 +49,7 @@ class Playwright extends _channelOwner.ChannelOwner {
     this.webkit._playwright = this;
     this._android = _android.Android.from(initializer.android);
     this._electron = _electron.Electron.from(initializer.electron);
-    this.devices = {};
-    for (const {
-      name,
-      descriptor
-    } of initializer.deviceDescriptors) this.devices[name] = descriptor;
+    this.devices = (_this$_connection$loc = (_this$_connection$loc2 = this._connection.localUtils()) === null || _this$_connection$loc2 === void 0 ? void 0 : _this$_connection$loc2.devices) !== null && _this$_connection$loc !== void 0 ? _this$_connection$loc : {};
     this.selectors = new _selectors.Selectors();
     this.errors = {
       TimeoutError: _errors.TimeoutError

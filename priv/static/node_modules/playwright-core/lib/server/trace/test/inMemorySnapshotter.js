@@ -81,7 +81,7 @@ class InMemorySnapshotter {
     var _this$_snapshotReadyP;
     ++this._snapshotCount;
     const renderer = this._storage.addFrameSnapshot(snapshot);
-    (_this$_snapshotReadyP = this._snapshotReadyPromises.get(snapshot.snapshotName || '')) === null || _this$_snapshotReadyP === void 0 ? void 0 : _this$_snapshotReadyP.resolve(renderer);
+    (_this$_snapshotReadyP = this._snapshotReadyPromises.get(snapshot.snapshotName || '')) === null || _this$_snapshotReadyP === void 0 || _this$_snapshotReadyP.resolve(renderer);
   }
   async resourceContentForTest(sha1) {
     return this._blobs.get(sha1);

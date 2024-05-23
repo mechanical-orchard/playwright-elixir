@@ -107,7 +107,9 @@ class CRPDF {
       landscape = false,
       pageRanges = '',
       preferCSSPageSize = false,
-      margin = {}
+      margin = {},
+      tagged = false,
+      outline = false
     } = options;
     let paperWidth = 8.5;
     let paperHeight = 11;
@@ -124,6 +126,8 @@ class CRPDF {
     const marginLeft = convertPrintParameterToInches(margin.left) || 0;
     const marginBottom = convertPrintParameterToInches(margin.bottom) || 0;
     const marginRight = convertPrintParameterToInches(margin.right) || 0;
+    const generateDocumentOutline = outline;
+    const generateTaggedPDF = tagged;
     const result = await this._client.send('Page.printToPDF', {
       transferMode: 'ReturnAsStream',
       landscape,
@@ -139,7 +143,9 @@ class CRPDF {
       marginLeft,
       marginRight,
       pageRanges,
-      preferCSSPageSize
+      preferCSSPageSize,
+      generateTaggedPDF,
+      generateDocumentOutline
     });
     return await (0, _crProtocolHelper.readProtocolStream)(this._client, result.stream);
   }

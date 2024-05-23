@@ -8,8 +8,8 @@ var fs = _interopRequireWildcard(require("fs"));
 var _stream = require("./stream");
 var _fileUtils = require("../utils/fileUtils");
 var _channelOwner = require("./channelOwner");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -32,7 +32,7 @@ class Artifact extends _channelOwner.ChannelOwner {
   }
   async pathAfterFinished() {
     if (this._connection.isRemote()) throw new Error(`Path is not available when connecting remotely. Use saveAs() to save a local copy.`);
-    return (await this._channel.pathAfterFinished()).value || null;
+    return (await this._channel.pathAfterFinished()).value;
   }
   async saveAs(path) {
     if (!this._connection.isRemote()) {
@@ -53,13 +53,12 @@ class Artifact extends _channelOwner.ChannelOwner {
   }
   async createReadStream() {
     const result = await this._channel.stream();
-    if (!result.stream) return null;
     const stream = _stream.Stream.from(result.stream);
     return stream.stream();
   }
   async readIntoBuffer() {
     const stream = await this.createReadStream();
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       const chunks = [];
       stream.on('data', chunk => {
         chunks.push(chunk);
@@ -71,10 +70,10 @@ class Artifact extends _channelOwner.ChannelOwner {
     });
   }
   async cancel() {
-    return this._channel.cancel();
+    return await this._channel.cancel();
   }
   async delete() {
-    return this._channel.delete();
+    return await this._channel.delete();
   }
 }
 exports.Artifact = Artifact;

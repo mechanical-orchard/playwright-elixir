@@ -8,7 +8,7 @@ var _events = require("./events");
 var _channelOwner = require("./channelOwner");
 var _jsHandle = require("./jsHandle");
 var _utils = require("../utils");
-var _errors = require("../common/errors");
+var _errors = require("./errors");
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -26,23 +26,25 @@ var _errors = require("../common/errors");
  */
 
 class Worker extends _channelOwner.ChannelOwner {
-  // Set for web workers.
-  // Set for service workers.
-
   static from(worker) {
     return worker._object;
   }
   constructor(parent, type, guid, initializer) {
     super(parent, type, guid, initializer);
     this._page = void 0;
+    // Set for web workers.
     this._context = void 0;
+    // Set for service workers.
     this._closedScope = new _utils.LongStandingScope();
     this._channel.on('close', () => {
       if (this._page) this._page._workers.delete(this);
       if (this._context) this._context._serviceWorkers.delete(this);
       this.emit(_events.Events.Worker.Close, this);
     });
-    this.once(_events.Events.Worker.Close, () => this._closedScope.close(_errors.kBrowserOrContextClosedError));
+    this.once(_events.Events.Worker.Close, () => {
+      var _this$_page;
+      return this._closedScope.close(((_this$_page = this._page) === null || _this$_page === void 0 ? void 0 : _this$_page._closeErrorWithReason()) || new _errors.TargetClosedError());
+    });
   }
   url() {
     return this._initializer.url;

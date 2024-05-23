@@ -20,9 +20,6 @@ exports.yazl = exports.yauzl = exports.extract = void 0;
  * limitations under the License.
  */
 
-const yazl = require('./zipBundleImpl').yazl;
-exports.yazl = yazl;
-const yauzl = require('./zipBundleImpl').yauzl;
-exports.yauzl = yauzl;
-const extract = require('./zipBundleImpl').extract;
-exports.extract = extract;
+const yazl = exports.yazl = require('./zipBundleImpl').yazl;
+const yauzl = exports.yauzl = require('./zipBundleImpl').yauzl;
+const extract = exports.extract = require('./zipBundleImpl').extract;

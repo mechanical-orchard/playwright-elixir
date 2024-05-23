@@ -5,7 +5,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.WritableStreamDispatcher = void 0;
 var _dispatcher = require("./dispatcher");
+var fs = _interopRequireWildcard(require("fs"));
 var _utils = require("../../utils");
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -23,12 +26,14 @@ var _utils = require("../../utils");
  */
 
 class WritableStreamDispatcher extends _dispatcher.Dispatcher {
-  constructor(scope, stream) {
+  constructor(scope, stream, lastModifiedMs) {
     super(scope, {
       guid: 'writableStream@' + (0, _utils.createGuid)(),
       stream
     }, 'WritableStream', {});
     this._type_WritableStream = true;
+    this._lastModifiedMs = void 0;
+    this._lastModifiedMs = lastModifiedMs;
   }
   async write(params) {
     const stream = this._object.stream;
@@ -41,6 +46,7 @@ class WritableStreamDispatcher extends _dispatcher.Dispatcher {
   async close() {
     const stream = this._object.stream;
     await new Promise(fulfill => stream.end(fulfill));
+    if (this._lastModifiedMs) await fs.promises.utimes(this.path(), new Date(this._lastModifiedMs), new Date(this._lastModifiedMs));
   }
   path() {
     return this._object.stream.path;

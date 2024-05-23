@@ -21,9 +21,8 @@ exports.keypadLocation = exports.USKeyboardLayout = void 0;
  * limitations under the License.
  */
 
-const keypadLocation = 3;
-exports.keypadLocation = keypadLocation;
-const USKeyboardLayout = {
+const keypadLocation = exports.keypadLocation = 3;
+const USKeyboardLayout = exports.USKeyboardLayout = {
   // Functions row
   'Escape': {
     'keyCode': 27,
@@ -554,4 +553,3 @@ const USKeyboardLayout = {
     'location': 3
   }
 };
-exports.USKeyboardLayout = USKeyboardLayout;

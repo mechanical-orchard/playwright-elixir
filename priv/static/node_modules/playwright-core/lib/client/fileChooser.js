@@ -39,7 +39,7 @@ class FileChooser {
     return this._page;
   }
   async setFiles(files, options) {
-    return this._elementHandle.setInputFiles(files, options);
+    return await this._elementHandle.setInputFiles(files, options);
   }
 }
 exports.FileChooser = FileChooser;

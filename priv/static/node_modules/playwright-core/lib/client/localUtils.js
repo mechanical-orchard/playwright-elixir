@@ -24,6 +24,12 @@ var _channelOwner = require("./channelOwner");
 class LocalUtils extends _channelOwner.ChannelOwner {
   constructor(parent, type, guid, initializer) {
     super(parent, type, guid, initializer);
+    this.devices = void 0;
+    this.devices = {};
+    for (const {
+      name,
+      descriptor
+    } of initializer.deviceDescriptors) this.devices[name] = descriptor;
   }
 }
 exports.LocalUtils = LocalUtils;

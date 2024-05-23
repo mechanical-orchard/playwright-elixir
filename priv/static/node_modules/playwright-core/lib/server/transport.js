@@ -24,7 +24,7 @@ var _happyEyeballs = require("../utils/happy-eyeballs");
  * limitations under the License.
  */
 
-const perMessageDeflate = {
+const perMessageDeflate = exports.perMessageDeflate = {
   zlibDeflateOptions: {
     level: 3
   },
@@ -33,7 +33,6 @@ const perMessageDeflate = {
   },
   threshold: 10 * 1024
 };
-exports.perMessageDeflate = perMessageDeflate;
 class WebSocketTransport {
   static async connect(progress, url, headers, followRedirects, debugLogHeader) {
     return await WebSocketTransport._connect(progress, url, headers || {}, {
@@ -43,21 +42,21 @@ class WebSocketTransport {
   }
   static async _connect(progress, url, headers, redirect, debugLogHeader) {
     const logUrl = stripQueryParams(url);
-    progress === null || progress === void 0 ? void 0 : progress.log(`<ws connecting> ${logUrl}`);
+    progress === null || progress === void 0 || progress.log(`<ws connecting> ${logUrl}`);
     const transport = new WebSocketTransport(progress, url, logUrl, headers, redirect.follow && redirect.hadRedirects, debugLogHeader);
     let success = false;
-    progress === null || progress === void 0 ? void 0 : progress.cleanupWhenAborted(async () => {
+    progress === null || progress === void 0 || progress.cleanupWhenAborted(async () => {
       if (!success) await transport.closeAndWait().catch(e => null);
     });
     const result = await new Promise((fulfill, reject) => {
       transport._ws.on('open', async () => {
-        progress === null || progress === void 0 ? void 0 : progress.log(`<ws connected> ${logUrl}`);
+        progress === null || progress === void 0 || progress.log(`<ws connected> ${logUrl}`);
         fulfill({
           transport
         });
       });
       transport._ws.on('error', event => {
-        progress === null || progress === void 0 ? void 0 : progress.log(`<ws connect error> ${logUrl} ${event.message}`);
+        progress === null || progress === void 0 || progress.log(`<ws connect error> ${logUrl} ${event.message}`);
         reject(new Error('WebSocket error: ' + event.message));
         transport._ws.close();
       });
@@ -70,22 +69,24 @@ class WebSocketTransport {
           return;
         }
         for (let i = 0; i < response.rawHeaders.length; i += 2) {
-          if (debugLogHeader && response.rawHeaders[i] === debugLogHeader) progress === null || progress === void 0 ? void 0 : progress.log(response.rawHeaders[i + 1]);
+          if (debugLogHeader && response.rawHeaders[i] === debugLogHeader) progress === null || progress === void 0 || progress.log(response.rawHeaders[i + 1]);
         }
         const chunks = [];
         const errorPrefix = `${logUrl} ${response.statusCode} ${response.statusMessage}`;
         response.on('data', chunk => chunks.push(chunk));
         response.on('close', () => {
           const error = chunks.length ? `${errorPrefix}\n${Buffer.concat(chunks)}` : errorPrefix;
-          progress === null || progress === void 0 ? void 0 : progress.log(`<ws unexpected response> ${error}`);
+          progress === null || progress === void 0 || progress.log(`<ws unexpected response> ${error}`);
           reject(new Error('WebSocket error: ' + error));
           transport._ws.close();
         });
       });
     });
     if (result.redirect) {
-      // Strip access key headers from the redirected request.
-      const newHeaders = Object.fromEntries(Object.entries(headers || {}).filter(([name]) => !name.includes('access-key')));
+      // Strip authorization headers from the redirected request.
+      const newHeaders = Object.fromEntries(Object.entries(headers || {}).filter(([name]) => {
+        return !name.includes('access-key') && name.toLowerCase() !== 'authorization';
+      }));
       return WebSocketTransport._connect(progress, result.redirect.headers.location, newHeaders, {
         follow: true,
         hadRedirects: true
@@ -121,7 +122,7 @@ class WebSocketTransport {
           name: response.rawHeaders[i],
           value: response.rawHeaders[i + 1]
         });
-        if (debugLogHeader && response.rawHeaders[i] === debugLogHeader) progress === null || progress === void 0 ? void 0 : progress.log(response.rawHeaders[i + 1]);
+        if (debugLogHeader && response.rawHeaders[i] === debugLogHeader) progress === null || progress === void 0 || progress.log(response.rawHeaders[i + 1]);
       }
     });
     this._progress = progress;
@@ -138,7 +139,7 @@ class WebSocketTransport {
           parsedJson = JSON.parse(eventData);
         } catch (e) {
           var _this$_progress;
-          (_this$_progress = this._progress) === null || _this$_progress === void 0 ? void 0 : _this$_progress.log(`<closing ws> Closing websocket due to malformed JSON. eventData=${eventData} e=${e === null || e === void 0 ? void 0 : e.message}`);
+          (_this$_progress = this._progress) === null || _this$_progress === void 0 || _this$_progress.log(`<closing ws> Closing websocket due to malformed JSON. eventData=${eventData} e=${e === null || e === void 0 ? void 0 : e.message}`);
           this._ws.close();
           return;
         }
@@ -146,15 +147,15 @@ class WebSocketTransport {
           if (this.onmessage) this.onmessage.call(null, parsedJson);
         } catch (e) {
           var _this$_progress2;
-          (_this$_progress2 = this._progress) === null || _this$_progress2 === void 0 ? void 0 : _this$_progress2.log(`<closing ws> Closing websocket due to failed onmessage callback. eventData=${eventData} e=${e === null || e === void 0 ? void 0 : e.message}`);
+          (_this$_progress2 = this._progress) === null || _this$_progress2 === void 0 || _this$_progress2.log(`<closing ws> Closing websocket due to failed onmessage callback. eventData=${eventData} e=${e === null || e === void 0 ? void 0 : e.message}`);
           this._ws.close();
         }
       });
     });
     this._ws.addEventListener('close', event => {
       var _this$_progress3;
-      (_this$_progress3 = this._progress) === null || _this$_progress3 === void 0 ? void 0 : _this$_progress3.log(`<ws disconnected> ${logUrl} code=${event.code} reason=${event.reason}`);
-      if (this.onclose) this.onclose.call(null);
+      (_this$_progress3 = this._progress) === null || _this$_progress3 === void 0 || _this$_progress3.log(`<ws disconnected> ${logUrl} code=${event.code} reason=${event.reason}`);
+      if (this.onclose) this.onclose.call(null, event.reason);
     });
     // Prevent Error: read ECONNRESET.
     this._ws.addEventListener('error', error => {
@@ -167,7 +168,7 @@ class WebSocketTransport {
   }
   close() {
     var _this$_progress5;
-    (_this$_progress5 = this._progress) === null || _this$_progress5 === void 0 ? void 0 : _this$_progress5.log(`<ws disconnecting> ${this._logUrl}`);
+    (_this$_progress5 = this._progress) === null || _this$_progress5 === void 0 || _this$_progress5.log(`<ws disconnecting> ${this._logUrl}`);
     this._ws.close();
   }
   async closeAndWait() {

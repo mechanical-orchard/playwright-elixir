@@ -6,9 +6,11 @@ Object.defineProperty(exports, "__esModule", {
 exports.getEmbedderName = getEmbedderName;
 exports.getPlaywrightVersion = getPlaywrightVersion;
 exports.getUserAgent = getUserAgent;
+exports.userAgentVersionMatchesErrorMessage = userAgentVersionMatchesErrorMessage;
 var _child_process = require("child_process");
 var _os = _interopRequireDefault(require("os"));
 var _linuxUtils = require("../utils/linuxUtils");
+var _ascii = require("./ascii");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
@@ -86,7 +88,18 @@ function getEmbedderName() {
   };
 }
 function getPlaywrightVersion(majorMinorOnly = false) {
-  const packageJson = require('./../../package.json');
-  if (process.env.PW_VERSION_OVERRIDE) return process.env.PW_VERSION_OVERRIDE;
-  return majorMinorOnly ? packageJson.version.split('.').slice(0, 2).join('.') : packageJson.version;
+  const version = process.env.PW_VERSION_OVERRIDE || require('./../../package.json').version;
+  return majorMinorOnly ? version.split('.').slice(0, 2).join('.') : version;
+}
+function userAgentVersionMatchesErrorMessage(userAgent) {
+  const match = userAgent.match(/^Playwright\/(\d+\.\d+\.\d+)/);
+  if (!match) {
+    // Cannot parse user agent - be lax.
+    return;
+  }
+  const received = match[1].split('.').slice(0, 2).join('.');
+  const expected = getPlaywrightVersion(true);
+  if (received !== expected) {
+    return (0, _ascii.wrapInASCIIBox)([`Playwright version mismatch:`, `  - server version: v${expected}`, `  - client version: v${received}`, ``, `If you are using VSCode extension, restart VSCode.`, ``, `If you are connecting to a remote service,`, `keep your local Playwright version in sync`, `with the remote service version.`, ``, `<3 Playwright Team`].join('\n'), 1);
+  }
 }

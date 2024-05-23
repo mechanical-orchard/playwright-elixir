@@ -27,16 +27,29 @@ var _locatorGenerators = require("../../utils/isomorphic/locatorGenerators");
 
 const deviceDescriptors = require('../deviceDescriptorsSource.json');
 class JavaLanguageGenerator {
-  constructor() {
-    this.id = 'java';
+  constructor(mode) {
+    this.id = void 0;
     this.groupName = 'Java';
-    this.name = 'Library';
+    this.name = void 0;
     this.highlighter = 'java';
+    this._mode = void 0;
+    if (mode === 'library') {
+      this.name = 'Library';
+      this.id = 'java';
+    } else if (mode === 'junit') {
+      this.name = 'JUnit';
+      this.id = 'java-junit';
+    } else {
+      throw new Error(`Unknown Java language mode: ${mode}`);
+    }
+    this._mode = mode;
   }
   generateAction(actionInContext) {
     const action = actionInContext.action;
     const pageAlias = actionInContext.frame.pageAlias;
-    const formatter = new _javascript.JavaScriptFormatter(6);
+    const offset = this._mode === 'junit' ? 4 : 6;
+    const formatter = new _javascript.JavaScriptFormatter(offset);
+    if (this._mode !== 'library' && (action.name === 'openPage' || action.name === 'closePage')) return '';
     if (action.name === 'openPage') {
       formatter.add(`Page ${pageAlias} = context.newPage();`);
       if (action.url && action.url !== 'about:blank' && action.url !== 'chrome://newtab/') formatter.add(`${pageAlias}.navigate(${quote(action.url)});`);
@@ -46,14 +59,10 @@ class JavaLanguageGenerator {
     let inFrameLocator = false;
     if (actionInContext.frame.isMainFrame) {
       subject = pageAlias;
-    } else if (actionInContext.frame.selectorsChain && action.name !== 'navigate') {
+    } else {
       const locators = actionInContext.frame.selectorsChain.map(selector => `.frameLocator(${quote(selector)})`);
       subject = `${pageAlias}${locators.join('')}`;
       inFrameLocator = true;
-    } else if (actionInContext.frame.name) {
-      subject = `${pageAlias}.frame(${quote(actionInContext.frame.name)})`;
-    } else {
-      subject = `${pageAlias}.frameByUrl(${quote(actionInContext.frame.url)})`;
     }
     const signals = (0, _language.toSignalMap)(action);
     if (signals.dialog) {
@@ -62,8 +71,7 @@ class JavaLanguageGenerator {
         dialog.dismiss();
       });`);
     }
-    const actionCall = this._generateActionCall(action, inFrameLocator);
-    let code = `${subject}.${actionCall};`;
+    let code = this._generateActionCall(subject, action, inFrameLocator);
     if (signals.popup) {
       code = `Page ${signals.popup.popupAlias} = ${pageAlias}.waitForPopup(() -> {
         ${code}
@@ -77,12 +85,12 @@ class JavaLanguageGenerator {
     formatter.add(code);
     return formatter.format();
   }
-  _generateActionCall(action, inFrameLocator) {
+  _generateActionCall(subject, action, inFrameLocator) {
     switch (action.name) {
       case 'openPage':
         throw Error('Not reached');
       case 'closePage':
-        return 'close()';
+        return `${subject}.close();`;
       case 'click':
         {
           let method = 'click';
@@ -94,26 +102,37 @@ class JavaLanguageGenerator {
           if (action.clickCount > 2) options.clickCount = action.clickCount;
           if (action.position) options.position = action.position;
           const optionsText = formatClickOptions(options);
-          return this._asLocator(action.selector, inFrameLocator) + `.${method}(${optionsText})`;
+          return `${subject}.${this._asLocator(action.selector, inFrameLocator)}.${method}(${optionsText});`;
         }
       case 'check':
-        return this._asLocator(action.selector, inFrameLocator) + `.check()`;
+        return `${subject}.${this._asLocator(action.selector, inFrameLocator)}.check();`;
       case 'uncheck':
-        return this._asLocator(action.selector, inFrameLocator) + `.uncheck()`;
+        return `${subject}.${this._asLocator(action.selector, inFrameLocator)}.uncheck();`;
       case 'fill':
-        return this._asLocator(action.selector, inFrameLocator) + `.fill(${quote(action.text)})`;
+        return `${subject}.${this._asLocator(action.selector, inFrameLocator)}.fill(${quote(action.text)});`;
       case 'setInputFiles':
-        return this._asLocator(action.selector, inFrameLocator) + `.setInputFiles(${formatPath(action.files.length === 1 ? action.files[0] : action.files)})`;
+        return `${subject}.${this._asLocator(action.selector, inFrameLocator)}.setInputFiles(${formatPath(action.files.length === 1 ? action.files[0] : action.files)});`;
       case 'press':
         {
           const modifiers = (0, _utils.toModifiers)(action.modifiers);
           const shortcut = [...modifiers, action.key].join('+');
-          return this._asLocator(action.selector, inFrameLocator) + `.press(${quote(shortcut)})`;
+          return `${subject}.${this._asLocator(action.selector, inFrameLocator)}.press(${quote(shortcut)});`;
         }
       case 'navigate':
-        return `navigate(${quote(action.url)})`;
+        return `${subject}.navigate(${quote(action.url)});`;
       case 'select':
-        return this._asLocator(action.selector, inFrameLocator) + `.selectOption(${formatSelectOption(action.options.length > 1 ? action.options : action.options[0])})`;
+        return `${subject}.${this._asLocator(action.selector, inFrameLocator)}.selectOption(${formatSelectOption(action.options.length > 1 ? action.options : action.options[0])});`;
+      case 'assertText':
+        return `assertThat(${subject}.${this._asLocator(action.selector, inFrameLocator)}).${action.substring ? 'containsText' : 'hasText'}(${quote(action.text)});`;
+      case 'assertChecked':
+        return `assertThat(${subject}.${this._asLocator(action.selector, inFrameLocator)})${action.checked ? '' : '.not()'}.isChecked();`;
+      case 'assertVisible':
+        return `assertThat(${subject}.${this._asLocator(action.selector, inFrameLocator)}).isVisible();`;
+      case 'assertValue':
+        {
+          const assertion = action.value ? `hasValue(${quote(action.value)})` : `isEmpty()`;
+          return `assertThat(${subject}.${this._asLocator(action.selector, inFrameLocator)}).${assertion};`;
+        }
     }
   }
   _asLocator(selector, inFrameLocator) {
@@ -121,6 +140,21 @@ class JavaLanguageGenerator {
   }
   generateHeader(options) {
     const formatter = new _javascript.JavaScriptFormatter();
+    if (this._mode === 'junit') {
+      formatter.add(`
+      import com.microsoft.playwright.junit.UsePlaywright;
+      import com.microsoft.playwright.Page;
+      import com.microsoft.playwright.options.*;
+
+      import org.junit.jupiter.api.*;
+      import static com.microsoft.playwright.assertions.PlaywrightAssertions.*;
+
+      @UsePlaywright
+      public class TestExample {
+        @Test
+        void test(Page page) {`);
+      return formatter.format();
+    }
     formatter.add(`
     import com.microsoft.playwright.*;
     import com.microsoft.playwright.options.*;
@@ -136,6 +170,10 @@ class JavaLanguageGenerator {
   }
   generateFooter(saveStorage) {
     const storageStateLine = saveStorage ? `\n      context.storageState(new BrowserContext.StorageStateOptions().setPath(${quote(saveStorage)}));\n` : '';
+    if (this._mode === 'junit') {
+      return `${storageStateLine}  }
+}`;
+    }
     return `${storageStateLine}    }
   }
 }`;

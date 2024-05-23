@@ -10,7 +10,7 @@ var _os = _interopRequireDefault(require("os"));
 var _path = _interopRequireDefault(require("path"));
 var _child_process = _interopRequireDefault(require("child_process"));
 var _fileUtils = require("../../utils/fileUtils");
-var _debugLogger = require("../../common/debugLogger");
+var _debugLogger = require("../../utils/debugLogger");
 var _manualPromise = require("../../utils/manualPromise");
 var _utilsBundle = require("../../utilsBundle");
 var _ = require(".");
@@ -126,7 +126,6 @@ function logPolitely(toBeLogged) {
   const logLevelDisplay = ['silent', 'error', 'warn'].indexOf(logLevel || '') > -1;
   if (!logLevelDisplay) console.log(toBeLogged); // eslint-disable-line no-console
 }
-
 function getDownloadProgress() {
   if (process.stdout.isTTY) return getAnimatedDownloadProgress();
   return getBasicDownloadProgress();
@@ -165,5 +164,5 @@ function getBasicDownloadProgress() {
 }
 function toMegabytes(bytes) {
   const mb = bytes / 1024 / 1024;
-  return `${Math.round(mb * 10) / 10} Mb`;
+  return `${Math.round(mb * 10) / 10} MiB`;
 }

@@ -41,22 +41,22 @@ class Download {
     return this._suggestedFilename;
   }
   async path() {
-    return this._artifact.pathAfterFinished();
+    return await this._artifact.pathAfterFinished();
   }
   async saveAs(path) {
-    return this._artifact.saveAs(path);
+    return await this._artifact.saveAs(path);
   }
   async failure() {
-    return this._artifact.failure();
+    return await this._artifact.failure();
   }
   async createReadStream() {
-    return this._artifact.createReadStream();
+    return await this._artifact.createReadStream();
   }
   async cancel() {
-    return this._artifact.cancel();
+    return await this._artifact.cancel();
   }
   async delete() {
-    return this._artifact.delete();
+    return await this._artifact.delete();
   }
 }
 exports.Download = Download;

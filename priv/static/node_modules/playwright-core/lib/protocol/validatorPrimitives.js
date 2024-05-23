@@ -27,8 +27,7 @@ var _utils = require("../utils");
 
 class ValidationError extends Error {}
 exports.ValidationError = ValidationError;
-const scheme = {};
-exports.scheme = scheme;
+const scheme = exports.scheme = {};
 function findValidator(type, method, kind) {
   const validator = maybeFindValidator(type, method, kind);
   if (!validator) throw new ValidationError(`Unknown scheme for ${kind}: ${type}.${method}`);

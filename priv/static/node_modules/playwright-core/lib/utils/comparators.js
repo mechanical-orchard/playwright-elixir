@@ -49,7 +49,7 @@ function compareBuffersOrStrings(actualBuffer, expectedBuffer) {
   return null;
 }
 function compareImages(mimeType, actualBuffer, expectedBuffer, options = {}) {
-  var _options$_comparator, _ref;
+  var _options$comparator, _ref;
   if (!actualBuffer || !(actualBuffer instanceof Buffer)) return {
     errorMessage: 'Actual result should be a Buffer.'
   };
@@ -75,19 +75,19 @@ function compareImages(mimeType, actualBuffer, expectedBuffer, options = {}) {
     height: size.height
   });
   let count;
-  if (options._comparator === 'ssim-cie94') {
+  if (options.comparator === 'ssim-cie94') {
     count = (0, _compare.compare)(expected.data, actual.data, diff.data, size.width, size.height, {
       // All ΔE* formulae are originally designed to have the difference of 1.0 stand for a "just noticeable difference" (JND).
       // See https://en.wikipedia.org/wiki/Color_difference#CIELAB_%CE%94E*
       maxColorDeltaE94: 1.0
     });
-  } else if (((_options$_comparator = options._comparator) !== null && _options$_comparator !== void 0 ? _options$_comparator : 'pixelmatch') === 'pixelmatch') {
+  } else if (((_options$comparator = options.comparator) !== null && _options$comparator !== void 0 ? _options$comparator : 'pixelmatch') === 'pixelmatch') {
     var _options$threshold;
     count = pixelmatch(expected.data, actual.data, diff.data, size.width, size.height, {
       threshold: (_options$threshold = options.threshold) !== null && _options$threshold !== void 0 ? _options$threshold : 0.2
     });
   } else {
-    throw new Error(`Configuration specifies unknown comparator "${options._comparator}"`);
+    throw new Error(`Configuration specifies unknown comparator "${options.comparator}"`);
   }
   const maxDiffPixels1 = options.maxDiffPixels;
   const maxDiffPixels2 = options.maxDiffPixelRatio !== undefined ? expected.width * expected.height * options.maxDiffPixelRatio : undefined;
