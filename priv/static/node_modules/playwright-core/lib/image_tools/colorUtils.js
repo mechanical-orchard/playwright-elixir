@@ -33,10 +33,10 @@ function rgb2gray(r, g, b) {
   return 77 * r + 150 * g + 29 * b + 128 >> 8;
 }
 
-// Percieved color difference defined by CIE94.
+// Perceived color difference defined by CIE94.
 // See https://en.wikipedia.org/wiki/Color_difference#CIE94
 //
-// The result of 1.0 is a "just-noticiable difference".
+// The result of 1.0 is a "just-noticeable difference".
 //
 // Other results interpretation (taken from http://zschuessler.github.io/DeltaE/learn/):
 //   < 1.0     Not perceptible by human eyes.

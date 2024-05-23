@@ -7,7 +7,7 @@ exports.SocksProxyHandler = exports.SocksProxy = void 0;
 exports.parsePattern = parsePattern;
 var _events = _interopRequireDefault(require("events"));
 var _net = _interopRequireDefault(require("net"));
-var _debugLogger = require("./debugLogger");
+var _debugLogger = require("../utils/debugLogger");
 var _happyEyeballs = require("../utils/happy-eyeballs");
 var _utils = require("../utils");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -27,27 +27,26 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * limitations under the License.
  */
 // https://tools.ietf.org/html/rfc1928
-var SocksAuth;
-(function (SocksAuth) {
+var SocksAuth = /*#__PURE__*/function (SocksAuth) {
   SocksAuth[SocksAuth["NO_AUTHENTICATION_REQUIRED"] = 0] = "NO_AUTHENTICATION_REQUIRED";
   SocksAuth[SocksAuth["GSSAPI"] = 1] = "GSSAPI";
   SocksAuth[SocksAuth["USERNAME_PASSWORD"] = 2] = "USERNAME_PASSWORD";
   SocksAuth[SocksAuth["NO_ACCEPTABLE_METHODS"] = 255] = "NO_ACCEPTABLE_METHODS";
-})(SocksAuth || (SocksAuth = {}));
-var SocksAddressType;
-(function (SocksAddressType) {
+  return SocksAuth;
+}(SocksAuth || {});
+var SocksAddressType = /*#__PURE__*/function (SocksAddressType) {
   SocksAddressType[SocksAddressType["IPv4"] = 1] = "IPv4";
   SocksAddressType[SocksAddressType["FqName"] = 3] = "FqName";
   SocksAddressType[SocksAddressType["IPv6"] = 4] = "IPv6";
-})(SocksAddressType || (SocksAddressType = {}));
-var SocksCommand;
-(function (SocksCommand) {
+  return SocksAddressType;
+}(SocksAddressType || {});
+var SocksCommand = /*#__PURE__*/function (SocksCommand) {
   SocksCommand[SocksCommand["CONNECT"] = 1] = "CONNECT";
   SocksCommand[SocksCommand["BIND"] = 2] = "BIND";
   SocksCommand[SocksCommand["UDP_ASSOCIATE"] = 3] = "UDP_ASSOCIATE";
-})(SocksCommand || (SocksCommand = {}));
-var SocksReply;
-(function (SocksReply) {
+  return SocksCommand;
+}(SocksCommand || {});
+var SocksReply = /*#__PURE__*/function (SocksReply) {
   SocksReply[SocksReply["Succeeded"] = 0] = "Succeeded";
   SocksReply[SocksReply["GeneralServerFailure"] = 1] = "GeneralServerFailure";
   SocksReply[SocksReply["NotAllowedByRuleSet"] = 2] = "NotAllowedByRuleSet";
@@ -57,7 +56,8 @@ var SocksReply;
   SocksReply[SocksReply["TtlExpired"] = 6] = "TtlExpired";
   SocksReply[SocksReply["CommandNotSupported"] = 7] = "CommandNotSupported";
   SocksReply[SocksReply["AddressTypeNotSupported"] = 8] = "AddressTypeNotSupported";
-})(SocksReply || (SocksReply = {}));
+  return SocksReply;
+}(SocksReply || {});
 class SocksConnection {
   constructor(uid, socket, client) {
     this._buffer = Buffer.from([]);
@@ -94,7 +94,6 @@ class SocksConnection {
       // Address
       0x00, 0x00 // Port
       ]));
-
       return;
     }
     this._socket.off('data', this._boundOnData);
@@ -212,7 +211,6 @@ class SocksConnection {
     // ATYP, Address
     port >> 8, port & 0xFF // Port
     ]));
-
     this._socket.on('data', data => this._client.onSocketData({
       uid: this._uid,
       data
@@ -225,7 +223,6 @@ class SocksConnection {
     // ATYP, Address
     0, 0 // Port
     ]);
-
     switch (errorCode) {
       case 'ENOENT':
       case 'ENOTFOUND':
@@ -279,7 +276,6 @@ function ipToSocksAddress(address) {
     ...address.split('.', 4).map(t => +t & 0xFF) // Address
     ];
   }
-
   if (_net.default.isIPv6(address)) {
     const result = [0x04]; // IPv6
     const tokens = address.split(':', 8);
@@ -288,7 +284,6 @@ function ipToSocksAddress(address) {
       const value = hexToNumber(token);
       result.push(value >> 8 & 0xFF, value & 0xFF); // Big-endian
     }
-
     return result;
   }
   throw new Error('Only IPv4 and IPv6 addresses are supported');
@@ -370,21 +365,21 @@ class SocksProxy extends _events.default {
       });
       socket.on('error', error => {
         var _this$_connections$ge2;
-        (_this$_connections$ge2 = this._connections.get(request.uid)) === null || _this$_connections$ge2 === void 0 ? void 0 : _this$_connections$ge2.error(error.message);
+        (_this$_connections$ge2 = this._connections.get(request.uid)) === null || _this$_connections$ge2 === void 0 || _this$_connections$ge2.error(error.message);
         this._directSockets.delete(request.uid);
       });
       socket.on('end', () => {
         var _this$_connections$ge3;
-        (_this$_connections$ge3 = this._connections.get(request.uid)) === null || _this$_connections$ge3 === void 0 ? void 0 : _this$_connections$ge3.end();
+        (_this$_connections$ge3 = this._connections.get(request.uid)) === null || _this$_connections$ge3 === void 0 || _this$_connections$ge3.end();
         this._directSockets.delete(request.uid);
       });
       const localAddress = socket.localAddress;
       const localPort = socket.localPort;
       this._directSockets.set(request.uid, socket);
-      (_this$_connections$ge4 = this._connections.get(request.uid)) === null || _this$_connections$ge4 === void 0 ? void 0 : _this$_connections$ge4.socketConnected(localAddress, localPort);
+      (_this$_connections$ge4 = this._connections.get(request.uid)) === null || _this$_connections$ge4 === void 0 || _this$_connections$ge4.socketConnected(localAddress, localPort);
     } catch (error) {
       var _this$_connections$ge5;
-      (_this$_connections$ge5 = this._connections.get(request.uid)) === null || _this$_connections$ge5 === void 0 ? void 0 : _this$_connections$ge5.socketFailed(error.code);
+      (_this$_connections$ge5 = this._connections.get(request.uid)) === null || _this$_connections$ge5 === void 0 || _this$_connections$ge5.socketFailed(error.code);
     }
   }
   port() {
@@ -436,34 +431,34 @@ class SocksProxy extends _events.default {
     port
   }) {
     var _this$_connections$ge6;
-    (_this$_connections$ge6 = this._connections.get(uid)) === null || _this$_connections$ge6 === void 0 ? void 0 : _this$_connections$ge6.socketConnected(host, port);
+    (_this$_connections$ge6 = this._connections.get(uid)) === null || _this$_connections$ge6 === void 0 || _this$_connections$ge6.socketConnected(host, port);
   }
   socketFailed({
     uid,
     errorCode
   }) {
     var _this$_connections$ge7;
-    (_this$_connections$ge7 = this._connections.get(uid)) === null || _this$_connections$ge7 === void 0 ? void 0 : _this$_connections$ge7.socketFailed(errorCode);
+    (_this$_connections$ge7 = this._connections.get(uid)) === null || _this$_connections$ge7 === void 0 || _this$_connections$ge7.socketFailed(errorCode);
   }
   sendSocketData({
     uid,
     data
   }) {
     var _this$_connections$ge8;
-    (_this$_connections$ge8 = this._connections.get(uid)) === null || _this$_connections$ge8 === void 0 ? void 0 : _this$_connections$ge8.sendData(data);
+    (_this$_connections$ge8 = this._connections.get(uid)) === null || _this$_connections$ge8 === void 0 || _this$_connections$ge8.sendData(data);
   }
   sendSocketEnd({
     uid
   }) {
     var _this$_connections$ge9;
-    (_this$_connections$ge9 = this._connections.get(uid)) === null || _this$_connections$ge9 === void 0 ? void 0 : _this$_connections$ge9.end();
+    (_this$_connections$ge9 = this._connections.get(uid)) === null || _this$_connections$ge9 === void 0 || _this$_connections$ge9.end();
   }
   sendSocketError({
     uid,
     error
   }) {
     var _this$_connections$ge10;
-    (_this$_connections$ge10 = this._connections.get(uid)) === null || _this$_connections$ge10 === void 0 ? void 0 : _this$_connections$ge10.error(error);
+    (_this$_connections$ge10 = this._connections.get(uid)) === null || _this$_connections$ge10 === void 0 || _this$_connections$ge10.error(error);
   }
 }
 exports.SocksProxy = SocksProxy;
@@ -553,14 +548,14 @@ class SocksProxyHandler extends _events.default {
     data
   }) {
     var _this$_sockets$get;
-    (_this$_sockets$get = this._sockets.get(uid)) === null || _this$_sockets$get === void 0 ? void 0 : _this$_sockets$get.write(data);
+    (_this$_sockets$get = this._sockets.get(uid)) === null || _this$_sockets$get === void 0 || _this$_sockets$get.write(data);
   }
   socketClosed({
     uid
   }) {
     var _this$_sockets$get2;
     _debugLogger.debugLogger.log('socks', `[${uid}] <= browser socket closed`);
-    (_this$_sockets$get2 = this._sockets.get(uid)) === null || _this$_sockets$get2 === void 0 ? void 0 : _this$_sockets$get2.destroy();
+    (_this$_sockets$get2 = this._sockets.get(uid)) === null || _this$_sockets$get2 === void 0 || _this$_sockets$get2.destroy();
     this._sockets.delete(uid);
   }
 }

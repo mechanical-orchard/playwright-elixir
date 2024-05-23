@@ -22,10 +22,9 @@ var _utils = require("../utils");
  * limitations under the License.
  */
 
-const DEFAULT_TIMEOUT = 30000;
-exports.DEFAULT_TIMEOUT = DEFAULT_TIMEOUT;
-const DEFAULT_LAUNCH_TIMEOUT = 3 * 60 * 1000; // 3 minutes
-exports.DEFAULT_LAUNCH_TIMEOUT = DEFAULT_LAUNCH_TIMEOUT;
+const DEFAULT_TIMEOUT = exports.DEFAULT_TIMEOUT = 30000;
+const DEFAULT_LAUNCH_TIMEOUT = exports.DEFAULT_LAUNCH_TIMEOUT = 3 * 60 * 1000; // 3 minutes
+
 class TimeoutSettings {
   constructor(parent) {
     this._parent = void 0;

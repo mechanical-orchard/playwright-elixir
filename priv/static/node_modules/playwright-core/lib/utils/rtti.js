@@ -7,7 +7,13 @@ exports.isError = isError;
 exports.isLikelyNpxGlobal = void 0;
 exports.isObject = isObject;
 exports.isRegExp = isRegExp;
-exports.isString = isString;
+Object.defineProperty(exports, "isString", {
+  enumerable: true,
+  get: function () {
+    return _stringUtils.isString;
+  }
+});
+var _stringUtils = require("./isomorphic/stringUtils");
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -24,9 +30,6 @@ exports.isString = isString;
  * limitations under the License.
  */
 
-function isString(obj) {
-  return typeof obj === 'string' || obj instanceof String;
-}
 function isRegExp(obj) {
   return obj instanceof RegExp || Object.prototype.toString.call(obj) === '[object RegExp]';
 }

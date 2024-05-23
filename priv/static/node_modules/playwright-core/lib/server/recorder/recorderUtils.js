@@ -21,7 +21,7 @@ exports.metadataToCallLog = metadataToCallLog;
  */
 
 function metadataToCallLog(metadata, status) {
-  var _metadata$params, _metadata$params2, _metadata$error, _metadata$error$error;
+  var _metadata$params, _metadata$params2, _metadata$error;
   let title = metadata.apiName || metadata.method;
   if (metadata.method === 'waitForEventInfo') title += `(${metadata.params.info.event})`;
   title = title.replace('object.expect', 'expect');
@@ -40,7 +40,7 @@ function metadataToCallLog(metadata, status) {
     messages: metadata.log,
     title,
     status,
-    error: (_metadata$error = metadata.error) === null || _metadata$error === void 0 ? void 0 : (_metadata$error$error = _metadata$error.error) === null || _metadata$error$error === void 0 ? void 0 : _metadata$error$error.message,
+    error: (_metadata$error = metadata.error) === null || _metadata$error === void 0 || (_metadata$error = _metadata$error.error) === null || _metadata$error === void 0 ? void 0 : _metadata$error.message,
     params,
     duration
   };

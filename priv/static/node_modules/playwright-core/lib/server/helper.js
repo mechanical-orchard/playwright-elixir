@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.helper = void 0;
-var _debugLogger = require("../common/debugLogger");
+var _debugLogger = require("../utils/debugLogger");
 var _eventsHelper = require("../utils/eventsHelper");
 /**
  * Copyright 2017 Google Inc. All rights reserved.
@@ -95,10 +95,9 @@ class Helper {
       }
     };
   }
-  static formatBrowserLogs(logs) {
-    if (!logs.length) return '';
-    return '\n' + '='.repeat(20) + ' Browser output: ' + '='.repeat(20) + '\n' + logs.join('\n');
+  static formatBrowserLogs(logs, disconnectReason) {
+    if (!disconnectReason && !logs.length) return '';
+    return '\n' + (disconnectReason ? disconnectReason + '\n' : '') + logs.join('\n');
   }
 }
-const helper = Helper;
-exports.helper = helper;
+const helper = exports.helper = Helper;

@@ -13,9 +13,9 @@ var _timeoutSettings = require("../common/timeoutSettings");
 var _waiter = require("./waiter");
 var _events2 = require("events");
 var _connection = require("./connection");
-var _errors = require("../common/errors");
+var _errors = require("./errors");
 var _timeoutRunner = require("../utils/timeoutRunner");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+let _Symbol$asyncDispose;
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -31,7 +31,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 class Android extends _channelOwner.ChannelOwner {
   static from(android) {
     return android._object;
@@ -56,7 +56,7 @@ class Android extends _channelOwner.ChannelOwner {
   }
   async launchServer(options = {}) {
     if (!this._serverLauncher) throw new Error('Launching server is not supported');
-    return this._serverLauncher.launchServer(options);
+    return await this._serverLauncher.launchServer(options);
   }
   async connect(wsEndpoint, options = {}) {
     return await this._wrapApiCall(async () => {
@@ -83,8 +83,8 @@ class Android extends _channelOwner.ChannelOwner {
       let closeError;
       const onPipeClosed = () => {
         var _device;
-        (_device = device) === null || _device === void 0 ? void 0 : _device._didClose();
-        connection.close(closeError || _errors.kBrowserClosedError);
+        (_device = device) === null || _device === void 0 || _device._didClose();
+        connection.close(closeError);
       };
       pipe.on('closed', onPipeClosed);
       connection.onmessage = message => pipe.send({
@@ -96,7 +96,7 @@ class Android extends _channelOwner.ChannelOwner {
         try {
           connection.dispatch(message);
         } catch (e) {
-          closeError = e.toString();
+          closeError = String(e);
           closePipe();
         }
       });
@@ -121,6 +121,7 @@ class Android extends _channelOwner.ChannelOwner {
   }
 }
 exports.Android = Android;
+_Symbol$asyncDispose = Symbol.asyncDispose;
 class AndroidDevice extends _channelOwner.ChannelOwner {
   static from(androidDevice) {
     return androidDevice._object;
@@ -174,7 +175,7 @@ class AndroidDevice extends _channelOwner.ChannelOwner {
     };
     const webView = [...this._webViews.values()].find(predicate);
     if (webView) return webView;
-    return this.waitForEvent('webview', {
+    return await this.waitForEvent('webview', {
       ...options,
       predicate
     });
@@ -264,11 +265,14 @@ class AndroidDevice extends _channelOwner.ChannelOwner {
     if (options.path) await _fs.default.promises.writeFile(options.path, binary);
     return binary;
   }
+  async [_Symbol$asyncDispose]() {
+    await this.close();
+  }
   async close() {
     try {
-      if (this._shouldCloseConnectionOnClose) this._connection.close(_errors.kBrowserClosedError);else await this._channel.close();
+      if (this._shouldCloseConnectionOnClose) this._connection.close();else await this._channel.close();
     } catch (e) {
-      if ((0, _errors.isSafeCloseError)(e)) return;
+      if ((0, _errors.isTargetClosedError)(e)) return;
       throw e;
     }
   }
@@ -303,18 +307,18 @@ class AndroidDevice extends _channelOwner.ChannelOwner {
   }
   async launchBrowser(options = {}) {
     const contextOptions = await (0, _browserContext.prepareBrowserContextParams)(options);
-    const {
-      context
-    } = await this._channel.launchBrowser(contextOptions);
-    return _browserContext.BrowserContext.from(context);
+    const result = await this._channel.launchBrowser(contextOptions);
+    const context = _browserContext.BrowserContext.from(result.context);
+    context._setOptions(contextOptions, {});
+    return context;
   }
   async waitForEvent(event, optionsOrPredicate = {}) {
-    return this._wrapApiCall(async () => {
+    return await this._wrapApiCall(async () => {
       const timeout = this._timeoutSettings.timeout(typeof optionsOrPredicate === 'function' ? {} : optionsOrPredicate);
       const predicate = typeof optionsOrPredicate === 'function' ? optionsOrPredicate : optionsOrPredicate.predicate;
       const waiter = _waiter.Waiter.createForEvent(this, event);
       waiter.rejectOnTimeout(timeout, `Timeout ${timeout}ms exceeded while waiting for event "${event}"`);
-      if (event !== _events.Events.AndroidDevice.Close) waiter.rejectOnEvent(this, _events.Events.AndroidDevice.Close, new Error('Device closed'));
+      if (event !== _events.Events.AndroidDevice.Close) waiter.rejectOnEvent(this, _events.Events.AndroidDevice.Close, () => new _errors.TargetClosedError());
       const result = await waiter.waitForEvent(this, event, predicate);
       waiter.dispose();
       return result;
@@ -341,10 +345,13 @@ class AndroidSocket extends _channelOwner.ChannelOwner {
   async close() {
     await this._channel.close();
   }
+  async [Symbol.asyncDispose]() {
+    await this.close();
+  }
 }
 exports.AndroidSocket = AndroidSocket;
 async function loadFile(file) {
-  if ((0, _utils.isString)(file)) return _fs.default.promises.readFile(file);
+  if ((0, _utils.isString)(file)) return await _fs.default.promises.readFile(file);
   return file;
 }
 class AndroidInput {
@@ -452,7 +459,7 @@ class AndroidWebView extends _events2.EventEmitter {
   }
   async page() {
     if (!this._pagePromise) this._pagePromise = this._fetchPage();
-    return this._pagePromise;
+    return await this._pagePromise;
   }
   async _fetchPage() {
     const {

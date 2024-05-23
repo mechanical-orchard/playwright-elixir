@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.Waiter = void 0;
 var _stackTrace = require("../utils/stackTrace");
-var _errors = require("../common/errors");
+var _errors = require("./errors");
 var _utils = require("../utils");
 /**
  * Copyright (c) Microsoft Corporation.
@@ -59,7 +59,7 @@ class Waiter {
       promise,
       dispose
     } = waitForEvent(emitter, event, predicate);
-    return this.waitForPromise(promise, dispose);
+    return await this.waitForPromise(promise, dispose);
   }
   rejectOnEvent(emitter, event, error, predicate) {
     const {
@@ -67,7 +67,7 @@ class Waiter {
       dispose
     } = waitForEvent(emitter, event, predicate);
     this._rejectOn(promise.then(() => {
-      throw error;
+      throw typeof error === 'function' ? error() : error;
     }), dispose);
   }
   rejectOnTimeout(timeout, message) {

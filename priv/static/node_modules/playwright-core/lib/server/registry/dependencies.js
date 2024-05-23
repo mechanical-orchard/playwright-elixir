@@ -21,8 +21,8 @@ var _hostPlatform = require("../../utils/hostPlatform");
 var _ = require(".");
 var _nativeDeps = require("./nativeDeps");
 var _userAgent = require("../../utils/userAgent");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
@@ -68,7 +68,10 @@ function readDockerVersionSync() {
     return null;
   }
 }
-const checkExecutable = filePath => _fs.default.promises.access(filePath, _fs.default.constants.X_OK).then(() => true).catch(e => false);
+const checkExecutable = filePath => {
+  if (process.platform === 'win32') return filePath.endsWith('.exe');
+  return _fs.default.promises.access(filePath, _fs.default.constants.X_OK).then(() => true).catch(() => false);
+};
 function isSupportedWindowsVersion() {
   if (os.platform() !== 'win32' || os.arch() !== 'x64') return false;
   const [major, minor] = os.release().split('.').map(token => parseInt(token, 10));
@@ -96,15 +99,12 @@ async function installDependenciesWindows(targets, dryRun) {
 }
 async function installDependenciesLinux(targets, dryRun) {
   const libraries = [];
-  let platform = _hostPlatform.hostPlatform;
-  if (platform === 'generic-linux' || platform === 'generic-linux-arm64') {
-    console.warn('BEWARE: your OS is not officially supported by Playwright; installing dependencies for Ubuntu as a fallback.'); // eslint-disable-line no-console
-    platform = _hostPlatform.hostPlatform === 'generic-linux' ? 'ubuntu20.04' : 'ubuntu20.04-arm64';
-  }
+  const platform = _hostPlatform.hostPlatform;
+  if (!_hostPlatform.isOfficiallySupportedPlatform) console.warn(`BEWARE: your OS is not officially supported by Playwright; installing dependencies for ${platform} as a fallback.`); // eslint-disable-line no-console
   for (const target of targets) {
     const info = _nativeDeps.deps[platform];
     if (!info) {
-      console.warn('Cannot install dependencies for this linux distribution!'); // eslint-disable-line no-console
+      console.warn(`Cannot install dependencies for ${platform}!`); // eslint-disable-line no-console
       return;
     }
     libraries.push(...info[target]);
@@ -166,7 +166,7 @@ async function validateDependenciesWindows(windowsExeAndDllDirectories) {
   }
 }
 async function validateDependenciesLinux(sdkLanguage, linuxLddDirectories, dlOpenLibraries) {
-  var _deps$hostPlatform;
+  var _deps$hostPlatform, _process$getuid, _process;
   const directoryPaths = linuxLddDirectories;
   const lddPaths = [];
   for (const directoryPath of directoryPaths) lddPaths.push(...(await executablesOrSharedLibraries(directoryPath)));
@@ -192,7 +192,7 @@ async function validateDependenciesLinux(sdkLanguage, linuxLddDirectories, dlOpe
       missingDeps.delete(missingDep);
     }
   }
-  const maybeSudo = process.getuid() !== 0 && os.platform() !== 'win32' ? 'sudo ' : '';
+  const maybeSudo = (_process$getuid = (_process = process).getuid) !== null && _process$getuid !== void 0 && _process$getuid.call(_process) && os.platform() !== 'win32' ? 'sudo ' : '';
   const dockerInfo = readDockerVersionSync();
   const errorLines = [`Host system is missing dependencies to run browsers.`];
   // Ignore patch versions when comparing docker container version and Playwright version:
@@ -202,7 +202,7 @@ async function validateDependenciesLinux(sdkLanguage, linuxLddDirectories, dlOpe
     // In this case, we know how to install dependencies in it.
     const pwVersion = (0, _userAgent.getPlaywrightVersion)();
     const requiredDockerImage = dockerInfo.dockerImageName.replace(dockerInfo.driverVersion, pwVersion);
-    errorLines.push(...[`This is most likely due to docker image version not matching Playwright version:`, `- Playwright: ${pwVersion}`, `-     Docker: ${dockerInfo.driverVersion}`, ``, `Either:`, `- (recommended) use docker image "${requiredDockerImage}"`, `- (alternative 1) run the following command inside docker to install missing dependencies:`, ``, `    ${maybeSudo}${(0, _.buildPlaywrightCLICommand)(sdkLanguage, 'install-deps')}`, ``, `- (alternative 2) use apt inside docker:`, ``, `    ${maybeSudo}apt-get install ${[...missingPackages].join('\\\n        ')}`, ``, `<3 Playwright Team`]);
+    errorLines.push(...[`This is most likely due to Docker image version not matching Playwright version:`, `- Playwright  : ${pwVersion}`, `- Docker image: ${dockerInfo.driverVersion}`, ``, `Either:`, `- (recommended) use Docker image "${requiredDockerImage}"`, `- (alternative 1) run the following command inside Docker to install missing dependencies:`, ``, `    ${maybeSudo}${(0, _.buildPlaywrightCLICommand)(sdkLanguage, 'install-deps')}`, ``, `- (alternative 2) use apt inside Docker:`, ``, `    ${maybeSudo}apt-get install ${[...missingPackages].join('\\\n        ')}`, ``, `<3 Playwright Team`]);
   } else if (missingPackages.size && !missingDeps.size) {
     // Only known dependencies are missing for browsers.
     // Suggest installation with a Playwright CLI.
@@ -301,7 +301,8 @@ function quoteProcessArgs(args) {
   });
 }
 async function transformCommandsForRoot(commands) {
-  const isRoot = process.getuid() === 0;
+  var _process$getuid2, _process2;
+  const isRoot = ((_process$getuid2 = (_process2 = process).getuid) === null || _process$getuid2 === void 0 ? void 0 : _process$getuid2.call(_process2)) === 0;
   if (isRoot) return {
     command: 'sh',
     args: ['-c', `${commands.join('&& ')}`],

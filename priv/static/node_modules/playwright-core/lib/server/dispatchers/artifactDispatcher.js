@@ -43,14 +43,14 @@ class ArtifactDispatcher extends _dispatcher.Dispatcher {
   async pathAfterFinished() {
     const path = await this._object.localPathAfterFinished();
     return {
-      value: path || undefined
+      value: path
     };
   }
   async saveAs(params) {
     return await new Promise((resolve, reject) => {
       this._object.saveAs(async (localPath, error) => {
-        if (error !== undefined) {
-          reject(new Error(error));
+        if (error) {
+          reject(error);
           return;
         }
         try {
@@ -66,8 +66,8 @@ class ArtifactDispatcher extends _dispatcher.Dispatcher {
   async saveAsStream() {
     return await new Promise((resolve, reject) => {
       this._object.saveAs(async (localPath, error) => {
-        if (error !== undefined) {
-          reject(new Error(error));
+        if (error) {
+          reject(error);
           return;
         }
         try {
@@ -93,7 +93,6 @@ class ArtifactDispatcher extends _dispatcher.Dispatcher {
   }
   async stream() {
     const fileName = await this._object.localPathAfterFinished();
-    if (!fileName) return {};
     const readable = _fs.default.createReadStream(fileName, {
       highWaterMark: 1024 * 1024
     });
@@ -110,7 +109,8 @@ class ArtifactDispatcher extends _dispatcher.Dispatcher {
   async cancel() {
     await this._object.cancel();
   }
-  async delete() {
+  async delete(_, metadata) {
+    metadata.potentiallyClosesScope = true;
     await this._object.delete();
     this._dispose();
   }

@@ -53,7 +53,7 @@ defmodule Playwright.MixProject do
       {:gun, "~> 1.3.3"},
       {:jason, "~> 1.2"},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:playwright_assets, "~> 1.44.0", only: [:test]},
+      {:playwright_assets, "1.44.0", only: [:test]},
       {:recase, "~> 0.7"},
       {:uuid, "~> 1.1"}
     ]

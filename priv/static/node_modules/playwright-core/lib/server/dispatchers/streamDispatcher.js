@@ -40,11 +40,15 @@ class StreamDispatcher extends _dispatcher.Dispatcher {
       binary: Buffer.from('')
     };
     if (!stream.readableLength) {
-      await new Promise((fulfill, reject) => {
-        stream.once('readable', fulfill);
-        stream.once('end', fulfill);
-        stream.once('error', reject);
-      });
+      const readyPromise = new _utils.ManualPromise();
+      const done = () => readyPromise.resolve();
+      stream.on('readable', done);
+      stream.on('end', done);
+      stream.on('error', done);
+      await readyPromise;
+      stream.off('readable', done);
+      stream.off('end', done);
+      stream.off('error', done);
     }
     const buffer = stream.read(Math.min(stream.readableLength, params.size || stream.readableLength));
     return {

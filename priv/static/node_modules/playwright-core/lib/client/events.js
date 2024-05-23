@@ -21,7 +21,7 @@ exports.Events = void 0;
  * limitations under the License.
  */
 
-const Events = {
+const Events = exports.Events = {
   AndroidDevice: {
     WebView: 'webview',
     Close: 'close'
@@ -88,7 +88,7 @@ const Events = {
   },
   ElectronApplication: {
     Close: 'close',
+    Console: 'console',
     Window: 'window'
   }
 };
-exports.Events = Events;

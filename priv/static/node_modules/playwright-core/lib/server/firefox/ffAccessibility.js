@@ -200,7 +200,7 @@ class FFAXNode {
       if (!(numericalProperty in this._payload)) continue;
       node[numericalProperty] = this._payload[numericalProperty];
     }
-    const tokenProperties = ['autocomplete', 'haspopup', 'invalid', 'orientation'];
+    const tokenProperties = ['autocomplete', 'haspopup', 'orientation'];
     for (const tokenProperty of tokenProperties) {
       const value = this._payload[tokenProperty];
       if (!value || value === 'false') continue;
@@ -210,6 +210,7 @@ class FFAXNode {
     axNode.valueString = this._payload.value;
     if ('checked' in this._payload) axNode.checked = this._payload.checked === true ? 'checked' : this._payload.checked === 'mixed' ? 'mixed' : 'unchecked';
     if ('pressed' in this._payload) axNode.pressed = this._payload.pressed === true ? 'pressed' : 'released';
+    if ('invalid' in this._payload) axNode.invalid = this._payload.invalid === true ? 'true' : 'false';
     return axNode;
   }
 }

@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.addSourceUrlToScript = addSourceUrlToScript;
 exports.envObjectToArray = envObjectToArray;
 exports.evaluationScript = evaluationScript;
 var _fs = _interopRequireDefault(require("fs"));
@@ -46,8 +47,11 @@ async function evaluationScript(fun, arg, addSourceUrl = true) {
   if (fun.content !== undefined) return fun.content;
   if (fun.path !== undefined) {
     let source = await _fs.default.promises.readFile(fun.path, 'utf8');
-    if (addSourceUrl) source += '\n//# sourceURL=' + fun.path.replace(/\n/g, '');
+    if (addSourceUrl) source = addSourceUrlToScript(source, fun.path);
     return source;
   }
   throw new Error('Either path or content property must be present');
+}
+function addSourceUrlToScript(source, path) {
+  return `${source}\n//# sourceURL=${path.replace(/\n/g, '')}`;
 }

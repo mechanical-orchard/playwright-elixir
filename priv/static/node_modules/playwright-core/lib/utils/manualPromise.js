@@ -60,7 +60,7 @@ exports.ManualPromise = ManualPromise;
 class LongStandingScope {
   constructor() {
     this._terminateError = void 0;
-    this._terminateErrorMessage = void 0;
+    this._closeError = void 0;
     this._terminatePromises = new Map();
     this._isClosed = false;
   }
@@ -69,13 +69,10 @@ class LongStandingScope {
     this._terminateError = error;
     for (const p of this._terminatePromises.keys()) p.resolve(error);
   }
-  close(errorMessage) {
+  close(error) {
     this._isClosed = true;
-    this._terminateErrorMessage = errorMessage;
-    for (const [p, e] of this._terminatePromises) {
-      (0, _stackTrace.rewriteErrorMessage)(e, errorMessage);
-      p.resolve(e);
-    }
+    this._closeError = error;
+    for (const [p, frames] of this._terminatePromises) p.resolve(cloneError(error, frames));
   }
   isClosed() {
     return this._isClosed;
@@ -91,9 +88,10 @@ class LongStandingScope {
   }
   async _race(promises, safe, defaultValue) {
     const terminatePromise = new ManualPromise();
+    const frames = (0, _stackTrace.captureRawStack)();
     if (this._terminateError) terminatePromise.resolve(this._terminateError);
-    if (this._terminateErrorMessage) terminatePromise.resolve(new Error(this._terminateErrorMessage));
-    this._terminatePromises.set(terminatePromise, new Error(''));
+    if (this._closeError) terminatePromise.resolve(cloneError(this._closeError, frames));
+    this._terminatePromises.set(terminatePromise, frames);
     try {
       return await Promise.race([terminatePromise.then(e => safe ? defaultValue : Promise.reject(e)), ...promises]);
     } finally {
@@ -102,3 +100,10 @@ class LongStandingScope {
   }
 }
 exports.LongStandingScope = LongStandingScope;
+function cloneError(error, frames) {
+  const clone = new Error();
+  clone.name = error.name;
+  clone.message = error.message;
+  clone.stack = [error.name + ':' + error.message, ...frames].join('\n');
+  return clone;
+}

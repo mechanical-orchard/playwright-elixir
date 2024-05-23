@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.JsonPipeDispatcher = void 0;
 var _dispatcher = require("./dispatcher");
 var _utils = require("../../utils");
-var _serializers = require("../../protocol/serializers");
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -45,12 +44,11 @@ class JsonPipeDispatcher extends _dispatcher.Dispatcher {
       message
     });
   }
-  wasClosed(error) {
+  wasClosed(reason) {
     if (!this._disposed) {
-      const params = error ? {
-        error: (0, _serializers.serializeError)(error)
-      } : {};
-      this._dispatchEvent('closed', params);
+      this._dispatchEvent('closed', {
+        reason
+      });
       this._dispose();
     }
   }

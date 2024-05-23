@@ -29,6 +29,7 @@ function createInProcessPlaywright() {
     sdkLanguage: process.env.PW_LANG_NAME || 'javascript'
   });
   const clientConnection = new _connection.Connection(undefined, undefined);
+  clientConnection.useRawBuffers();
   const dispatcherConnection = new _server.DispatcherConnection(true /* local */);
 
   // Dispatch synchronously at first.

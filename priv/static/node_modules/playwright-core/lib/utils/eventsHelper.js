@@ -35,5 +35,4 @@ class EventsHelper {
     listeners.splice(0, listeners.length);
   }
 }
-const eventsHelper = EventsHelper;
-exports.eventsHelper = eventsHelper;
+const eventsHelper = exports.eventsHelper = EventsHelper;

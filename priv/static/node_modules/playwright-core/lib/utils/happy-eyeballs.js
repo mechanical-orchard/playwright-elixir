@@ -11,8 +11,8 @@ var https = _interopRequireWildcard(require("https"));
 var net = _interopRequireWildcard(require("net"));
 var tls = _interopRequireWildcard(require("tls"));
 var _manualPromise = require("./manualPromise");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -31,6 +31,7 @@ function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && 
 
 // Implementation(partial) of Happy Eyeballs 2 algorithm described in
 // https://www.rfc-editor.org/rfc/rfc8305
+
 // Same as in Chromium (https://source.chromium.org/chromium/chromium/src/+/5666ff4f5077a7e2f72902f3a95f5d553ea0d88d:net/socket/transport_connect_job.cc;l=102)
 const connectionAttemptDelayMs = 300;
 class HttpHappyEyeballsAgent extends http.Agent {
@@ -47,10 +48,8 @@ class HttpsHappyEyeballsAgent extends https.Agent {
     createConnectionAsync(options, oncreate, /* useTLS */true).catch(err => oncreate === null || oncreate === void 0 ? void 0 : oncreate(err));
   }
 }
-const httpsHappyEyeballsAgent = new HttpsHappyEyeballsAgent();
-exports.httpsHappyEyeballsAgent = httpsHappyEyeballsAgent;
-const httpHappyEyeballsAgent = new HttpHappyEyeballsAgent();
-exports.httpHappyEyeballsAgent = httpHappyEyeballsAgent;
+const httpsHappyEyeballsAgent = exports.httpsHappyEyeballsAgent = new HttpsHappyEyeballsAgent();
+const httpHappyEyeballsAgent = exports.httpHappyEyeballsAgent = new HttpHappyEyeballsAgent();
 async function createSocket(host, port) {
   return new Promise((resolve, reject) => {
     if (net.isIP(host)) {
@@ -83,7 +82,7 @@ async function createConnectionAsync(options, oncreate, useTLS) {
     if (!sockets.delete(socket)) return;
     ++errorCount;
     (_firstError = firstError) !== null && _firstError !== void 0 ? _firstError : firstError = err;
-    if (errorCount === addresses.length) oncreate === null || oncreate === void 0 ? void 0 : oncreate(firstError);
+    if (errorCount === addresses.length) oncreate === null || oncreate === void 0 || oncreate(firstError);
   };
   const connected = new _manualPromise.ManualPromise();
   for (const {
@@ -104,7 +103,7 @@ async function createConnectionAsync(options, oncreate, useTLS) {
     // None of these events are fired after socket.destroy() is called.
     socket.on('connect', () => {
       connected.resolve();
-      oncreate === null || oncreate === void 0 ? void 0 : oncreate(null, socket);
+      oncreate === null || oncreate === void 0 || oncreate(null, socket);
       // TODO: Cache the result?
       // Close other outstanding sockets.
       sockets.delete(socket);
@@ -141,7 +140,7 @@ async function lookupAddresses(hostname) {
     secondFamily = tmp;
   }
   const result = [];
-  // Alternate ipv6 and ipv4 addreses.
+  // Alternate ipv6 and ipv4 addresses.
   for (let i = 0; i < Math.max(firstFamily.length, secondFamily.length); i++) {
     if (firstFamily[i]) result.push(firstFamily[i]);
     if (secondFamily[i]) result.push(secondFamily[i]);

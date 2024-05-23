@@ -4,7 +4,6 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.ConsoleMessage = void 0;
-var _instrumentation = require("./instrumentation");
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -21,9 +20,8 @@ var _instrumentation = require("./instrumentation");
  * limitations under the License.
  */
 
-class ConsoleMessage extends _instrumentation.SdkObject {
+class ConsoleMessage {
   constructor(page, type, text, args, location) {
-    super(page, 'console-message');
     this._type = void 0;
     this._text = void 0;
     this._args = void 0;

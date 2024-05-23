@@ -18,9 +18,9 @@ var _waiter = require("./waiter");
 var _events2 = require("./events");
 var _types = require("./types");
 var _network2 = require("../utils/network");
-var _debugLogger = require("../common/debugLogger");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+var _clientHelper = require("./clientHelper");
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright 2017 Google Inc. All rights reserved.
@@ -92,8 +92,8 @@ class Frame extends _channelOwner.ChannelOwner {
   }
   _setupNavigationWaiter(options) {
     const waiter = new _waiter.Waiter(this._page, '');
-    if (this._page.isClosed()) waiter.rejectImmediately(new Error('Navigation failed because page was closed!'));
-    waiter.rejectOnEvent(this._page, _events2.Events.Page.Close, new Error('Navigation failed because page was closed!'));
+    if (this._page.isClosed()) waiter.rejectImmediately(this._page._closeErrorWithReason());
+    waiter.rejectOnEvent(this._page, _events2.Events.Page.Close, () => this._page._closeErrorWithReason());
     waiter.rejectOnEvent(this._page, _events2.Events.Page.Crash, new Error('Navigation failed because page crashed!'));
     waiter.rejectOnEvent(this._page, _events2.Events.Page.FrameDetached, new Error('Navigating frame was detached!'), frame => frame === this);
     const timeout = this._page._timeoutSettings.navigationTimeout(options);
@@ -101,7 +101,7 @@ class Frame extends _channelOwner.ChannelOwner {
     return waiter;
   }
   async waitForNavigation(options = {}) {
-    return this._page._wrapApiCall(async () => {
+    return await this._page._wrapApiCall(async () => {
       const waitUntil = verifyLoadState('waitUntil', options.waitUntil === undefined ? 'load' : options.waitUntil);
       const waiter = this._setupNavigationWaiter(options);
       const toUrl = typeof options.url === 'string' ? ` to "${options.url}"` : '';
@@ -132,7 +132,7 @@ class Frame extends _channelOwner.ChannelOwner {
   }
   async waitForLoadState(state = 'load', options = {}) {
     state = verifyLoadState('state', state);
-    return this._page._wrapApiCall(async () => {
+    return await this._page._wrapApiCall(async () => {
       const waiter = this._setupNavigationWaiter(options);
       if (this._loadStates.has(state)) {
         waiter.log(`  not waiting, "${state}" event already fired`);
@@ -271,7 +271,7 @@ class Frame extends _channelOwner.ChannelOwner {
     };
     if (copy.path) {
       copy.content = (await _fs.default.promises.readFile(copy.path)).toString();
-      copy.content += '//# sourceURL=' + copy.path.replace(/\n/g, '');
+      copy.content = (0, _clientHelper.addSourceUrlToScript)(copy.content, copy.path);
     }
     return _elementHandle.ElementHandle.from((await this._channel.addScriptTag({
       ...copy
@@ -443,20 +443,11 @@ class Frame extends _channelOwner.ChannelOwner {
   }
   async setInputFiles(selector, files, options = {}) {
     const converted = await (0, _elementHandle.convertInputFiles)(files, this.page().context());
-    if (converted.files) {
-      await this._channel.setInputFiles({
-        selector,
-        files: converted.files,
-        ...options
-      });
-    } else {
-      _debugLogger.debugLogger.log('api', 'switching to large files mode');
-      await this._channel.setInputFilePaths({
-        selector,
-        ...converted,
-        ...options
-      });
-    }
+    await this._channel.setInputFiles({
+      selector,
+      ...converted,
+      ...options
+    });
   }
   async type(selector, text, options = {}) {
     await this._channel.type({

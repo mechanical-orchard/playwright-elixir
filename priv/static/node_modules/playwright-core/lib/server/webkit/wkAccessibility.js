@@ -134,7 +134,7 @@ class WKAXNode {
     if (insideControl) return false;
     return this.isLeafNode() && !!name;
   }
-  _hasRendundantTextChild() {
+  _hasRedundantTextChild() {
     if (this._children.length !== 1) return false;
     const child = this._children[0];
     return child._payload.role === 'text' && this._payload.name === child._payload.value;
@@ -144,7 +144,7 @@ class WKAXNode {
     // WebKit on Linux ignores everything inside text controls, normalize this behavior
     if (this._isTextControl()) return true;
     // WebKit for mac has text nodes inside heading, li, menuitem, a, and p nodes
-    if (this._hasRendundantTextChild()) return true;
+    if (this._hasRedundantTextChild()) return true;
     return false;
   }
   serialize() {
@@ -167,9 +167,9 @@ class WKAXNode {
       if (!(userStringProperty in this._payload)) continue;
       node[userStringProperty] = this._payload[userStringProperty];
     }
-    const booleanProperties = ['disabled', 'expanded', 'focused', 'modal', 'multiline', 'multiselectable', 'readonly', 'required', 'selected'];
+    const booleanProperties = ['disabled', 'expanded', 'focused', 'modal', 'multiselectable', 'readonly', 'required', 'selected'];
     for (const booleanProperty of booleanProperties) {
-      // WebArea and ScorllArea treat focus differently than other nodes. They report whether their frame  has focus,
+      // WebArea and ScrollArea treat focus differently than other nodes. They report whether their frame  has focus,
       // not whether focus is specifically on the root node.
       if (booleanProperty === 'focused' && (this._payload.role === 'WebArea' || this._payload.role === 'ScrollArea')) continue;
       const value = this._payload[booleanProperty];

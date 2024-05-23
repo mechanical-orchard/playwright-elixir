@@ -36,7 +36,7 @@ class WKWorkers {
     this.clear();
     this._sessionListeners = [_eventsHelper.eventsHelper.addEventListener(session, 'Worker.workerCreated', event => {
       const worker = new _page.Worker(this._page, event.url);
-      const workerSession = new _wkConnection.WKSession(session.connection, event.workerId, 'Most likely the worker has been closed.', message => {
+      const workerSession = new _wkConnection.WKSession(session.connection, event.workerId, message => {
         session.send('Worker.sendMessageToWorker', {
           workerId: event.workerId,
           message: JSON.stringify(message)
@@ -66,7 +66,7 @@ class WKWorkers {
     }), _eventsHelper.eventsHelper.addEventListener(session, 'Worker.workerTerminated', event => {
       const workerSession = this._workerSessions.get(event.workerId);
       if (!workerSession) return;
-      workerSession.dispose(false);
+      workerSession.dispose();
       this._workerSessions.delete(event.workerId);
       this._page._removeWorker(event.workerId);
     })];

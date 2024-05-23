@@ -6,9 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.WKRouteImpl = exports.WKInterceptableRequest = void 0;
 var network = _interopRequireWildcard(require("../network"));
 var _utils = require("../../utils");
-var _manualPromise = require("../../utils/manualPromise");
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
  * Copyright 2017 Google Inc. All rights reserved.
  * Modifications copyright (c) Microsoft Corporation.
@@ -43,29 +42,20 @@ const errorReasons = {
   'failed': 'General'
 };
 class WKInterceptableRequest {
-  constructor(session, route, frame, event, redirectedFrom, documentId) {
+  constructor(session, frame, event, redirectedFrom, documentId) {
     this._session = void 0;
     this.request = void 0;
     this._requestId = void 0;
     this._timestamp = void 0;
     this._wallTime = void 0;
-    this._route = void 0;
-    this._redirectedFrom = void 0;
     this._session = session;
     this._requestId = event.requestId;
-    this._route = route;
-    this._redirectedFrom = redirectedFrom;
     const resourceType = event.type ? event.type.toLowerCase() : redirectedFrom ? redirectedFrom.request.resourceType() : 'other';
     let postDataBuffer = null;
     this._timestamp = event.timestamp;
     this._wallTime = event.walltime * 1000;
     if (event.request.postData) postDataBuffer = Buffer.from(event.request.postData, 'base64');
     this.request = new network.Request(frame._page._browserContext, frame, null, (redirectedFrom === null || redirectedFrom === void 0 ? void 0 : redirectedFrom.request) || null, documentId, event.request.url, resourceType, event.request.method, postDataBuffer, (0, _utils.headersObjectToArray)(event.request.headers));
-  }
-  _routeForRedirectChain() {
-    let request = this;
-    while (request._redirectedFrom) request = request._redirectedFrom;
-    return request._route;
   }
   createResponse(responsePayload) {
     const getResponseBody = async () => {
@@ -99,7 +89,7 @@ class WKInterceptableRequest {
       if (!headers['host']) headers['Host'] = new URL(this.request.url()).host;
       this.request.setRawRequestHeaders((0, _utils.headersObjectToArray)(headers));
     } else {
-      // No raw headers avaialable, use provisional ones.
+      // No raw headers available, use provisional ones.
       this.request.setRawRequestHeaders(null);
     }
     return response;
@@ -110,14 +100,12 @@ class WKRouteImpl {
   constructor(session, requestId) {
     this._session = void 0;
     this._requestId = void 0;
-    this._requestInterceptedPromise = new _manualPromise.ManualPromise();
     this._session = session;
     this._requestId = requestId;
   }
   async abort(errorCode) {
     const errorType = errorReasons[errorCode];
     (0, _utils.assert)(errorType, 'Unknown error code: ' + errorCode);
-    await this._requestInterceptedPromise;
     // In certain cases, protocol will return error if the request was already canceled
     // or the page was closed. We should tolerate these errors.
     await this._session.sendMayFail('Network.interceptRequestWithError', {
@@ -127,7 +115,7 @@ class WKRouteImpl {
   }
   async fulfill(response) {
     if (300 <= response.status && response.status < 400) throw new Error('Cannot fulfill with redirect status: ' + response.status);
-    await this._requestInterceptedPromise;
+
     // In certain cases, protocol will return error if the request was already canceled
     // or the page was closed. We should tolerate these errors.
     let mimeType = response.isBase64 ? 'application/octet-stream' : 'text/plain';
@@ -145,7 +133,6 @@ class WKRouteImpl {
     });
   }
   async continue(request, overrides) {
-    await this._requestInterceptedPromise;
     // In certain cases, protocol will return error if the request was already canceled
     // or the page was closed. We should tolerate these errors.
     await this._session.sendMayFail('Network.interceptWithRequest', {
