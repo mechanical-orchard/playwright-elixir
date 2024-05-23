@@ -352,6 +352,9 @@ defmodule Playwright.BrowserContext do
       {:ok, _} ->
         :ok
 
+      {:ok, _} ->
+        :ok
+
       {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
         :ok
     end

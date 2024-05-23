@@ -35,6 +35,7 @@ defmodule Playwright.Page.EvaluateHandleTest do
 
     test "works with a handle that references an object with nesting", %{page: page} do
       handle = Page.evaluate_handle(page, "function() { return { x: 1, y: { lala: 'lulu' } }; }")
+      assert %Playwright.JSHandle{} = handle
       assert Page.evaluate(page, "function(o) { return o; }", handle) == %{x: 1, y: %{lala: "lulu"}}
     end
 

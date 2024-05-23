@@ -14,7 +14,7 @@ defmodule Playwright.ResponseTest do
   describe "Response.body/1" do
     test "for a simple HTML page", %{assets: assets, page: page} do
       response = Page.goto(page, assets.prefix <> "/title.html")
-      assert Response.body(response) == "<title>Woof-Woof</title>\n"
+      assert Response.body(response) == "<!DOCTYPE html>\n<title>Woof-Woof</title>\n"
     end
   end
 end

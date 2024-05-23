@@ -12,7 +12,6 @@ defmodule Playwright.SDK.ChannelOwner do
       @derive {Inspect, only: [:guid] ++ @properties}
 
       import Playwright.SDK.Extra.Map
-      alias Playwright.SDK.Channel.Event
       alias Playwright.SDK.Channel
 
       defstruct @properties ++ [:session, :guid, :initializer, :listeners, :parent, :type]
@@ -80,8 +79,8 @@ defmodule Playwright.SDK.ChannelOwner do
       require Logger
 
       @doc false
-      @spec on_event(struct(), Event.t()) :: {term(), struct()}
-      def on_event(owner, %Event{} = event) do
+      @spec on_event(struct(), Channel.Event.t()) :: {term(), struct()}
+      def on_event(owner, %Channel.Event{} = event) do
         listeners = Map.get(owner.listeners, event.type, [])
 
         event =

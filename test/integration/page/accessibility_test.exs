@@ -135,7 +135,7 @@ defmodule Playwright.Page.AccessibilityTest do
                value: "Edit this image:",
                children: [
                  %{role: "text", name: "Edit this image:"},
-                 %{role: "img", name: "my fake image"}
+                 %{role: "image", name: "my fake image"}
                ]
              }
     end
@@ -155,7 +155,8 @@ defmodule Playwright.Page.AccessibilityTest do
                multiline: true,
                value: "Edit this image:",
                children: [
-                 %{role: "text", name: "Edit this image:"}
+                 %{role: "text", name: "Edit this image:"},
+                 %{role: "image", name: "my fake image"}
                ]
              }
     end
