@@ -11,7 +11,7 @@ defmodule Playwright.SDK.Transport.WebSocket do
   # module API
   # ----------------------------------------------------------------------------
 
-  def setup([ws_endpoint]) do
+  def setup(%{ws_endpoint: ws_endpoint}) do
     uri = URI.parse(ws_endpoint)
 
     with {:ok, process} <- :gun.open(to_charlist(uri.host), port(uri), %{connect_timeout: 30_000}),
@@ -60,5 +60,12 @@ defmodule Playwright.SDK.Transport.WebSocket do
     end
   end
 
-  defp ws_upgrade(process, path), do: {:ok, :gun.ws_upgrade(process, path)}
+  # NOTE: We don't yet use persistent browser sessions from the initial
+  # launch, so this header is unrelated to the browser type chose during
+  # actual execution. It is, however, required that a browser type be
+  # provied at launch. So, "chromium" is sent.
+  defp ws_upgrade(process, path) do
+    headers = [{"x-playwright-browser", "chromium"}]
+    {:ok, :gun.ws_upgrade(process, path, headers)}
+  end
 end

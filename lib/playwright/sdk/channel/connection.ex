@@ -13,8 +13,8 @@ defmodule Playwright.SDK.Channel.Connection do
   # module init
   # ---------------------------------------------------------------------------
 
-  def start_link(arg) do
-    GenServer.start_link(__MODULE__, arg)
+  def start_link({session, transport}) do
+    GenServer.start_link(__MODULE__, {session, transport})
   end
 
   # @impl init

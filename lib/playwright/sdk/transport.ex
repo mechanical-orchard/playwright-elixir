@@ -9,12 +9,12 @@ defmodule Playwright.SDK.Transport do
   # module init
   # ---------------------------------------------------------------------------
 
-  def start_link(arg) do
-    GenServer.start_link(__MODULE__, arg, timeout: 1000)
+  def start_link(kind) do
+    GenServer.start_link(__MODULE__, kind, timeout: 1000)
   end
 
-  def start_link!(arg) do
-    {:ok, pid} = start_link(arg)
+  def start_link!(kind) do
+    {:ok, pid} = start_link(kind)
     pid
   end
 

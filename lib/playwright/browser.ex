@@ -1,6 +1,6 @@
 defmodule Playwright.Browser do
   @moduledoc """
-  A `Playwright.Browser` instance is createed via:
+  A `Playwright.Browser` instance is created via:
 
     - `Playwright.BrowserType.launch/0`, when using the "driver" transport.
     - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
