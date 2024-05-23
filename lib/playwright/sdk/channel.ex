@@ -33,9 +33,14 @@ defmodule Playwright.SDK.Channel do
 
     with_timeout(params, fn timeout ->
       case Connection.post(connection, message, timeout) do
-        {:ok, %{id: _}} -> :ok
-        {:ok, resource} -> resource
-        {:error, error} -> {:error, error}
+        {:ok, %{id: _} = result} ->
+          {:ok, result}
+
+        {:ok, resource} ->
+          resource
+
+        {:error, error} ->
+          {:error, error}
       end
     end)
   end

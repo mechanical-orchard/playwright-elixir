@@ -141,7 +141,13 @@ defmodule Playwright.ElementHandle do
   """
   @spec click(t(), options()) :: :ok
   def click(%ElementHandle{session: session} = handle, options \\ %{}) do
-    Channel.post(session, {:guid, handle.guid}, :click, options)
+    case Channel.post(session, {:guid, handle.guid}, :click, options) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---

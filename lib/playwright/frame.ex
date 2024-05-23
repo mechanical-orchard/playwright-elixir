@@ -67,7 +67,14 @@ defmodule Playwright.Frame do
   @spec check(t(), binary(), options()) :: :ok
   def check(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(session, {:guid, frame.guid}, :check, params)
+
+    case Channel.post(session, {:guid, frame.guid}, :check, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---
@@ -109,7 +116,13 @@ defmodule Playwright.Frame do
         options
       )
 
-    Channel.post(session, {:guid, frame.guid}, :click, params)
+    case Channel.post(session, {:guid, frame.guid}, :click, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---
@@ -173,7 +186,13 @@ defmodule Playwright.Frame do
         options
       )
 
-    Channel.post(session, {:guid, frame.guid}, :dblclick, params)
+    case Channel.post(session, {:guid, frame.guid}, :dblclick, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   @doc """
@@ -744,7 +763,14 @@ defmodule Playwright.Frame do
   @spec set_content(t(), binary(), options()) :: :ok
   def set_content(%Frame{session: session} = frame, html, options \\ %{}) do
     params = Map.merge(%{html: html, timeout: 30_000, wait_until: "load"}, options)
-    Channel.post(session, {:guid, frame.guid}, :set_content, params)
+
+    case Channel.post(session, {:guid, frame.guid}, :set_content, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
@@ -814,7 +840,14 @@ defmodule Playwright.Frame do
   @spec uncheck(t(), binary(), options()) :: :ok
   def uncheck(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(session, {:guid, frame.guid}, :uncheck, params)
+
+    case Channel.post(session, {:guid, frame.guid}, :uncheck, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---
