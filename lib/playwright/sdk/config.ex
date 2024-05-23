@@ -28,7 +28,7 @@ defmodule Playwright.SDK.Config do
   e.g.,
 
       config :playwright, ConnectOptions,
-        ws_endpoint: "ws://localhost:3000/playwright"
+        ws_endpoint: "ws://localhost:3000/"
 
   ## Details for `LaunchOptions`
 
@@ -214,7 +214,7 @@ defmodule Playwright.SDK.Config do
 
     defmodule ConnectOptions do
       @moduledoc false
-      defstruct [:ws_endpoint, :playwright_cli_path]
+      defstruct [:ws_endpoint]
     end
 
     defmodule LaunchOptions do

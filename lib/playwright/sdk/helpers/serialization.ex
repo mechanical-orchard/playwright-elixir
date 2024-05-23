@@ -1,6 +1,12 @@
 defmodule Playwright.SDK.Helpers.Serialization do
   @moduledoc false
+  require Logger
   import Playwright.SDK.Extra.Map
+
+  def deserialize(:ok) do
+    # Logger.warning("Received `Playwright.SDK.Helpers.Serialization.deserialize/1` with `:ok`. It's unclear why this is happening")
+    :ok
+  end
 
   def deserialize(value) when is_map(value) do
     case value do

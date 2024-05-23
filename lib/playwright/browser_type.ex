@@ -24,7 +24,7 @@ defmodule Playwright.BrowserType do
   Connect to a running playwright instance:
 
       {session, browser} =
-        Playwright.BrowserType.connect("ws://localhost:3000/playwright")
+        Playwright.BrowserType.connect("ws://localhost:3000/")
   """
 
   use Playwright.SDK.ChannelOwner

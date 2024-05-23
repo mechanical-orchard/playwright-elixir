@@ -18,6 +18,7 @@ defmodule Playwright do
   """
 
   use Playwright.SDK.ChannelOwner
+  alias Playwright.SDK.Config
 
   @property :chromium
   @property :firefox
@@ -26,11 +27,17 @@ defmodule Playwright do
   @typedoc "The web client type used for `launch` and `connect` functions."
   @type client :: :chromium | :firefox | :webkit
 
-  @typedoc "Options for `launch` and `connect` functions."
-  @type options :: Playwright.SDK.Config.launch_options()
+  #   @typedoc "Options for `connect`."
+  #   @type connect_options :: Playwright.SDK.Config.connect_options()
+  #
+  #   @typedoc "Options for `launch`."
+  #   @type launch_options :: Playwright.SDK.Config.launch_options()
 
   @doc """
-  Launches an instance of `Playwright.Browser`.
+  Initiates an instance of `Playwright.Browser` use the WebSocket transport.
+
+  Note that this approach assumes the a Playwright Server is running and
+  handling WebSocket requests at the configured `ws_endpoint.
 
   ## Returns
 
@@ -40,12 +47,34 @@ defmodule Playwright do
 
   | key/name  | typ   |             | description |
   | ----------| ----- | ----------- | ----------- |
-  | `type`    | param | `client()`  | The type of client (browser) to launch. |
+  | `client`  | param | `client()`  | The type of client (browser) to launch. |
+  | `options` | param | `options()` | `Playwright.SDK.Config.connect_options()` |
+  """
+  @spec launch(client(), Config.connect_options() | map()) :: {:ok, Playwright.Browser.t()}
+  def connect(client, options \\ %{}) do
+    options = Map.merge(Config.connect_options(), options)
+    {:ok, session} = new_session(Playwright.SDK.Transport.WebSocket, options)
+    {:ok, browser} = new_browser(session, client, options)
+    {:ok, browser}
+  end
+
+  @doc """
+  Initiates an instance of `Playwright.Browser` use the Driver transport.
+
+  ## Returns
+
+    - `{:ok, Playwright.Browser.t()}`
+
+  ## Arguments
+
+  | key/name  | typ   |             | description |
+  | ----------| ----- | ----------- | ----------- |
+  | `client`  | param | `client()`  | The type of client (browser) to launch. |
   | `options` | param | `options()` | `Playwright.SDK.Config.launch_options()` |
   """
-  @spec launch(client(), options() | map()) :: {:ok, Playwright.Browser.t()}
+  @spec launch(client(), Config.launch_options() | map()) :: {:ok, Playwright.Browser.t()}
   def launch(client, options \\ %{}) do
-    options = Map.merge(Playwright.SDK.Config.launch_options(), options)
+    options = Map.merge(Config.launch_options(), options)
     {:ok, session} = new_session(Playwright.SDK.Transport.Driver, options)
     {:ok, browser} = new_browser(session, client, options)
     {:ok, browser}
