@@ -1,19 +1,19 @@
-defmodule Playwright.Page.Keyboard do
+defmodule Playwright.Keyboard do
   @moduledoc false
 
   # @spec down(t(), binary()) :: :ok
-  # def down(page, key)
+  # def down(keyboard, key)
 
   # @spec insert_text(t(), binary()) :: :ok
-  # def insert_text(page, text)
+  # def insert_text(keyboard, text)
 
   # @spec press(t(), binary(), options()) :: :ok
-  # def press(page, key, options \\ %{})
+  # def press(keyboard, key, options \\ %{})
 
   # @spec type(t(), binary(), options()) :: :ok
-  # def type(page, text, options \\ %{})
+  # def type(keyboard, text, options \\ %{})
 
   # @spec up(t(), binary()) :: :ok
-  # def up(page, key)
+  # def up(keyboard, key)
 
 end
