@@ -44,6 +44,9 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
+  # @spec browser_type(t()) :: BrowserType.t()
+  # def browser_type(browser)
+
   @doc """
   Closes the browser.
 
@@ -89,8 +92,6 @@ defmodule Playwright.Browser do
   def contexts(%Browser{} = browser) do
     Channel.list(browser.session, {:guid, browser.guid}, "BrowserContext")
   end
-
-  # ---
 
   # @spec is_connected(BrowserContext.t()) :: boolean()
   # def is_connected(browser)
@@ -161,10 +162,6 @@ defmodule Playwright.Browser do
 
   # ---
 
-  # test_browsertype_connect.py
-  # @spec on(t(), event(), function()) :: Browser.t()
-  # def on(browser, event, callback)
-
   # test_chromium_tracing.py
   # @spec start_tracing(t(), Page.t(), options()) :: :ok
   # def start_tracing(browser, page \\ nil, options \\ %{})
@@ -173,7 +170,17 @@ defmodule Playwright.Browser do
   # @spec stop_tracing(t()) :: binary()
   # def stop_tracing(browser)
 
+  # @spec version(BrowserContext.t()) :: binary
+  # def version(browser)
+
   # ---
+
+  # events
+  # ----------------------------------------------------------------------------
+
+  # test_browsertype_connect.py
+  # @spec on(t(), event(), function()) :: Browser.t()
+  # def on(browser, event, callback)
 
   # private
   # ----------------------------------------------------------------------------
