@@ -123,6 +123,9 @@ defmodule Playwright.Locator do
     }
   end
 
+  # @spec all(Locator.t()) :: [Locator.t()]
+  # def all(locator)
+
   @doc """
   Returns an list of `node.innerText` values for all matching nodes.
 
@@ -146,6 +149,12 @@ defmodule Playwright.Locator do
   def all_text_contents(%Locator{} = locator) do
     Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.textContent || '')")
   end
+
+  # @spec and(Locator.t(), Locator.t()) :: Locator.t()
+  # def and(locator, other)
+
+  # @spec blur(Locator.t(), options()) :: :ok
+  # def blur(locator, options \\ %{})
 
   @doc """
   Returns the bounding box of the element, or `nil` if the element is not visible.
@@ -222,6 +231,9 @@ defmodule Playwright.Locator do
     Frame.check(locator.frame, locator.selector, options)
   end
 
+  # @spec clear(Locator.t(), options()) :: :ok
+  # def clear(locator, options \\ %{})
+
   @doc """
   Clicks the element by performing the following steps:
 
@@ -260,6 +272,9 @@ defmodule Playwright.Locator do
     options = Map.merge(options, %{strict: true})
     Frame.click(locator.frame, locator.selector, options)
   end
+
+  # @spec content_frame(Locator.t()) :: FrameLocator.t()
+  # def content_frame(locator)
 
   @doc """
   Returns the number of elements matching given selector.
@@ -372,6 +387,9 @@ defmodule Playwright.Locator do
     options = Map.merge(options, %{strict: true})
     Frame.dispatch_event(locator.frame, locator.selector, type, event_init, options)
   end
+
+  # @spec drag_to(Locator.t(), binary(), options()) :: :ok
+  # def drag_to(locator, target, options \\ %{})
 
   @doc """
   Resolves the given `Playwright.Locator` to the first matching DOM element.
@@ -568,6 +586,9 @@ defmodule Playwright.Locator do
     Frame.fill(locator.frame, locator.selector, value, options)
   end
 
+  # @spec filter(Locator.t(), options()) :: Locator.t()
+  # def filter(locator, options \\ %{})
+
   @doc """
   Returns a new `Playwright.Locator` scoped to the first matching element.
   """
@@ -617,6 +638,27 @@ defmodule Playwright.Locator do
     options = Map.merge(options, %{strict: true})
     Frame.get_attribute(locator.frame, locator.selector, name, options)
   end
+
+  # @spec get_by_alt_text(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_alt_text(locator, text, options \\ %{})
+
+  # @spec get_by_label(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_label(locator, text, options \\ %{})
+
+  # @spec get_by_placeholder(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_placeholder(locator, text, options \\ %{})
+
+  # @spec get_by_test_id(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_test_id(locator, text, options \\ %{})
+
+  # @spec get_by_text(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_text(locator, text, options \\ %{})
+
+  # @spec get_by_title(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_title(locator, text, options \\ %{})
+
+  # @spec highlight(Locator.t()) :: :ok
+  # def highlight(locator)
 
   @doc """
   Hovers over the element.
@@ -811,6 +853,12 @@ defmodule Playwright.Locator do
     locator(context, "nth=#{index}")
   end
 
+  # @spec or(Locator.t(), Locator.t()) :: Locator.t()
+  # def or(locator, other)
+
+  # @spec page(Locator.t()) :: Page.t()
+  # def page(locator)
+
   @doc """
   Focuses the element, and then uses `keyboard.down(key)` and `keyboard.up(key)`.
 
@@ -872,6 +920,9 @@ defmodule Playwright.Locator do
     options = Map.merge(options, %{strict: true})
     Frame.press(locator.frame, locator.selector, key, options)
   end
+
+  # @spec press_sequentially(Locator.t(), binary(), options()) :: :ok
+  # def press_sequentially(locator, text, options \\ %{})
 
   @doc """
   Returns a buffer with the captured screenshot data.
