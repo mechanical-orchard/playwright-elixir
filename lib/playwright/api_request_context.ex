@@ -63,7 +63,7 @@ defmodule Playwright.APIRequestContext do
   # @spec storage_state(t(), options()) :: StorageState.t()
   # def storage_state(context, options \\ %{})
 
-  # TODO: move to A`PIResponse.body`, probably.
+  # TODO: move to `APIResponse.body`, probably.
   @spec body(t(), Playwright.APIResponse.t()) :: any()
   def body(%APIRequestContext{session: session} = context, response) do
     Channel.post(session, {:guid, context.guid}, :fetch_response_body, %{
