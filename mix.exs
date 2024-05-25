@@ -168,7 +168,6 @@ defmodule Playwright.MixProject do
         "cmd rm -rf priv/static",
         "cmd npm install --prefix assets",
         "cmd mkdir -p priv/static/node_modules",
-        "cmd cp -r assets/node_modules/{pixelmatch,ws} priv/static/node_modules",
         "cmd echo '{}' > assets/node_modules/playwright-core/api.json",
         "esbuild cli"
       ],

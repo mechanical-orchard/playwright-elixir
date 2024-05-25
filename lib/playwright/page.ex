@@ -131,7 +131,14 @@ defmodule Playwright.Page do
   @spec add_init_script(t(), binary() | map()) :: :ok
   def add_init_script(%Page{session: session} = page, script) when is_binary(script) do
     params = %{source: script}
-    Channel.post(session, {:guid, page.guid}, :add_init_script, params)
+
+    case Channel.post(session, {:guid, page.guid}, :add_init_script, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   def add_init_script(%Page{} = page, %{path: path} = script) when is_map(script) do

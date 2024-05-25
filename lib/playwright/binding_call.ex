@@ -20,7 +20,6 @@ defmodule Playwright.BindingCall do
       }
 
       result = func.(source, deserialize(binding_call.args))
-
       Channel.post(session, {:guid, binding_call.guid}, :resolve, %{result: serialize(result)})
     end)
   end

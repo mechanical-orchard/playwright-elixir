@@ -140,7 +140,13 @@ defmodule Playwright.ElementHandle do
   """
   @spec click(t(), options()) :: :ok
   def click(%ElementHandle{session: session} = handle, options \\ %{}) do
-    Channel.post(session, {:guid, handle.guid}, :click, options)
+    case Channel.post(session, {:guid, handle.guid}, :click, options) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---
@@ -213,7 +219,19 @@ defmodule Playwright.ElementHandle do
   # ⚠️ DISCOURAGED
   @spec is_visible(t()) :: boolean()
   def is_visible(%ElementHandle{session: session} = handle) do
-    Channel.post(session, {:guid, handle.guid}, :is_visible)
+    case Channel.post(session, {:guid, handle.guid}, :is_visible) do
+      false ->
+        false
+
+      true ->
+        true
+
+      {:ok, value} ->
+        value
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---

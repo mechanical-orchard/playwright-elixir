@@ -2,6 +2,11 @@ defmodule Playwright.Helpers.Serialization do
   @moduledoc false
   import Playwright.Extra.Map
 
+  # NOTE: this is (probably) the desired API; need to work toward it.
+  def deserialize({:ok, value}) do
+    deserialize(value)
+  end
+
   def deserialize(value) when is_map(value) do
     case value do
       %{a: list} ->

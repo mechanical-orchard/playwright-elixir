@@ -66,7 +66,7 @@ defmodule Playwright.Browser do
   """
   def close(%Browser{session: session} = browser) do
     case Channel.post(session, {:guid, browser.guid}, :close) do
-      :ok ->
+      {:ok, _} ->
         :ok
 
       {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->

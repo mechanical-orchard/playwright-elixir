@@ -308,7 +308,14 @@ defmodule Playwright.BrowserContext do
   @spec add_init_script(t(), binary() | map()) :: :ok
   def add_init_script(%BrowserContext{session: session} = context, script) when is_binary(script) do
     params = %{source: script}
-    Channel.post(session, {:guid, context.guid}, :add_init_script, params)
+
+    case Channel.post(session, {:guid, context.guid}, :add_init_script, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
@@ -348,7 +355,7 @@ defmodule Playwright.BrowserContext do
   @spec close(t()) :: :ok
   def close(%BrowserContext{session: session} = context) do
     case Channel.post(session, {:guid, context.guid}, :close) do
-      :ok ->
+      {:ok, _} ->
         :ok
 
       {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->

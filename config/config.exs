@@ -27,8 +27,6 @@ if config_env() == :dev do
           --format=cjs
           --target=es2016
           --outdir=../priv/static
-          --external:pixelmatch
-          --external:ws
           --external:*.png
           --external:*/gridBrowserWorker.js
           --external:*/gridWorker.js
