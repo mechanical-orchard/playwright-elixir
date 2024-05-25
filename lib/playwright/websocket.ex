@@ -13,6 +13,11 @@ defmodule Playwright.WebSocket do
   # def expect_event(web_socket, event, predicate \\ nil, options \\ %{})
   # ...delegate wait_for_event -> expect_event
 
+  # on(...):
+  #   - close
+  #   - framereceived
+  #   - framesent
+  #   - socketerror
   # @spec on(t(), binary(), function()) :: nil
   # def on(web_socket, event, callback)
 
