@@ -49,6 +49,14 @@ defmodule Playwright.Page do
   @property :owned_context
   @property :routes
 
+  # ---
+  # @property :coverage
+  # @property :keyboard
+  # @property :mouse
+  # @property :request
+  # @property :touchscreen
+  # ---
+
   @type dimensions :: map()
   @type expression :: binary()
   @type function_or_options :: fun() | options() | nil
@@ -132,8 +140,17 @@ defmodule Playwright.Page do
 
   # ---
 
+  # @spec add_locator_handler(t(), Locator.t(), (Locator.t() -> any()), options()) :: :ok
+  # def add_locator_handler(page, locator, func, options \\ %{})
+
+  # @spec add_script_tag(Page.t(), options()) :: ElementHandle.t()
+  # def add_script_tag(page, options \\ %{})
+
+  # @spec add_style_tag(Page.t(), options()) :: ElementHandle.t()
+  # def add_style_tag(page, options \\ %{})
+
   # @spec bring_to_front(t()) :: :ok
-  # def bring_to_front(owner)
+  # def bring_to_front(page)
 
   # ---
 
@@ -183,6 +200,13 @@ defmodule Playwright.Page do
     :ok
   end
 
+  # ---
+
+  # @spec content(Page.t()) :: binary()
+  # def content(page)
+
+  # ---
+
   # @doc """
   # Get the full HTML contents of the page, including the doctype.
   # """
@@ -220,6 +244,9 @@ defmodule Playwright.Page do
   end
 
   # ---
+
+  # @spec drag_and_drop(Page.t(), binary(), binary(), options()) :: :ok
+  # def drag_and_drop(page, source, target, options \\ %{})
 
   # @spec emulate_media(t(), options()) :: :ok
   # def emulate_media(page, options \\ %{})
@@ -314,6 +341,27 @@ defmodule Playwright.Page do
 
   # ---
 
+  # @spec get_by_alt_text(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_alt_text(page, text, options \\ %{})
+
+  # @spec get_by_label(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_label(page, text, options \\ %{})
+
+  # @spec get_by_placeholder(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_placeholder(page, text, options \\ %{})
+
+  # @spec get_by_role(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_role(page, text, options \\ %{})
+
+  # @spec get_by_test_id(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_test_id(page, text, options \\ %{})
+
+  # @spec get_by_text(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_text(page, text, options \\ %{})
+
+  # @spec get_by_title(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_title(page, text, options \\ %{})
+
   # @spec go_back(t(), options()) :: Response.t() | nil
   # def go_back(page, options \\ %{})
 
@@ -346,13 +394,34 @@ defmodule Playwright.Page do
     Playwright.Locator.new(page, selector)
   end
 
+  # @spec main_frame(t()) :: Frame.t()
+  # def main_frame(page)
+
+  # @spec opener(t()) :: Frame.t() | nil
+  # def opener(page)
+
+  # @spec pause(t()) :: :ok
+  # def pause(page)
+
   # ---
 
-  @spec request(t()) :: Playwright.APIRequestContext.t()
-  def request(%Page{session: session} = page) do
-    Channel.list(session, {:guid, page.owned_context.browser.guid}, "APIRequestContext")
-    |> List.first()
-  end
+  # on(...):
+  #   - close
+  #   - console
+  #   - crash
+  #   - dialog
+  #   - domcontentloaded
+  #   - download
+  #   - filechooser
+  #   - frameattached
+  #   - framedetached
+  #   - framenavigated
+  #   - load
+  #   - pageerror
+  #   - popup
+  #   - requestfailed
+  #   - websocket
+  #   - worker
 
   # NOTE: these events will be recv'd from Playwright server with
   # the parent BrowserContext as the context/bound :guid. So, we need to
@@ -368,10 +437,7 @@ defmodule Playwright.Page do
 
   # ---
 
-  # @spec opener(t()) :: Page.t() | nil
-  # def opener(page)
-
-  # @spec pdf(t(), options()) :: binary()
+  # @spec pdf(t(), options()) :: binary() # ?
   # def pdf(page, options \\ %{})
 
   # ---
@@ -426,6 +492,19 @@ defmodule Playwright.Page do
     Channel.post(session, {:guid, page.guid}, :reload, options)
   end
 
+  # ---
+
+  # @spec remove_locator_handler(t(), Locator.t()) :: :ok
+  # def remove_locator_handler(page, locator)
+
+  # ---
+
+  @spec request(t()) :: Playwright.APIRequestContext.t()
+  def request(%Page{session: session} = page) do
+    Channel.list(session, {:guid, page.owned_context.browser.guid}, "APIRequestContext")
+    |> List.first()
+  end
+
   @spec route(t(), binary(), function(), map()) :: :ok
   def route(page, pattern, handler, options \\ %{})
 
@@ -443,6 +522,13 @@ defmodule Playwright.Page do
       :ok
     end)
   end
+
+  # ---
+
+  # @spec route_from_har(t(), binary(), map()) :: :ok
+  # def route(page, har, options \\ %{})
+
+  # ---
 
   @spec screenshot(t(), options()) :: binary()
   def screenshot(%Page{session: session} = page, options \\ %{}) do
@@ -512,6 +598,9 @@ defmodule Playwright.Page do
   # @spec unroute(t(), function()) :: :ok
   # def unroute(owner, handler \\ nil)
 
+  # @spec unroute_all(t(), map()) :: :ok
+  # def unroute_all(context, options \\ %{})
+
   # ---
 
   @spec url(t()) :: binary()
@@ -526,6 +615,12 @@ defmodule Playwright.Page do
 
   # @spec viewport_size(t()) :: dimensions() | nil
   # def viewport_size(owner)
+
+  # @spec wait_for_event(t(), binary(), map()) :: map()
+  # def wait_for_event(context, event, options \\ %{})
+
+  # @spec wait_for_function(Page.t(), expression(), any(), options()) :: JSHandle.t()
+  # def wait_for_function(page, expression, arg \\ nil, options \\ %{})
 
   # ---
 
@@ -553,6 +648,9 @@ defmodule Playwright.Page do
   end
 
   # ---
+
+  # @spec wait_for_url(Page.t(), binary(), options()) :: :ok
+  # def wait_for_url(page, url, options \\ %{})
 
   # @spec workers(t()) :: [Worker.t()]
   # def workers(owner)
