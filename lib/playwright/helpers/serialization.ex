@@ -4,8 +4,8 @@ defmodule Playwright.Helpers.Serialization do
 
   def deserialize(value) when is_map(value) do
     case value do
-      %{a: array} ->
-        Enum.map(array, fn item ->
+      %{a: list} ->
+        Enum.map(list, fn item ->
           deserialize(item)
         end)
 

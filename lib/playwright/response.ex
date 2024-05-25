@@ -39,8 +39,8 @@ defmodule Playwright.Response do
   # @spec header_values(t()) :: [binary()]
   # def header_values(response)
 
-  # @spec headers_array(t()) :: [map()]
-  # def headers_array(response)
+  # @spec headers_list(Response.t()) :: [map()]
+  # def headers_list(response)
 
   # @spec json(t()) :: Serializable.t()
   # def json(response)

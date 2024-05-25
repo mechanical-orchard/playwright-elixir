@@ -21,9 +21,8 @@ defmodule Playwright.APIResponse do
   # @spec headers(t()) :: map()
   # def headers(response)
 
-  # def headers_array...
-  # will not implement. if it's determined that the JS/OOP version provides
-  # something meaningful over what `headers` provides, we'll do it differently.
+  # @spec headers_list(APIResponse.t()) :: [map()]
+  # def headers_list(response)
 
   # @spec json(t()) :: binary() # "serializable"; so, maybe map()?
   # def json(response)

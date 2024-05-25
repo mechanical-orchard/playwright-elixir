@@ -75,7 +75,7 @@ defmodule Playwright.Browser do
   end
 
   @doc """
-  Returns an array of all open browser contexts. In a newly created browser,
+  Returns a list of all open browser contexts. In a newly created browser,
   this will return zero browser contexts.
 
   ## Example

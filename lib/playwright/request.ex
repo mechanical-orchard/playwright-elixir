@@ -46,17 +46,59 @@ defmodule Playwright.Request do
   # @spec all_headers(Request.t()) :: map()
   # def all_headers(request)
 
+  # @spec failure(Request.t()) :: failure() # map(error_text: message)
+  # def failure(request)
+
+  # @spec frame(Request.t()) :: Frame.t()
+  # def frame(request)
+
   # @spec header_value(Request.t(), binary()) :: binary() | nil
   # def header_value(request, name)
 
-  # @spec headers_array(Request.t()) :: [map()]
-  # def headers_array(request)
+  # @spec headers(Request.t()) :: headers() # map()
+  # def headers(request)
+
+  # @spec headers_list(Request.t()) :: [map()]
+  # def headers_list(request)
+
+  # @spec is_navigation_request(Request.t()) :: boolean()
+  # def is_navigation_request(request)
+
+  # @spec method(Request.t()) :: binary()
+  # def method(request)
+
+  # @spec post_data(Request.t()) :: binary() | nil
+  # def post_data(request)
+
+  # @spec post_data_buffer(Request.t()) :: binary() | nil # Buffer
+  # def post_data_buffer(request)
+
+  # @spec post_data_json(Request.t()) :: map() | nil
+  # def post_data_json(request)
+
+  # @spec redirected_from(Request.t()) :: Request.t() | nil
+  # def redirected_from(request)
+
+  # @spec redirected_to(Request.t()) :: Request.t() | nil
+  # def redirected_to(request)
+
+  # @spec resource_type(Request.t()) :: binary()
+  # def resource_type(request)
 
   # @spec response(Request.t()) :: Response.t() | nil
   # def response(request)
 
+  # @spec service_worker(Request.t()) :: Worker.t() | nil
+  # def service_worker(request)
+
   # @spec sizes(Request.t()) :: map()
   # def sizes(request)
+
+  # @spec timing(Request.t()) :: timing()
+  # def timing(request)
+
+  # @spec url(Request.t()) :: binary()
+  # def url(request)
 
   # ---
 
