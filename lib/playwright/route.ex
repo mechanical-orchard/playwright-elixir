@@ -24,6 +24,16 @@ defmodule Playwright.Route do
     Channel.post(session, {:guid, route.guid}, :continue, params)
   end
 
+  # ---
+
+  # @spec fallback(t(), options()) :: :ok
+  # def fallback(route, options \\ %{})
+
+  # @spec fetch(t(), options()) :: APIResponse.t()
+  # def fetch(route, options \\ %{})
+
+  # ---
+
   @spec fulfill(t(), options()) :: :ok
   # def fulfill(route, options \\ %{})
 
