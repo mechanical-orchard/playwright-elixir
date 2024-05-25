@@ -164,6 +164,7 @@ defmodule Playwright.MixProject do
   defp aliases do
     [
       "assets.build": [
+        "cmd rm -rf priv/static",
         "cmd mkdir -p priv/static/node_modules ; cp -r assets/node_modules/ws priv/static/node_modules",
         "cmd echo '{}' > assets/node_modules/playwright-core/api.json",
         "esbuild cli"
