@@ -20,8 +20,19 @@ if config_env() == :dev do
   config :esbuild,
     version: "0.14.0",
     cli: [
-      args:
-        ~w(innerCli=./node_modules/playwright-core/lib/cli/innerCli.js driver=./node_modules/playwright/cli.js --bundle --platform=node --format=cjs --target=es2016 --outdir=../priv/static --external:ws --external:*.png --external:*/gridWorker.js --external:*/innerCli --external:@playwright/test/*),
+      args: ~w(
+          driver=./node_modules/playwright/cli.js
+          --bundle
+          --platform=node
+          --format=cjs
+          --target=es2016
+          --outdir=../priv/static
+          --external:pixelmatch
+          --external:ws
+          --external:*.png
+          --external:*/gridWorker.js
+          --external:@playwright/test/*
+        ),
       cd: Path.expand("../assets", __DIR__)
     ]
 end
