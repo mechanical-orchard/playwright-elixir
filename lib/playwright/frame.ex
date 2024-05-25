@@ -407,6 +407,27 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :get_attribute, params)
   end
 
+  # @spec get_by_alt_text(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_alt_text(frame, text, options \\ %{})
+
+  # @spec get_by_label(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_label(frame, text, options \\ %{})
+
+  # @spec get_by_placeholder(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_placeholder(frame, text, options \\ %{})
+
+  # @spec get_by_role(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_role(frame, text, options \\ %{})
+
+  # @spec get_by_test_id(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_test_id(frame, text, options \\ %{})
+
+  # @spec get_by_text(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_text(frame, text, options \\ %{})
+
+  # @spec get_by_title(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_title(frame, text, options \\ %{})
+
   @doc """
   !!!
   """
@@ -484,8 +505,8 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :is_checked, params)
   end
 
-  # # @spec is_detached(Frame.t(), binary(), options()) :: boolean()
-  # # def is_detached(frame, selector, options \\ %{})
+  # @spec is_detached(Frame.t(), binary(), options()) :: boolean()
+  # def is_detached(frame, selector, options \\ %{})
 
   @spec is_disabled(Frame.t(), binary(), options()) :: boolean()
   def is_disabled(%Frame{session: session} = frame, selector, options \\ %{}) do
@@ -528,6 +549,10 @@ defmodule Playwright.Frame do
   # @spec page(Frame.t()) :: Page.t()
   # def page(frame)
 
+  # @spec parent_frame(Frame.t()) :: Frame.t()
+  # def parent_frame(frame)
+
+  # ??? is it `parent_frame` now, instead?
   # @spec parent_page(Frame.t()) :: Frame.t()
   # def parent_page(frame)
 
@@ -793,6 +818,9 @@ defmodule Playwright.Frame do
   end
 
   # ---
+
+  # @spec url(Frame.t()) :: binary()
+  # def url(frame)
 
   # @spec wait_for_function(Frame.t(), expression(), any(), options()) :: JSHandle.t()
   # def wait_for_function(frame, expression, arg \\ nil, options \\ %{})
