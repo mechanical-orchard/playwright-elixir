@@ -320,6 +320,9 @@ defmodule Playwright.BrowserContext do
   # @spec background_pages(t()) :: [Playwright.Page.t()]
   # def background_pages(context)
 
+  # @spec browser(t()) :: Playwright.Browser.t()
+  # def browser(context)
+
   # ---
 
   @doc """
@@ -526,6 +529,9 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
+  # @spec route_from_har(t(), binary(), map()) :: :ok
+  # def route(context, har, options \\ %{})
+
   # ???
   # @spec service_workers(t()) :: [Playwright.Worker.t()]
   # def service_workers(context)
@@ -577,6 +583,12 @@ defmodule Playwright.BrowserContext do
       :ok
     end)
   end
+
+  # @spec unroute_all(t(), map()) :: :ok
+  # def unroute_all(context, options \\ %{})
+
+  # @spec wait_for_event(t(), binary(), map()) :: map()
+  # def wait_for_event(context, event, options \\ %{})
 
   # private
   # ---------------------------------------------------------------------------
