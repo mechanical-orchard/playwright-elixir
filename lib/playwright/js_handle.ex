@@ -38,6 +38,9 @@ defmodule Playwright.JSHandle do
     nil
   end
 
+  # @spec dispose(JSHandle.t()) :: :ok
+  # def dispose(handle)
+
   def evaluate(%{session: session} = handle, expression, arg \\ nil) do
     params = %{
       expression: expression,
@@ -86,6 +89,15 @@ defmodule Playwright.JSHandle do
 
     Channel.post(session, {:guid, handle.guid}, :evaluate_expression_handle, params)
   end
+
+  # @spec get_properties(JSHandle.t()) :: [property()]
+  # def get_properties(handle)
+
+  # @spec get_property(JSHandle.t()) :: property()
+  # def get_property(handle)
+
+  # @spec json_value(JSHandle.t()) :: property()
+  # def json_value(handle)
 
   def string(%{} = handle) do
     handle.preview
