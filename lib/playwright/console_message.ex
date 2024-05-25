@@ -33,6 +33,9 @@ defmodule Playwright.ConsoleMessage do
   # @spec location(ConsoleMessage.t()) :: call_location()
   # def location(message)
 
+  # @spec page(ConsoleMessage.t()) :: Page.t()
+  # def page(message)
+
   # @spec text(ConsoleMessage.t()) :: String.t()
   # def text(message)
 
