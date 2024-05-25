@@ -92,16 +92,34 @@ defmodule Playwright.ElementHandle do
     Channel.post(session, {:guid, handle.guid}, :bounding_box)
   end
 
+  @doc """
+  Returns the `Playwright.Frame` for element handles referencing iframe nodes,
+  or `nil` otherwise.
+  """
+  @spec content_frame(t()) :: Frame.t() | nil
+  def content_frame(%ElementHandle{session: session} = handle) do
+    Channel.post(session, {:guid, handle.guid}, :content_frame)
+  end
+
+  # @spec owner_frame(t()) :: Frame.t() | nil
+  # def owner_frame(handle)
+
+  # @spec wait_for_element_state(ElementHandle.t(), state(), options()) :: :ok
+  # def wait_for_element_state(handle, state, options \\ %{})
+
   # ---
 
+  # ⚠️ DISCOURAGED
   # @spec check(ElementHandle.t(), options()) :: :ok
   # def check(handle, options \\ %{})
 
+  # ⚠️ DISCOURAGED
   # @spec click(ElementHandle.t(), options()) :: :ok
   # def click(handle, options \\ %{})
 
   # ---
 
+  # ⚠️ DISCOURAGED
   @doc """
   Clicks on the element, performing the following steps:
 
@@ -125,31 +143,27 @@ defmodule Playwright.ElementHandle do
     Channel.post(session, {:guid, handle.guid}, :click, options)
   end
 
-  @doc """
-  Returns the `Playwright.Frame` for element handles referencing iframe nodes,
-  or `nil` otherwise.
-  """
-  @spec content_frame(t()) :: Frame.t() | nil
-  def content_frame(%ElementHandle{session: session} = handle) do
-    Channel.post(session, {:guid, handle.guid}, :content_frame)
-  end
-
   # ---
 
+  # ⚠️ DISCOURAGED
   # @spec dblclick(ElementHandle.t(), options()) :: :ok
   # def dblclick(handle, options \\ %{})
 
+  # ⚠️ DISCOURAGED
   # @spec dispatch_event(ElementHandle.t(), event(), evaluation_argument()) :: :ok
   # def dispatch_event(handle, type, arg \\ nil)
 
+  # ⚠️ DISCOURAGED
   # @spec fill(ElementHandle.t(), binary(), options()) :: :ok
   # def fill(handle, value, options \\ %{})
 
+  # ⚠️ DISCOURAGED
   # @spec focus(ElementHandle.t()) :: :ok
   # def focus(handle)
 
   # ---
 
+  # ⚠️ DISCOURAGED
   @doc """
   Returns the value of an element's attribute.
   """
@@ -160,35 +174,43 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
+  # ⚠️ DISCOURAGED
   # @spec hover(ElementHandle.t(), options()) :: :ok
   # def hover(handle, options \\ %{})
 
+  # ⚠️ DISCOURAGED
   # @spec inner_html(ElementHandle.t()) :: binary() | nil
   # def inner_html(handle)
 
+  # ⚠️ DISCOURAGED
   # @spec inner_text(ElementHandle.t()) :: binary() | nil
   # def inner_text(handle)
 
+  # ⚠️ DISCOURAGED
   # @spec input_value(ElementHandle.t(), options()) :: binary()
   # def input_value(handle, options)
 
+  # ⚠️ DISCOURAGED
   # @spec is_checked(ElementHandle.t()) :: boolean()
   # def is_checked(handle)
 
+  # ⚠️ DISCOURAGED
   # @spec is_disabled(ElementHandle.t()) :: boolean()
   # def is_disabled(handle)
 
+  # ⚠️ DISCOURAGED
   # @spec is_editable(ElementHandle.t()) :: boolean()
   # def is_editable(handle)
 
+  # ⚠️ DISCOURAGED
   # @spec is_enabled(ElementHandle.t()) :: boolean()
   # def is_enabled(handle)
 
+  # ⚠️ DISCOURAGED
   # @spec is_hidden(ElementHandle.t()) :: boolean()
   # def is_hidden(handle)
 
-  # ---
-
+  # ⚠️ DISCOURAGED
   @spec is_visible(t()) :: boolean()
   def is_visible(%ElementHandle{session: session} = handle) do
     Channel.post(session, {:guid, handle.guid}, :is_visible)
@@ -196,6 +218,7 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
+  # ⚠️ DISCOURAGED
   # @spec press(ElementHandle.t(), binary(), options()) :: :ok
   # def press(handle, key, options \\ %{})
 
@@ -226,6 +249,7 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
+  # ⚠️ DISCOURAGED
   @spec screenshot(ElementHandle.t(), options()) :: binary()
   def screenshot(%ElementHandle{session: session} = handle, options \\ %{}) do
     case Map.pop(options, :path) do
@@ -243,36 +267,37 @@ defmodule Playwright.ElementHandle do
     end
   end
 
+  # ⚠️ DISCOURAGED
   @spec scroll_into_view(ElementHandle.t(), options()) :: :ok
   def scroll_into_view(%ElementHandle{session: session} = handle, options \\ %{}) do
     Channel.post(session, {:guid, handle.guid}, :scroll_into_view_if_needed, options)
   end
 
-  # ---
-
+  # ⚠️ DISCOURAGED
   # @spec select_option(ElementHandle.t(), selection(), options()) :: [binary()]
   # def select_option(handle, values, options \\ %{})
 
-  # ---
-
+  # ⚠️ DISCOURAGED
   @spec select_text(ElementHandle.t(), options()) :: :ok
   def select_text(%ElementHandle{session: session} = handle, options \\ %{}) do
     Channel.post(session, {:guid, handle.guid}, :select_text, options)
   end
 
-  # ---
-
+  # ⚠️ DISCOURAGED
   # @spec set_checked(ElementHandle.t(), boolean(), options()) :: :ok
   # def set_checked(handle, checked, options \\ %{})
 
+  # ⚠️ DISCOURAGED
   # @spec set_input_files(ElementHandle.t(), file_list(), options()) :: :ok
   # def set_input_files(handle, files, options \\ %{})
 
+  # ⚠️ DISCOURAGED
   # @spec tap(ElementHandle.t(), options()) :: :ok
   # def tap(handle, options \\ %{})
 
   # ---
 
+  # ⚠️ DISCOURAGED
   @doc """
   Returns the `node.textContent` (all text within the element).
   """
@@ -285,15 +310,15 @@ defmodule Playwright.ElementHandle do
 
   # ---
 
+  # ⚠️ DISCOURAGED
   # @spec type(ElementHandle.t(), binary(), options()) :: :ok
   # def type(handle, text, options \\ %{})
 
+  # ⚠️ DISCOURAGED
   # @spec uncheck(ElementHandle.t(), options()) :: :ok
   # def uncheck(handle, options \\ %{})
 
-  # @spec wait_for_element_state(ElementHandle.t(), state(), options()) :: :ok
-  # def wait_for_element_state(handle, state, options \\ %{})
-
+  # ⚠️ DISCOURAGED
   # @spec wait_for_selector(ElementHandle.t(), binary(), options()) :: ElementHandle.t() | nil
   # def wait_for_selector(handle, selector, options \\ %{})
 
