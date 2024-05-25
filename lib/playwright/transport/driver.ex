@@ -15,7 +15,7 @@ defmodule Playwright.Transport.Driver do
   # ----------------------------------------------------------------------------
 
   def setup(config) do
-    cli = Map.get(config, :playwright_cli_path, default_cli())
+    cli = Map.get(config, :driver_path, default_cli())
     cmd = "run-driver"
     port = Port.open({:spawn, "#{cli} #{cmd}"}, [:binary])
 
@@ -46,6 +46,6 @@ defmodule Playwright.Transport.Driver do
   # ----------------------------------------------------------------------------
 
   defp default_cli do
-    Path.join(:code.priv_dir(:playwright), "static/playwright_cli.js")
+    Path.join(:code.priv_dir(:playwright), "static/driver.js")
   end
 end

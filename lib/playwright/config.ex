@@ -147,7 +147,7 @@ defmodule Playwright.Config do
       config :playwright, LaunchOptions,
         executable_path: "/Applications/..."
 
-  ### `playwright_cli_path` (optional)
+  ### `driver_path` (optional)
 
   A filesystem path to the playwright cli.js file to use instead of the default
   assets path.
@@ -157,12 +157,12 @@ defmodule Playwright.Config do
   This can be helpful for packaged releases or systems where the node_module may
   be located elsewhere on the filesystem.
 
-  **Use `playwright_cli_path` option with extreme caution.**
+  **Use `driver_path` option with extreme caution.**
 
   e.g.,
 
       config :playwright, ConnectOptions,
-        playwright_cli_path: "/Cache/.../playwright/cli.js"
+        driver_path: "/Cache/.../playwright/cli.js"
 
   ## Details for `PlaywrightTest`
 
@@ -201,7 +201,7 @@ defmodule Playwright.Config do
           env: any(),
           executable_path: String.t(),
           headless: boolean(),
-          playwright_cli_path: String.t()
+          driver_path: String.t()
         }
 
   @typedoc false
@@ -214,7 +214,7 @@ defmodule Playwright.Config do
 
     defmodule ConnectOptions do
       @moduledoc false
-      defstruct [:ws_endpoint, :playwright_cli_path]
+      defstruct [:ws_endpoint, :driver_path]
     end
 
     defmodule LaunchOptions do
@@ -227,7 +227,7 @@ defmodule Playwright.Config do
         :downloads_path,
         :executable_path,
         :headless,
-        :playwright_cli_path
+        :driver_path
       ]
     end
 

@@ -155,6 +155,9 @@ defmodule Playwright.Browser do
     context = new_context(browser, options)
     page = BrowserContext.new_page(context)
 
+    # TODO: handle the following, for `page`:
+    # ** (KeyError) key :guid not found in: {:error, %Playwright.Channel.Error{message: "Target closed"}}
+
     # establish co-dependency
     Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
     Channel.patch(session, {:guid, page.guid}, %{owned_context: context})

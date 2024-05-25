@@ -25,10 +25,10 @@ defmodule Playwright.CLI do
   # ----------------------------------------------------------------------------
 
   defp config_cli do
-    Application.get_env(:playwright, LaunchOptions)[:playwright_cli_path]
+    Application.get_env(:playwright, LaunchOptions)[:driver_path]
   end
 
   defp default_cli do
-    Path.join(:code.priv_dir(:playwright), "static/playwright_cli.js")
+    Path.join(:code.priv_dir(:playwright), "static/driver.js")
   end
 end
