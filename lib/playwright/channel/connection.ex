@@ -35,11 +35,11 @@ defmodule Playwright.Channel.Connection do
     message = %{
       guid: "",
       method: "initialize",
-      params: %{sdkLanguage: "elixir"},
+      # as of v1.28.0, playwright-core enforces javascript|python|java|csharp. so, we fake it.
+      params: %{sdkLanguage: "javascript"},
       metadata: %{}
     }
 
-    # message = Channel.Message.new("", :initialize, %{sdkLanguage: "elixir"})
     Transport.post(transport, message)
     {:noreply, state}
   end

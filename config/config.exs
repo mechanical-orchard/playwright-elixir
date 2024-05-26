@@ -30,6 +30,7 @@ if config_env() == :dev do
           --external:*.png
           --external:*/gridBrowserWorker.js
           --external:*/gridWorker.js
+          --external:*/loader
           --external:@playwright/test/*
         ),
       cd: Path.expand("../assets", __DIR__)
@@ -38,4 +39,5 @@ if config_env() == :dev do
   # NOTE that the following are not actually copied and made available:
   #   - playwright-core/lib/grid/gridBrowserWorker.js
   #   - playwright-core/lib/grid/gridWorker.js
+  #   - playwright-core/lib/server/electron/loader.js
 end

@@ -123,7 +123,7 @@ defmodule Playwright.Page.AccessibilityTest do
     test "retains rich text editable fields", %{page: page} do
       Page.set_content(page, """
       <div contenteditable="true">
-        Edit this image: <img src="fakeimage.png" alt="my fake image">
+        Edit this image:<img src="fakeimage.png" alt="my fake image">
       </div>
       """)
 
@@ -132,7 +132,7 @@ defmodule Playwright.Page.AccessibilityTest do
       assert element == %{
                role: "generic",
                name: "",
-               value: "Edit this image: ",
+               value: "Edit this image:",
                children: [
                  %{role: "text", name: "Edit this image:"},
                  %{role: "img", name: "my fake image"}
@@ -143,7 +143,7 @@ defmodule Playwright.Page.AccessibilityTest do
     test "retains rich text editable fields with role", %{page: page} do
       Page.set_content(page, """
       <div contenteditable="true" role="textbox">
-        Edit this image: <img src="fakeimage.png" alt="my fake image">
+        Edit this image:<img src="fakeimage.png" alt="my fake image">
       </div>
       """)
 
@@ -153,7 +153,7 @@ defmodule Playwright.Page.AccessibilityTest do
                role: "textbox",
                name: "",
                multiline: true,
-               value: "Edit this image: ",
+               value: "Edit this image:",
                children: [
                  %{role: "text", name: "Edit this image:"}
                ]
@@ -162,7 +162,7 @@ defmodule Playwright.Page.AccessibilityTest do
 
     test "excludes children from plain text editable fields with role", %{page: page} do
       Page.set_content(page, """
-      <div contenteditable="plaintext-only" role="textbox">Edit this image: <img src="fakeimage.png" alt="my fake image"></div>
+      <div contenteditable="plaintext-only" role="textbox">Edit this image:<img src="fakeimage.png" alt="my fake image"></div>
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
@@ -171,13 +171,13 @@ defmodule Playwright.Page.AccessibilityTest do
                role: "textbox",
                name: "",
                multiline: true,
-               value: "Edit this image: "
+               value: "Edit this image:"
              }
     end
 
     test "excludes content from plain text editable fields without role", %{page: page} do
       Page.set_content(page, """
-      <div contenteditable="plaintext-only">Edit this image: <img src="fakeimage.png" alt="my fake image"></div>
+      <div contenteditable="plaintext-only">Edit this image:<img src="fakeimage.png" alt="my fake image"></div>
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
@@ -185,13 +185,13 @@ defmodule Playwright.Page.AccessibilityTest do
       assert element == %{
                role: "generic",
                name: "",
-               value: "Edit this image: "
+               value: "Edit this image:"
              }
     end
 
     test "excludes content from plain text editable fields with tabindex and without role", %{page: page} do
       Page.set_content(page, """
-      <div contenteditable="plaintext-only" tabIndex=0>Edit this image: <img src="fakeimage.png" alt="my fake image"></div>
+      <div contenteditable="plaintext-only" tabIndex=0>Edit this image:<img src="fakeimage.png" alt="my fake image"></div>
       """)
 
       [element | _] = Page.Accessibility.snapshot(page).children
@@ -199,7 +199,7 @@ defmodule Playwright.Page.AccessibilityTest do
       assert element == %{
                role: "generic",
                name: "",
-               value: "Edit this image: "
+               value: "Edit this image:"
              }
     end
 
