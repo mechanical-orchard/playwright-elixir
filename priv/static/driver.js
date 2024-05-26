@@ -8803,7 +8803,8 @@ var require_utils = __commonJS({
       return typeof obj === "object" && obj !== null;
     }
     function isError(obj) {
-      return obj instanceof Error || obj && obj.__proto__ && obj.__proto__.name === "Error";
+      var _Object$getPrototypeO;
+      return obj instanceof Error || obj && ((_Object$getPrototypeO = Object.getPrototypeOf(obj)) === null || _Object$getPrototypeO === void 0 ? void 0 : _Object$getPrototypeO.name) === "Error";
     }
     var debugEnv = getFromENV("PWDEBUG") || "";
     function debugMode() {
@@ -9011,15 +9012,16 @@ var require_netUtils = __commonJS({
       const timeout = (_params$timeout = params.timeout) !== null && _params$timeout !== void 0 ? _params$timeout : NET_DEFAULT_TIMEOUT;
       const proxyURL = (0, _utilsBundle.getProxyForUrl)(params.url);
       if (proxyURL) {
+        const parsedProxyURL = URL2.parse(proxyURL);
         if (params.url.startsWith("http:")) {
-          const proxy = URL2.parse(proxyURL);
           options = {
             path: parsedUrl.href,
-            host: proxy.hostname,
-            port: proxy.port
+            host: parsedProxyURL.hostname,
+            port: parsedProxyURL.port,
+            headers: options.headers,
+            method: options.method
           };
         } else {
-          const parsedProxyURL = URL2.parse(proxyURL);
           parsedProxyURL.secureProxy = parsedProxyURL.protocol === "https:";
           options.agent = new _utilsBundle.HttpsProxyAgent(parsedProxyURL);
           options.rejectUnauthorized = false;
@@ -9152,7 +9154,7 @@ var require_package = __commonJS({
   "node_modules/playwright-core/package.json"(exports2, module2) {
     module2.exports = {
       name: "playwright-core",
-      version: "1.26.0",
+      version: "1.27.0",
       description: "A high-level API to automate web browsers",
       repository: "github:Microsoft/playwright",
       homepage: "https://playwright.dev",
@@ -9175,8 +9177,9 @@ var require_package = __commonJS({
         "./lib/grid/gridServer": "./lib/grid/gridServer.js",
         "./lib/outofprocess": "./lib/outofprocess.js",
         "./lib/utils": "./lib/utils/index.js",
-        "./lib/utils/comparators": "./lib/utils/comparators.js",
         "./lib/common/userAgent": "./lib/common/userAgent.js",
+        "./lib/containers/docker": "./lib/containers/docker.js",
+        "./lib/utils/comparators": "./lib/utils/comparators.js",
         "./lib/utils/eventsHelper": "./lib/utils/eventsHelper.js",
         "./lib/utils/fileUtils": "./lib/utils/fileUtils.js",
         "./lib/utils/httpServer": "./lib/utils/httpServer.js",
@@ -9442,7 +9445,7 @@ var require_nativeDeps = __commonJS({
         tools: ["xvfb", "fonts-noto-color-emoji", "ttf-unifont", "libfontconfig", "libfreetype6", "xfonts-cyrillic", "xfonts-scalable", "fonts-liberation", "fonts-ipafont-gothic", "fonts-wqy-zenhei", "fonts-tlwg-loma-otf", "ttf-ubuntu-font-family"],
         chromium: ["fonts-liberation", "libasound2", "libatk-bridge2.0-0", "libatk1.0-0", "libatspi2.0-0", "libcairo2", "libcups2", "libdbus-1-3", "libdrm2", "libegl1", "libgbm1", "libglib2.0-0", "libgtk-3-0", "libnspr4", "libnss3", "libpango-1.0-0", "libx11-6", "libx11-xcb1", "libxcb1", "libxcomposite1", "libxdamage1", "libxext6", "libxfixes3", "libxrandr2", "libxshmfence1"],
         firefox: ["ffmpeg", "libatk1.0-0", "libcairo-gobject2", "libcairo2", "libdbus-1-3", "libdbus-glib-1-2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libglib2.0-0", "libgtk-3-0", "libpango-1.0-0", "libpangocairo-1.0-0", "libpangoft2-1.0-0", "libx11-6", "libx11-xcb1", "libxcb-shm0", "libxcb1", "libxcomposite1", "libxcursor1", "libxdamage1", "libxext6", "libxfixes3", "libxi6", "libxrender1", "libxt6", "libxtst6"],
-        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libbrotli1", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu60", "libjpeg-turbo8", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libvpx5", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1"],
+        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libbrotli1", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu60", "libjpeg-turbo8", "libnotify4", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libvpx5", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1", "libevent-2.1-6"],
         lib2package: {
           "libasound.so.2": "libasound2",
           "libatk-1.0.so.0": "libatk1.0-0",
@@ -9528,14 +9531,15 @@ var require_nativeDeps = __commonJS({
           "libXrender.so.1": "libxrender1",
           "libxslt.so.1": "libxslt1.1",
           "libXt.so.6": "libxt6",
-          "libXtst.so.6": "libxtst6"
+          "libXtst.so.6": "libxtst6",
+          "libevent-2.1-6": "libevent-2.1-6"
         }
       },
       "ubuntu20.04": {
         tools: ["xvfb", "fonts-noto-color-emoji", "ttf-unifont", "libfontconfig", "libfreetype6", "xfonts-cyrillic", "xfonts-scalable", "fonts-liberation", "fonts-ipafont-gothic", "fonts-wqy-zenhei", "fonts-tlwg-loma-otf", "ttf-ubuntu-font-family"],
         chromium: ["fonts-liberation", "libasound2", "libatk-bridge2.0-0", "libatk1.0-0", "libatspi2.0-0", "libcairo2", "libcups2", "libdbus-1-3", "libdrm2", "libegl1", "libgbm1", "libglib2.0-0", "libgtk-3-0", "libnspr4", "libnss3", "libpango-1.0-0", "libx11-6", "libx11-xcb1", "libxcb1", "libxcomposite1", "libxdamage1", "libxext6", "libxfixes3", "libxrandr2", "libxshmfence1"],
         firefox: ["ffmpeg", "libatk1.0-0", "libcairo-gobject2", "libcairo2", "libdbus-1-3", "libdbus-glib-1-2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libglib2.0-0", "libgtk-3-0", "libpango-1.0-0", "libpangocairo-1.0-0", "libpangoft2-1.0-0", "libx11-6", "libx11-xcb1", "libxcb-shm0", "libxcb1", "libxcomposite1", "libxcursor1", "libxdamage1", "libxext6", "libxfixes3", "libxi6", "libxrender1", "libxt6", "libxtst6"],
-        webkit: ["libenchant-2-2", "gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu66", "libjpeg-turbo8", "libnotify4", "libopengl0", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libsoup2.4-1", "libvpx6", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1", "libatomic1"],
+        webkit: ["libenchant-2-2", "gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libegl1", "libenchant1c2a", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf2.0-0", "libgl1", "libgles2", "libglib2.0-0", "libgstreamer-gl1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu66", "libjpeg-turbo8", "libnotify4", "libopengl0", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libsecret-1-0", "libsoup2.4-1", "libvpx6", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1", "libatomic1", "libevent-2.1-7"],
         lib2package: {
           "libasound.so.2": "libasound2",
           "libatk-1.0.so.0": "libatk1.0-0",
@@ -9623,14 +9627,15 @@ var require_nativeDeps = __commonJS({
           "libXtst.so.6": "libxtst6",
           "libxshmfence.so.1": "libxshmfence1",
           "libatomic.so.1": "libatomic1",
-          "libenchant-2.so.2": "libenchant-2-2"
+          "libenchant-2.so.2": "libenchant-2-2",
+          "libevent-2.1.so.7": "libevent-2.1-7"
         }
       },
       "ubuntu22.04": {
         tools: ["xvfb", "fonts-noto-color-emoji", "fonts-unifont", "libfontconfig1", "libfreetype6", "xfonts-cyrillic", "xfonts-scalable", "fonts-liberation", "fonts-ipafont-gothic", "fonts-wqy-zenhei", "fonts-tlwg-loma-otf", "fonts-freefont-ttf"],
         chromium: ["libasound2", "libatk-bridge2.0-0", "libatk1.0-0", "libatspi2.0-0", "libcairo2", "libcups2", "libdbus-1-3", "libdrm2", "libgbm1", "libglib2.0-0", "libnspr4", "libnss3", "libpango-1.0-0", "libwayland-client0", "libx11-6", "libxcb1", "libxcomposite1", "libxdamage1", "libxext6", "libxfixes3", "libxkbcommon0", "libxrandr2"],
         firefox: ["ffmpeg", "libasound2", "libatk1.0-0", "libcairo-gobject2", "libcairo2", "libdbus-1-3", "libdbus-glib-1-2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf-2.0-0", "libglib2.0-0", "libgtk-3-0", "libpango-1.0-0", "libpangocairo-1.0-0", "libx11-6", "libx11-xcb1", "libxcb-shm0", "libxcb1", "libxcomposite1", "libxcursor1", "libxdamage1", "libxext6", "libxfixes3", "libxi6", "libxrandr2", "libxrender1", "libxtst6"],
-        webkit: ["libenchant-2-2", "gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libicu70", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libdbus-1-3", "libdrm2", "libegl1", "libepoxy0", "libevdev2", "libffi7", "libfontconfig1", "libfreetype6", "libgbm1", "libgdk-pixbuf-2.0-0", "libgles2", "libglib2.0-0", "libglx0", "libgstreamer-gl1.0-0", "libgstreamer-plugins-base1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libgudev-1.0-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libjpeg-turbo8", "liblcms2-2", "libmanette-0.2-0", "libnotify4", "libopengl0", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libproxy1v5", "libsecret-1-0", "libsoup2.4-1", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1", "libx264-163", "libatomic1"],
+        webkit: ["libenchant-2-2", "gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libicu70", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libdbus-1-3", "libdrm2", "libegl1", "libepoxy0", "libevdev2", "libffi7", "libfontconfig1", "libfreetype6", "libgbm1", "libgdk-pixbuf-2.0-0", "libgles2", "libglib2.0-0", "libglx0", "libgstreamer-gl1.0-0", "libgstreamer-plugins-base1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libgudev-1.0-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libjpeg-turbo8", "liblcms2-2", "libmanette-0.2-0", "libnotify4", "libopengl0", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libproxy1v5", "libsecret-1-0", "libsoup2.4-1", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1", "libx264-163", "libatomic1", "libevent-2.1-7"],
         lib2package: {
           "libasound.so.2": "libasound2",
           "libatk-1.0.so.0": "libatk1.0-0",
@@ -9717,14 +9722,15 @@ var require_nativeDeps = __commonJS({
           "libenchant-2.so.2": "libenchant-2-2",
           "libx264.so": "libx264-163",
           "libvpx.so.7": "libvpx7",
-          "libatomic.so.1": "libatomic1"
+          "libatomic.so.1": "libatomic1",
+          "libevent-2.1.so.7": "libevent-2.1-7"
         }
       },
       "debian11": {
         tools: ["xvfb", "fonts-noto-color-emoji", "fonts-unifont", "libfontconfig1", "libfreetype6", "xfonts-cyrillic", "xfonts-scalable", "fonts-liberation", "fonts-ipafont-gothic", "fonts-wqy-zenhei", "fonts-tlwg-loma-otf", "fonts-freefont-ttf"],
         chromium: ["libasound2", "libatk-bridge2.0-0", "libatk1.0-0", "libatspi2.0-0", "libcairo2", "libcups2", "libdbus-1-3", "libdrm2", "libgbm1", "libglib2.0-0", "libnspr4", "libnss3", "libpango-1.0-0", "libwayland-client0", "libx11-6", "libxcb1", "libxcomposite1", "libxdamage1", "libxext6", "libxfixes3", "libxkbcommon0", "libxrandr2"],
         firefox: ["libasound2", "libatk1.0-0", "libcairo-gobject2", "libcairo2", "libdbus-1-3", "libdbus-glib-1-2", "libfontconfig1", "libfreetype6", "libgdk-pixbuf-2.0-0", "libglib2.0-0", "libgtk-3-0", "libharfbuzz0b", "libpango-1.0-0", "libpangocairo-1.0-0", "libx11-6", "libx11-xcb1", "libxcb-shm0", "libxcb1", "libxcomposite1", "libxcursor1", "libxdamage1", "libxext6", "libxfixes3", "libxi6", "libxrandr2", "libxrender1", "libxtst6"],
-        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libdbus-1-3", "libdrm2", "libegl1", "libenchant-2-2", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgbm1", "libgdk-pixbuf-2.0-0", "libgles2", "libglib2.0-0", "libglx0", "libgstreamer-gl1.0-0", "libgstreamer-plugins-base1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libgudev-1.0-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu67", "libjpeg62-turbo", "liblcms2-2", "libmanette-0.2-0", "libnotify4", "libopengl0", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libproxy1v5", "libsecret-1-0", "libsoup2.4-1", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1", "libatomic1"],
+        webkit: ["gstreamer1.0-libav", "gstreamer1.0-plugins-bad", "gstreamer1.0-plugins-base", "gstreamer1.0-plugins-good", "libatk-bridge2.0-0", "libatk1.0-0", "libcairo2", "libdbus-1-3", "libdrm2", "libegl1", "libenchant-2-2", "libepoxy0", "libevdev2", "libfontconfig1", "libfreetype6", "libgbm1", "libgdk-pixbuf-2.0-0", "libgles2", "libglib2.0-0", "libglx0", "libgstreamer-gl1.0-0", "libgstreamer-plugins-base1.0-0", "libgstreamer1.0-0", "libgtk-3-0", "libgudev-1.0-0", "libharfbuzz-icu0", "libharfbuzz0b", "libhyphen0", "libicu67", "libjpeg62-turbo", "liblcms2-2", "libmanette-0.2-0", "libnotify4", "libopengl0", "libopenjp2-7", "libopus0", "libpango-1.0-0", "libpng16-16", "libproxy1v5", "libsecret-1-0", "libsoup2.4-1", "libwayland-client0", "libwayland-egl1", "libwayland-server0", "libwebp6", "libwebpdemux2", "libwoff1", "libx11-6", "libxcomposite1", "libxdamage1", "libxkbcommon0", "libxml2", "libxslt1.1", "libatomic1", "libevent-2.1-7"],
         lib2package: {
           "libasound.so.2": "libasound2",
           "libatk-1.0.so.0": "libatk1.0-0",
@@ -9807,7 +9813,8 @@ var require_nativeDeps = __commonJS({
           "libXrender.so.1": "libxrender1",
           "libxslt.so.1": "libxslt1.1",
           "libXtst.so.6": "libxtst6",
-          "libatomic.so.1": "libatomic1"
+          "libatomic.so.1": "libatomic1",
+          "libevent-2.1.so.7": "libevent-2.1-7"
         }
       }
     };
@@ -9816,19 +9823,15 @@ var require_nativeDeps = __commonJS({
       tools: [...deps["ubuntu20.04"].tools],
       chromium: [...deps["ubuntu20.04"].chromium],
       firefox: [...deps["ubuntu20.04"].firefox],
-      webkit: [...deps["ubuntu20.04"].webkit, "libevent-2.1-7"],
-      lib2package: __spreadProps(__spreadValues({}, deps["ubuntu20.04"].lib2package), {
-        "libevent-2.1.so.7": "libevent-2.1.so.7"
-      })
+      webkit: [...deps["ubuntu20.04"].webkit],
+      lib2package: __spreadValues({}, deps["ubuntu20.04"].lib2package)
     };
     deps["ubuntu22.04-arm64"] = {
       tools: [...deps["ubuntu22.04"].tools],
       chromium: [...deps["ubuntu22.04"].chromium],
       firefox: [...deps["ubuntu22.04"].firefox],
-      webkit: [...deps["ubuntu22.04"].webkit, "libevent-2.1-7"],
-      lib2package: __spreadProps(__spreadValues({}, deps["ubuntu22.04"].lib2package), {
-        "libevent-2.1.so.7": "libevent-2.1.so.7"
-      })
+      webkit: [...deps["ubuntu22.04"].webkit],
+      lib2package: __spreadValues({}, deps["ubuntu22.04"].lib2package)
     };
   }
 });
@@ -10270,6 +10273,55 @@ var require_debugLogger = __commonJS({
   }
 });
 
+// node_modules/playwright-core/lib/utils/manualPromise.js
+var require_manualPromise = __commonJS({
+  "node_modules/playwright-core/lib/utils/manualPromise.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", {
+      value: true
+    });
+    exports2.ManualPromise = void 0;
+    var _Symbol$species;
+    var _Symbol$toStringTag;
+    _Symbol$species = Symbol.species;
+    _Symbol$toStringTag = Symbol.toStringTag;
+    var ManualPromise = class extends Promise {
+      constructor() {
+        let resolve;
+        let reject;
+        super((f, r) => {
+          resolve = f;
+          reject = r;
+        });
+        this._resolve = void 0;
+        this._reject = void 0;
+        this._isDone = void 0;
+        this._isDone = false;
+        this._resolve = resolve;
+        this._reject = reject;
+      }
+      isDone() {
+        return this._isDone;
+      }
+      resolve(t) {
+        this._isDone = true;
+        this._resolve(t);
+      }
+      reject(e) {
+        this._isDone = true;
+        this._reject(e);
+      }
+      static get [_Symbol$species]() {
+        return Promise;
+      }
+      get [_Symbol$toStringTag]() {
+        return "ManualPromise";
+      }
+    };
+    exports2.ManualPromise = ManualPromise;
+  }
+});
+
 // node_modules/playwright-core/lib/server/registry/download.js
 var require_download = __commonJS({
   "node_modules/playwright-core/lib/server/registry/download.js"(exports2) {
@@ -10279,69 +10331,42 @@ var require_download = __commonJS({
     });
     exports2.download = download;
     var _fs = _interopRequireDefault(require("fs"));
-    var _utilsBundle = require_utilsBundle();
-    var _netUtils = require_netUtils();
+    var _path = _interopRequireDefault(require("path"));
+    var _child_process = _interopRequireDefault(require("child_process"));
+    var _manualPromise = require_manualPromise();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
-    function downloadFile(url, destinationPath, options = {}) {
-      const {
-        progressCallback,
-        log = () => {
-        }
-      } = options;
-      log(`running download:`);
-      log(`-- from url: ${url}`);
-      log(`-- to location: ${destinationPath}`);
-      let fulfill = ({
-        error
-      }) => {
-      };
-      let downloadedBytes = 0;
-      let totalBytes = 0;
-      const promise = new Promise((x) => {
-        fulfill = x;
+    function downloadFileOutOfProcess(url, destinationPath, options = {}) {
+      const cp = _child_process.default.fork(_path.default.join(__dirname, "oopDownloadMain.js"), [url, destinationPath, options.progressBarName || "", options.userAgent || ""]);
+      const promise = new _manualPromise.ManualPromise();
+      cp.on("message", (message) => {
+        var _options$log;
+        if ((message === null || message === void 0 ? void 0 : message.method) === "log")
+          (_options$log = options.log) === null || _options$log === void 0 ? void 0 : _options$log.call(options, message.params.message);
       });
-      (0, _netUtils.httpRequest)({
-        url,
-        headers: options.userAgent ? {
-          "User-Agent": options.userAgent
-        } : void 0,
-        timeout: 1e4
-      }, (response) => {
-        log(`-- response status code: ${response.statusCode}`);
-        if (response.statusCode !== 200) {
-          let content = "";
-          const handleError = () => {
-            const error = new Error(`Download failed: server returned code ${response.statusCode} body '${content}'. URL: ${url}`);
-            response.resume();
-            fulfill({
-              error
-            });
-          };
-          response.on("data", (chunk) => content += chunk).on("end", handleError).on("error", handleError);
+      cp.on("exit", (code) => {
+        if (code !== 0) {
+          promise.resolve({
+            error: new Error(`Download failure, code=${code}`)
+          });
           return;
         }
-        const file = _fs.default.createWriteStream(destinationPath);
-        file.on("finish", () => fulfill({
-          error: null
-        }));
-        file.on("error", (error) => fulfill({
+        if (!_fs.default.existsSync(destinationPath))
+          promise.resolve({
+            error: new Error(`Download failure, ${destinationPath} does not exist`)
+          });
+        else
+          promise.resolve({
+            error: null
+          });
+      });
+      cp.on("error", (error) => {
+        promise.resolve({
           error
-        }));
-        response.pipe(file);
-        totalBytes = parseInt(response.headers["content-length"] || "0", 10);
-        log(`-- total bytes: ${totalBytes}`);
-        if (progressCallback)
-          response.on("data", onData);
-      }, (error) => fulfill({
-        error
-      }));
+        });
+      });
       return promise;
-      function onData(chunk) {
-        downloadedBytes += chunk.length;
-        progressCallback(downloadedBytes, totalBytes);
-      }
     }
     function download(_0, _1) {
       return __async(this, arguments, function* (urls, destination, options = {}) {
@@ -10359,8 +10384,8 @@ var require_download = __commonJS({
           const url = urls[(attempt - 1) % urls.length];
           const {
             error
-          } = yield downloadFile(url, destination, {
-            progressCallback: getDownloadProgress(progressBarName),
+          } = yield downloadFileOutOfProcess(url, destination, {
+            progressBarName,
             log,
             userAgent
           });
@@ -10374,47 +10399,6 @@ var require_download = __commonJS({
             throw error;
         }
       });
-    }
-    function getDownloadProgress(progressBarName) {
-      if (process.stdout.isTTY)
-        return _getAnimatedDownloadProgress(progressBarName);
-      return _getBasicDownloadProgress(progressBarName);
-    }
-    function _getAnimatedDownloadProgress(progressBarName) {
-      let progressBar;
-      let lastDownloadedBytes = 0;
-      return (downloadedBytes, totalBytes) => {
-        if (!progressBar) {
-          progressBar = new _utilsBundle.progress(`Downloading ${progressBarName} - ${toMegabytes(totalBytes)} [:bar] :percent :etas `, {
-            complete: "=",
-            incomplete: " ",
-            width: 20,
-            total: totalBytes
-          });
-        }
-        const delta = downloadedBytes - lastDownloadedBytes;
-        lastDownloadedBytes = downloadedBytes;
-        progressBar.tick(delta);
-      };
-    }
-    function _getBasicDownloadProgress(progressBarName) {
-      console.log(`Downloading ${progressBarName}...`);
-      const totalRows = 10;
-      const stepWidth = 8;
-      let lastRow = -1;
-      return (downloadedBytes, totalBytes) => {
-        const percentage = downloadedBytes / totalBytes;
-        const row = Math.floor(totalRows * percentage);
-        if (row > lastRow) {
-          lastRow = row;
-          const percentageString = String(percentage * 100 | 0).padStart(3);
-          console.log(`|${"\u25A0".repeat(row * stepWidth)}${" ".repeat((totalRows - row) * stepWidth)}| ${percentageString}% of ${toMegabytes(totalBytes)}`);
-        }
-      };
-    }
-    function toMegabytes(bytes) {
-      const mb = bytes / 1024 / 1024;
-      return `${Math.round(mb * 10) / 10} Mb`;
     }
   }
 });
@@ -12076,37 +12060,37 @@ var require_browsers = __commonJS({
       browsers: [
         {
           name: "chromium",
-          revision: "1024",
+          revision: "1028",
           installByDefault: true,
-          browserVersion: "106.0.5249.30"
+          browserVersion: "107.0.5304.18"
         },
         {
           name: "chromium-with-symbols",
-          revision: "1024",
+          revision: "1028",
           installByDefault: false,
-          browserVersion: "106.0.5249.30"
+          browserVersion: "107.0.5304.18"
         },
         {
           name: "chromium-tip-of-tree",
-          revision: "1041",
+          revision: "1046",
           installByDefault: false,
-          browserVersion: "107.0.5288.0"
+          browserVersion: "108.0.5325.0"
         },
         {
           name: "firefox",
-          revision: "1350",
+          revision: "1357",
           installByDefault: true,
-          browserVersion: "104.0"
+          browserVersion: "105.0.1"
         },
         {
           name: "firefox-beta",
-          revision: "1353",
+          revision: "1360",
           installByDefault: false,
-          browserVersion: "105.0b2"
+          browserVersion: "106.0b5"
         },
         {
           name: "webkit",
-          revision: "1715",
+          revision: "1724",
           installByDefault: true,
           revisionOverrides: {
             "mac10.14": "1446",
@@ -12344,7 +12328,7 @@ var require_registry = __commonJS({
         "debian11": "builds/webkit/%s/webkit-debian-11.zip",
         "mac10.13": void 0,
         "mac10.14": "builds/deprecated-webkit-mac-10.14/%s/deprecated-webkit-mac-10.14.zip",
-        "mac10.15": "builds/webkit/%s/webkit-mac-10.15.zip",
+        "mac10.15": "builds/deprecated-webkit-mac-10.15/%s/deprecated-webkit-mac-10.15.zip",
         "mac11": "builds/webkit/%s/webkit-mac-11.zip",
         "mac11-arm64": "builds/webkit/%s/webkit-mac-11-arm64.zip",
         "mac12": "builds/webkit/%s/webkit-mac-12.zip",
@@ -13229,8 +13213,8 @@ ${error.stack}`
       return obj instanceof URL || Object.prototype.toString.call(obj) === "[object URL]";
     }
     function isError(obj) {
-      var _obj$__proto__;
-      return obj instanceof Error || (obj === null || obj === void 0 ? void 0 : (_obj$__proto__ = obj.__proto__) === null || _obj$__proto__ === void 0 ? void 0 : _obj$__proto__.name) === "Error" || (obj === null || obj === void 0 ? void 0 : obj.__proto__) && isError(obj.__proto__);
+      const proto = obj ? Object.getPrototypeOf(obj) : null;
+      return obj instanceof Error || (proto === null || proto === void 0 ? void 0 : proto.name) === "Error" || proto && isError(proto);
     }
   }
 });
@@ -13642,6 +13626,16 @@ var require_validator = __commonJS({
       harFile: _validatorPrimitives.tString
     });
     _validatorPrimitives.scheme.LocalUtilsHarUnzipResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.LocalUtilsConnectParams = (0, _validatorPrimitives.tObject)({
+      wsEndpoint: _validatorPrimitives.tString,
+      headers: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tAny),
+      slowMo: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
+      timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
+      socksProxyRedirectPortForTest: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber)
+    });
+    _validatorPrimitives.scheme.LocalUtilsConnectResult = (0, _validatorPrimitives.tObject)({
+      pipe: (0, _validatorPrimitives.tChannel)(["JsonPipe"])
+    });
     _validatorPrimitives.scheme.RootInitializer = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
     _validatorPrimitives.scheme.RootInitializeParams = (0, _validatorPrimitives.tObject)({
       sdkLanguage: _validatorPrimitives.tString
@@ -13705,6 +13699,64 @@ var require_validator = __commonJS({
     });
     _validatorPrimitives.scheme.PlaywrightHideHighlightParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
     _validatorPrimitives.scheme.PlaywrightHideHighlightResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.RecorderSource = (0, _validatorPrimitives.tObject)({
+      isRecorded: _validatorPrimitives.tBoolean,
+      id: _validatorPrimitives.tString,
+      label: _validatorPrimitives.tString,
+      text: _validatorPrimitives.tString,
+      language: _validatorPrimitives.tString,
+      highlight: (0, _validatorPrimitives.tArray)((0, _validatorPrimitives.tObject)({
+        line: _validatorPrimitives.tNumber,
+        type: _validatorPrimitives.tString
+      })),
+      revealLine: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
+      group: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString)
+    });
+    _validatorPrimitives.scheme.DebugControllerInitializer = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerInspectRequestedEvent = (0, _validatorPrimitives.tObject)({
+      selector: _validatorPrimitives.tString,
+      locators: (0, _validatorPrimitives.tArray)((0, _validatorPrimitives.tType)("NameValue"))
+    });
+    _validatorPrimitives.scheme.DebugControllerBrowsersChangedEvent = (0, _validatorPrimitives.tObject)({
+      browsers: (0, _validatorPrimitives.tArray)((0, _validatorPrimitives.tObject)({
+        contexts: (0, _validatorPrimitives.tArray)((0, _validatorPrimitives.tObject)({
+          pages: (0, _validatorPrimitives.tArray)(_validatorPrimitives.tString)
+        }))
+      }))
+    });
+    _validatorPrimitives.scheme.DebugControllerSourcesChangedEvent = (0, _validatorPrimitives.tObject)({
+      sources: (0, _validatorPrimitives.tArray)((0, _validatorPrimitives.tType)("RecorderSource"))
+    });
+    _validatorPrimitives.scheme.DebugControllerSetTrackHierarchyParams = (0, _validatorPrimitives.tObject)({
+      enabled: _validatorPrimitives.tBoolean
+    });
+    _validatorPrimitives.scheme.DebugControllerSetTrackHierarchyResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerSetReuseBrowserParams = (0, _validatorPrimitives.tObject)({
+      enabled: _validatorPrimitives.tBoolean
+    });
+    _validatorPrimitives.scheme.DebugControllerSetReuseBrowserResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerResetForReuseParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerResetForReuseResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerNavigateAllParams = (0, _validatorPrimitives.tObject)({
+      url: _validatorPrimitives.tString
+    });
+    _validatorPrimitives.scheme.DebugControllerNavigateAllResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerSetRecorderModeParams = (0, _validatorPrimitives.tObject)({
+      mode: (0, _validatorPrimitives.tEnum)(["inspecting", "recording", "none"]),
+      language: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+      file: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString)
+    });
+    _validatorPrimitives.scheme.DebugControllerSetRecorderModeResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerHighlightAllParams = (0, _validatorPrimitives.tObject)({
+      selector: _validatorPrimitives.tString
+    });
+    _validatorPrimitives.scheme.DebugControllerHighlightAllResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerHideHighlightAllParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerHideHighlightAllResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerKillParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerKillResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerCloseAllBrowsersParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+    _validatorPrimitives.scheme.DebugControllerCloseAllBrowsersResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
     _validatorPrimitives.scheme.SocksSupportInitializer = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
     _validatorPrimitives.scheme.SocksSupportSocksRequestedEvent = (0, _validatorPrimitives.tObject)({
       uid: _validatorPrimitives.tString,
@@ -13753,16 +13805,6 @@ var require_validator = __commonJS({
     _validatorPrimitives.scheme.BrowserTypeInitializer = (0, _validatorPrimitives.tObject)({
       executablePath: _validatorPrimitives.tString,
       name: _validatorPrimitives.tString
-    });
-    _validatorPrimitives.scheme.BrowserTypeConnectParams = (0, _validatorPrimitives.tObject)({
-      wsEndpoint: _validatorPrimitives.tString,
-      headers: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tAny),
-      slowMo: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
-      timeout: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber),
-      socksProxyRedirectPortForTest: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tNumber)
-    });
-    _validatorPrimitives.scheme.BrowserTypeConnectResult = (0, _validatorPrimitives.tObject)({
-      pipe: (0, _validatorPrimitives.tChannel)(["JsonPipe"])
     });
     _validatorPrimitives.scheme.BrowserTypeLaunchParams = (0, _validatorPrimitives.tObject)({
       channel: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
@@ -16534,55 +16576,6 @@ var require_helper = __commonJS({
   }
 });
 
-// node_modules/playwright-core/lib/utils/manualPromise.js
-var require_manualPromise = __commonJS({
-  "node_modules/playwright-core/lib/utils/manualPromise.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", {
-      value: true
-    });
-    exports2.ManualPromise = void 0;
-    var _Symbol$species;
-    var _Symbol$toStringTag;
-    _Symbol$species = Symbol.species;
-    _Symbol$toStringTag = Symbol.toStringTag;
-    var ManualPromise = class extends Promise {
-      constructor() {
-        let resolve;
-        let reject;
-        super((f, r) => {
-          resolve = f;
-          reject = r;
-        });
-        this._resolve = void 0;
-        this._reject = void 0;
-        this._isDone = void 0;
-        this._isDone = false;
-        this._resolve = resolve;
-        this._reject = reject;
-      }
-      isDone() {
-        return this._isDone;
-      }
-      resolve(t) {
-        this._isDone = true;
-        this._resolve(t);
-      }
-      reject(e) {
-        this._isDone = true;
-        this._reject(e);
-      }
-      static get [_Symbol$species]() {
-        return Promise;
-      }
-      get [_Symbol$toStringTag]() {
-        return "ManualPromise";
-      }
-    };
-    exports2.ManualPromise = ManualPromise;
-  }
-});
-
 // node_modules/playwright-core/lib/server/network.js
 var require_network = __commonJS({
   "node_modules/playwright-core/lib/server/network.js"(exports2) {
@@ -16940,6 +16933,8 @@ var require_network = __commonJS({
       }
       _requestFinished(responseEndTiming) {
         this._request._responseEndTiming = Math.max(responseEndTiming, this._timing.responseStart);
+        if (this._timing.requestStart === -1)
+          this._timing.requestStart = this._request._responseEndTiming;
         this._finishedPromise.resolve();
       }
       _setHttpVersion(httpVersion) {
@@ -17209,7 +17204,7 @@ var require_injectedScriptSource = __commonJS({
       value: true
     });
     exports2.source = void 0;
-    var source = '"use strict";\nlet __export = (target, all) => {\n  for (var name in all)\n    target[name] = all[name];\n};\nlet __commonJS = cb => function __require() {\n  let fn;\n  for (const name in cb) {\n    fn = cb[name];\n    break;\n  }\n  const exports = {};\n  fn(exports);\n  return exports;\n};\nlet __toESM = mod => ({ ...mod, \'default\': mod });\nlet __toCommonJS = mod =>  ({ ...mod, __esModule: true });\n// packages/playwright-core/src/server/isomorphic/cssTokenizer.js\nvar require_cssTokenizer = __commonJS({\n  "packages/playwright-core/src/server/isomorphic/cssTokenizer.js"(exports) {\n    "use strict";\n    var between = function(num, first, last) {\n      return num >= first && num <= last;\n    };\n    function digit(code) {\n      return between(code, 48, 57);\n    }\n    function hexdigit(code) {\n      return digit(code) || between(code, 65, 70) || between(code, 97, 102);\n    }\n    function uppercaseletter(code) {\n      return between(code, 65, 90);\n    }\n    function lowercaseletter(code) {\n      return between(code, 97, 122);\n    }\n    function letter(code) {\n      return uppercaseletter(code) || lowercaseletter(code);\n    }\n    function nonascii(code) {\n      return code >= 128;\n    }\n    function namestartchar(code) {\n      return letter(code) || nonascii(code) || code == 95;\n    }\n    function namechar(code) {\n      return namestartchar(code) || digit(code) || code == 45;\n    }\n    function nonprintable(code) {\n      return between(code, 0, 8) || code == 11 || between(code, 14, 31) || code == 127;\n    }\n    function newline(code) {\n      return code == 10;\n    }\n    function whitespace(code) {\n      return newline(code) || code == 9 || code == 32;\n    }\n    var maximumallowedcodepoint = 1114111;\n    var InvalidCharacterError = function(message) {\n      this.message = message;\n    };\n    InvalidCharacterError.prototype = new Error();\n    InvalidCharacterError.prototype.name = "InvalidCharacterError";\n    function preprocess(str) {\n      var codepoints = [];\n      for (var i = 0; i < str.length; i++) {\n        var code = str.charCodeAt(i);\n        if (code == 13 && str.charCodeAt(i + 1) == 10) {\n          code = 10;\n          i++;\n        }\n        if (code == 13 || code == 12)\n          code = 10;\n        if (code == 0)\n          code = 65533;\n        if (between(code, 55296, 56319) && between(str.charCodeAt(i + 1), 56320, 57343)) {\n          var lead = code - 55296;\n          var trail = str.charCodeAt(i + 1) - 56320;\n          code = Math.pow(2, 16) + lead * Math.pow(2, 10) + trail;\n          i++;\n        }\n        codepoints.push(code);\n      }\n      return codepoints;\n    }\n    function stringFromCode(code) {\n      if (code <= 65535)\n        return String.fromCharCode(code);\n      code -= Math.pow(2, 16);\n      var lead = Math.floor(code / Math.pow(2, 10)) + 55296;\n      var trail = code % Math.pow(2, 10) + 56320;\n      return String.fromCharCode(lead) + String.fromCharCode(trail);\n    }\n    function tokenize2(str) {\n      str = preprocess(str);\n      var i = -1;\n      var tokens = [];\n      var code;\n      var line = 0;\n      var column = 0;\n      var lastLineLength = 0;\n      var incrLineno = function() {\n        line += 1;\n        lastLineLength = column;\n        column = 0;\n      };\n      var locStart = { line, column };\n      var codepoint = function(i2) {\n        if (i2 >= str.length) {\n          return -1;\n        }\n        return str[i2];\n      };\n      var next = function(num) {\n        if (num === void 0)\n          num = 1;\n        if (num > 3)\n          throw "Spec Error: no more than three codepoints of lookahead.";\n        return codepoint(i + num);\n      };\n      var consume = function(num) {\n        if (num === void 0)\n          num = 1;\n        i += num;\n        code = codepoint(i);\n        if (newline(code))\n          incrLineno();\n        else\n          column += num;\n        return true;\n      };\n      var reconsume = function() {\n        i -= 1;\n        if (newline(code)) {\n          line -= 1;\n          column = lastLineLength;\n        } else {\n          column -= 1;\n        }\n        locStart.line = line;\n        locStart.column = column;\n        return true;\n      };\n      var eof = function(codepoint2) {\n        if (codepoint2 === void 0)\n          codepoint2 = code;\n        return codepoint2 == -1;\n      };\n      var donothing = function() {\n      };\n      var parseerror = function() {\n        console.log("Parse error at index " + i + ", processing codepoint 0x" + code.toString(16) + ".");\n        return true;\n      };\n      var consumeAToken = function() {\n        consumeComments();\n        consume();\n        if (whitespace(code)) {\n          while (whitespace(next()))\n            consume();\n          return new WhitespaceToken2();\n        } else if (code == 34)\n          return consumeAStringToken();\n        else if (code == 35) {\n          if (namechar(next()) || areAValidEscape(next(1), next(2))) {\n            var token = new HashToken2();\n            if (wouldStartAnIdentifier(next(1), next(2), next(3)))\n              token.type = "id";\n            token.value = consumeAName();\n            return token;\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 36) {\n          if (next() == 61) {\n            consume();\n            return new SuffixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 39)\n          return consumeAStringToken();\n        else if (code == 40)\n          return new OpenParenToken();\n        else if (code == 41)\n          return new CloseParenToken2();\n        else if (code == 42) {\n          if (next() == 61) {\n            consume();\n            return new SubstringMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 43) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 44)\n          return new CommaToken2();\n        else if (code == 45) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else if (next(1) == 45 && next(2) == 62) {\n            consume(2);\n            return new CDCToken2();\n          } else if (startsWithAnIdentifier()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 46) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 58)\n          return new ColonToken2();\n        else if (code == 59)\n          return new SemicolonToken2();\n        else if (code == 60) {\n          if (next(1) == 33 && next(2) == 45 && next(3) == 45) {\n            consume(3);\n            return new CDOToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 64) {\n          if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n            return new AtKeywordToken2(consumeAName());\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 91)\n          return new OpenSquareToken2();\n        else if (code == 92) {\n          if (startsWithAValidEscape()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            parseerror();\n            return new DelimToken2(code);\n          }\n        } else if (code == 93)\n          return new CloseSquareToken2();\n        else if (code == 94) {\n          if (next() == 61) {\n            consume();\n            return new PrefixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 123)\n          return new OpenCurlyToken2();\n        else if (code == 124) {\n          if (next() == 61) {\n            consume();\n            return new DashMatchToken();\n          } else if (next() == 124) {\n            consume();\n            return new ColumnToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 125)\n          return new CloseCurlyToken2();\n        else if (code == 126) {\n          if (next() == 61) {\n            consume();\n            return new IncludeMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (digit(code)) {\n          reconsume();\n          return consumeANumericToken();\n        } else if (namestartchar(code)) {\n          reconsume();\n          return consumeAnIdentlikeToken();\n        } else if (eof())\n          return new EOFToken2();\n        else\n          return new DelimToken2(code);\n      };\n      var consumeComments = function() {\n        while (next(1) == 47 && next(2) == 42) {\n          consume(2);\n          while (true) {\n            consume();\n            if (code == 42 && next() == 47) {\n              consume();\n              break;\n            } else if (eof()) {\n              parseerror();\n              return;\n            }\n          }\n        }\n      };\n      var consumeANumericToken = function() {\n        var num = consumeANumber();\n        if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n          var token = new DimensionToken();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          token.unit = consumeAName();\n          return token;\n        } else if (next() == 37) {\n          consume();\n          var token = new PercentageToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          return token;\n        } else {\n          var token = new NumberToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          return token;\n        }\n      };\n      var consumeAnIdentlikeToken = function() {\n        var str2 = consumeAName();\n        if (str2.toLowerCase() == "url" && next() == 40) {\n          consume();\n          while (whitespace(next(1)) && whitespace(next(2)))\n            consume();\n          if (next() == 34 || next() == 39) {\n            return new FunctionToken2(str2);\n          } else if (whitespace(next()) && (next(2) == 34 || next(2) == 39)) {\n            return new FunctionToken2(str2);\n          } else {\n            return consumeAURLToken();\n          }\n        } else if (next() == 40) {\n          consume();\n          return new FunctionToken2(str2);\n        } else {\n          return new IdentToken2(str2);\n        }\n      };\n      var consumeAStringToken = function(endingCodePoint) {\n        if (endingCodePoint === void 0)\n          endingCodePoint = code;\n        var string = "";\n        while (consume()) {\n          if (code == endingCodePoint || eof()) {\n            return new StringToken2(string);\n          } else if (newline(code)) {\n            parseerror();\n            reconsume();\n            return new BadStringToken2();\n          } else if (code == 92) {\n            if (eof(next())) {\n              donothing();\n            } else if (newline(next())) {\n              consume();\n            } else {\n              string += stringFromCode(consumeEscape());\n            }\n          } else {\n            string += stringFromCode(code);\n          }\n        }\n      };\n      var consumeAURLToken = function() {\n        var token = new URLToken2("");\n        while (whitespace(next()))\n          consume();\n        if (eof(next()))\n          return token;\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return token;\n          } else if (whitespace(code)) {\n            while (whitespace(next()))\n              consume();\n            if (next() == 41 || eof(next())) {\n              consume();\n              return token;\n            } else {\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else if (code == 34 || code == 39 || code == 40 || nonprintable(code)) {\n            parseerror();\n            consumeTheRemnantsOfABadURL();\n            return new BadURLToken2();\n          } else if (code == 92) {\n            if (startsWithAValidEscape()) {\n              token.value += stringFromCode(consumeEscape());\n            } else {\n              parseerror();\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else {\n            token.value += stringFromCode(code);\n          }\n        }\n      };\n      var consumeEscape = function() {\n        consume();\n        if (hexdigit(code)) {\n          var digits = [code];\n          for (var total = 0; total < 5; total++) {\n            if (hexdigit(next())) {\n              consume();\n              digits.push(code);\n            } else {\n              break;\n            }\n          }\n          if (whitespace(next()))\n            consume();\n          var value = parseInt(digits.map(function(x) {\n            return String.fromCharCode(x);\n          }).join(""), 16);\n          if (value > maximumallowedcodepoint)\n            value = 65533;\n          return value;\n        } else if (eof()) {\n          return 65533;\n        } else {\n          return code;\n        }\n      };\n      var areAValidEscape = function(c1, c2) {\n        if (c1 != 92)\n          return false;\n        if (newline(c2))\n          return false;\n        return true;\n      };\n      var startsWithAValidEscape = function() {\n        return areAValidEscape(code, next());\n      };\n      var wouldStartAnIdentifier = function(c1, c2, c3) {\n        if (c1 == 45) {\n          return namestartchar(c2) || c2 == 45 || areAValidEscape(c2, c3);\n        } else if (namestartchar(c1)) {\n          return true;\n        } else if (c1 == 92) {\n          return areAValidEscape(c1, c2);\n        } else {\n          return false;\n        }\n      };\n      var startsWithAnIdentifier = function() {\n        return wouldStartAnIdentifier(code, next(1), next(2));\n      };\n      var wouldStartANumber = function(c1, c2, c3) {\n        if (c1 == 43 || c1 == 45) {\n          if (digit(c2))\n            return true;\n          if (c2 == 46 && digit(c3))\n            return true;\n          return false;\n        } else if (c1 == 46) {\n          if (digit(c2))\n            return true;\n          return false;\n        } else if (digit(c1)) {\n          return true;\n        } else {\n          return false;\n        }\n      };\n      var startsWithANumber = function() {\n        return wouldStartANumber(code, next(1), next(2));\n      };\n      var consumeAName = function() {\n        var result = "";\n        while (consume()) {\n          if (namechar(code)) {\n            result += stringFromCode(code);\n          } else if (startsWithAValidEscape()) {\n            result += stringFromCode(consumeEscape());\n          } else {\n            reconsume();\n            return result;\n          }\n        }\n      };\n      var consumeANumber = function() {\n        var repr = [];\n        var type = "integer";\n        if (next() == 43 || next() == 45) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        while (digit(next())) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        if (next(1) == 46 && digit(next(2))) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var c1 = next(1), c2 = next(2), c3 = next(3);\n        if ((c1 == 69 || c1 == 101) && digit(c2)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        } else if ((c1 == 69 || c1 == 101) && (c2 == 43 || c2 == 45) && digit(c3)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var value = convertAStringToANumber(repr);\n        return { type, value, repr };\n      };\n      var convertAStringToANumber = function(string) {\n        return +string;\n      };\n      var consumeTheRemnantsOfABadURL = function() {\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return;\n          } else if (startsWithAValidEscape()) {\n            consumeEscape();\n            donothing();\n          } else {\n            donothing();\n          }\n        }\n      };\n      var iterationCount = 0;\n      while (!eof(next())) {\n        tokens.push(consumeAToken());\n        iterationCount++;\n        if (iterationCount > str.length * 2)\n          return "I\'m infinite-looping!";\n      }\n      return tokens;\n    }\n    function CSSParserToken() {\n      throw "Abstract Base Class";\n    }\n    CSSParserToken.prototype.toJSON = function() {\n      return { token: this.tokenType };\n    };\n    CSSParserToken.prototype.toString = function() {\n      return this.tokenType;\n    };\n    CSSParserToken.prototype.toSource = function() {\n      return "" + this;\n    };\n    function BadStringToken2() {\n      return this;\n    }\n    BadStringToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadStringToken2.prototype.tokenType = "BADSTRING";\n    function BadURLToken2() {\n      return this;\n    }\n    BadURLToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadURLToken2.prototype.tokenType = "BADURL";\n    function WhitespaceToken2() {\n      return this;\n    }\n    WhitespaceToken2.prototype = Object.create(CSSParserToken.prototype);\n    WhitespaceToken2.prototype.tokenType = "WHITESPACE";\n    WhitespaceToken2.prototype.toString = function() {\n      return "WS";\n    };\n    WhitespaceToken2.prototype.toSource = function() {\n      return " ";\n    };\n    function CDOToken2() {\n      return this;\n    }\n    CDOToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDOToken2.prototype.tokenType = "CDO";\n    CDOToken2.prototype.toSource = function() {\n      return "<!--";\n    };\n    function CDCToken2() {\n      return this;\n    }\n    CDCToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDCToken2.prototype.tokenType = "CDC";\n    CDCToken2.prototype.toSource = function() {\n      return "-->";\n    };\n    function ColonToken2() {\n      return this;\n    }\n    ColonToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColonToken2.prototype.tokenType = ":";\n    function SemicolonToken2() {\n      return this;\n    }\n    SemicolonToken2.prototype = Object.create(CSSParserToken.prototype);\n    SemicolonToken2.prototype.tokenType = ";";\n    function CommaToken2() {\n      return this;\n    }\n    CommaToken2.prototype = Object.create(CSSParserToken.prototype);\n    CommaToken2.prototype.tokenType = ",";\n    function GroupingToken() {\n      throw "Abstract Base Class";\n    }\n    GroupingToken.prototype = Object.create(CSSParserToken.prototype);\n    function OpenCurlyToken2() {\n      this.value = "{";\n      this.mirror = "}";\n      return this;\n    }\n    OpenCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenCurlyToken2.prototype.tokenType = "{";\n    function CloseCurlyToken2() {\n      this.value = "}";\n      this.mirror = "{";\n      return this;\n    }\n    CloseCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseCurlyToken2.prototype.tokenType = "}";\n    function OpenSquareToken2() {\n      this.value = "[";\n      this.mirror = "]";\n      return this;\n    }\n    OpenSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenSquareToken2.prototype.tokenType = "[";\n    function CloseSquareToken2() {\n      this.value = "]";\n      this.mirror = "[";\n      return this;\n    }\n    CloseSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseSquareToken2.prototype.tokenType = "]";\n    function OpenParenToken() {\n      this.value = "(";\n      this.mirror = ")";\n      return this;\n    }\n    OpenParenToken.prototype = Object.create(GroupingToken.prototype);\n    OpenParenToken.prototype.tokenType = "(";\n    function CloseParenToken2() {\n      this.value = ")";\n      this.mirror = "(";\n      return this;\n    }\n    CloseParenToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseParenToken2.prototype.tokenType = ")";\n    function IncludeMatchToken() {\n      return this;\n    }\n    IncludeMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    IncludeMatchToken.prototype.tokenType = "~=";\n    function DashMatchToken() {\n      return this;\n    }\n    DashMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    DashMatchToken.prototype.tokenType = "|=";\n    function PrefixMatchToken() {\n      return this;\n    }\n    PrefixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    PrefixMatchToken.prototype.tokenType = "^=";\n    function SuffixMatchToken() {\n      return this;\n    }\n    SuffixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SuffixMatchToken.prototype.tokenType = "$=";\n    function SubstringMatchToken() {\n      return this;\n    }\n    SubstringMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SubstringMatchToken.prototype.tokenType = "*=";\n    function ColumnToken2() {\n      return this;\n    }\n    ColumnToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColumnToken2.prototype.tokenType = "||";\n    function EOFToken2() {\n      return this;\n    }\n    EOFToken2.prototype = Object.create(CSSParserToken.prototype);\n    EOFToken2.prototype.tokenType = "EOF";\n    EOFToken2.prototype.toSource = function() {\n      return "";\n    };\n    function DelimToken2(code) {\n      this.value = stringFromCode(code);\n      return this;\n    }\n    DelimToken2.prototype = Object.create(CSSParserToken.prototype);\n    DelimToken2.prototype.tokenType = "DELIM";\n    DelimToken2.prototype.toString = function() {\n      return "DELIM(" + this.value + ")";\n    };\n    DelimToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    DelimToken2.prototype.toSource = function() {\n      if (this.value == "\\\\")\n        return "\\\\\\n";\n      else\n        return this.value;\n    };\n    function StringValuedToken() {\n      throw "Abstract Base Class";\n    }\n    StringValuedToken.prototype = Object.create(CSSParserToken.prototype);\n    StringValuedToken.prototype.ASCIIMatch = function(str) {\n      return this.value.toLowerCase() == str.toLowerCase();\n    };\n    StringValuedToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    function IdentToken2(val) {\n      this.value = val;\n    }\n    IdentToken2.prototype = Object.create(StringValuedToken.prototype);\n    IdentToken2.prototype.tokenType = "IDENT";\n    IdentToken2.prototype.toString = function() {\n      return "IDENT(" + this.value + ")";\n    };\n    IdentToken2.prototype.toSource = function() {\n      return escapeIdent(this.value);\n    };\n    function FunctionToken2(val) {\n      this.value = val;\n      this.mirror = ")";\n    }\n    FunctionToken2.prototype = Object.create(StringValuedToken.prototype);\n    FunctionToken2.prototype.tokenType = "FUNCTION";\n    FunctionToken2.prototype.toString = function() {\n      return "FUNCTION(" + this.value + ")";\n    };\n    FunctionToken2.prototype.toSource = function() {\n      return escapeIdent(this.value) + "(";\n    };\n    function AtKeywordToken2(val) {\n      this.value = val;\n    }\n    AtKeywordToken2.prototype = Object.create(StringValuedToken.prototype);\n    AtKeywordToken2.prototype.tokenType = "AT-KEYWORD";\n    AtKeywordToken2.prototype.toString = function() {\n      return "AT(" + this.value + ")";\n    };\n    AtKeywordToken2.prototype.toSource = function() {\n      return "@" + escapeIdent(this.value);\n    };\n    function HashToken2(val) {\n      this.value = val;\n      this.type = "unrestricted";\n    }\n    HashToken2.prototype = Object.create(StringValuedToken.prototype);\n    HashToken2.prototype.tokenType = "HASH";\n    HashToken2.prototype.toString = function() {\n      return "HASH(" + this.value + ")";\n    };\n    HashToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      return json;\n    };\n    HashToken2.prototype.toSource = function() {\n      if (this.type == "id") {\n        return "#" + escapeIdent(this.value);\n      } else {\n        return "#" + escapeHash(this.value);\n      }\n    };\n    function StringToken2(val) {\n      this.value = val;\n    }\n    StringToken2.prototype = Object.create(StringValuedToken.prototype);\n    StringToken2.prototype.tokenType = "STRING";\n    StringToken2.prototype.toString = function() {\n      return \'"\' + escapeString(this.value) + \'"\';\n    };\n    function URLToken2(val) {\n      this.value = val;\n    }\n    URLToken2.prototype = Object.create(StringValuedToken.prototype);\n    URLToken2.prototype.tokenType = "URL";\n    URLToken2.prototype.toString = function() {\n      return "URL(" + this.value + ")";\n    };\n    URLToken2.prototype.toSource = function() {\n      return \'url("\' + escapeString(this.value) + \'")\';\n    };\n    function NumberToken2() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n    }\n    NumberToken2.prototype = Object.create(CSSParserToken.prototype);\n    NumberToken2.prototype.tokenType = "NUMBER";\n    NumberToken2.prototype.toString = function() {\n      if (this.type == "integer")\n        return "INT(" + this.value + ")";\n      return "NUMBER(" + this.value + ")";\n    };\n    NumberToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      return json;\n    };\n    NumberToken2.prototype.toSource = function() {\n      return this.repr;\n    };\n    function PercentageToken2() {\n      this.value = null;\n      this.repr = "";\n    }\n    PercentageToken2.prototype = Object.create(CSSParserToken.prototype);\n    PercentageToken2.prototype.tokenType = "PERCENTAGE";\n    PercentageToken2.prototype.toString = function() {\n      return "PERCENTAGE(" + this.value + ")";\n    };\n    PercentageToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.repr = this.repr;\n      return json;\n    };\n    PercentageToken2.prototype.toSource = function() {\n      return this.repr + "%";\n    };\n    function DimensionToken() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n      this.unit = "";\n    }\n    DimensionToken.prototype = Object.create(CSSParserToken.prototype);\n    DimensionToken.prototype.tokenType = "DIMENSION";\n    DimensionToken.prototype.toString = function() {\n      return "DIM(" + this.value + "," + this.unit + ")";\n    };\n    DimensionToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      json.unit = this.unit;\n      return json;\n    };\n    DimensionToken.prototype.toSource = function() {\n      var source = this.repr;\n      var unit = escapeIdent(this.unit);\n      if (unit[0].toLowerCase() == "e" && (unit[1] == "-" || between(unit.charCodeAt(1), 48, 57))) {\n        unit = "\\\\65 " + unit.slice(1, unit.length);\n      }\n      return source + unit;\n    };\n    function escapeIdent(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127 || i == 0 && between(code, 48, 57) || i == 1 && between(code, 48, 57) && firstcode == 45) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + string[i];\n        }\n      }\n      return result;\n    }\n    function escapeHash(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + code.toString(16) + " ";\n        }\n      }\n      return result;\n    }\n    function escapeString(string) {\n      string = "" + string;\n      var result = "";\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code == 34 || code == 92) {\n          result += "\\\\" + string[i];\n        } else {\n          result += string[i];\n        }\n      }\n      return result;\n    }\n    exports.tokenize = tokenize2;\n    exports.IdentToken = IdentToken2;\n    exports.FunctionToken = FunctionToken2;\n    exports.AtKeywordToken = AtKeywordToken2;\n    exports.HashToken = HashToken2;\n    exports.StringToken = StringToken2;\n    exports.BadStringToken = BadStringToken2;\n    exports.URLToken = URLToken2;\n    exports.BadURLToken = BadURLToken2;\n    exports.DelimToken = DelimToken2;\n    exports.NumberToken = NumberToken2;\n    exports.PercentageToken = PercentageToken2;\n    exports.DimensionToken = DimensionToken;\n    exports.IncludeMatchToken = IncludeMatchToken;\n    exports.DashMatchToken = DashMatchToken;\n    exports.PrefixMatchToken = PrefixMatchToken;\n    exports.SuffixMatchToken = SuffixMatchToken;\n    exports.SubstringMatchToken = SubstringMatchToken;\n    exports.ColumnToken = ColumnToken2;\n    exports.WhitespaceToken = WhitespaceToken2;\n    exports.CDOToken = CDOToken2;\n    exports.CDCToken = CDCToken2;\n    exports.ColonToken = ColonToken2;\n    exports.SemicolonToken = SemicolonToken2;\n    exports.CommaToken = CommaToken2;\n    exports.OpenParenToken = OpenParenToken;\n    exports.CloseParenToken = CloseParenToken2;\n    exports.OpenSquareToken = OpenSquareToken2;\n    exports.CloseSquareToken = CloseSquareToken2;\n    exports.OpenCurlyToken = OpenCurlyToken2;\n    exports.CloseCurlyToken = CloseCurlyToken2;\n    exports.EOFToken = EOFToken2;\n    exports.CSSParserToken = CSSParserToken;\n    exports.GroupingToken = GroupingToken;\n  }\n});\n\n// packages/playwright-core/src/server/injected/injectedScript.ts\nvar injectedScript_exports = {};\n__export(injectedScript_exports, {\n  InjectedScript: () => InjectedScript\n});\nmodule.exports = __toCommonJS(injectedScript_exports);\n\n// packages/playwright-core/src/server/injected/xpathSelectorEngine.ts\nvar XPathEngine = {\n  queryAll(root, selector) {\n    if (selector.startsWith("/"))\n      selector = "." + selector;\n    const result = [];\n    const document2 = root instanceof Document ? root : root.ownerDocument;\n    if (!document2)\n      return result;\n    const it = document2.evaluate(selector, root, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE);\n    for (let node = it.iterateNext(); node; node = it.iterateNext()) {\n      if (node.nodeType === Node.ELEMENT_NODE)\n        result.push(node);\n    }\n    return result;\n  }\n};\n\n// packages/playwright-core/src/server/injected/domUtils.ts\nfunction isInsideScope(scope, element) {\n  while (element) {\n    if (scope.contains(element))\n      return true;\n    element = enclosingShadowHost(element);\n  }\n  return false;\n}\nfunction parentElementOrShadowHost(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return;\n  if (element.parentNode.nodeType === 11 && element.parentNode.host)\n    return element.parentNode.host;\n}\nfunction enclosingShadowRootOrDocument(element) {\n  let node = element;\n  while (node.parentNode)\n    node = node.parentNode;\n  if (node.nodeType === 11 || node.nodeType === 9)\n    return node;\n}\nfunction enclosingShadowHost(element) {\n  while (element.parentElement)\n    element = element.parentElement;\n  return parentElementOrShadowHost(element);\n}\nfunction closestCrossShadow(element, css2) {\n  while (element) {\n    const closest = element.closest(css2);\n    if (closest)\n      return closest;\n    element = enclosingShadowHost(element);\n  }\n}\nfunction isElementVisible(element) {\n  if (!element.ownerDocument || !element.ownerDocument.defaultView)\n    return true;\n  const style = element.ownerDocument.defaultView.getComputedStyle(element);\n  if (!style || style.visibility === "hidden")\n    return false;\n  if (style.display === "contents") {\n    for (let child = element.firstChild; child; child = child.nextSibling) {\n      if (child.nodeType === 1 && isElementVisible(child))\n        return true;\n      if (child.nodeType === 3 && isVisibleTextNode(child))\n        return true;\n    }\n    return false;\n  }\n  const rect = element.getBoundingClientRect();\n  return rect.width > 0 && rect.height > 0;\n}\nfunction isVisibleTextNode(node) {\n  const range = document.createRange();\n  range.selectNode(node);\n  const rect = range.getBoundingClientRect();\n  return rect.width > 0 && rect.height > 0;\n}\n\n// packages/playwright-core/src/server/injected/selectorUtils.ts\nfunction matchesComponentAttribute(obj, attr) {\n  for (const token of attr.jsonPath) {\n    if (obj !== void 0 && obj !== null)\n      obj = obj[token];\n  }\n  return matchesAttributePart(obj, attr);\n}\nfunction matchesAttributePart(value, attr) {\n  const objValue = typeof value === "string" && !attr.caseSensitive ? value.toUpperCase() : value;\n  const attrValue = typeof attr.value === "string" && !attr.caseSensitive ? attr.value.toUpperCase() : attr.value;\n  if (attr.op === "<truthy>")\n    return !!objValue;\n  if (attr.op === "=") {\n    if (attrValue instanceof RegExp)\n      return typeof objValue === "string" && !!objValue.match(attrValue);\n    return objValue === attrValue;\n  }\n  if (typeof objValue !== "string" || typeof attrValue !== "string")\n    return false;\n  if (attr.op === "*=")\n    return objValue.includes(attrValue);\n  if (attr.op === "^=")\n    return objValue.startsWith(attrValue);\n  if (attr.op === "$=")\n    return objValue.endsWith(attrValue);\n  if (attr.op === "|=")\n    return objValue === attrValue || objValue.startsWith(attrValue + "-");\n  if (attr.op === "~=")\n    return objValue.split(" ").includes(attrValue);\n  return false;\n}\nfunction createLaxTextMatcher(text) {\n  text = text.trim().replace(/\\s+/g, " ").toLowerCase();\n  return (elementText2) => {\n    const s = elementText2.full.trim().replace(/\\s+/g, " ").toLowerCase();\n    return s.includes(text);\n  };\n}\nfunction createStrictTextMatcher(text) {\n  text = text.trim().replace(/\\s+/g, " ");\n  return (elementText2) => {\n    if (!text && !elementText2.immediate.length)\n      return true;\n    return elementText2.immediate.some((s) => s.trim().replace(/\\s+/g, " ") === text);\n  };\n}\nfunction createRegexTextMatcher(source, flags) {\n  const re = new RegExp(source, flags);\n  return (elementText2) => {\n    return re.test(elementText2.full);\n  };\n}\nfunction shouldSkipForTextMatching(element) {\n  return element.nodeName === "SCRIPT" || element.nodeName === "NOSCRIPT" || element.nodeName === "STYLE" || document.head && document.head.contains(element);\n}\nfunction elementText(cache, root) {\n  let value = cache.get(root);\n  if (value === void 0) {\n    value = { full: "", immediate: [] };\n    if (!shouldSkipForTextMatching(root)) {\n      let currentImmediate = "";\n      if (root instanceof HTMLInputElement && (root.type === "submit" || root.type === "button")) {\n        value = { full: root.value, immediate: [root.value] };\n      } else {\n        for (let child = root.firstChild; child; child = child.nextSibling) {\n          if (child.nodeType === Node.TEXT_NODE) {\n            value.full += child.nodeValue || "";\n            currentImmediate += child.nodeValue || "";\n          } else {\n            if (currentImmediate)\n              value.immediate.push(currentImmediate);\n            currentImmediate = "";\n            if (child.nodeType === Node.ELEMENT_NODE)\n              value.full += elementText(cache, child).full;\n          }\n        }\n        if (currentImmediate)\n          value.immediate.push(currentImmediate);\n        if (root.shadowRoot)\n          value.full += elementText(cache, root.shadowRoot).full;\n      }\n    }\n    cache.set(root, value);\n  }\n  return value;\n}\nfunction elementMatchesText(cache, element, matcher) {\n  if (shouldSkipForTextMatching(element))\n    return "none";\n  if (!matcher(elementText(cache, element)))\n    return "none";\n  for (let child = element.firstChild; child; child = child.nextSibling) {\n    if (child.nodeType === Node.ELEMENT_NODE && matcher(elementText(cache, child)))\n      return "selfAndChildren";\n  }\n  if (element.shadowRoot && matcher(elementText(cache, element.shadowRoot)))\n    return "selfAndChildren";\n  return "self";\n}\n\n// packages/playwright-core/src/server/isomorphic/cssParser.ts\nvar css = __toESM(require_cssTokenizer());\nvar InvalidSelectorError = class extends Error {\n};\nfunction parseCSS(selector, customNames) {\n  let tokens;\n  try {\n    tokens = css.tokenize(selector);\n    if (!(tokens[tokens.length - 1] instanceof css.EOFToken))\n      tokens.push(new css.EOFToken());\n  } catch (e) {\n    const newMessage = e.message + ` while parsing selector "${selector}"`;\n    const index = (e.stack || "").indexOf(e.message);\n    if (index !== -1)\n      e.stack = e.stack.substring(0, index) + newMessage + e.stack.substring(index + e.message.length);\n    e.message = newMessage;\n    throw e;\n  }\n  const unsupportedToken = tokens.find((token) => {\n    return token instanceof css.AtKeywordToken || token instanceof css.BadStringToken || token instanceof css.BadURLToken || token instanceof css.ColumnToken || token instanceof css.CDOToken || token instanceof css.CDCToken || token instanceof css.SemicolonToken || token instanceof css.OpenCurlyToken || token instanceof css.CloseCurlyToken || token instanceof css.URLToken || token instanceof css.PercentageToken;\n  });\n  if (unsupportedToken)\n    throw new InvalidSelectorError(`Unsupported token "${unsupportedToken.toSource()}" while parsing selector "${selector}"`);\n  let pos = 0;\n  const names = /* @__PURE__ */ new Set();\n  function unexpected() {\n    return new InvalidSelectorError(`Unexpected token "${tokens[pos].toSource()}" while parsing selector "${selector}"`);\n  }\n  function skipWhitespace() {\n    while (tokens[pos] instanceof css.WhitespaceToken)\n      pos++;\n  }\n  function isIdent(p = pos) {\n    return tokens[p] instanceof css.IdentToken;\n  }\n  function isString(p = pos) {\n    return tokens[p] instanceof css.StringToken;\n  }\n  function isNumber(p = pos) {\n    return tokens[p] instanceof css.NumberToken;\n  }\n  function isComma(p = pos) {\n    return tokens[p] instanceof css.CommaToken;\n  }\n  function isCloseParen(p = pos) {\n    return tokens[p] instanceof css.CloseParenToken;\n  }\n  function isStar(p = pos) {\n    return tokens[p] instanceof css.DelimToken && tokens[p].value === "*";\n  }\n  function isEOF(p = pos) {\n    return tokens[p] instanceof css.EOFToken;\n  }\n  function isClauseCombinator(p = pos) {\n    return tokens[p] instanceof css.DelimToken && [">", "+", "~"].includes(tokens[p].value);\n  }\n  function isSelectorClauseEnd(p = pos) {\n    return isComma(p) || isCloseParen(p) || isEOF(p) || isClauseCombinator(p) || tokens[p] instanceof css.WhitespaceToken;\n  }\n  function consumeFunctionArguments() {\n    const result2 = [consumeArgument()];\n    while (true) {\n      skipWhitespace();\n      if (!isComma())\n        break;\n      pos++;\n      result2.push(consumeArgument());\n    }\n    return result2;\n  }\n  function consumeArgument() {\n    skipWhitespace();\n    if (isNumber())\n      return tokens[pos++].value;\n    if (isString())\n      return tokens[pos++].value;\n    return consumeComplexSelector();\n  }\n  function consumeComplexSelector() {\n    const result2 = { simples: [] };\n    skipWhitespace();\n    if (isClauseCombinator()) {\n      result2.simples.push({ selector: { functions: [{ name: "scope", args: [] }] }, combinator: "" });\n    } else {\n      result2.simples.push({ selector: consumeSimpleSelector(), combinator: "" });\n    }\n    while (true) {\n      skipWhitespace();\n      if (isClauseCombinator()) {\n        result2.simples[result2.simples.length - 1].combinator = tokens[pos++].value;\n        skipWhitespace();\n      } else if (isSelectorClauseEnd()) {\n        break;\n      }\n      result2.simples.push({ combinator: "", selector: consumeSimpleSelector() });\n    }\n    return result2;\n  }\n  function consumeSimpleSelector() {\n    let rawCSSString = "";\n    const functions = [];\n    while (!isSelectorClauseEnd()) {\n      if (isIdent() || isStar()) {\n        rawCSSString += tokens[pos++].toSource();\n      } else if (tokens[pos] instanceof css.HashToken) {\n        rawCSSString += tokens[pos++].toSource();\n      } else if (tokens[pos] instanceof css.DelimToken && tokens[pos].value === ".") {\n        pos++;\n        if (isIdent())\n          rawCSSString += "." + tokens[pos++].toSource();\n        else\n          throw unexpected();\n      } else if (tokens[pos] instanceof css.ColonToken) {\n        pos++;\n        if (isIdent()) {\n          if (!customNames.has(tokens[pos].value.toLowerCase())) {\n            rawCSSString += ":" + tokens[pos++].toSource();\n          } else {\n            const name = tokens[pos++].value.toLowerCase();\n            functions.push({ name, args: [] });\n            names.add(name);\n          }\n        } else if (tokens[pos] instanceof css.FunctionToken) {\n          const name = tokens[pos++].value.toLowerCase();\n          if (!customNames.has(name)) {\n            rawCSSString += `:${name}(${consumeBuiltinFunctionArguments()})`;\n          } else {\n            functions.push({ name, args: consumeFunctionArguments() });\n            names.add(name);\n          }\n          skipWhitespace();\n          if (!isCloseParen())\n            throw unexpected();\n          pos++;\n        } else {\n          throw unexpected();\n        }\n      } else if (tokens[pos] instanceof css.OpenSquareToken) {\n        rawCSSString += "[";\n        pos++;\n        while (!(tokens[pos] instanceof css.CloseSquareToken) && !isEOF())\n          rawCSSString += tokens[pos++].toSource();\n        if (!(tokens[pos] instanceof css.CloseSquareToken))\n          throw unexpected();\n        rawCSSString += "]";\n        pos++;\n      } else {\n        throw unexpected();\n      }\n    }\n    if (!rawCSSString && !functions.length)\n      throw unexpected();\n    return { css: rawCSSString || void 0, functions };\n  }\n  function consumeBuiltinFunctionArguments() {\n    let s = "";\n    while (!isCloseParen() && !isEOF())\n      s += tokens[pos++].toSource();\n    return s;\n  }\n  const result = consumeFunctionArguments();\n  if (!isEOF())\n    throw new InvalidSelectorError(`Error while parsing selector "${selector}"`);\n  if (result.some((arg) => typeof arg !== "object" || !("simples" in arg)))\n    throw new InvalidSelectorError(`Error while parsing selector "${selector}"`);\n  return { selector: result, names: Array.from(names) };\n}\n\n// packages/playwright-core/src/server/isomorphic/selectorParser.ts\nvar kNestedSelectorNames = /* @__PURE__ */ new Set(["has", "left-of", "right-of", "above", "below", "near"]);\nvar kNestedSelectorNamesWithDistance = /* @__PURE__ */ new Set(["left-of", "right-of", "above", "below", "near"]);\nvar customCSSNames = /* @__PURE__ */ new Set(["not", "is", "where", "has", "scope", "light", "visible", "text", "text-matches", "text-is", "has-text", "above", "below", "right-of", "left-of", "near", "nth-match"]);\nfunction parseSelector(selector) {\n  const result = parseSelectorString(selector);\n  const parts = result.parts.map((part) => {\n    if (part.name === "css" || part.name === "css:light") {\n      if (part.name === "css:light")\n        part.body = ":light(" + part.body + ")";\n      const parsedCSS = parseCSS(part.body, customCSSNames);\n      return {\n        name: "css",\n        body: parsedCSS.selector,\n        source: part.body\n      };\n    }\n    if (kNestedSelectorNames.has(part.name)) {\n      let innerSelector;\n      let distance;\n      try {\n        const unescaped = JSON.parse("[" + part.body + "]");\n        if (!Array.isArray(unescaped) || unescaped.length < 1 || unescaped.length > 2 || typeof unescaped[0] !== "string")\n          throw new Error(`Malformed selector: ${part.name}=` + part.body);\n        innerSelector = unescaped[0];\n        if (unescaped.length === 2) {\n          if (typeof unescaped[1] !== "number" || !kNestedSelectorNamesWithDistance.has(part.name))\n            throw new Error(`Malformed selector: ${part.name}=` + part.body);\n          distance = unescaped[1];\n        }\n      } catch (e) {\n        throw new Error(`Malformed selector: ${part.name}=` + part.body);\n      }\n      const result2 = { name: part.name, source: part.body, body: { parsed: parseSelector(innerSelector), distance } };\n      if (result2.body.parsed.parts.some((part2) => part2.name === "control" && part2.body === "enter-frame"))\n        throw new Error(`Frames are not allowed inside "${part.name}" selectors`);\n      return result2;\n    }\n    return { ...part, source: part.body };\n  });\n  if (kNestedSelectorNames.has(parts[0].name))\n    throw new Error(`"${parts[0].name}" selector cannot be first`);\n  return {\n    capture: result.capture,\n    parts\n  };\n}\nfunction stringifySelector(selector) {\n  if (typeof selector === "string")\n    return selector;\n  return selector.parts.map((p, i) => {\n    const prefix = p.name === "css" ? "" : p.name + "=";\n    return `${i === selector.capture ? "*" : ""}${prefix}${p.source}`;\n  }).join(" >> ");\n}\nfunction allEngineNames(selector) {\n  const result = /* @__PURE__ */ new Set();\n  const visit = (selector2) => {\n    for (const part of selector2.parts) {\n      result.add(part.name);\n      if (kNestedSelectorNames.has(part.name))\n        visit(part.body.parsed);\n    }\n  };\n  visit(selector);\n  return result;\n}\nfunction parseSelectorString(selector) {\n  let index = 0;\n  let quote;\n  let start = 0;\n  const result = { parts: [] };\n  const append = () => {\n    const part = selector.substring(start, index).trim();\n    const eqIndex = part.indexOf("=");\n    let name;\n    let body;\n    if (eqIndex !== -1 && part.substring(0, eqIndex).trim().match(/^[a-zA-Z_0-9-+:*]+$/)) {\n      name = part.substring(0, eqIndex).trim();\n      body = part.substring(eqIndex + 1);\n    } else if (part.length > 1 && part[0] === \'"\' && part[part.length - 1] === \'"\') {\n      name = "text";\n      body = part;\n    } else if (part.length > 1 && part[0] === "\'" && part[part.length - 1] === "\'") {\n      name = "text";\n      body = part;\n    } else if (/^\\(*\\/\\//.test(part) || part.startsWith("..")) {\n      name = "xpath";\n      body = part;\n    } else {\n      name = "css";\n      body = part;\n    }\n    let capture = false;\n    if (name[0] === "*") {\n      capture = true;\n      name = name.substring(1);\n    }\n    result.parts.push({ name, body });\n    if (capture) {\n      if (result.capture !== void 0)\n        throw new InvalidSelectorError(`Only one of the selectors can capture using * modifier`);\n      result.capture = result.parts.length - 1;\n    }\n  };\n  if (!selector.includes(">>")) {\n    index = selector.length;\n    append();\n    return result;\n  }\n  const shouldIgnoreTextSelectorQuote = () => {\n    const prefix = selector.substring(start, index);\n    const match = prefix.match(/^\\s*text\\s*=(.*)$/);\n    return !!match && !!match[1];\n  };\n  while (index < selector.length) {\n    const c = selector[index];\n    if (c === "\\\\" && index + 1 < selector.length) {\n      index += 2;\n    } else if (c === quote) {\n      quote = void 0;\n      index++;\n    } else if (!quote && (c === \'"\' || c === "\'" || c === "`") && !shouldIgnoreTextSelectorQuote()) {\n      quote = c;\n      index++;\n    } else if (!quote && c === ">" && selector[index + 1] === ">") {\n      append();\n      index += 2;\n      start = index;\n    } else {\n      index++;\n    }\n  }\n  append();\n  return result;\n}\nfunction parseAttributeSelector(selector, allowUnquotedStrings) {\n  let wp = 0;\n  let EOL = selector.length === 0;\n  const next = () => selector[wp] || "";\n  const eat1 = () => {\n    const result2 = next();\n    ++wp;\n    EOL = wp >= selector.length;\n    return result2;\n  };\n  const syntaxError = (stage) => {\n    if (EOL)\n      throw new Error(`Unexpected end of selector while parsing selector \\`${selector}\\``);\n    throw new Error(`Error while parsing selector \\`${selector}\\` - unexpected symbol "${next()}" at position ${wp}` + (stage ? " during " + stage : ""));\n  };\n  function skipSpaces() {\n    while (!EOL && /\\s/.test(next()))\n      eat1();\n  }\n  function isCSSNameChar(char) {\n    return char >= "\\x80" || char >= "0" && char <= "9" || char >= "A" && char <= "Z" || char >= "a" && char <= "z" || char >= "0" && char <= "9" || char === "_" || char === "-";\n  }\n  function readIdentifier() {\n    let result2 = "";\n    skipSpaces();\n    while (!EOL && isCSSNameChar(next()))\n      result2 += eat1();\n    return result2;\n  }\n  function readQuotedString(quote) {\n    let result2 = eat1();\n    if (result2 !== quote)\n      syntaxError("parsing quoted string");\n    while (!EOL && next() !== quote) {\n      if (next() === "\\\\")\n        eat1();\n      result2 += eat1();\n    }\n    if (next() !== quote)\n      syntaxError("parsing quoted string");\n    result2 += eat1();\n    return result2;\n  }\n  function readRegularExpression() {\n    if (eat1() !== "/")\n      syntaxError("parsing regular expression");\n    let source = "";\n    let inClass = false;\n    while (!EOL) {\n      if (next() === "\\\\") {\n        source += eat1();\n        if (EOL)\n          syntaxError("parsing regular expressiion");\n      } else if (inClass && next() === "]") {\n        inClass = false;\n      } else if (!inClass && next() === "[") {\n        inClass = true;\n      } else if (!inClass && next() === "/") {\n        break;\n      }\n      source += eat1();\n    }\n    if (eat1() !== "/")\n      syntaxError("parsing regular expression");\n    let flags = "";\n    while (!EOL && next().match(/[dgimsuy]/))\n      flags += eat1();\n    try {\n      return new RegExp(source, flags);\n    } catch (e) {\n      throw new Error(`Error while parsing selector \\`${selector}\\`: ${e.message}`);\n    }\n  }\n  function readAttributeToken() {\n    let token = "";\n    skipSpaces();\n    if (next() === `\'` || next() === `"`)\n      token = readQuotedString(next()).slice(1, -1);\n    else\n      token = readIdentifier();\n    if (!token)\n      syntaxError("parsing property path");\n    return token;\n  }\n  function readOperator() {\n    skipSpaces();\n    let op = "";\n    if (!EOL)\n      op += eat1();\n    if (!EOL && op !== "=")\n      op += eat1();\n    if (!["=", "*=", "^=", "$=", "|=", "~="].includes(op))\n      syntaxError("parsing operator");\n    return op;\n  }\n  function readAttribute() {\n    eat1();\n    const jsonPath = [];\n    jsonPath.push(readAttributeToken());\n    skipSpaces();\n    while (next() === ".") {\n      eat1();\n      jsonPath.push(readAttributeToken());\n      skipSpaces();\n    }\n    if (next() === "]") {\n      eat1();\n      return { name: jsonPath.join("."), jsonPath, op: "<truthy>", value: null, caseSensitive: false };\n    }\n    const operator = readOperator();\n    let value = void 0;\n    let caseSensitive = true;\n    skipSpaces();\n    if (next() === "/") {\n      if (operator !== "=")\n        throw new Error(`Error while parsing selector \\`${selector}\\` - cannot use ${operator} in attribute with regular expression`);\n      value = readRegularExpression();\n    } else if (next() === `\'` || next() === `"`) {\n      value = readQuotedString(next()).slice(1, -1);\n      skipSpaces();\n      if (next() === "i" || next() === "I") {\n        caseSensitive = false;\n        eat1();\n      } else if (next() === "s" || next() === "S") {\n        caseSensitive = true;\n        eat1();\n      }\n    } else {\n      value = "";\n      while (!EOL && (isCSSNameChar(next()) || next() === "+" || next() === "."))\n        value += eat1();\n      if (value === "true") {\n        value = true;\n      } else if (value === "false") {\n        value = false;\n      } else {\n        if (!allowUnquotedStrings) {\n          value = +value;\n          if (Number.isNaN(value))\n            syntaxError("parsing attribute value");\n        }\n      }\n    }\n    skipSpaces();\n    if (next() !== "]")\n      syntaxError("parsing attribute value");\n    eat1();\n    if (operator !== "=" && typeof value !== "string")\n      throw new Error(`Error while parsing selector \\`${selector}\\` - cannot use ${operator} in attribute with non-string matching value - ${value}`);\n    return { name: jsonPath.join("."), jsonPath, op: operator, value, caseSensitive };\n  }\n  const result = {\n    name: "",\n    attributes: []\n  };\n  result.name = readIdentifier();\n  skipSpaces();\n  while (next() === "[") {\n    result.attributes.push(readAttribute());\n    skipSpaces();\n  }\n  if (!EOL)\n    syntaxError(void 0);\n  if (!result.name && !result.attributes.length)\n    throw new Error(`Error while parsing selector \\`${selector}\\` - selector cannot be empty`);\n  return result;\n}\n\n// packages/playwright-core/src/server/injected/reactSelectorEngine.ts\nfunction getComponentName(reactElement) {\n  if (typeof reactElement.type === "function")\n    return reactElement.type.displayName || reactElement.type.name || "Anonymous";\n  if (typeof reactElement.type === "string")\n    return reactElement.type;\n  if (reactElement._currentElement) {\n    const elementType = reactElement._currentElement.type;\n    if (typeof elementType === "string")\n      return elementType;\n    if (typeof elementType === "function")\n      return elementType.displayName || elementType.name || "Anonymous";\n  }\n  return "";\n}\nfunction getComponentKey(reactElement) {\n  var _a, _b;\n  return (_b = reactElement.key) != null ? _b : (_a = reactElement._currentElement) == null ? void 0 : _a.key;\n}\nfunction getChildren(reactElement) {\n  if (reactElement.child) {\n    const children = [];\n    for (let child = reactElement.child; child; child = child.sibling)\n      children.push(child);\n    return children;\n  }\n  if (!reactElement._currentElement)\n    return [];\n  const isKnownElement = (reactElement2) => {\n    var _a;\n    const elementType = (_a = reactElement2._currentElement) == null ? void 0 : _a.type;\n    return typeof elementType === "function" || typeof elementType === "string";\n  };\n  if (reactElement._renderedComponent) {\n    const child = reactElement._renderedComponent;\n    return isKnownElement(child) ? [child] : [];\n  }\n  if (reactElement._renderedChildren)\n    return [...Object.values(reactElement._renderedChildren)].filter(isKnownElement);\n  return [];\n}\nfunction getProps(reactElement) {\n  var _a;\n  const props = reactElement.memoizedProps || ((_a = reactElement._currentElement) == null ? void 0 : _a.props);\n  if (!props || typeof props === "string")\n    return props;\n  const result = { ...props };\n  delete result.children;\n  return result;\n}\nfunction buildComponentsTree(reactElement) {\n  var _a;\n  const treeNode = {\n    key: getComponentKey(reactElement),\n    name: getComponentName(reactElement),\n    children: getChildren(reactElement).map(buildComponentsTree),\n    rootElements: [],\n    props: getProps(reactElement)\n  };\n  const rootElement = reactElement.stateNode || reactElement._hostNode || ((_a = reactElement._renderedComponent) == null ? void 0 : _a._hostNode);\n  if (rootElement instanceof Element) {\n    treeNode.rootElements.push(rootElement);\n  } else {\n    for (const child of treeNode.children)\n      treeNode.rootElements.push(...child.rootElements);\n  }\n  return treeNode;\n}\nfunction filterComponentsTree(treeNode, searchFn, result = []) {\n  if (searchFn(treeNode))\n    result.push(treeNode);\n  for (const child of treeNode.children)\n    filterComponentsTree(child, searchFn, result);\n  return result;\n}\nfunction findReactRoots(root, roots = []) {\n  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);\n  do {\n    const node = walker.currentNode;\n    const rootKey = Object.keys(node).find((key) => key.startsWith("__reactContainer"));\n    if (rootKey) {\n      roots.push(node[rootKey].stateNode.current);\n    } else if (node.hasOwnProperty("_reactRootContainer")) {\n      roots.push(node._reactRootContainer._internalRoot.current);\n    }\n    if (node instanceof Element && node.hasAttribute("data-reactroot")) {\n      for (const key of Object.keys(node)) {\n        if (key.startsWith("__reactInternalInstance") || key.startsWith("__reactFiber"))\n          roots.push(node[key]);\n      }\n    }\n    const shadowRoot = node instanceof Element ? node.shadowRoot : null;\n    if (shadowRoot)\n      findReactRoots(shadowRoot, roots);\n  } while (walker.nextNode());\n  return roots;\n}\nvar ReactEngine = {\n  queryAll(scope, selector) {\n    const { name, attributes } = parseAttributeSelector(selector, false);\n    const reactRoots = findReactRoots(document);\n    const trees = reactRoots.map((reactRoot) => buildComponentsTree(reactRoot));\n    const treeNodes = trees.map((tree) => filterComponentsTree(tree, (treeNode) => {\n      var _a;\n      const props = (_a = treeNode.props) != null ? _a : {};\n      if (treeNode.key !== void 0)\n        props.key = treeNode.key;\n      if (name && treeNode.name !== name)\n        return false;\n      if (treeNode.rootElements.some((domNode) => !isInsideScope(scope, domNode)))\n        return false;\n      for (const attr of attributes) {\n        if (!matchesComponentAttribute(props, attr))\n          return false;\n      }\n      return true;\n    })).flat();\n    const allRootElements = /* @__PURE__ */ new Set();\n    for (const treeNode of treeNodes) {\n      for (const domNode of treeNode.rootElements)\n        allRootElements.add(domNode);\n    }\n    return [...allRootElements];\n  }\n};\n\n// packages/playwright-core/src/server/injected/vueSelectorEngine.ts\nfunction basename(filename, ext) {\n  const normalized = filename.replace(/^[a-zA-Z]:/, "").replace(/\\\\/g, "/");\n  let result = normalized.substring(normalized.lastIndexOf("/") + 1);\n  if (ext && result.endsWith(ext))\n    result = result.substring(0, result.length - ext.length);\n  return result;\n}\nfunction toUpper(_, c) {\n  return c ? c.toUpperCase() : "";\n}\nvar classifyRE = /(?:^|[-_/])(\\w)/g;\nvar classify = (str) => {\n  return str && str.replace(classifyRE, toUpper);\n};\nfunction buildComponentsTreeVue3(instance) {\n  function getComponentTypeName(options) {\n    const name = options.name || options._componentTag || options.__playwright_guessedName;\n    if (name)\n      return name;\n    const file = options.__file;\n    if (file)\n      return classify(basename(file, ".vue"));\n  }\n  function saveComponentName(instance2, key) {\n    instance2.type.__playwright_guessedName = key;\n    return key;\n  }\n  function getInstanceName(instance2) {\n    var _a, _b, _c, _d;\n    const name = getComponentTypeName(instance2.type || {});\n    if (name)\n      return name;\n    if (instance2.root === instance2)\n      return "Root";\n    for (const key in (_b = (_a = instance2.parent) == null ? void 0 : _a.type) == null ? void 0 : _b.components)\n      if (((_c = instance2.parent) == null ? void 0 : _c.type.components[key]) === instance2.type)\n        return saveComponentName(instance2, key);\n    for (const key in (_d = instance2.appContext) == null ? void 0 : _d.components)\n      if (instance2.appContext.components[key] === instance2.type)\n        return saveComponentName(instance2, key);\n    return "Anonymous Component";\n  }\n  function isBeingDestroyed(instance2) {\n    return instance2._isBeingDestroyed || instance2.isUnmounted;\n  }\n  function isFragment(instance2) {\n    return instance2.subTree.type.toString() === "Symbol(Fragment)";\n  }\n  function getInternalInstanceChildren(subTree) {\n    const list = [];\n    if (subTree.component)\n      list.push(subTree.component);\n    if (subTree.suspense)\n      list.push(...getInternalInstanceChildren(subTree.suspense.activeBranch));\n    if (Array.isArray(subTree.children)) {\n      subTree.children.forEach((childSubTree) => {\n        if (childSubTree.component)\n          list.push(childSubTree.component);\n        else\n          list.push(...getInternalInstanceChildren(childSubTree));\n      });\n    }\n    return list.filter((child) => {\n      var _a;\n      return !isBeingDestroyed(child) && !((_a = child.type.devtools) == null ? void 0 : _a.hide);\n    });\n  }\n  function getRootElementsFromComponentInstance(instance2) {\n    if (isFragment(instance2))\n      return getFragmentRootElements(instance2.subTree);\n    return [instance2.subTree.el];\n  }\n  function getFragmentRootElements(vnode) {\n    if (!vnode.children)\n      return [];\n    const list = [];\n    for (let i = 0, l = vnode.children.length; i < l; i++) {\n      const childVnode = vnode.children[i];\n      if (childVnode.component)\n        list.push(...getRootElementsFromComponentInstance(childVnode.component));\n      else if (childVnode.el)\n        list.push(childVnode.el);\n    }\n    return list;\n  }\n  function buildComponentsTree2(instance2) {\n    return {\n      name: getInstanceName(instance2),\n      children: getInternalInstanceChildren(instance2.subTree).map(buildComponentsTree2),\n      rootElements: getRootElementsFromComponentInstance(instance2),\n      props: instance2.props\n    };\n  }\n  return buildComponentsTree2(instance);\n}\nfunction buildComponentsTreeVue2(instance) {\n  function getComponentName2(options) {\n    const name = options.displayName || options.name || options._componentTag;\n    if (name)\n      return name;\n    const file = options.__file;\n    if (file)\n      return classify(basename(file, ".vue"));\n  }\n  function getInstanceName(instance2) {\n    const name = getComponentName2(instance2.$options || instance2.fnOptions || {});\n    if (name)\n      return name;\n    return instance2.$root === instance2 ? "Root" : "Anonymous Component";\n  }\n  function getInternalInstanceChildren(instance2) {\n    if (instance2.$children)\n      return instance2.$children;\n    if (Array.isArray(instance2.subTree.children))\n      return instance2.subTree.children.filter((vnode) => !!vnode.component).map((vnode) => vnode.component);\n    return [];\n  }\n  function buildComponentsTree2(instance2) {\n    return {\n      name: getInstanceName(instance2),\n      children: getInternalInstanceChildren(instance2).map(buildComponentsTree2),\n      rootElements: [instance2.$el],\n      props: instance2._props\n    };\n  }\n  return buildComponentsTree2(instance);\n}\nfunction filterComponentsTree2(treeNode, searchFn, result = []) {\n  if (searchFn(treeNode))\n    result.push(treeNode);\n  for (const child of treeNode.children)\n    filterComponentsTree2(child, searchFn, result);\n  return result;\n}\nfunction findVueRoots(root, roots = []) {\n  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);\n  const vue2Roots = /* @__PURE__ */ new Set();\n  do {\n    const node = walker.currentNode;\n    if (node.__vue__)\n      vue2Roots.add(node.__vue__.$root);\n    if (node.__vue_app__ && node._vnode && node._vnode.component)\n      roots.push({ root: node._vnode.component, version: 3 });\n    const shadowRoot = node instanceof Element ? node.shadowRoot : null;\n    if (shadowRoot)\n      findVueRoots(shadowRoot, roots);\n  } while (walker.nextNode());\n  for (const vue2root of vue2Roots) {\n    roots.push({\n      version: 2,\n      root: vue2root\n    });\n  }\n  return roots;\n}\nvar VueEngine = {\n  queryAll(scope, selector) {\n    const { name, attributes } = parseAttributeSelector(selector, false);\n    const vueRoots = findVueRoots(document);\n    const trees = vueRoots.map((vueRoot) => vueRoot.version === 3 ? buildComponentsTreeVue3(vueRoot.root) : buildComponentsTreeVue2(vueRoot.root));\n    const treeNodes = trees.map((tree) => filterComponentsTree2(tree, (treeNode) => {\n      if (name && treeNode.name !== name)\n        return false;\n      if (treeNode.rootElements.some((rootElement) => !isInsideScope(scope, rootElement)))\n        return false;\n      for (const attr of attributes) {\n        if (!matchesComponentAttribute(treeNode.props, attr))\n          return false;\n      }\n      return true;\n    })).flat();\n    const allRootElements = /* @__PURE__ */ new Set();\n    for (const treeNode of treeNodes) {\n      for (const rootElement of treeNode.rootElements)\n        allRootElements.add(rootElement);\n    }\n    return [...allRootElements];\n  }\n};\n\n// packages/playwright-core/src/server/injected/roleUtils.ts\nfunction hasExplicitAccessibleName(e) {\n  return e.hasAttribute("aria-label") || e.hasAttribute("aria-labelledby");\n}\nvar kAncestorPreventingLandmark = "article:not([role]), aside:not([role]), main:not([role]), nav:not([role]), section:not([role]), [role=article], [role=complementary], [role=main], [role=navigation], [role=region]";\nvar kGlobalAriaAttributes = [\n  "aria-atomic",\n  "aria-busy",\n  "aria-controls",\n  "aria-current",\n  "aria-describedby",\n  "aria-details",\n  "aria-disabled",\n  "aria-dropeffect",\n  "aria-errormessage",\n  "aria-flowto",\n  "aria-grabbed",\n  "aria-haspopup",\n  "aria-hidden",\n  "aria-invalid",\n  "aria-keyshortcuts",\n  "aria-label",\n  "aria-labelledby",\n  "aria-live",\n  "aria-owns",\n  "aria-relevant",\n  "aria-roledescription"\n];\nfunction hasGlobalAriaAttribute(e) {\n  return kGlobalAriaAttributes.some((a) => e.hasAttribute(a));\n}\nvar kImplicitRoleByTagName = {\n  "A": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "AREA": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "ARTICLE": () => "article",\n  "ASIDE": () => "complementary",\n  "BLOCKQUOTE": () => "blockquote",\n  "BUTTON": () => "button",\n  "CAPTION": () => "caption",\n  "CODE": () => "code",\n  "DATALIST": () => "listbox",\n  "DD": () => "definition",\n  "DEL": () => "deletion",\n  "DETAILS": () => "group",\n  "DFN": () => "term",\n  "DIALOG": () => "dialog",\n  "DT": () => "term",\n  "EM": () => "emphasis",\n  "FIELDSET": () => "group",\n  "FIGURE": () => "figure",\n  "FOOTER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "contentinfo",\n  "FORM": (e) => hasExplicitAccessibleName(e) ? "form" : null,\n  "H1": () => "heading",\n  "H2": () => "heading",\n  "H3": () => "heading",\n  "H4": () => "heading",\n  "H5": () => "heading",\n  "H6": () => "heading",\n  "HEADER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "banner",\n  "HR": () => "separator",\n  "HTML": () => "document",\n  "IMG": (e) => e.getAttribute("alt") === "" && !hasGlobalAriaAttribute(e) && Number.isNaN(Number(String(e.getAttribute("tabindex")))) ? "presentation" : "img",\n  "INPUT": (e) => {\n    const type = e.type.toLowerCase();\n    if (type === "search")\n      return e.hasAttribute("list") ? "combobox" : "searchbox";\n    if (["email", "tel", "text", "url", ""].includes(type)) {\n      const list = getIdRefs(e, e.getAttribute("list"))[0];\n      return list && list.tagName === "DATALIST" ? "combobox" : "textbox";\n    }\n    if (type === "hidden")\n      return "";\n    return {\n      "button": "button",\n      "checkbox": "checkbox",\n      "image": "button",\n      "number": "spinbutton",\n      "radio": "radio",\n      "range": "slider",\n      "reset": "button",\n      "submit": "button"\n    }[type] || "textbox";\n  },\n  "INS": () => "insertion",\n  "LI": () => "listitem",\n  "MAIN": () => "main",\n  "MARK": () => "mark",\n  "MATH": () => "math",\n  "MENU": () => "list",\n  "METER": () => "meter",\n  "NAV": () => "navigation",\n  "OL": () => "list",\n  "OPTGROUP": () => "group",\n  "OPTION": () => "option",\n  "OUTPUT": () => "status",\n  "P": () => "paragraph",\n  "PROGRESS": () => "progressbar",\n  "SECTION": (e) => hasExplicitAccessibleName(e) ? "region" : null,\n  "SELECT": (e) => e.hasAttribute("multiple") || e.size > 1 ? "listbox" : "combobox",\n  "STRONG": () => "strong",\n  "SUB": () => "subscript",\n  "SUP": () => "superscript",\n  "TABLE": () => "table",\n  "TBODY": () => "rowgroup",\n  "TD": (e) => {\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "TEXTAREA": () => "textbox",\n  "TFOOT": () => "rowgroup",\n  "TH": (e) => {\n    if (e.getAttribute("scope") === "col")\n      return "columnheader";\n    if (e.getAttribute("scope") === "row")\n      return "rowheader";\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "THEAD": () => "rowgroup",\n  "TIME": () => "time",\n  "TR": () => "row",\n  "UL": () => "list"\n};\nvar kPresentationInheritanceParents = {\n  "DD": ["DL", "DIV"],\n  "DIV": ["DL"],\n  "DT": ["DL", "DIV"],\n  "LI": ["OL", "UL"],\n  "TBODY": ["TABLE"],\n  "TD": ["TR"],\n  "TFOOT": ["TABLE"],\n  "TH": ["TR"],\n  "THEAD": ["TABLE"],\n  "TR": ["THEAD", "TBODY", "TFOOT", "TABLE"]\n};\nfunction getImplicitAriaRole(element) {\n  var _a;\n  const implicitRole = ((_a = kImplicitRoleByTagName[element.tagName]) == null ? void 0 : _a.call(kImplicitRoleByTagName, element)) || "";\n  if (!implicitRole)\n    return null;\n  let ancestor = element;\n  while (ancestor) {\n    const parent = parentElementOrShadowHost(ancestor);\n    const parents = kPresentationInheritanceParents[ancestor.tagName];\n    if (!parents || !parent || !parents.includes(parent.tagName))\n      break;\n    const parentExplicitRole = getExplicitAriaRole(parent);\n    if ((parentExplicitRole === "none" || parentExplicitRole === "presentation") && !hasPresentationConflictResolution(parent))\n      return parentExplicitRole;\n    ancestor = parent;\n  }\n  return implicitRole;\n}\nvar allRoles = [\n  "alert",\n  "alertdialog",\n  "application",\n  "article",\n  "banner",\n  "blockquote",\n  "button",\n  "caption",\n  "cell",\n  "checkbox",\n  "code",\n  "columnheader",\n  "combobox",\n  "command",\n  "complementary",\n  "composite",\n  "contentinfo",\n  "definition",\n  "deletion",\n  "dialog",\n  "directory",\n  "document",\n  "emphasis",\n  "feed",\n  "figure",\n  "form",\n  "generic",\n  "grid",\n  "gridcell",\n  "group",\n  "heading",\n  "img",\n  "input",\n  "insertion",\n  "landmark",\n  "link",\n  "list",\n  "listbox",\n  "listitem",\n  "log",\n  "main",\n  "marquee",\n  "math",\n  "meter",\n  "menu",\n  "menubar",\n  "menuitem",\n  "menuitemcheckbox",\n  "menuitemradio",\n  "navigation",\n  "none",\n  "note",\n  "option",\n  "paragraph",\n  "presentation",\n  "progressbar",\n  "radio",\n  "radiogroup",\n  "range",\n  "region",\n  "roletype",\n  "row",\n  "rowgroup",\n  "rowheader",\n  "scrollbar",\n  "search",\n  "searchbox",\n  "section",\n  "sectionhead",\n  "select",\n  "separator",\n  "slider",\n  "spinbutton",\n  "status",\n  "strong",\n  "structure",\n  "subscript",\n  "superscript",\n  "switch",\n  "tab",\n  "table",\n  "tablist",\n  "tabpanel",\n  "term",\n  "textbox",\n  "time",\n  "timer",\n  "toolbar",\n  "tooltip",\n  "tree",\n  "treegrid",\n  "treeitem",\n  "widget",\n  "window"\n];\nvar abstractRoles = ["command", "composite", "input", "landmark", "range", "roletype", "section", "sectionhead", "select", "structure", "widget", "window"];\nvar validRoles = allRoles.filter((role) => !abstractRoles.includes(role));\nfunction getExplicitAriaRole(element) {\n  const roles = (element.getAttribute("role") || "").split(" ").map((role) => role.trim());\n  return roles.find((role) => validRoles.includes(role)) || null;\n}\nfunction hasPresentationConflictResolution(element) {\n  return !hasGlobalAriaAttribute(element);\n}\nfunction getAriaRole(element) {\n  const explicitRole = getExplicitAriaRole(element);\n  if (!explicitRole)\n    return getImplicitAriaRole(element);\n  if ((explicitRole === "none" || explicitRole === "presentation") && hasPresentationConflictResolution(element))\n    return getImplicitAriaRole(element);\n  return explicitRole;\n}\nfunction getAriaBoolean(attr) {\n  return attr === null ? void 0 : attr.toLowerCase() === "true";\n}\nfunction getComputedStyle(element, pseudo) {\n  return element.ownerDocument && element.ownerDocument.defaultView ? element.ownerDocument.defaultView.getComputedStyle(element, pseudo) : void 0;\n}\nfunction isElementHiddenForAria(element, cache) {\n  if (["STYLE", "SCRIPT", "NOSCRIPT", "TEMPLATE"].includes(element.tagName))\n    return true;\n  const style = getComputedStyle(element);\n  if (!style || style.visibility === "hidden")\n    return true;\n  return belongsToDisplayNoneOrAriaHidden(element, cache);\n}\nfunction belongsToDisplayNoneOrAriaHidden(element, cache) {\n  if (!cache.has(element)) {\n    const style = getComputedStyle(element);\n    let hidden = !style || style.display === "none" || getAriaBoolean(element.getAttribute("aria-hidden")) === true;\n    if (!hidden) {\n      const parent = parentElementOrShadowHost(element);\n      if (parent)\n        hidden = hidden || belongsToDisplayNoneOrAriaHidden(parent, cache);\n    }\n    cache.set(element, hidden);\n  }\n  return cache.get(element);\n}\nfunction getIdRefs(element, ref) {\n  if (!ref)\n    return [];\n  const root = enclosingShadowRootOrDocument(element);\n  if (!root)\n    return [];\n  try {\n    const ids = ref.split(" ").filter((id) => !!id);\n    const set = /* @__PURE__ */ new Set();\n    for (const id of ids) {\n      const firstElement = root.querySelector("#" + CSS.escape(id));\n      if (firstElement)\n        set.add(firstElement);\n    }\n    return [...set];\n  } catch (e) {\n    return [];\n  }\n}\nfunction normalizeAccessbileName(s) {\n  return s.replace(/\\r\\n/g, "\\n").replace(/\\u00A0/g, " ").replace(/\\s\\s+/g, " ").trim();\n}\nfunction queryInAriaOwned(element, selector) {\n  const result = [...element.querySelectorAll(selector)];\n  for (const owned of getIdRefs(element, element.getAttribute("aria-owns"))) {\n    if (owned.matches(selector))\n      result.push(owned);\n    result.push(...owned.querySelectorAll(selector));\n  }\n  return result;\n}\nfunction getPseudoContent(pseudoStyle) {\n  if (!pseudoStyle)\n    return "";\n  const content = pseudoStyle.getPropertyValue("content");\n  if (content[0] === "\'" && content[content.length - 1] === "\'" || content[0] === \'"\' && content[content.length - 1] === \'"\') {\n    const unquoted = content.substring(1, content.length - 1);\n    const display = pseudoStyle.getPropertyValue("display") || "inline";\n    if (display !== "inline")\n      return " " + unquoted + " ";\n    return unquoted;\n  }\n  return "";\n}\nfunction getElementAccessibleName(element, includeHidden, hiddenCache) {\n  const elementProhibitsNaming = ["caption", "code", "definition", "deletion", "emphasis", "generic", "insertion", "mark", "paragraph", "presentation", "strong", "subscript", "suggestion", "superscript", "term", "time"].includes(getAriaRole(element) || "");\n  if (elementProhibitsNaming)\n    return "";\n  const accessibleName = normalizeAccessbileName(getElementAccessibleNameInternal(element, {\n    includeHidden,\n    hiddenCache,\n    visitedElements: /* @__PURE__ */ new Set(),\n    embeddedInLabelledBy: "none",\n    embeddedInLabel: "none",\n    embeddedInTextAlternativeElement: false,\n    embeddedInTargetElement: "self"\n  }));\n  return accessibleName;\n}\nfunction getElementAccessibleNameInternal(element, options) {\n  if (options.visitedElements.has(element))\n    return "";\n  const childOptions = {\n    ...options,\n    embeddedInLabel: options.embeddedInLabel === "self" ? "descendant" : options.embeddedInLabel,\n    embeddedInLabelledBy: options.embeddedInLabelledBy === "self" ? "descendant" : options.embeddedInLabelledBy,\n    embeddedInTargetElement: options.embeddedInTargetElement === "self" ? "descendant" : options.embeddedInTargetElement\n  };\n  if (!options.includeHidden && options.embeddedInLabelledBy !== "self" && isElementHiddenForAria(element, options.hiddenCache)) {\n    options.visitedElements.add(element);\n    return "";\n  }\n  if (options.embeddedInLabelledBy === "none") {\n    const refs = getIdRefs(element, element.getAttribute("aria-labelledby"));\n    const accessibleName = refs.map((ref) => getElementAccessibleNameInternal(ref, {\n      ...options,\n      embeddedInLabelledBy: "self",\n      embeddedInTargetElement: "none",\n      embeddedInLabel: "none",\n      embeddedInTextAlternativeElement: false\n    })).join(" ");\n    if (accessibleName)\n      return accessibleName;\n  }\n  const role = getAriaRole(element) || "";\n  if (options.embeddedInLabel !== "none" || options.embeddedInLabelledBy !== "none") {\n    const isOwnLabel = [...element.labels || []].includes(element);\n    const isOwnLabelledBy = getIdRefs(element, element.getAttribute("aria-labelledby")).includes(element);\n    if (!isOwnLabel && !isOwnLabelledBy) {\n      if (role === "textbox") {\n        options.visitedElements.add(element);\n        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA")\n          return element.value;\n        return element.textContent || "";\n      }\n      if (["combobox", "listbox"].includes(role)) {\n        options.visitedElements.add(element);\n        let selectedOptions;\n        if (element.tagName === "SELECT") {\n          selectedOptions = [...element.selectedOptions];\n          if (!selectedOptions.length && element.options.length)\n            selectedOptions.push(element.options[0]);\n        } else {\n          const listbox = role === "combobox" ? queryInAriaOwned(element, "*").find((e) => getAriaRole(e) === "listbox") : element;\n          selectedOptions = listbox ? queryInAriaOwned(listbox, \'[aria-selected="true"]\').filter((e) => getAriaRole(e) === "option") : [];\n        }\n        return selectedOptions.map((option) => getElementAccessibleNameInternal(option, childOptions)).join(" ");\n      }\n      if (["progressbar", "scrollbar", "slider", "spinbutton", "meter"].includes(role)) {\n        options.visitedElements.add(element);\n        if (element.hasAttribute("aria-valuetext"))\n          return element.getAttribute("aria-valuetext") || "";\n        if (element.hasAttribute("aria-valuenow"))\n          return element.getAttribute("aria-valuenow") || "";\n        return element.getAttribute("value") || "";\n      }\n      if (["menu"].includes(role)) {\n        options.visitedElements.add(element);\n        return "";\n      }\n    }\n  }\n  const ariaLabel = element.getAttribute("aria-label") || "";\n  if (ariaLabel.trim()) {\n    options.visitedElements.add(element);\n    return ariaLabel;\n  }\n  if (!["presentation", "none"].includes(role)) {\n    if (element.tagName === "INPUT" && ["button", "submit", "reset"].includes(element.type)) {\n      options.visitedElements.add(element);\n      const value = element.value || "";\n      if (value.trim())\n        return value;\n      if (element.type === "submit")\n        return "Submit";\n      if (element.type === "reset")\n        return "Reset";\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "INPUT" && element.type === "image") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const title = element.getAttribute("title") || "";\n      if (title.trim())\n        return title;\n      return "Submit";\n    }\n    if (element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.tagName === "INPUT") {\n      options.visitedElements.add(element);\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const usePlaceholder = element.tagName === "INPUT" && ["text", "password", "search", "tel", "email", "url"].includes(element.type) || element.tagName === "TEXTAREA";\n      const placeholder = element.getAttribute("placeholder") || "";\n      const title = element.getAttribute("title") || "";\n      if (!usePlaceholder || title)\n        return title;\n      return placeholder;\n    }\n    if (element.tagName === "FIELDSET") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "LEGEND") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "FIGURE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "FIGCAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "IMG") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "TABLE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "CAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const summary = element.getAttribute("summary") || "";\n      if (summary)\n        return summary;\n    }\n    if (element.tagName === "AREA") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "SVG" && element.ownerSVGElement) {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "TITLE" && element.ownerSVGElement) {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n    }\n  }\n  const allowsNameFromContent = ["button", "cell", "checkbox", "columnheader", "gridcell", "heading", "link", "menuitem", "menuitemcheckbox", "menuitemradio", "option", "radio", "row", "rowheader", "switch", "tab", "tooltip", "treeitem"].includes(role);\n  if (allowsNameFromContent || options.embeddedInLabelledBy !== "none" || options.embeddedInLabel !== "none" || options.embeddedInTextAlternativeElement || options.embeddedInTargetElement === "descendant") {\n    options.visitedElements.add(element);\n    const tokens = [];\n    const visit = (node) => {\n      var _a;\n      if (node.nodeType === 1) {\n        const display = ((_a = getComputedStyle(node)) == null ? void 0 : _a.getPropertyValue("display")) || "inline";\n        let token = getElementAccessibleNameInternal(node, childOptions);\n        if (display !== "inline" || node.nodeName === "BR")\n          token = " " + token + " ";\n        tokens.push(token);\n      } else if (node.nodeType === 3) {\n        tokens.push(node.textContent || "");\n      }\n    };\n    tokens.push(getPseudoContent(getComputedStyle(element, "::before")));\n    for (let child = element.firstChild; child; child = child.nextSibling)\n      visit(child);\n    if (element.shadowRoot) {\n      for (let child = element.shadowRoot.firstChild; child; child = child.nextSibling)\n        visit(child);\n    }\n    for (const owned of getIdRefs(element, element.getAttribute("aria-owns")))\n      visit(owned);\n    tokens.push(getPseudoContent(getComputedStyle(element, "::after")));\n    const accessibleName = tokens.join("");\n    if (accessibleName.trim())\n      return accessibleName;\n  }\n  if (!["presentation", "none"].includes(role) || element.tagName === "IFRAME") {\n    options.visitedElements.add(element);\n    const title = element.getAttribute("title") || "";\n    if (title.trim())\n      return title;\n  }\n  options.visitedElements.add(element);\n  return "";\n}\nvar kAriaSelectedRoles = ["gridcell", "option", "row", "tab", "rowheader", "columnheader", "treeitem"];\nfunction getAriaSelected(element) {\n  if (element.tagName === "OPTION")\n    return element.selected;\n  if (kAriaSelectedRoles.includes(getAriaRole(element) || ""))\n    return getAriaBoolean(element.getAttribute("aria-selected")) === true;\n  return false;\n}\nvar kAriaCheckedRoles = ["checkbox", "menuitemcheckbox", "option", "radio", "switch", "menuitemradio", "treeitem"];\nfunction getAriaChecked(element) {\n  if (element.tagName === "INPUT" && element.indeterminate)\n    return "mixed";\n  if (element.tagName === "INPUT" && ["checkbox", "radio"].includes(element.type))\n    return element.checked;\n  if (kAriaCheckedRoles.includes(getAriaRole(element) || "")) {\n    const checked = element.getAttribute("aria-checked");\n    if (checked === "true")\n      return true;\n    if (checked === "mixed")\n      return "mixed";\n  }\n  return false;\n}\nvar kAriaPressedRoles = ["button"];\nfunction getAriaPressed(element) {\n  if (kAriaPressedRoles.includes(getAriaRole(element) || "")) {\n    const pressed = element.getAttribute("aria-pressed");\n    if (pressed === "true")\n      return true;\n    if (pressed === "mixed")\n      return "mixed";\n  }\n  return false;\n}\nvar kAriaExpandedRoles = ["application", "button", "checkbox", "combobox", "gridcell", "link", "listbox", "menuitem", "row", "rowheader", "tab", "treeitem", "columnheader", "menuitemcheckbox", "menuitemradio", "rowheader", "switch"];\nfunction getAriaExpanded(element) {\n  if (element.tagName === "DETAILS")\n    return element.open;\n  if (kAriaExpandedRoles.includes(getAriaRole(element) || ""))\n    return getAriaBoolean(element.getAttribute("aria-expanded")) === true;\n  return false;\n}\nvar kAriaLevelRoles = ["heading", "listitem", "row", "treeitem"];\nfunction getAriaLevel(element) {\n  const native = { "H1": 1, "H2": 2, "H3": 3, "H4": 4, "H5": 5, "H6": 6 }[element.tagName];\n  if (native)\n    return native;\n  if (kAriaLevelRoles.includes(getAriaRole(element) || "")) {\n    const attr = element.getAttribute("aria-level");\n    const value = attr === null ? Number.NaN : Number(attr);\n    if (Number.isInteger(value) && value >= 1)\n      return value;\n  }\n  return 0;\n}\nvar kAriaDisabledRoles = ["application", "button", "composite", "gridcell", "group", "input", "link", "menuitem", "scrollbar", "separator", "tab", "checkbox", "columnheader", "combobox", "grid", "listbox", "menu", "menubar", "menuitemcheckbox", "menuitemradio", "option", "radio", "radiogroup", "row", "rowheader", "searchbox", "select", "slider", "spinbutton", "switch", "tablist", "textbox", "toolbar", "tree", "treegrid", "treeitem"];\nfunction getAriaDisabled(element) {\n  const isNativeFormControl = ["BUTTON", "INPUT", "SELECT", "TEXTAREA", "OPTION", "OPTGROUP"].includes(element.tagName);\n  if (isNativeFormControl && (element.hasAttribute("disabled") || belongsToDisabledFieldSet(element)))\n    return true;\n  return hasExplicitAriaDisabled(element);\n}\nfunction belongsToDisabledFieldSet(element) {\n  if (!element)\n    return false;\n  if (element.tagName === "FIELDSET" && element.hasAttribute("disabled"))\n    return true;\n  return belongsToDisabledFieldSet(element.parentElement);\n}\nfunction hasExplicitAriaDisabled(element) {\n  if (!element)\n    return false;\n  if (kAriaDisabledRoles.includes(getAriaRole(element) || "")) {\n    const attribute = (element.getAttribute("aria-disabled") || "").toLowerCase();\n    if (attribute === "true")\n      return true;\n    if (attribute === "false")\n      return false;\n  }\n  return hasExplicitAriaDisabled(parentElementOrShadowHost(element));\n}\n\n// packages/playwright-core/src/server/injected/roleSelectorEngine.ts\nvar kSupportedAttributes = ["selected", "checked", "pressed", "expanded", "level", "disabled", "name", "include-hidden"];\nkSupportedAttributes.sort();\nfunction validateSupportedRole(attr, roles, role) {\n  if (!roles.includes(role))\n    throw new Error(`"${attr}" attribute is only supported for roles: ${roles.slice().sort().map((role2) => `"${role2}"`).join(", ")}`);\n}\nfunction validateSupportedValues(attr, values) {\n  if (attr.op !== "<truthy>" && !values.includes(attr.value))\n    throw new Error(`"${attr.name}" must be one of ${values.map((v) => JSON.stringify(v)).join(", ")}`);\n}\nfunction validateSupportedOp(attr, ops) {\n  if (!ops.includes(attr.op))\n    throw new Error(`"${attr.name}" does not support "${attr.op}" matcher`);\n}\nfunction validateAttributes(attrs, role) {\n  for (const attr of attrs) {\n    switch (attr.name) {\n      case "checked": {\n        validateSupportedRole(attr.name, kAriaCheckedRoles, role);\n        validateSupportedValues(attr, [true, false, "mixed"]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        if (attr.op === "<truthy>") {\n          attr.op = "=";\n          attr.value = true;\n        }\n        break;\n      }\n      case "pressed": {\n        validateSupportedRole(attr.name, kAriaPressedRoles, role);\n        validateSupportedValues(attr, [true, false, "mixed"]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        if (attr.op === "<truthy>") {\n          attr.op = "=";\n          attr.value = true;\n        }\n        break;\n      }\n      case "selected": {\n        validateSupportedRole(attr.name, kAriaSelectedRoles, role);\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      case "expanded": {\n        validateSupportedRole(attr.name, kAriaExpandedRoles, role);\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      case "level": {\n        validateSupportedRole(attr.name, kAriaLevelRoles, role);\n        if (typeof attr.value === "string")\n          attr.value = +attr.value;\n        if (attr.op !== "=" || typeof attr.value !== "number" || Number.isNaN(attr.value))\n          throw new Error(`"level" attribute must be compared to a number`);\n        break;\n      }\n      case "disabled": {\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      case "name": {\n        if (attr.op === "<truthy>")\n          throw new Error(`"name" attribute must have a value`);\n        if (typeof attr.value !== "string" && !(attr.value instanceof RegExp))\n          throw new Error(`"name" attribute must be a string or a regular expression`);\n        break;\n      }\n      case "include-hidden": {\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      default: {\n        throw new Error(`Unknown attribute "${attr.name}", must be one of ${kSupportedAttributes.map((a) => `"${a}"`).join(", ")}.`);\n      }\n    }\n  }\n}\nvar RoleEngine = {\n  queryAll(scope, selector) {\n    const parsed = parseAttributeSelector(selector, true);\n    const role = parsed.name.toLowerCase();\n    if (!role)\n      throw new Error(`Role must not be empty`);\n    validateAttributes(parsed.attributes, role);\n    const hiddenCache = /* @__PURE__ */ new Map();\n    const result = [];\n    const match = (element) => {\n      if (getAriaRole(element) !== role)\n        return;\n      let includeHidden = false;\n      let nameAttr;\n      for (const attr of parsed.attributes) {\n        if (attr.name === "include-hidden") {\n          includeHidden = attr.op === "<truthy>" || !!attr.value;\n          continue;\n        }\n        if (attr.name === "name") {\n          nameAttr = attr;\n          continue;\n        }\n        let actual;\n        switch (attr.name) {\n          case "selected":\n            actual = getAriaSelected(element);\n            break;\n          case "checked":\n            actual = getAriaChecked(element);\n            break;\n          case "pressed":\n            actual = getAriaPressed(element);\n            break;\n          case "expanded":\n            actual = getAriaExpanded(element);\n            break;\n          case "level":\n            actual = getAriaLevel(element);\n            break;\n          case "disabled":\n            actual = getAriaDisabled(element);\n            break;\n        }\n        if (!matchesAttributePart(actual, attr))\n          return;\n      }\n      if (!includeHidden) {\n        const isHidden = isElementHiddenForAria(element, hiddenCache);\n        if (isHidden)\n          return;\n      }\n      if (nameAttr !== void 0) {\n        const accessibleName = getElementAccessibleName(element, includeHidden, hiddenCache);\n        if (!matchesAttributePart(accessibleName, nameAttr))\n          return;\n      }\n      result.push(element);\n    };\n    const query = (root) => {\n      const shadows = [];\n      if (root.shadowRoot)\n        shadows.push(root.shadowRoot);\n      for (const element of root.querySelectorAll("*")) {\n        match(element);\n        if (element.shadowRoot)\n          shadows.push(element.shadowRoot);\n      }\n      shadows.forEach(query);\n    };\n    query(scope);\n    return result;\n  }\n};\n\n// packages/playwright-core/src/server/injected/layoutSelectorUtils.ts\nfunction boxRightOf(box1, box2, maxDistance) {\n  const distance = box1.left - box2.right;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box2.bottom - box1.bottom, 0) + Math.max(box1.top - box2.top, 0);\n}\nfunction boxLeftOf(box1, box2, maxDistance) {\n  const distance = box2.left - box1.right;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box2.bottom - box1.bottom, 0) + Math.max(box1.top - box2.top, 0);\n}\nfunction boxAbove(box1, box2, maxDistance) {\n  const distance = box2.top - box1.bottom;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box1.left - box2.left, 0) + Math.max(box2.right - box1.right, 0);\n}\nfunction boxBelow(box1, box2, maxDistance) {\n  const distance = box1.top - box2.bottom;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box1.left - box2.left, 0) + Math.max(box2.right - box1.right, 0);\n}\nfunction boxNear(box1, box2, maxDistance) {\n  const kThreshold = maxDistance === void 0 ? 50 : maxDistance;\n  let score = 0;\n  if (box1.left - box2.right >= 0)\n    score += box1.left - box2.right;\n  if (box2.left - box1.right >= 0)\n    score += box2.left - box1.right;\n  if (box2.top - box1.bottom >= 0)\n    score += box2.top - box1.bottom;\n  if (box1.top - box2.bottom >= 0)\n    score += box1.top - box2.bottom;\n  return score > kThreshold ? void 0 : score;\n}\nvar kLayoutSelectorNames = ["left-of", "right-of", "above", "below", "near"];\nfunction layoutSelectorScore(name, element, inner, maxDistance) {\n  const box = element.getBoundingClientRect();\n  const scorer = { "left-of": boxLeftOf, "right-of": boxRightOf, "above": boxAbove, "below": boxBelow, "near": boxNear }[name];\n  let bestScore;\n  for (const e of inner) {\n    if (e === element)\n      continue;\n    const score = scorer(box, e.getBoundingClientRect(), maxDistance);\n    if (score === void 0)\n      continue;\n    if (bestScore === void 0 || score < bestScore)\n      bestScore = score;\n  }\n  return bestScore;\n}\n\n// packages/playwright-core/src/server/injected/selectorEvaluator.ts\nvar SelectorEvaluatorImpl = class {\n  constructor(extraEngines) {\n    this._engines = /* @__PURE__ */ new Map();\n    this._cacheQueryCSS = /* @__PURE__ */ new Map();\n    this._cacheMatches = /* @__PURE__ */ new Map();\n    this._cacheQuery = /* @__PURE__ */ new Map();\n    this._cacheMatchesSimple = /* @__PURE__ */ new Map();\n    this._cacheMatchesParents = /* @__PURE__ */ new Map();\n    this._cacheCallMatches = /* @__PURE__ */ new Map();\n    this._cacheCallQuery = /* @__PURE__ */ new Map();\n    this._cacheQuerySimple = /* @__PURE__ */ new Map();\n    this._cacheText = /* @__PURE__ */ new Map();\n    this._retainCacheCounter = 0;\n    for (const [name, engine] of extraEngines)\n      this._engines.set(name, engine);\n    this._engines.set("not", notEngine);\n    this._engines.set("is", isEngine);\n    this._engines.set("where", isEngine);\n    this._engines.set("has", hasEngine);\n    this._engines.set("scope", scopeEngine);\n    this._engines.set("light", lightEngine);\n    this._engines.set("visible", visibleEngine);\n    this._engines.set("text", textEngine);\n    this._engines.set("text-is", textIsEngine);\n    this._engines.set("text-matches", textMatchesEngine);\n    this._engines.set("has-text", hasTextEngine);\n    this._engines.set("right-of", createLayoutEngine("right-of"));\n    this._engines.set("left-of", createLayoutEngine("left-of"));\n    this._engines.set("above", createLayoutEngine("above"));\n    this._engines.set("below", createLayoutEngine("below"));\n    this._engines.set("near", createLayoutEngine("near"));\n    this._engines.set("nth-match", nthMatchEngine);\n    const allNames = [...this._engines.keys()];\n    allNames.sort();\n    const parserNames = [...customCSSNames];\n    parserNames.sort();\n    if (allNames.join("|") !== parserNames.join("|"))\n      throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${allNames.join("|")} vs ${parserNames.join("|")}`);\n  }\n  begin() {\n    ++this._retainCacheCounter;\n  }\n  end() {\n    --this._retainCacheCounter;\n    if (!this._retainCacheCounter) {\n      this._cacheQueryCSS.clear();\n      this._cacheMatches.clear();\n      this._cacheQuery.clear();\n      this._cacheMatchesSimple.clear();\n      this._cacheMatchesParents.clear();\n      this._cacheCallMatches.clear();\n      this._cacheCallQuery.clear();\n      this._cacheQuerySimple.clear();\n      this._cacheText.clear();\n    }\n  }\n  _cached(cache, main, rest, cb) {\n    if (!cache.has(main))\n      cache.set(main, []);\n    const entries = cache.get(main);\n    const entry = entries.find((e) => rest.every((value, index) => e.rest[index] === value));\n    if (entry)\n      return entry.result;\n    const result = cb();\n    entries.push({ rest, result });\n    return result;\n  }\n  _checkSelector(s) {\n    const wellFormed = typeof s === "object" && s && (Array.isArray(s) || "simples" in s && s.simples.length);\n    if (!wellFormed)\n      throw new Error(`Malformed selector "${s}"`);\n    return s;\n  }\n  matches(element, s, context) {\n    const selector = this._checkSelector(s);\n    this.begin();\n    try {\n      return this._cached(this._cacheMatches, element, [selector, context.scope, context.pierceShadow], () => {\n        if (Array.isArray(selector))\n          return this._matchesEngine(isEngine, element, selector, context);\n        if (!this._matchesSimple(element, selector.simples[selector.simples.length - 1].selector, context))\n          return false;\n        return this._matchesParents(element, selector, selector.simples.length - 2, context);\n      });\n    } finally {\n      this.end();\n    }\n  }\n  query(context, s) {\n    const selector = this._checkSelector(s);\n    this.begin();\n    try {\n      return this._cached(this._cacheQuery, selector, [context.scope, context.pierceShadow], () => {\n        if (Array.isArray(selector))\n          return this._queryEngine(isEngine, context, selector);\n        const previousScoreMap = this._scoreMap;\n        this._scoreMap = /* @__PURE__ */ new Map();\n        let elements = this._querySimple(context, selector.simples[selector.simples.length - 1].selector);\n        elements = elements.filter((element) => this._matchesParents(element, selector, selector.simples.length - 2, context));\n        if (this._scoreMap.size) {\n          elements.sort((a, b) => {\n            const aScore = this._scoreMap.get(a);\n            const bScore = this._scoreMap.get(b);\n            if (aScore === bScore)\n              return 0;\n            if (aScore === void 0)\n              return 1;\n            if (bScore === void 0)\n              return -1;\n            return aScore - bScore;\n          });\n        }\n        this._scoreMap = previousScoreMap;\n        return elements;\n      });\n    } finally {\n      this.end();\n    }\n  }\n  _markScore(element, score) {\n    if (this._scoreMap)\n      this._scoreMap.set(element, score);\n  }\n  _matchesSimple(element, simple, context) {\n    return this._cached(this._cacheMatchesSimple, element, [simple, context.scope, context.pierceShadow], () => {\n      const isPossiblyScopeClause = simple.functions.some((f) => f.name === "scope" || f.name === "is");\n      if (!isPossiblyScopeClause && element === context.scope)\n        return false;\n      if (simple.css && !this._matchesCSS(element, simple.css))\n        return false;\n      for (const func of simple.functions) {\n        if (!this._matchesEngine(this._getEngine(func.name), element, func.args, context))\n          return false;\n      }\n      return true;\n    });\n  }\n  _querySimple(context, simple) {\n    if (!simple.functions.length)\n      return this._queryCSS(context, simple.css || "*");\n    return this._cached(this._cacheQuerySimple, simple, [context.scope, context.pierceShadow], () => {\n      let css2 = simple.css;\n      const funcs = simple.functions;\n      if (css2 === "*" && funcs.length)\n        css2 = void 0;\n      let elements;\n      let firstIndex = -1;\n      if (css2 !== void 0) {\n        elements = this._queryCSS(context, css2);\n        const hasScopeClause = funcs.some((f) => f.name === "scope");\n        if (hasScopeClause && context.scope.nodeType === 1)\n          elements.unshift(context.scope);\n      } else {\n        firstIndex = funcs.findIndex((func) => this._getEngine(func.name).query !== void 0);\n        if (firstIndex === -1)\n          firstIndex = 0;\n        elements = this._queryEngine(this._getEngine(funcs[firstIndex].name), context, funcs[firstIndex].args);\n      }\n      for (let i = 0; i < funcs.length; i++) {\n        if (i === firstIndex)\n          continue;\n        const engine = this._getEngine(funcs[i].name);\n        if (engine.matches !== void 0)\n          elements = elements.filter((e) => this._matchesEngine(engine, e, funcs[i].args, context));\n      }\n      for (let i = 0; i < funcs.length; i++) {\n        if (i === firstIndex)\n          continue;\n        const engine = this._getEngine(funcs[i].name);\n        if (engine.matches === void 0)\n          elements = elements.filter((e) => this._matchesEngine(engine, e, funcs[i].args, context));\n      }\n      return elements;\n    });\n  }\n  _matchesParents(element, complex, index, context) {\n    if (index < 0)\n      return true;\n    return this._cached(this._cacheMatchesParents, element, [complex, index, context.scope, context.pierceShadow], () => {\n      const { selector: simple, combinator } = complex.simples[index];\n      if (combinator === ">") {\n        const parent = parentElementOrShadowHostInContext(element, context);\n        if (!parent || !this._matchesSimple(parent, simple, context))\n          return false;\n        return this._matchesParents(parent, complex, index - 1, context);\n      }\n      if (combinator === "+") {\n        const previousSibling = previousSiblingInContext(element, context);\n        if (!previousSibling || !this._matchesSimple(previousSibling, simple, context))\n          return false;\n        return this._matchesParents(previousSibling, complex, index - 1, context);\n      }\n      if (combinator === "") {\n        let parent = parentElementOrShadowHostInContext(element, context);\n        while (parent) {\n          if (this._matchesSimple(parent, simple, context)) {\n            if (this._matchesParents(parent, complex, index - 1, context))\n              return true;\n            if (complex.simples[index - 1].combinator === "")\n              break;\n          }\n          parent = parentElementOrShadowHostInContext(parent, context);\n        }\n        return false;\n      }\n      if (combinator === "~") {\n        let previousSibling = previousSiblingInContext(element, context);\n        while (previousSibling) {\n          if (this._matchesSimple(previousSibling, simple, context)) {\n            if (this._matchesParents(previousSibling, complex, index - 1, context))\n              return true;\n            if (complex.simples[index - 1].combinator === "~")\n              break;\n          }\n          previousSibling = previousSiblingInContext(previousSibling, context);\n        }\n        return false;\n      }\n      if (combinator === ">=") {\n        let parent = element;\n        while (parent) {\n          if (this._matchesSimple(parent, simple, context)) {\n            if (this._matchesParents(parent, complex, index - 1, context))\n              return true;\n            if (complex.simples[index - 1].combinator === "")\n              break;\n          }\n          parent = parentElementOrShadowHostInContext(parent, context);\n        }\n        return false;\n      }\n      throw new Error(`Unsupported combinator "${combinator}"`);\n    });\n  }\n  _matchesEngine(engine, element, args, context) {\n    if (engine.matches)\n      return this._callMatches(engine, element, args, context);\n    if (engine.query)\n      return this._callQuery(engine, args, context).includes(element);\n    throw new Error(`Selector engine should implement "matches" or "query"`);\n  }\n  _queryEngine(engine, context, args) {\n    if (engine.query)\n      return this._callQuery(engine, args, context);\n    if (engine.matches)\n      return this._queryCSS(context, "*").filter((element) => this._callMatches(engine, element, args, context));\n    throw new Error(`Selector engine should implement "matches" or "query"`);\n  }\n  _callMatches(engine, element, args, context) {\n    return this._cached(this._cacheCallMatches, element, [engine, context.scope, context.pierceShadow, ...args], () => {\n      return engine.matches(element, args, context, this);\n    });\n  }\n  _callQuery(engine, args, context) {\n    return this._cached(this._cacheCallQuery, engine, [context.scope, context.pierceShadow, ...args], () => {\n      return engine.query(context, args, this);\n    });\n  }\n  _matchesCSS(element, css2) {\n    return element.matches(css2);\n  }\n  _queryCSS(context, css2) {\n    return this._cached(this._cacheQueryCSS, css2, [context.scope, context.pierceShadow], () => {\n      let result = [];\n      function query(root) {\n        result = result.concat([...root.querySelectorAll(css2)]);\n        if (!context.pierceShadow)\n          return;\n        if (root.shadowRoot)\n          query(root.shadowRoot);\n        for (const element of root.querySelectorAll("*")) {\n          if (element.shadowRoot)\n            query(element.shadowRoot);\n        }\n      }\n      query(context.scope);\n      return result;\n    });\n  }\n  _getEngine(name) {\n    const engine = this._engines.get(name);\n    if (!engine)\n      throw new Error(`Unknown selector engine "${name}"`);\n    return engine;\n  }\n};\nvar isEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"is" engine expects non-empty selector list`);\n    return args.some((selector) => evaluator.matches(element, selector, context));\n  },\n  query(context, args, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"is" engine expects non-empty selector list`);\n    let elements = [];\n    for (const arg of args)\n      elements = elements.concat(evaluator.query(context, arg));\n    return args.length === 1 ? elements : sortInDOMOrder(elements);\n  }\n};\nvar hasEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"has" engine expects non-empty selector list`);\n    return evaluator.query({ ...context, scope: element }, args).length > 0;\n  }\n};\nvar scopeEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 0)\n      throw new Error(`"scope" engine expects no arguments`);\n    if (context.scope.nodeType === 9)\n      return element === context.scope.documentElement;\n    return element === context.scope;\n  },\n  query(context, args, evaluator) {\n    if (args.length !== 0)\n      throw new Error(`"scope" engine expects no arguments`);\n    if (context.scope.nodeType === 9) {\n      const root = context.scope.documentElement;\n      return root ? [root] : [];\n    }\n    if (context.scope.nodeType === 1)\n      return [context.scope];\n    return [];\n  }\n};\nvar notEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"not" engine expects non-empty selector list`);\n    return !evaluator.matches(element, args, context);\n  }\n};\nvar lightEngine = {\n  query(context, args, evaluator) {\n    return evaluator.query({ ...context, pierceShadow: false }, args);\n  },\n  matches(element, args, context, evaluator) {\n    return evaluator.matches(element, args, { ...context, pierceShadow: false });\n  }\n};\nvar visibleEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length)\n      throw new Error(`"visible" engine expects no arguments`);\n    return isElementVisible(element);\n  }\n};\nvar textEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 1 || typeof args[0] !== "string")\n      throw new Error(`"text" engine expects a single string`);\n    const matcher = createLaxTextMatcher(args[0]);\n    return elementMatchesText(evaluator._cacheText, element, matcher) === "self";\n  }\n};\nvar textIsEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 1 || typeof args[0] !== "string")\n      throw new Error(`"text-is" engine expects a single string`);\n    const matcher = createStrictTextMatcher(args[0]);\n    return elementMatchesText(evaluator._cacheText, element, matcher) !== "none";\n  }\n};\nvar textMatchesEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0 || typeof args[0] !== "string" || args.length > 2 || args.length === 2 && typeof args[1] !== "string")\n      throw new Error(`"text-matches" engine expects a regexp body and optional regexp flags`);\n    const matcher = createRegexTextMatcher(args[0], args.length === 2 ? args[1] : void 0);\n    return elementMatchesText(evaluator._cacheText, element, matcher) === "self";\n  }\n};\nvar hasTextEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 1 || typeof args[0] !== "string")\n      throw new Error(`"has-text" engine expects a single string`);\n    if (shouldSkipForTextMatching(element))\n      return false;\n    const matcher = createLaxTextMatcher(args[0]);\n    return matcher(elementText(evaluator._cacheText, element));\n  }\n};\nfunction createLayoutEngine(name) {\n  return {\n    matches(element, args, context, evaluator) {\n      const maxDistance = args.length && typeof args[args.length - 1] === "number" ? args[args.length - 1] : void 0;\n      const queryArgs = maxDistance === void 0 ? args : args.slice(0, args.length - 1);\n      if (args.length < 1 + (maxDistance === void 0 ? 0 : 1))\n        throw new Error(`"${name}" engine expects a selector list and optional maximum distance in pixels`);\n      const inner = evaluator.query(context, queryArgs);\n      const score = layoutSelectorScore(name, element, inner, maxDistance);\n      if (score === void 0)\n        return false;\n      evaluator._markScore(element, score);\n      return true;\n    }\n  };\n}\nvar nthMatchEngine = {\n  query(context, args, evaluator) {\n    let index = args[args.length - 1];\n    if (args.length < 2)\n      throw new Error(`"nth-match" engine expects non-empty selector list and an index argument`);\n    if (typeof index !== "number" || index < 1)\n      throw new Error(`"nth-match" engine expects a one-based index as the last argument`);\n    const elements = isEngine.query(context, args.slice(0, args.length - 1), evaluator);\n    index--;\n    return index < elements.length ? [elements[index]] : [];\n  }\n};\nfunction parentElementOrShadowHostInContext(element, context) {\n  if (element === context.scope)\n    return;\n  if (!context.pierceShadow)\n    return element.parentElement || void 0;\n  return parentElementOrShadowHost(element);\n}\nfunction previousSiblingInContext(element, context) {\n  if (element === context.scope)\n    return;\n  return element.previousElementSibling || void 0;\n}\nfunction sortInDOMOrder(elements) {\n  const elementToEntry = /* @__PURE__ */ new Map();\n  const roots = [];\n  const result = [];\n  function append(element) {\n    let entry = elementToEntry.get(element);\n    if (entry)\n      return entry;\n    const parent = parentElementOrShadowHost(element);\n    if (parent) {\n      const parentEntry = append(parent);\n      parentEntry.children.push(element);\n    } else {\n      roots.push(element);\n    }\n    entry = { children: [], taken: false };\n    elementToEntry.set(element, entry);\n    return entry;\n  }\n  elements.forEach((e) => append(e).taken = true);\n  function visit(element) {\n    const entry = elementToEntry.get(element);\n    if (entry.taken)\n      result.push(element);\n    if (entry.children.length > 1) {\n      const set = new Set(entry.children);\n      entry.children = [];\n      let child = element.firstElementChild;\n      while (child && entry.children.length < set.size) {\n        if (set.has(child))\n          entry.children.push(child);\n        child = child.nextElementSibling;\n      }\n      child = element.shadowRoot ? element.shadowRoot.firstElementChild : null;\n      while (child && entry.children.length < set.size) {\n        if (set.has(child))\n          entry.children.push(child);\n        child = child.nextElementSibling;\n      }\n    }\n    entry.children.forEach(visit);\n  }\n  roots.forEach(visit);\n  return result;\n}\n\n// packages/playwright-core/src/server/injected/selectorGenerator.ts\nvar cacheAllowText = /* @__PURE__ */ new Map();\nvar cacheDisallowText = /* @__PURE__ */ new Map();\nvar kNthScore = 1e3;\nfunction generateSelector(injectedScript, targetElement, strict) {\n  injectedScript._evaluator.begin();\n  try {\n    targetElement = targetElement.closest("button,select,input,[role=button],[role=checkbox],[role=radio]") || targetElement;\n    const targetTokens = generateSelectorFor(injectedScript, targetElement, strict);\n    const bestTokens = targetTokens || cssFallback(injectedScript, targetElement, strict);\n    const selector = joinTokens(bestTokens);\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument)\n    };\n  } finally {\n    cacheAllowText.clear();\n    cacheDisallowText.clear();\n    injectedScript._evaluator.end();\n  }\n}\nfunction filterRegexTokens(textCandidates) {\n  return textCandidates.filter((c) => c[0].selector[0] !== "/");\n}\nfunction generateSelectorFor(injectedScript, targetElement, strict) {\n  if (targetElement.ownerDocument.documentElement === targetElement)\n    return [{ engine: "css", selector: "html", score: 1 }];\n  const calculate = (element, allowText) => {\n    const allowNthMatch = element === targetElement;\n    let textCandidates = allowText ? buildTextCandidates(injectedScript, element, element === targetElement).map((token) => [token]) : [];\n    if (element !== targetElement) {\n      textCandidates = filterRegexTokens(textCandidates);\n    }\n    const noTextCandidates = buildCandidates(injectedScript, element).map((token) => [token]);\n    let result = chooseFirstSelector(injectedScript, targetElement.ownerDocument, element, [...textCandidates, ...noTextCandidates], allowNthMatch, strict);\n    textCandidates = filterRegexTokens(textCandidates);\n    const checkWithText = (textCandidatesToUse) => {\n      const allowParentText = allowText && !textCandidatesToUse.length;\n      const candidates = [...textCandidatesToUse, ...noTextCandidates].filter((c) => {\n        if (!result)\n          return true;\n        return combineScores(c) < combineScores(result);\n      });\n      let bestPossibleInParent = candidates[0];\n      if (!bestPossibleInParent)\n        return;\n      for (let parent = parentElementOrShadowHost2(element); parent; parent = parentElementOrShadowHost2(parent)) {\n        const parentTokens = calculateCached(parent, allowParentText);\n        if (!parentTokens)\n          continue;\n        if (result && combineScores([...parentTokens, ...bestPossibleInParent]) >= combineScores(result))\n          continue;\n        bestPossibleInParent = chooseFirstSelector(injectedScript, parent, element, candidates, allowNthMatch, strict);\n        if (!bestPossibleInParent)\n          return;\n        const combined = [...parentTokens, ...bestPossibleInParent];\n        if (!result || combineScores(combined) < combineScores(result))\n          result = combined;\n      }\n    };\n    checkWithText(textCandidates);\n    if (element === targetElement && textCandidates.length)\n      checkWithText([]);\n    return result;\n  };\n  const calculateCached = (element, allowText) => {\n    const cache = allowText ? cacheAllowText : cacheDisallowText;\n    let value = cache.get(element);\n    if (value === void 0) {\n      value = calculate(element, allowText);\n      cache.set(element, value);\n    }\n    return value;\n  };\n  return calculateCached(targetElement, true);\n}\nfunction buildCandidates(injectedScript, element) {\n  const candidates = [];\n  for (const attribute of ["data-testid", "data-test-id", "data-test"]) {\n    if (element.getAttribute(attribute))\n      candidates.push({ engine: "css", selector: `[${attribute}=${quoteAttributeValue(element.getAttribute(attribute))}]`, score: 1 });\n  }\n  if (element.nodeName === "INPUT") {\n    const input = element;\n    if (input.placeholder)\n      candidates.push({ engine: "css", selector: `[placeholder=${quoteAttributeValue(input.placeholder)}]`, score: 10 });\n  }\n  if (element.getAttribute("aria-label"))\n    candidates.push({ engine: "css", selector: `[aria-label=${quoteAttributeValue(element.getAttribute("aria-label"))}]`, score: 10 });\n  if (element.getAttribute("alt") && ["APPLET", "AREA", "IMG", "INPUT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[alt=${quoteAttributeValue(element.getAttribute("alt"))}]`, score: 10 });\n  if (element.getAttribute("role"))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[role=${quoteAttributeValue(element.getAttribute("role"))}]`, score: 50 });\n  if (element.getAttribute("name") && ["BUTTON", "FORM", "FIELDSET", "FRAME", "IFRAME", "INPUT", "KEYGEN", "OBJECT", "OUTPUT", "SELECT", "TEXTAREA", "MAP", "META", "PARAM"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[name=${quoteAttributeValue(element.getAttribute("name"))}]`, score: 50 });\n  if (["INPUT", "TEXTAREA"].includes(element.nodeName) && element.getAttribute("type") !== "hidden") {\n    if (element.getAttribute("type"))\n      candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[type=${quoteAttributeValue(element.getAttribute("type"))}]`, score: 50 });\n  }\n  if (["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 50 });\n  const idAttr = element.getAttribute("id");\n  if (idAttr && !isGuidLike(idAttr))\n    candidates.push({ engine: "css", selector: makeSelectorForId(idAttr), score: 100 });\n  candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 200 });\n  return candidates;\n}\nfunction buildTextCandidates(injectedScript, element, allowHasText) {\n  if (element.nodeName === "SELECT")\n    return [];\n  const text = elementText(injectedScript._evaluator._cacheText, element).full.trim().replace(/\\s+/g, " ").substring(0, 80);\n  if (!text)\n    return [];\n  const candidates = [];\n  let escaped = text;\n  if (text.includes(\'"\') || text.includes(">>") || text[0] === "/")\n    escaped = `/.*${escapeForRegex(text)}.*/`;\n  candidates.push({ engine: "text", selector: escaped, score: 10 });\n  if (allowHasText && escaped === text) {\n    let prefix = element.nodeName.toLowerCase();\n    if (element.hasAttribute("role"))\n      prefix += `[role=${quoteAttributeValue(element.getAttribute("role"))}]`;\n    candidates.push({ engine: "css", selector: `${prefix}:has-text("${text}")`, score: 30 });\n  }\n  return candidates;\n}\nfunction parentElementOrShadowHost2(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return null;\n  if (element.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE && element.parentNode.host)\n    return element.parentNode.host;\n  return null;\n}\nfunction makeSelectorForId(id) {\n  return /^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(id) ? "#" + id : `[id="${cssEscape(id)}"]`;\n}\nfunction cssFallback(injectedScript, targetElement, strict) {\n  const kFallbackScore = 1e7;\n  const root = targetElement.ownerDocument;\n  const tokens = [];\n  function uniqueCSSSelector(prefix) {\n    const path = tokens.slice();\n    if (prefix)\n      path.unshift(prefix);\n    const selector = path.join(" > ");\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const node = injectedScript.querySelector(parsedSelector, targetElement.ownerDocument, false);\n    return node === targetElement ? selector : void 0;\n  }\n  function makeStrict(selector) {\n    const token = { engine: "css", selector, score: kFallbackScore };\n    if (!strict)\n      return [token];\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const elements = injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument);\n    if (elements.length === 1)\n      return [token];\n    const nth = { engine: "nth", selector: String(elements.indexOf(targetElement)), score: kNthScore };\n    return [token, nth];\n  }\n  for (let element = targetElement; element && element !== root; element = parentElementOrShadowHost2(element)) {\n    const nodeName = element.nodeName.toLowerCase();\n    let bestTokenForLevel = "";\n    if (element.id) {\n      const token = makeSelectorForId(element.id);\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      bestTokenForLevel = token;\n    }\n    const parent = element.parentNode;\n    const classes = [...element.classList];\n    for (let i = 0; i < classes.length; ++i) {\n      const token = "." + cssEscape(classes.slice(0, i + 1).join("."));\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel && parent) {\n        const sameClassSiblings = parent.querySelectorAll(token);\n        if (sameClassSiblings.length === 1)\n          bestTokenForLevel = token;\n      }\n    }\n    if (parent) {\n      const siblings = [...parent.children];\n      const sameTagSiblings = siblings.filter((sibling) => sibling.nodeName.toLowerCase() === nodeName);\n      const token = sameTagSiblings.indexOf(element) === 0 ? cssEscape(nodeName) : `${cssEscape(nodeName)}:nth-child(${1 + siblings.indexOf(element)})`;\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel)\n        bestTokenForLevel = token;\n    } else if (!bestTokenForLevel) {\n      bestTokenForLevel = nodeName;\n    }\n    tokens.unshift(bestTokenForLevel);\n  }\n  return makeStrict(uniqueCSSSelector());\n}\nfunction escapeForRegex(text) {\n  return text.replace(/[.*+?^>${}()|[\\]\\\\]/g, "\\\\$&");\n}\nfunction quoteAttributeValue(text) {\n  return `"${cssEscape(text).replace(/\\\\ /g, " ")}"`;\n}\nfunction joinTokens(tokens) {\n  const parts = [];\n  let lastEngine = "";\n  for (const { engine, selector } of tokens) {\n    if (parts.length && (lastEngine !== "css" || engine !== "css" || selector.startsWith(":nth-match(")))\n      parts.push(">>");\n    lastEngine = engine;\n    if (engine === "css")\n      parts.push(selector);\n    else\n      parts.push(`${engine}=${selector}`);\n  }\n  return parts.join(" ");\n}\nfunction combineScores(tokens) {\n  let score = 0;\n  for (let i = 0; i < tokens.length; i++)\n    score += tokens[i].score * (tokens.length - i);\n  return score;\n}\nfunction chooseFirstSelector(injectedScript, scope, targetElement, selectors, allowNthMatch, strict) {\n  const joined = selectors.map((tokens) => ({ tokens, score: combineScores(tokens) }));\n  joined.sort((a, b) => a.score - b.score);\n  let bestWithIndex = null;\n  for (const { tokens } of joined) {\n    const parsedSelector = injectedScript.parseSelector(joinTokens(tokens));\n    const result = injectedScript.querySelectorAll(parsedSelector, scope);\n    const isStrictEnough = !strict || result.length === 1;\n    const index = result.indexOf(targetElement);\n    if (index === 0 && isStrictEnough) {\n      return tokens;\n    }\n    if (!allowNthMatch || bestWithIndex || index === -1 || result.length > 5)\n      continue;\n    const nth = { engine: "nth", selector: String(index), score: kNthScore };\n    bestWithIndex = [...tokens, nth];\n  }\n  return bestWithIndex;\n}\nfunction isGuidLike(id) {\n  let lastCharacterType;\n  let transitionCount = 0;\n  for (let i = 0; i < id.length; ++i) {\n    const c = id[i];\n    let characterType;\n    if (c === "-" || c === "_")\n      continue;\n    if (c >= "a" && c <= "z")\n      characterType = "lower";\n    else if (c >= "A" && c <= "Z")\n      characterType = "upper";\n    else if (c >= "0" && c <= "9")\n      characterType = "digit";\n    else\n      characterType = "other";\n    if (characterType === "lower" && lastCharacterType === "upper") {\n      lastCharacterType = characterType;\n      continue;\n    }\n    if (lastCharacterType && lastCharacterType !== characterType)\n      ++transitionCount;\n    lastCharacterType = characterType;\n  }\n  return transitionCount >= id.length / 4;\n}\nfunction cssEscape(s) {\n  let result = "";\n  for (let i = 0; i < s.length; i++)\n    result += cssEscapeOne(s, i);\n  return result;\n}\nfunction cssEscapeOne(s, i) {\n  const c = s.charCodeAt(i);\n  if (c === 0)\n    return "\\uFFFD";\n  if (c >= 1 && c <= 31 || c >= 48 && c <= 57 && (i === 0 || i === 1 && s.charCodeAt(0) === 45))\n    return "\\\\" + c.toString(16) + " ";\n  if (i === 0 && c === 45 && s.length === 1)\n    return "\\\\" + s.charAt(i);\n  if (c >= 128 || c === 45 || c === 95 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122)\n    return s.charAt(i);\n  return "\\\\" + s.charAt(i);\n}\n\n// packages/playwright-core/src/server/injected/highlight.ts\nvar Highlight = class {\n  constructor(injectedScript) {\n    this._highlightEntries = [];\n    this._injectedScript = injectedScript;\n    this._isUnderTest = injectedScript.isUnderTest;\n    this._glassPaneElement = document.createElement("x-pw-glass");\n    this._glassPaneElement.style.position = "fixed";\n    this._glassPaneElement.style.top = "0";\n    this._glassPaneElement.style.right = "0";\n    this._glassPaneElement.style.bottom = "0";\n    this._glassPaneElement.style.left = "0";\n    this._glassPaneElement.style.zIndex = "2147483647";\n    this._glassPaneElement.style.pointerEvents = "none";\n    this._glassPaneElement.style.display = "flex";\n    this._actionPointElement = document.createElement("x-pw-action-point");\n    this._actionPointElement.setAttribute("hidden", "true");\n    this._glassPaneShadow = this._glassPaneElement.attachShadow({ mode: "closed" });\n    this._glassPaneShadow.appendChild(this._actionPointElement);\n    const styleElement = document.createElement("style");\n    styleElement.textContent = `\n        x-pw-tooltip {\n          align-items: center;\n          backdrop-filter: blur(5px);\n          background-color: rgba(0, 0, 0, 0.7);\n          border-radius: 2px;\n          box-shadow: rgba(0, 0, 0, 0.1) 0px 3.6px 3.7px,\n                      rgba(0, 0, 0, 0.15) 0px 12.1px 12.3px,\n                      rgba(0, 0, 0, 0.1) 0px -2px 4px,\n                      rgba(0, 0, 0, 0.15) 0px -12.1px 24px,\n                      rgba(0, 0, 0, 0.25) 0px 54px 55px;\n          color: rgb(204, 204, 204);\n          display: none;\n          font-family: \'Dank Mono\', \'Operator Mono\', Inconsolata, \'Fira Mono\',\n                      \'SF Mono\', Monaco, \'Droid Sans Mono\', \'Source Code Pro\', monospace;\n          font-size: 12.8px;\n          font-weight: normal;\n          left: 0;\n          line-height: 1.5;\n          max-width: 600px;\n          padding: 3.2px 5.12px 3.2px;\n          position: absolute;\n          top: 0;\n        }\n        x-pw-action-point {\n          position: absolute;\n          width: 20px;\n          height: 20px;\n          background: red;\n          border-radius: 10px;\n          pointer-events: none;\n          margin: -10px 0 0 -10px;\n          z-index: 2;\n        }\n        *[hidden] {\n          display: none !important;\n        }\n    `;\n    this._glassPaneShadow.appendChild(styleElement);\n  }\n  install() {\n    document.documentElement.appendChild(this._glassPaneElement);\n  }\n  runHighlightOnRaf(selector) {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this.updateHighlight(this._injectedScript.querySelectorAll(selector, document.documentElement), stringifySelector(selector), false);\n    this._rafRequest = requestAnimationFrame(() => this.runHighlightOnRaf(selector));\n  }\n  uninstall() {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this._glassPaneElement.remove();\n  }\n  isInstalled() {\n    return this._glassPaneElement.parentElement === document.documentElement && !this._glassPaneElement.nextElementSibling;\n  }\n  showActionPoint(x, y) {\n    this._actionPointElement.style.top = y + "px";\n    this._actionPointElement.style.left = x + "px";\n    this._actionPointElement.hidden = false;\n    if (this._isUnderTest)\n      console.error("Action point for test: " + JSON.stringify({ x, y }));\n  }\n  hideActionPoint() {\n    this._actionPointElement.hidden = true;\n  }\n  clearHighlight() {\n    var _a, _b;\n    for (const entry of this._highlightEntries) {\n      (_a = entry.highlightElement) == null ? void 0 : _a.remove();\n      (_b = entry.tooltipElement) == null ? void 0 : _b.remove();\n    }\n    this._highlightEntries = [];\n  }\n  updateHighlight(elements, selector, isRecording) {\n    let color;\n    if (isRecording)\n      color = "#dc6f6f7f";\n    else\n      color = elements.length > 1 ? "#f6b26b7f" : "#6fa8dc7f";\n    this._innerUpdateHighlight(elements, { color, tooltipText: selector });\n  }\n  maskElements(elements) {\n    this._innerUpdateHighlight(elements, { color: "#F0F" });\n  }\n  _innerUpdateHighlight(elements, options) {\n    if (this._highlightIsUpToDate(elements))\n      return;\n    this.clearHighlight();\n    for (let i = 0; i < elements.length; ++i) {\n      const highlightElement = this._createHighlightElement();\n      this._glassPaneShadow.appendChild(highlightElement);\n      let tooltipElement;\n      if (options.tooltipText) {\n        tooltipElement = document.createElement("x-pw-tooltip");\n        this._glassPaneShadow.appendChild(tooltipElement);\n        const suffix = elements.length > 1 ? ` [${i + 1} of ${elements.length}]` : "";\n        tooltipElement.textContent = options.tooltipText + suffix;\n        tooltipElement.style.top = "0";\n        tooltipElement.style.left = "0";\n        tooltipElement.style.display = "flex";\n        if (this._isUnderTest)\n          console.error("Highlight text for test: " + JSON.stringify(tooltipElement.textContent));\n      }\n      this._highlightEntries.push({ targetElement: elements[i], tooltipElement, highlightElement });\n    }\n    for (const entry of this._highlightEntries) {\n      entry.box = entry.targetElement.getBoundingClientRect();\n      if (!entry.tooltipElement)\n        continue;\n      const tooltipWidth = entry.tooltipElement.offsetWidth;\n      const tooltipHeight = entry.tooltipElement.offsetHeight;\n      const totalWidth = this._glassPaneElement.offsetWidth;\n      const totalHeight = this._glassPaneElement.offsetHeight;\n      let anchorLeft = entry.box.left;\n      if (anchorLeft + tooltipWidth > totalWidth - 5)\n        anchorLeft = totalWidth - tooltipWidth - 5;\n      let anchorTop = entry.box.bottom + 5;\n      if (anchorTop + tooltipHeight > totalHeight - 5) {\n        if (entry.box.top > tooltipHeight + 5) {\n          anchorTop = entry.box.top - tooltipHeight - 5;\n        } else {\n          anchorTop = totalHeight - 5 - tooltipHeight;\n        }\n      }\n      entry.tooltipTop = anchorTop;\n      entry.tooltipLeft = anchorLeft;\n    }\n    for (const entry of this._highlightEntries) {\n      if (entry.tooltipElement) {\n        entry.tooltipElement.style.top = entry.tooltipTop + "px";\n        entry.tooltipElement.style.left = entry.tooltipLeft + "px";\n      }\n      const box = entry.box;\n      entry.highlightElement.style.backgroundColor = options.color;\n      entry.highlightElement.style.left = box.x + "px";\n      entry.highlightElement.style.top = box.y + "px";\n      entry.highlightElement.style.width = box.width + "px";\n      entry.highlightElement.style.height = box.height + "px";\n      entry.highlightElement.style.display = "block";\n      if (this._isUnderTest)\n        console.error("Highlight box for test: " + JSON.stringify({ x: box.x, y: box.y, width: box.width, height: box.height }));\n    }\n  }\n  _highlightIsUpToDate(elements) {\n    if (elements.length !== this._highlightEntries.length)\n      return false;\n    for (let i = 0; i < this._highlightEntries.length; ++i) {\n      if (elements[i] !== this._highlightEntries[i].targetElement)\n        return false;\n      const oldBox = this._highlightEntries[i].box;\n      if (!oldBox)\n        return false;\n      const box = elements[i].getBoundingClientRect();\n      if (box.top !== oldBox.top || box.right !== oldBox.right || box.bottom !== oldBox.bottom || box.left !== oldBox.left)\n        return false;\n    }\n    return true;\n  }\n  _createHighlightElement() {\n    const highlightElement = document.createElement("x-pw-highlight");\n    highlightElement.style.position = "absolute";\n    highlightElement.style.top = "0";\n    highlightElement.style.left = "0";\n    highlightElement.style.width = "0";\n    highlightElement.style.height = "0";\n    highlightElement.style.boxSizing = "border-box";\n    return highlightElement;\n  }\n};\n\n// packages/playwright-core/src/server/injected/injectedScript.ts\nvar InjectedScript = class {\n  constructor(isUnderTest, stableRafCount, browserName, customEngines) {\n    this.onGlobalListenersRemoved = /* @__PURE__ */ new Set();\n    this.isUnderTest = isUnderTest;\n    this._evaluator = new SelectorEvaluatorImpl(/* @__PURE__ */ new Map());\n    this._engines = /* @__PURE__ */ new Map();\n    this._engines.set("xpath", XPathEngine);\n    this._engines.set("xpath:light", XPathEngine);\n    this._engines.set("_react", ReactEngine);\n    this._engines.set("_vue", VueEngine);\n    this._engines.set("role", RoleEngine);\n    this._engines.set("text", this._createTextEngine(true));\n    this._engines.set("text:light", this._createTextEngine(false));\n    this._engines.set("id", this._createAttributeEngine("id", true));\n    this._engines.set("id:light", this._createAttributeEngine("id", false));\n    this._engines.set("data-testid", this._createAttributeEngine("data-testid", true));\n    this._engines.set("data-testid:light", this._createAttributeEngine("data-testid", false));\n    this._engines.set("data-test-id", this._createAttributeEngine("data-test-id", true));\n    this._engines.set("data-test-id:light", this._createAttributeEngine("data-test-id", false));\n    this._engines.set("data-test", this._createAttributeEngine("data-test", true));\n    this._engines.set("data-test:light", this._createAttributeEngine("data-test", false));\n    this._engines.set("css", this._createCSSEngine());\n    this._engines.set("nth", { queryAll: () => [] });\n    this._engines.set("visible", this._createVisibleEngine());\n    this._engines.set("control", this._createControlEngine());\n    this._engines.set("has", this._createHasEngine());\n    for (const { name, engine } of customEngines)\n      this._engines.set(name, engine);\n    this._stableRafCount = stableRafCount;\n    this._browserName = browserName;\n    this._setupGlobalListenersRemovalDetection();\n    this._setupHitTargetInterceptors();\n    if (isUnderTest)\n      window.__injectedScript = this;\n  }\n  eval(expression) {\n    return globalThis.eval(expression);\n  }\n  parseSelector(selector) {\n    const result = parseSelector(selector);\n    for (const name of allEngineNames(result)) {\n      if (!this._engines.has(name))\n        throw this.createStacklessError(`Unknown engine "${name}" while parsing selector ${selector}`);\n    }\n    return result;\n  }\n  generateSelector(targetElement) {\n    return generateSelector(this, targetElement, true).selector;\n  }\n  querySelector(selector, root, strict) {\n    const result = this.querySelectorAll(selector, root);\n    if (strict && result.length > 1)\n      throw this.strictModeViolationError(selector, result);\n    return result[0];\n  }\n  _queryNth(elements, part) {\n    const list = [...elements];\n    let nth = +part.body;\n    if (nth === -1)\n      nth = list.length - 1;\n    return new Set(list.slice(nth, nth + 1));\n  }\n  _queryLayoutSelector(elements, part, originalRoot) {\n    const name = part.name;\n    const body = part.body;\n    const result = [];\n    const inner = this.querySelectorAll(body.parsed, originalRoot);\n    for (const element of elements) {\n      const score = layoutSelectorScore(name, element, inner, body.distance);\n      if (score !== void 0)\n        result.push({ element, score });\n    }\n    result.sort((a, b) => a.score - b.score);\n    return new Set(result.map((r) => r.element));\n  }\n  querySelectorAll(selector, root) {\n    if (selector.capture !== void 0) {\n      if (selector.parts.some((part) => part.name === "nth"))\n        throw this.createStacklessError(`Can\'t query n-th element in a request with the capture.`);\n      const withHas = { parts: selector.parts.slice(0, selector.capture + 1) };\n      if (selector.capture < selector.parts.length - 1) {\n        const parsed = { parts: selector.parts.slice(selector.capture + 1) };\n        const has = { name: "has", body: { parsed }, source: stringifySelector(parsed) };\n        withHas.parts.push(has);\n      }\n      return this.querySelectorAll(withHas, root);\n    }\n    if (!root["querySelectorAll"])\n      throw this.createStacklessError("Node is not queryable.");\n    if (selector.capture !== void 0) {\n      throw this.createStacklessError("Internal error: there should not be a capture in the selector.");\n    }\n    this._evaluator.begin();\n    try {\n      let roots = /* @__PURE__ */ new Set([root]);\n      for (const part of selector.parts) {\n        if (part.name === "nth") {\n          roots = this._queryNth(roots, part);\n        } else if (kLayoutSelectorNames.includes(part.name)) {\n          roots = this._queryLayoutSelector(roots, part, root);\n        } else {\n          const next = /* @__PURE__ */ new Set();\n          for (const root2 of roots) {\n            const all = this._queryEngineAll(part, root2);\n            for (const one of all)\n              next.add(one);\n          }\n          roots = next;\n        }\n      }\n      return [...roots];\n    } finally {\n      this._evaluator.end();\n    }\n  }\n  _queryEngineAll(part, root) {\n    const result = this._engines.get(part.name).queryAll(root, part.body);\n    for (const element of result) {\n      if (!("nodeName" in element))\n        throw this.createStacklessError(`Expected a Node but got ${Object.prototype.toString.call(element)}`);\n    }\n    return result;\n  }\n  _createAttributeEngine(attribute, shadow) {\n    const toCSS = (selector) => {\n      const css2 = `[${attribute}=${JSON.stringify(selector)}]`;\n      return [{ simples: [{ selector: { css: css2, functions: [] }, combinator: "" }] }];\n    };\n    return {\n      queryAll: (root, selector) => {\n        return this._evaluator.query({ scope: root, pierceShadow: shadow }, toCSS(selector));\n      }\n    };\n  }\n  _createCSSEngine() {\n    const evaluator = this._evaluator;\n    return {\n      queryAll(root, body) {\n        return evaluator.query({ scope: root, pierceShadow: true }, body);\n      }\n    };\n  }\n  _createTextEngine(shadow) {\n    const queryList = (root, selector) => {\n      const { matcher, kind } = createTextMatcher(selector);\n      const result = [];\n      let lastDidNotMatchSelf = null;\n      const appendElement = (element) => {\n        if (kind === "lax" && lastDidNotMatchSelf && lastDidNotMatchSelf.contains(element))\n          return false;\n        const matches = elementMatchesText(this._evaluator._cacheText, element, matcher);\n        if (matches === "none")\n          lastDidNotMatchSelf = element;\n        if (matches === "self" || matches === "selfAndChildren" && kind === "strict")\n          result.push(element);\n      };\n      if (root.nodeType === Node.ELEMENT_NODE)\n        appendElement(root);\n      const elements = this._evaluator._queryCSS({ scope: root, pierceShadow: shadow }, "*");\n      for (const element of elements)\n        appendElement(element);\n      return result;\n    };\n    return {\n      queryAll: (root, selector) => {\n        return queryList(root, selector);\n      }\n    };\n  }\n  _createControlEngine() {\n    return {\n      queryAll(root, body) {\n        if (body === "enter-frame")\n          return [];\n        if (body === "return-empty")\n          return [];\n        throw new Error(`Internal error, unknown control selector ${body}`);\n      }\n    };\n  }\n  _createHasEngine() {\n    const queryAll = (root, body) => {\n      if (root.nodeType !== 1)\n        return [];\n      const has = !!this.querySelector(body.parsed, root, false);\n      return has ? [root] : [];\n    };\n    return { queryAll };\n  }\n  _createVisibleEngine() {\n    const queryAll = (root, body) => {\n      if (root.nodeType !== 1)\n        return [];\n      return isElementVisible(root) === Boolean(body) ? [root] : [];\n    };\n    return { queryAll };\n  }\n  _createLayoutEngine(name) {\n    const queryAll = (root, body) => {\n      if (root.nodeType !== 1)\n        return [];\n      const has = !!this.querySelector(body, root, false);\n      return has ? [root] : [];\n    };\n    return { queryAll };\n  }\n  extend(source, params) {\n    const constrFunction = globalThis.eval(`\n    (() => {\n      const module = {};\n      ${source}\n      return module.exports;\n    })()`);\n    return new constrFunction(this, params);\n  }\n  isVisible(element) {\n    return isElementVisible(element);\n  }\n  pollRaf(predicate) {\n    return this.poll(predicate, (next) => requestAnimationFrame(next));\n  }\n  pollInterval(pollInterval, predicate) {\n    return this.poll(predicate, (next) => setTimeout(next, pollInterval));\n  }\n  pollLogScale(predicate) {\n    const pollIntervals = [100, 250, 500];\n    let attempts = 0;\n    return this.poll(predicate, (next) => setTimeout(next, pollIntervals[attempts++] || 1e3));\n  }\n  poll(predicate, scheduleNext) {\n    return this._runAbortableTask((progress) => {\n      let fulfill;\n      let reject;\n      const result = new Promise((f, r) => {\n        fulfill = f;\n        reject = r;\n      });\n      const next = () => {\n        if (progress.aborted)\n          return;\n        try {\n          const success = predicate(progress);\n          if (success !== progress.continuePolling)\n            fulfill(success);\n          else\n            scheduleNext(next);\n        } catch (e) {\n          progress.log("  " + e.message);\n          reject(e);\n        }\n      };\n      next();\n      return result;\n    });\n  }\n  _runAbortableTask(task) {\n    let unsentLog = [];\n    let takeNextLogsCallback;\n    let taskFinished = false;\n    const logReady = () => {\n      if (!takeNextLogsCallback)\n        return;\n      takeNextLogsCallback(unsentLog);\n      unsentLog = [];\n      takeNextLogsCallback = void 0;\n    };\n    const takeNextLogs = () => new Promise((fulfill) => {\n      takeNextLogsCallback = fulfill;\n      if (unsentLog.length || taskFinished)\n        logReady();\n    });\n    let lastMessage = "";\n    let lastIntermediateResult = void 0;\n    const progress = {\n      injectedScript: this,\n      aborted: false,\n      continuePolling: Symbol("continuePolling"),\n      log: (message) => {\n        lastMessage = message;\n        unsentLog.push({ message });\n        logReady();\n      },\n      logRepeating: (message) => {\n        if (message !== lastMessage)\n          progress.log(message);\n      },\n      setIntermediateResult: (intermediateResult) => {\n        if (lastIntermediateResult === intermediateResult)\n          return;\n        lastIntermediateResult = intermediateResult;\n        unsentLog.push({ intermediateResult });\n        logReady();\n      }\n    };\n    const run = () => {\n      const result = task(progress);\n      result.finally(() => {\n        taskFinished = true;\n        logReady();\n      });\n      return result;\n    };\n    return {\n      takeNextLogs,\n      run,\n      cancel: () => {\n        progress.aborted = true;\n      },\n      takeLastLogs: () => unsentLog\n    };\n  }\n  getElementBorderWidth(node) {\n    if (node.nodeType !== Node.ELEMENT_NODE || !node.ownerDocument || !node.ownerDocument.defaultView)\n      return { left: 0, top: 0 };\n    const style = node.ownerDocument.defaultView.getComputedStyle(node);\n    return { left: parseInt(style.borderLeftWidth || "", 10), top: parseInt(style.borderTopWidth || "", 10) };\n  }\n  retarget(node, behavior) {\n    let element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;\n    if (!element)\n      return null;\n    if (behavior === "none")\n      return element;\n    if (!element.matches("input, textarea, select")) {\n      if (behavior === "button-link")\n        element = element.closest("button, [role=button], a, [role=link]") || element;\n      else\n        element = element.closest("button, [role=button], [role=checkbox], [role=radio]") || element;\n    }\n    if (behavior === "follow-label") {\n      if (!element.matches("input, textarea, button, select, [role=button], [role=checkbox], [role=radio]") && !element.isContentEditable) {\n        element = element.closest("label") || element;\n      }\n      if (element.nodeName === "LABEL")\n        element = element.control || element;\n    }\n    return element;\n  }\n  waitForElementStatesAndPerformAction(node, states, force, callback) {\n    let lastRect;\n    let counter = 0;\n    let samePositionCounter = 0;\n    let lastTime = 0;\n    return this.pollRaf((progress) => {\n      if (force) {\n        progress.log(`    forcing action`);\n        return callback(node, progress);\n      }\n      for (const state of states) {\n        if (state !== "stable") {\n          const result = this.elementState(node, state);\n          if (typeof result !== "boolean")\n            return result;\n          if (!result) {\n            progress.logRepeating(`    element is not ${state} - waiting...`);\n            return progress.continuePolling;\n          }\n          continue;\n        }\n        const element = this.retarget(node, "no-follow-label");\n        if (!element)\n          return "error:notconnected";\n        if (++counter === 1)\n          return progress.continuePolling;\n        const time = performance.now();\n        if (this._stableRafCount > 1 && time - lastTime < 15)\n          return progress.continuePolling;\n        lastTime = time;\n        const clientRect = element.getBoundingClientRect();\n        const rect = { x: clientRect.top, y: clientRect.left, width: clientRect.width, height: clientRect.height };\n        const samePosition = lastRect && rect.x === lastRect.x && rect.y === lastRect.y && rect.width === lastRect.width && rect.height === lastRect.height;\n        if (samePosition)\n          ++samePositionCounter;\n        else\n          samePositionCounter = 0;\n        const isStable = samePositionCounter >= this._stableRafCount;\n        const isStableForLogs = isStable || !lastRect;\n        lastRect = rect;\n        if (!isStableForLogs)\n          progress.logRepeating(`    element is not stable - waiting...`);\n        if (!isStable)\n          return progress.continuePolling;\n      }\n      return callback(node, progress);\n    });\n  }\n  elementState(node, state) {\n    const element = this.retarget(node, ["stable", "visible", "hidden"].includes(state) ? "none" : "follow-label");\n    if (!element || !element.isConnected) {\n      if (state === "hidden")\n        return true;\n      return "error:notconnected";\n    }\n    if (state === "visible")\n      return this.isVisible(element);\n    if (state === "hidden")\n      return !this.isVisible(element);\n    const disabled = getAriaDisabled(element);\n    if (state === "disabled")\n      return disabled;\n    if (state === "enabled")\n      return !disabled;\n    const editable = !(["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName) && element.hasAttribute("readonly"));\n    if (state === "editable")\n      return !disabled && editable;\n    if (state === "checked" || state === "unchecked") {\n      if (["checkbox", "radio"].includes(element.getAttribute("role") || "")) {\n        const result2 = element.getAttribute("aria-checked") === "true";\n        return state === "checked" ? result2 : !result2;\n      }\n      if (element.nodeName !== "INPUT")\n        throw this.createStacklessError("Not a checkbox or radio button");\n      if (!["radio", "checkbox"].includes(element.type.toLowerCase()))\n        throw this.createStacklessError("Not a checkbox or radio button");\n      const result = element.checked;\n      return state === "checked" ? result : !result;\n    }\n    throw this.createStacklessError(`Unexpected element state "${state}"`);\n  }\n  selectOptions(optionsToSelect, node, progress) {\n    const element = this.retarget(node, "follow-label");\n    if (!element)\n      return "error:notconnected";\n    if (element.nodeName.toLowerCase() !== "select")\n      throw this.createStacklessError("Element is not a <select> element");\n    const select = element;\n    const options = [...select.options];\n    const selectedOptions = [];\n    let remainingOptionsToSelect = optionsToSelect.slice();\n    for (let index = 0; index < options.length; index++) {\n      const option = options[index];\n      const filter = (optionToSelect) => {\n        if (optionToSelect instanceof Node)\n          return option === optionToSelect;\n        let matches = true;\n        if (optionToSelect.value !== void 0)\n          matches = matches && optionToSelect.value === option.value;\n        if (optionToSelect.label !== void 0)\n          matches = matches && optionToSelect.label === option.label;\n        if (optionToSelect.index !== void 0)\n          matches = matches && optionToSelect.index === index;\n        return matches;\n      };\n      if (!remainingOptionsToSelect.some(filter))\n        continue;\n      selectedOptions.push(option);\n      if (select.multiple) {\n        remainingOptionsToSelect = remainingOptionsToSelect.filter((o) => !filter(o));\n      } else {\n        remainingOptionsToSelect = [];\n        break;\n      }\n    }\n    if (remainingOptionsToSelect.length) {\n      progress.logRepeating("    did not find some options - waiting... ");\n      return progress.continuePolling;\n    }\n    select.value = void 0;\n    selectedOptions.forEach((option) => option.selected = true);\n    progress.log("    selected specified option(s)");\n    select.dispatchEvent(new Event("input", { "bubbles": true }));\n    select.dispatchEvent(new Event("change", { "bubbles": true }));\n    return selectedOptions.map((option) => option.value);\n  }\n  fill(value, node, progress) {\n    const element = this.retarget(node, "follow-label");\n    if (!element)\n      return "error:notconnected";\n    if (element.nodeName.toLowerCase() === "input") {\n      const input = element;\n      const type = input.type.toLowerCase();\n      const kInputTypesToSetValue = /* @__PURE__ */ new Set(["color", "date", "time", "datetime", "datetime-local", "month", "range", "week"]);\n      const kInputTypesToTypeInto = /* @__PURE__ */ new Set(["", "email", "number", "password", "search", "tel", "text", "url"]);\n      if (!kInputTypesToTypeInto.has(type) && !kInputTypesToSetValue.has(type)) {\n        progress.log(`    input of type "${type}" cannot be filled`);\n        throw this.createStacklessError(`Input of type "${type}" cannot be filled`);\n      }\n      if (type === "number") {\n        value = value.trim();\n        if (isNaN(Number(value)))\n          throw this.createStacklessError("Cannot type text into input[type=number]");\n      }\n      if (kInputTypesToSetValue.has(type)) {\n        value = value.trim();\n        input.focus();\n        input.value = value;\n        if (input.value !== value)\n          throw this.createStacklessError("Malformed value");\n        element.dispatchEvent(new Event("input", { "bubbles": true }));\n        element.dispatchEvent(new Event("change", { "bubbles": true }));\n        return "done";\n      }\n    } else if (element.nodeName.toLowerCase() === "textarea") {\n    } else if (!element.isContentEditable) {\n      throw this.createStacklessError("Element is not an <input>, <textarea> or [contenteditable] element");\n    }\n    this.selectText(element);\n    return "needsinput";\n  }\n  selectText(node) {\n    const element = this.retarget(node, "follow-label");\n    if (!element)\n      return "error:notconnected";\n    if (element.nodeName.toLowerCase() === "input") {\n      const input = element;\n      input.select();\n      input.focus();\n      return "done";\n    }\n    if (element.nodeName.toLowerCase() === "textarea") {\n      const textarea = element;\n      textarea.selectionStart = 0;\n      textarea.selectionEnd = textarea.value.length;\n      textarea.focus();\n      return "done";\n    }\n    const range = element.ownerDocument.createRange();\n    range.selectNodeContents(element);\n    const selection = element.ownerDocument.defaultView.getSelection();\n    if (selection) {\n      selection.removeAllRanges();\n      selection.addRange(range);\n    }\n    element.focus();\n    return "done";\n  }\n  _activelyFocused(node) {\n    const activeElement = node.getRootNode().activeElement;\n    const isFocused = activeElement === node && !!node.ownerDocument && node.ownerDocument.hasFocus();\n    return { activeElement, isFocused };\n  }\n  focusNode(node, resetSelectionIfNotFocused) {\n    if (!node.isConnected)\n      return "error:notconnected";\n    if (node.nodeType !== Node.ELEMENT_NODE)\n      throw this.createStacklessError("Node is not an element");\n    const { activeElement, isFocused: wasFocused } = this._activelyFocused(node);\n    if (node.isContentEditable && !wasFocused && activeElement && activeElement.blur) {\n      activeElement.blur();\n    }\n    node.focus();\n    if (resetSelectionIfNotFocused && !wasFocused && node.nodeName.toLowerCase() === "input") {\n      try {\n        const input = node;\n        input.setSelectionRange(0, 0);\n      } catch (e) {\n      }\n    }\n    return "done";\n  }\n  setInputFiles(node, payloads) {\n    if (node.nodeType !== Node.ELEMENT_NODE)\n      return "Node is not of type HTMLElement";\n    const element = node;\n    if (element.nodeName !== "INPUT")\n      return "Not an <input> element";\n    const input = element;\n    const type = (input.getAttribute("type") || "").toLowerCase();\n    if (type !== "file")\n      return "Not an input[type=file] element";\n    const files = payloads.map((file) => {\n      const bytes = Uint8Array.from(atob(file.buffer), (c) => c.charCodeAt(0));\n      return new File([bytes], file.name, { type: file.mimeType });\n    });\n    const dt = new DataTransfer();\n    for (const file of files)\n      dt.items.add(file);\n    input.files = dt.files;\n    input.dispatchEvent(new Event("input", { "bubbles": true }));\n    input.dispatchEvent(new Event("change", { "bubbles": true }));\n  }\n  expectHitTarget(hitPoint, targetElement) {\n    var _a;\n    const roots = [];\n    let parentElement = targetElement;\n    while (parentElement) {\n      const root = enclosingShadowRootOrDocument(parentElement);\n      if (!root)\n        break;\n      roots.push(root);\n      if (root.nodeType === 9)\n        break;\n      parentElement = root.host;\n    }\n    let hitElement;\n    for (let index = roots.length - 1; index >= 0; index--) {\n      const root = roots[index];\n      const elements = root.elementsFromPoint(hitPoint.x, hitPoint.y);\n      const singleElement = root.elementFromPoint(hitPoint.x, hitPoint.y);\n      if (singleElement && elements[0] && parentElementOrShadowHost(singleElement) === elements[0]) {\n        const style = (_a = document.defaultView) == null ? void 0 : _a.getComputedStyle(singleElement);\n        if ((style == null ? void 0 : style.display) === "contents") {\n          elements.unshift(singleElement);\n        }\n      }\n      const innerElement = elements[0];\n      if (!innerElement)\n        break;\n      hitElement = innerElement;\n      if (index && innerElement !== roots[index - 1].host)\n        break;\n    }\n    const hitParents = [];\n    while (hitElement && hitElement !== targetElement) {\n      hitParents.push(hitElement);\n      hitElement = parentElementOrShadowHost(hitElement);\n    }\n    if (hitElement === targetElement)\n      return "done";\n    const hitTargetDescription = this.previewNode(hitParents[0] || document.documentElement);\n    let rootHitTargetDescription;\n    let element = targetElement;\n    while (element) {\n      const index = hitParents.indexOf(element);\n      if (index !== -1) {\n        if (index > 1)\n          rootHitTargetDescription = this.previewNode(hitParents[index - 1]);\n        break;\n      }\n      element = parentElementOrShadowHost(element);\n    }\n    if (rootHitTargetDescription)\n      return { hitTargetDescription: `${hitTargetDescription} from ${rootHitTargetDescription} subtree` };\n    return { hitTargetDescription };\n  }\n  setupHitTargetInterceptor(node, action, hitPoint, blockAllEvents) {\n    const element = this.retarget(node, "button-link");\n    if (!element || !element.isConnected)\n      return "error:notconnected";\n    const preliminaryResult = this.expectHitTarget(hitPoint, element);\n    if (preliminaryResult !== "done")\n      return preliminaryResult.hitTargetDescription;\n    if (action === "drag")\n      return { stop: () => "done" };\n    const events = {\n      "hover": kHoverHitTargetInterceptorEvents,\n      "tap": kTapHitTargetInterceptorEvents,\n      "mouse": kMouseHitTargetInterceptorEvents\n    }[action];\n    let result;\n    const listener = (event) => {\n      if (!events.has(event.type))\n        return;\n      if (!event.isTrusted)\n        return;\n      const point = !!window.TouchEvent && event instanceof window.TouchEvent ? event.touches[0] : event;\n      if (result === void 0 && point)\n        result = this.expectHitTarget({ x: point.clientX, y: point.clientY }, element);\n      if (blockAllEvents || result !== "done" && result !== void 0) {\n        event.preventDefault();\n        event.stopPropagation();\n        event.stopImmediatePropagation();\n      }\n    };\n    const stop = () => {\n      if (this._hitTargetInterceptor === listener)\n        this._hitTargetInterceptor = void 0;\n      return result || "done";\n    };\n    this._hitTargetInterceptor = listener;\n    return { stop };\n  }\n  dispatchEvent(node, type, eventInit) {\n    let event;\n    eventInit = { bubbles: true, cancelable: true, composed: true, ...eventInit };\n    switch (eventType.get(type)) {\n      case "mouse":\n        event = new MouseEvent(type, eventInit);\n        break;\n      case "keyboard":\n        event = new KeyboardEvent(type, eventInit);\n        break;\n      case "touch":\n        event = new TouchEvent(type, eventInit);\n        break;\n      case "pointer":\n        event = new PointerEvent(type, eventInit);\n        break;\n      case "focus":\n        event = new FocusEvent(type, eventInit);\n        break;\n      case "drag":\n        event = new DragEvent(type, eventInit);\n        break;\n      case "wheel":\n        event = new WheelEvent(type, eventInit);\n        break;\n      default:\n        event = new Event(type, eventInit);\n        break;\n    }\n    node.dispatchEvent(event);\n  }\n  previewNode(node) {\n    if (node.nodeType === Node.TEXT_NODE)\n      return oneLine(`#text=${node.nodeValue || ""}`);\n    if (node.nodeType !== Node.ELEMENT_NODE)\n      return oneLine(`<${node.nodeName.toLowerCase()} />`);\n    const element = node;\n    const attrs = [];\n    for (let i = 0; i < element.attributes.length; i++) {\n      const { name, value } = element.attributes[i];\n      if (name === "style" || name.startsWith("__playwright"))\n        continue;\n      if (!value && booleanAttributes.has(name))\n        attrs.push(` ${name}`);\n      else\n        attrs.push(` ${name}="${value}"`);\n    }\n    attrs.sort((a, b) => a.length - b.length);\n    let attrText = attrs.join("");\n    if (attrText.length > 50)\n      attrText = attrText.substring(0, 49) + "\\u2026";\n    if (autoClosingTags.has(element.nodeName))\n      return oneLine(`<${element.nodeName.toLowerCase()}${attrText}/>`);\n    const children = element.childNodes;\n    let onlyText = false;\n    if (children.length <= 5) {\n      onlyText = true;\n      for (let i = 0; i < children.length; i++)\n        onlyText = onlyText && children[i].nodeType === Node.TEXT_NODE;\n    }\n    let text = onlyText ? element.textContent || "" : children.length ? "\\u2026" : "";\n    if (text.length > 50)\n      text = text.substring(0, 49) + "\\u2026";\n    return oneLine(`<${element.nodeName.toLowerCase()}${attrText}>${text}</${element.nodeName.toLowerCase()}>`);\n  }\n  strictModeViolationError(selector, matches) {\n    const infos = matches.slice(0, 10).map((m) => ({\n      preview: this.previewNode(m),\n      selector: this.generateSelector(m)\n    }));\n    const lines = infos.map((info, i) => `\n    ${i + 1}) ${info.preview} aka playwright.$("${info.selector}")`);\n    if (infos.length < matches.length)\n      lines.push("\\n    ...");\n    return this.createStacklessError(`strict mode violation: "${stringifySelector(selector)}" resolved to ${matches.length} elements:${lines.join("")}\n`);\n  }\n  createStacklessError(message) {\n    if (this._browserName === "firefox") {\n      const error2 = new Error("Error: " + message);\n      error2.stack = "";\n      return error2;\n    }\n    const error = new Error(message);\n    delete error.stack;\n    return error;\n  }\n  maskSelectors(selectors) {\n    if (this._highlight)\n      this.hideHighlight();\n    this._highlight = new Highlight(this);\n    this._highlight.install();\n    const elements = [];\n    for (const selector of selectors)\n      elements.push(this.querySelectorAll(selector, document.documentElement));\n    this._highlight.maskElements(elements.flat());\n  }\n  highlight(selector) {\n    if (!this._highlight) {\n      this._highlight = new Highlight(this);\n      this._highlight.install();\n    }\n    this._highlight.runHighlightOnRaf(selector);\n  }\n  hideHighlight() {\n    if (this._highlight) {\n      this._highlight.uninstall();\n      delete this._highlight;\n    }\n  }\n  _setupGlobalListenersRemovalDetection() {\n    const customEventName = "__playwright_global_listeners_check__";\n    let seenEvent = false;\n    const handleCustomEvent = () => seenEvent = true;\n    window.addEventListener(customEventName, handleCustomEvent);\n    new MutationObserver((entries) => {\n      const newDocumentElement = entries.some((entry) => Array.from(entry.addedNodes).includes(document.documentElement));\n      if (!newDocumentElement)\n        return;\n      seenEvent = false;\n      window.dispatchEvent(new CustomEvent(customEventName));\n      if (seenEvent)\n        return;\n      window.addEventListener(customEventName, handleCustomEvent);\n      for (const callback of this.onGlobalListenersRemoved)\n        callback();\n    }).observe(document, { childList: true });\n  }\n  _setupHitTargetInterceptors() {\n    const listener = (event) => {\n      var _a;\n      return (_a = this._hitTargetInterceptor) == null ? void 0 : _a.call(this, event);\n    };\n    const addHitTargetInterceptorListeners = () => {\n      for (const event of kAllHitTargetInterceptorEvents)\n        window.addEventListener(event, listener, { capture: true, passive: false });\n    };\n    addHitTargetInterceptorListeners();\n    this.onGlobalListenersRemoved.add(addHitTargetInterceptorListeners);\n  }\n  expectSingleElement(progress, element, options) {\n    var _a;\n    const injected = progress.injectedScript;\n    const expression = options.expression;\n    {\n      let elementState;\n      if (expression === "to.be.checked") {\n        elementState = progress.injectedScript.elementState(element, "checked");\n      } else if (expression === "to.be.unchecked") {\n        elementState = progress.injectedScript.elementState(element, "unchecked");\n      } else if (expression === "to.be.disabled") {\n        elementState = progress.injectedScript.elementState(element, "disabled");\n      } else if (expression === "to.be.editable") {\n        elementState = progress.injectedScript.elementState(element, "editable");\n      } else if (expression === "to.be.readonly") {\n        elementState = !progress.injectedScript.elementState(element, "editable");\n      } else if (expression === "to.be.empty") {\n        if (element.nodeName === "INPUT" || element.nodeName === "TEXTAREA")\n          elementState = !element.value;\n        else\n          elementState = !((_a = element.textContent) == null ? void 0 : _a.trim());\n      } else if (expression === "to.be.enabled") {\n        elementState = progress.injectedScript.elementState(element, "enabled");\n      } else if (expression === "to.be.focused") {\n        elementState = this._activelyFocused(element).isFocused;\n      } else if (expression === "to.be.hidden") {\n        elementState = progress.injectedScript.elementState(element, "hidden");\n      } else if (expression === "to.be.visible") {\n        elementState = progress.injectedScript.elementState(element, "visible");\n      }\n      if (elementState !== void 0) {\n        if (elementState === "error:notcheckbox")\n          throw injected.createStacklessError("Element is not a checkbox");\n        if (elementState === "error:notconnected")\n          throw injected.createStacklessError("Element is not connected");\n        return { received: elementState, matches: elementState };\n      }\n    }\n    {\n      if (expression === "to.have.property") {\n        const received = element[options.expressionArg];\n        const matches = deepEquals(received, options.expectedValue);\n        return { received, matches };\n      }\n    }\n    {\n      if (expression === "to.have.values") {\n        element = this.retarget(element, "follow-label");\n        if (element.nodeName !== "SELECT" || !element.multiple)\n          throw this.createStacklessError("Not a select element with a multiple attribute");\n        const received = [...element.selectedOptions].map((o) => o.value);\n        if (received.length !== options.expectedText.length)\n          return { received, matches: false };\n        return { received, matches: received.map((r, i) => new ExpectedTextMatcher(options.expectedText[i]).matches(r)).every(Boolean) };\n      }\n    }\n    {\n      let received;\n      if (expression === "to.have.attribute") {\n        received = element.getAttribute(options.expressionArg) || "";\n      } else if (expression === "to.have.class") {\n        received = element.classList.toString();\n      } else if (expression === "to.have.css") {\n        received = window.getComputedStyle(element).getPropertyValue(options.expressionArg);\n      } else if (expression === "to.have.id") {\n        received = element.id;\n      } else if (expression === "to.have.text") {\n        received = options.useInnerText ? element.innerText : elementText(/* @__PURE__ */ new Map(), element).full;\n      } else if (expression === "to.have.title") {\n        received = document.title;\n      } else if (expression === "to.have.url") {\n        received = document.location.href;\n      } else if (expression === "to.have.value") {\n        element = this.retarget(element, "follow-label");\n        if (element.nodeName !== "INPUT" && element.nodeName !== "TEXTAREA" && element.nodeName !== "SELECT")\n          throw this.createStacklessError("Not an input element");\n        received = element.value;\n      }\n      if (received !== void 0 && options.expectedText) {\n        const matcher = new ExpectedTextMatcher(options.expectedText[0]);\n        return { received, matches: matcher.matches(received) };\n      }\n    }\n    throw this.createStacklessError("Unknown expect matcher: " + expression);\n  }\n  expectArray(elements, options) {\n    const expression = options.expression;\n    if (expression === "to.have.count") {\n      const received2 = elements.length;\n      const matches = received2 === options.expectedNumber;\n      return { received: received2, matches };\n    }\n    let received;\n    if (expression === "to.have.text.array" || expression === "to.contain.text.array")\n      received = elements.map((e) => options.useInnerText ? e.innerText : elementText(/* @__PURE__ */ new Map(), e).full);\n    else if (expression === "to.have.class.array")\n      received = elements.map((e) => e.classList.toString());\n    if (received && options.expectedText) {\n      const lengthShouldMatch = expression !== "to.contain.text.array";\n      const matchesLength = received.length === options.expectedText.length || !lengthShouldMatch;\n      if (!matchesLength)\n        return { received, matches: false };\n      const matchers = options.expectedText.map((e) => new ExpectedTextMatcher(e));\n      let mIndex = 0, rIndex = 0;\n      while (mIndex < matchers.length && rIndex < received.length) {\n        if (matchers[mIndex].matches(received[rIndex]))\n          ++mIndex;\n        ++rIndex;\n      }\n      return { received, matches: mIndex === matchers.length };\n    }\n    throw this.createStacklessError("Unknown expect matcher: " + expression);\n  }\n  getElementAccessibleName(element, includeHidden) {\n    const hiddenCache = /* @__PURE__ */ new Map();\n    return getElementAccessibleName(element, !!includeHidden, hiddenCache);\n  }\n  getAriaRole(element) {\n    return getAriaRole(element);\n  }\n};\nvar autoClosingTags = /* @__PURE__ */ new Set(["AREA", "BASE", "BR", "COL", "COMMAND", "EMBED", "HR", "IMG", "INPUT", "KEYGEN", "LINK", "MENUITEM", "META", "PARAM", "SOURCE", "TRACK", "WBR"]);\nvar booleanAttributes = /* @__PURE__ */ new Set(["checked", "selected", "disabled", "readonly", "multiple"]);\nfunction oneLine(s) {\n  return s.replace(/\\n/g, "\\u21B5").replace(/\\t/g, "\\u21C6");\n}\nvar eventType = /* @__PURE__ */ new Map([\n  ["auxclick", "mouse"],\n  ["click", "mouse"],\n  ["dblclick", "mouse"],\n  ["mousedown", "mouse"],\n  ["mouseeenter", "mouse"],\n  ["mouseleave", "mouse"],\n  ["mousemove", "mouse"],\n  ["mouseout", "mouse"],\n  ["mouseover", "mouse"],\n  ["mouseup", "mouse"],\n  ["mouseleave", "mouse"],\n  ["mousewheel", "mouse"],\n  ["keydown", "keyboard"],\n  ["keyup", "keyboard"],\n  ["keypress", "keyboard"],\n  ["textInput", "keyboard"],\n  ["touchstart", "touch"],\n  ["touchmove", "touch"],\n  ["touchend", "touch"],\n  ["touchcancel", "touch"],\n  ["pointerover", "pointer"],\n  ["pointerout", "pointer"],\n  ["pointerenter", "pointer"],\n  ["pointerleave", "pointer"],\n  ["pointerdown", "pointer"],\n  ["pointerup", "pointer"],\n  ["pointermove", "pointer"],\n  ["pointercancel", "pointer"],\n  ["gotpointercapture", "pointer"],\n  ["lostpointercapture", "pointer"],\n  ["focus", "focus"],\n  ["blur", "focus"],\n  ["drag", "drag"],\n  ["dragstart", "drag"],\n  ["dragend", "drag"],\n  ["dragover", "drag"],\n  ["dragenter", "drag"],\n  ["dragleave", "drag"],\n  ["dragexit", "drag"],\n  ["drop", "drag"],\n  ["wheel", "wheel"]\n]);\nvar kHoverHitTargetInterceptorEvents = /* @__PURE__ */ new Set(["mousemove"]);\nvar kTapHitTargetInterceptorEvents = /* @__PURE__ */ new Set(["pointerdown", "pointerup", "touchstart", "touchend", "touchcancel"]);\nvar kMouseHitTargetInterceptorEvents = /* @__PURE__ */ new Set(["mousedown", "mouseup", "pointerdown", "pointerup", "click", "auxclick", "dblclick", "contextmenu"]);\nvar kAllHitTargetInterceptorEvents = /* @__PURE__ */ new Set([...kHoverHitTargetInterceptorEvents, ...kTapHitTargetInterceptorEvents, ...kMouseHitTargetInterceptorEvents]);\nfunction unescape(s) {\n  if (!s.includes("\\\\"))\n    return s;\n  const r = [];\n  let i = 0;\n  while (i < s.length) {\n    if (s[i] === "\\\\" && i + 1 < s.length)\n      i++;\n    r.push(s[i++]);\n  }\n  return r.join("");\n}\nfunction createTextMatcher(selector) {\n  if (selector[0] === "/" && selector.lastIndexOf("/") > 0) {\n    const lastSlash = selector.lastIndexOf("/");\n    const matcher2 = createRegexTextMatcher(selector.substring(1, lastSlash), selector.substring(lastSlash + 1));\n    return { matcher: matcher2, kind: "regex" };\n  }\n  let strict = false;\n  if (selector.length > 1 && selector[0] === \'"\' && selector[selector.length - 1] === \'"\') {\n    selector = unescape(selector.substring(1, selector.length - 1));\n    strict = true;\n  }\n  if (selector.length > 1 && selector[0] === "\'" && selector[selector.length - 1] === "\'") {\n    selector = unescape(selector.substring(1, selector.length - 1));\n    strict = true;\n  }\n  const matcher = strict ? createStrictTextMatcher(selector) : createLaxTextMatcher(selector);\n  return { matcher, kind: strict ? "strict" : "lax" };\n}\nvar ExpectedTextMatcher = class {\n  constructor(expected) {\n    this._normalizeWhiteSpace = expected.normalizeWhiteSpace;\n    this._ignoreCase = expected.ignoreCase;\n    this._string = expected.matchSubstring ? void 0 : this.normalize(expected.string);\n    this._substring = expected.matchSubstring ? this.normalize(expected.string) : void 0;\n    if (expected.regexSource) {\n      const flags = new Set((expected.regexFlags || "").split(""));\n      if (expected.ignoreCase === false)\n        flags.delete("i");\n      if (expected.ignoreCase === true)\n        flags.add("i");\n      this._regex = new RegExp(expected.regexSource, [...flags].join(""));\n    }\n  }\n  matches(text) {\n    if (!this._regex)\n      text = this.normalize(text);\n    if (this._string !== void 0)\n      return text === this._string;\n    if (this._substring !== void 0)\n      return text.includes(this._substring);\n    if (this._regex)\n      return !!this._regex.test(text);\n    return false;\n  }\n  normalize(s) {\n    if (!s)\n      return s;\n    if (this._normalizeWhiteSpace)\n      s = s.trim().replace(/\\u200b/g, "").replace(/\\s+/g, " ");\n    if (this._ignoreCase)\n      s = s.toLocaleLowerCase();\n    return s;\n  }\n};\nfunction deepEquals(a, b) {\n  if (a === b)\n    return true;\n  if (a && b && typeof a === "object" && typeof b === "object") {\n    if (a.constructor !== b.constructor)\n      return false;\n    if (Array.isArray(a)) {\n      if (a.length !== b.length)\n        return false;\n      for (let i = 0; i < a.length; ++i) {\n        if (!deepEquals(a[i], b[i]))\n          return false;\n      }\n      return true;\n    }\n    if (a instanceof RegExp)\n      return a.source === b.source && a.flags === b.flags;\n    if (a.valueOf !== Object.prototype.valueOf)\n      return a.valueOf() === b.valueOf();\n    if (a.toString !== Object.prototype.toString)\n      return a.toString() === b.toString();\n    const keys = Object.keys(a);\n    if (keys.length !== Object.keys(b).length)\n      return false;\n    for (let i = 0; i < keys.length; ++i) {\n      if (!b.hasOwnProperty(keys[i]))\n        return false;\n    }\n    for (const key of keys) {\n      if (!deepEquals(a[key], b[key]))\n        return false;\n    }\n    return true;\n  }\n  if (typeof a === "number" && typeof b === "number")\n    return isNaN(a) && isNaN(b);\n  return false;\n}\nmodule.exports = InjectedScript;\n';
+    var source = '"use strict";\nlet __export = (target, all) => {\n  for (var name in all)\n    target[name] = all[name];\n};\nlet __commonJS = cb => function __require() {\n  let fn;\n  for (const name in cb) {\n    fn = cb[name];\n    break;\n  }\n  const exports = {};\n  fn(exports);\n  return exports;\n};\nlet __toESM = mod => ({ ...mod, \'default\': mod });\nlet __toCommonJS = mod =>  ({ ...mod, __esModule: true });\n// packages/playwright-core/src/server/isomorphic/cssTokenizer.js\nvar require_cssTokenizer = __commonJS({\n  "packages/playwright-core/src/server/isomorphic/cssTokenizer.js"(exports) {\n    "use strict";\n    var between = function(num, first, last) {\n      return num >= first && num <= last;\n    };\n    function digit(code) {\n      return between(code, 48, 57);\n    }\n    function hexdigit(code) {\n      return digit(code) || between(code, 65, 70) || between(code, 97, 102);\n    }\n    function uppercaseletter(code) {\n      return between(code, 65, 90);\n    }\n    function lowercaseletter(code) {\n      return between(code, 97, 122);\n    }\n    function letter(code) {\n      return uppercaseletter(code) || lowercaseletter(code);\n    }\n    function nonascii(code) {\n      return code >= 128;\n    }\n    function namestartchar(code) {\n      return letter(code) || nonascii(code) || code == 95;\n    }\n    function namechar(code) {\n      return namestartchar(code) || digit(code) || code == 45;\n    }\n    function nonprintable(code) {\n      return between(code, 0, 8) || code == 11 || between(code, 14, 31) || code == 127;\n    }\n    function newline(code) {\n      return code == 10;\n    }\n    function whitespace(code) {\n      return newline(code) || code == 9 || code == 32;\n    }\n    var maximumallowedcodepoint = 1114111;\n    var InvalidCharacterError = function(message) {\n      this.message = message;\n    };\n    InvalidCharacterError.prototype = new Error();\n    InvalidCharacterError.prototype.name = "InvalidCharacterError";\n    function preprocess(str) {\n      var codepoints = [];\n      for (var i = 0; i < str.length; i++) {\n        var code = str.charCodeAt(i);\n        if (code == 13 && str.charCodeAt(i + 1) == 10) {\n          code = 10;\n          i++;\n        }\n        if (code == 13 || code == 12)\n          code = 10;\n        if (code == 0)\n          code = 65533;\n        if (between(code, 55296, 56319) && between(str.charCodeAt(i + 1), 56320, 57343)) {\n          var lead = code - 55296;\n          var trail = str.charCodeAt(i + 1) - 56320;\n          code = Math.pow(2, 16) + lead * Math.pow(2, 10) + trail;\n          i++;\n        }\n        codepoints.push(code);\n      }\n      return codepoints;\n    }\n    function stringFromCode(code) {\n      if (code <= 65535)\n        return String.fromCharCode(code);\n      code -= Math.pow(2, 16);\n      var lead = Math.floor(code / Math.pow(2, 10)) + 55296;\n      var trail = code % Math.pow(2, 10) + 56320;\n      return String.fromCharCode(lead) + String.fromCharCode(trail);\n    }\n    function tokenize2(str) {\n      str = preprocess(str);\n      var i = -1;\n      var tokens = [];\n      var code;\n      var line = 0;\n      var column = 0;\n      var lastLineLength = 0;\n      var incrLineno = function() {\n        line += 1;\n        lastLineLength = column;\n        column = 0;\n      };\n      var locStart = { line, column };\n      var codepoint = function(i2) {\n        if (i2 >= str.length) {\n          return -1;\n        }\n        return str[i2];\n      };\n      var next = function(num) {\n        if (num === void 0)\n          num = 1;\n        if (num > 3)\n          throw "Spec Error: no more than three codepoints of lookahead.";\n        return codepoint(i + num);\n      };\n      var consume = function(num) {\n        if (num === void 0)\n          num = 1;\n        i += num;\n        code = codepoint(i);\n        if (newline(code))\n          incrLineno();\n        else\n          column += num;\n        return true;\n      };\n      var reconsume = function() {\n        i -= 1;\n        if (newline(code)) {\n          line -= 1;\n          column = lastLineLength;\n        } else {\n          column -= 1;\n        }\n        locStart.line = line;\n        locStart.column = column;\n        return true;\n      };\n      var eof = function(codepoint2) {\n        if (codepoint2 === void 0)\n          codepoint2 = code;\n        return codepoint2 == -1;\n      };\n      var donothing = function() {\n      };\n      var parseerror = function() {\n        console.log("Parse error at index " + i + ", processing codepoint 0x" + code.toString(16) + ".");\n        return true;\n      };\n      var consumeAToken = function() {\n        consumeComments();\n        consume();\n        if (whitespace(code)) {\n          while (whitespace(next()))\n            consume();\n          return new WhitespaceToken2();\n        } else if (code == 34)\n          return consumeAStringToken();\n        else if (code == 35) {\n          if (namechar(next()) || areAValidEscape(next(1), next(2))) {\n            var token = new HashToken2();\n            if (wouldStartAnIdentifier(next(1), next(2), next(3)))\n              token.type = "id";\n            token.value = consumeAName();\n            return token;\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 36) {\n          if (next() == 61) {\n            consume();\n            return new SuffixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 39)\n          return consumeAStringToken();\n        else if (code == 40)\n          return new OpenParenToken();\n        else if (code == 41)\n          return new CloseParenToken2();\n        else if (code == 42) {\n          if (next() == 61) {\n            consume();\n            return new SubstringMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 43) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 44)\n          return new CommaToken2();\n        else if (code == 45) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else if (next(1) == 45 && next(2) == 62) {\n            consume(2);\n            return new CDCToken2();\n          } else if (startsWithAnIdentifier()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 46) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 58)\n          return new ColonToken2();\n        else if (code == 59)\n          return new SemicolonToken2();\n        else if (code == 60) {\n          if (next(1) == 33 && next(2) == 45 && next(3) == 45) {\n            consume(3);\n            return new CDOToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 64) {\n          if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n            return new AtKeywordToken2(consumeAName());\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 91)\n          return new OpenSquareToken2();\n        else if (code == 92) {\n          if (startsWithAValidEscape()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            parseerror();\n            return new DelimToken2(code);\n          }\n        } else if (code == 93)\n          return new CloseSquareToken2();\n        else if (code == 94) {\n          if (next() == 61) {\n            consume();\n            return new PrefixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 123)\n          return new OpenCurlyToken2();\n        else if (code == 124) {\n          if (next() == 61) {\n            consume();\n            return new DashMatchToken();\n          } else if (next() == 124) {\n            consume();\n            return new ColumnToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 125)\n          return new CloseCurlyToken2();\n        else if (code == 126) {\n          if (next() == 61) {\n            consume();\n            return new IncludeMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (digit(code)) {\n          reconsume();\n          return consumeANumericToken();\n        } else if (namestartchar(code)) {\n          reconsume();\n          return consumeAnIdentlikeToken();\n        } else if (eof())\n          return new EOFToken2();\n        else\n          return new DelimToken2(code);\n      };\n      var consumeComments = function() {\n        while (next(1) == 47 && next(2) == 42) {\n          consume(2);\n          while (true) {\n            consume();\n            if (code == 42 && next() == 47) {\n              consume();\n              break;\n            } else if (eof()) {\n              parseerror();\n              return;\n            }\n          }\n        }\n      };\n      var consumeANumericToken = function() {\n        var num = consumeANumber();\n        if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n          var token = new DimensionToken();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          token.unit = consumeAName();\n          return token;\n        } else if (next() == 37) {\n          consume();\n          var token = new PercentageToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          return token;\n        } else {\n          var token = new NumberToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          return token;\n        }\n      };\n      var consumeAnIdentlikeToken = function() {\n        var str2 = consumeAName();\n        if (str2.toLowerCase() == "url" && next() == 40) {\n          consume();\n          while (whitespace(next(1)) && whitespace(next(2)))\n            consume();\n          if (next() == 34 || next() == 39) {\n            return new FunctionToken2(str2);\n          } else if (whitespace(next()) && (next(2) == 34 || next(2) == 39)) {\n            return new FunctionToken2(str2);\n          } else {\n            return consumeAURLToken();\n          }\n        } else if (next() == 40) {\n          consume();\n          return new FunctionToken2(str2);\n        } else {\n          return new IdentToken2(str2);\n        }\n      };\n      var consumeAStringToken = function(endingCodePoint) {\n        if (endingCodePoint === void 0)\n          endingCodePoint = code;\n        var string = "";\n        while (consume()) {\n          if (code == endingCodePoint || eof()) {\n            return new StringToken2(string);\n          } else if (newline(code)) {\n            parseerror();\n            reconsume();\n            return new BadStringToken2();\n          } else if (code == 92) {\n            if (eof(next())) {\n              donothing();\n            } else if (newline(next())) {\n              consume();\n            } else {\n              string += stringFromCode(consumeEscape());\n            }\n          } else {\n            string += stringFromCode(code);\n          }\n        }\n      };\n      var consumeAURLToken = function() {\n        var token = new URLToken2("");\n        while (whitespace(next()))\n          consume();\n        if (eof(next()))\n          return token;\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return token;\n          } else if (whitespace(code)) {\n            while (whitespace(next()))\n              consume();\n            if (next() == 41 || eof(next())) {\n              consume();\n              return token;\n            } else {\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else if (code == 34 || code == 39 || code == 40 || nonprintable(code)) {\n            parseerror();\n            consumeTheRemnantsOfABadURL();\n            return new BadURLToken2();\n          } else if (code == 92) {\n            if (startsWithAValidEscape()) {\n              token.value += stringFromCode(consumeEscape());\n            } else {\n              parseerror();\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else {\n            token.value += stringFromCode(code);\n          }\n        }\n      };\n      var consumeEscape = function() {\n        consume();\n        if (hexdigit(code)) {\n          var digits = [code];\n          for (var total = 0; total < 5; total++) {\n            if (hexdigit(next())) {\n              consume();\n              digits.push(code);\n            } else {\n              break;\n            }\n          }\n          if (whitespace(next()))\n            consume();\n          var value = parseInt(digits.map(function(x) {\n            return String.fromCharCode(x);\n          }).join(""), 16);\n          if (value > maximumallowedcodepoint)\n            value = 65533;\n          return value;\n        } else if (eof()) {\n          return 65533;\n        } else {\n          return code;\n        }\n      };\n      var areAValidEscape = function(c1, c2) {\n        if (c1 != 92)\n          return false;\n        if (newline(c2))\n          return false;\n        return true;\n      };\n      var startsWithAValidEscape = function() {\n        return areAValidEscape(code, next());\n      };\n      var wouldStartAnIdentifier = function(c1, c2, c3) {\n        if (c1 == 45) {\n          return namestartchar(c2) || c2 == 45 || areAValidEscape(c2, c3);\n        } else if (namestartchar(c1)) {\n          return true;\n        } else if (c1 == 92) {\n          return areAValidEscape(c1, c2);\n        } else {\n          return false;\n        }\n      };\n      var startsWithAnIdentifier = function() {\n        return wouldStartAnIdentifier(code, next(1), next(2));\n      };\n      var wouldStartANumber = function(c1, c2, c3) {\n        if (c1 == 43 || c1 == 45) {\n          if (digit(c2))\n            return true;\n          if (c2 == 46 && digit(c3))\n            return true;\n          return false;\n        } else if (c1 == 46) {\n          if (digit(c2))\n            return true;\n          return false;\n        } else if (digit(c1)) {\n          return true;\n        } else {\n          return false;\n        }\n      };\n      var startsWithANumber = function() {\n        return wouldStartANumber(code, next(1), next(2));\n      };\n      var consumeAName = function() {\n        var result = "";\n        while (consume()) {\n          if (namechar(code)) {\n            result += stringFromCode(code);\n          } else if (startsWithAValidEscape()) {\n            result += stringFromCode(consumeEscape());\n          } else {\n            reconsume();\n            return result;\n          }\n        }\n      };\n      var consumeANumber = function() {\n        var repr = [];\n        var type = "integer";\n        if (next() == 43 || next() == 45) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        while (digit(next())) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        if (next(1) == 46 && digit(next(2))) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var c1 = next(1), c2 = next(2), c3 = next(3);\n        if ((c1 == 69 || c1 == 101) && digit(c2)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        } else if ((c1 == 69 || c1 == 101) && (c2 == 43 || c2 == 45) && digit(c3)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var value = convertAStringToANumber(repr);\n        return { type, value, repr };\n      };\n      var convertAStringToANumber = function(string) {\n        return +string;\n      };\n      var consumeTheRemnantsOfABadURL = function() {\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return;\n          } else if (startsWithAValidEscape()) {\n            consumeEscape();\n            donothing();\n          } else {\n            donothing();\n          }\n        }\n      };\n      var iterationCount = 0;\n      while (!eof(next())) {\n        tokens.push(consumeAToken());\n        iterationCount++;\n        if (iterationCount > str.length * 2)\n          return "I\'m infinite-looping!";\n      }\n      return tokens;\n    }\n    function CSSParserToken() {\n      throw "Abstract Base Class";\n    }\n    CSSParserToken.prototype.toJSON = function() {\n      return { token: this.tokenType };\n    };\n    CSSParserToken.prototype.toString = function() {\n      return this.tokenType;\n    };\n    CSSParserToken.prototype.toSource = function() {\n      return "" + this;\n    };\n    function BadStringToken2() {\n      return this;\n    }\n    BadStringToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadStringToken2.prototype.tokenType = "BADSTRING";\n    function BadURLToken2() {\n      return this;\n    }\n    BadURLToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadURLToken2.prototype.tokenType = "BADURL";\n    function WhitespaceToken2() {\n      return this;\n    }\n    WhitespaceToken2.prototype = Object.create(CSSParserToken.prototype);\n    WhitespaceToken2.prototype.tokenType = "WHITESPACE";\n    WhitespaceToken2.prototype.toString = function() {\n      return "WS";\n    };\n    WhitespaceToken2.prototype.toSource = function() {\n      return " ";\n    };\n    function CDOToken2() {\n      return this;\n    }\n    CDOToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDOToken2.prototype.tokenType = "CDO";\n    CDOToken2.prototype.toSource = function() {\n      return "<!--";\n    };\n    function CDCToken2() {\n      return this;\n    }\n    CDCToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDCToken2.prototype.tokenType = "CDC";\n    CDCToken2.prototype.toSource = function() {\n      return "-->";\n    };\n    function ColonToken2() {\n      return this;\n    }\n    ColonToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColonToken2.prototype.tokenType = ":";\n    function SemicolonToken2() {\n      return this;\n    }\n    SemicolonToken2.prototype = Object.create(CSSParserToken.prototype);\n    SemicolonToken2.prototype.tokenType = ";";\n    function CommaToken2() {\n      return this;\n    }\n    CommaToken2.prototype = Object.create(CSSParserToken.prototype);\n    CommaToken2.prototype.tokenType = ",";\n    function GroupingToken() {\n      throw "Abstract Base Class";\n    }\n    GroupingToken.prototype = Object.create(CSSParserToken.prototype);\n    function OpenCurlyToken2() {\n      this.value = "{";\n      this.mirror = "}";\n      return this;\n    }\n    OpenCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenCurlyToken2.prototype.tokenType = "{";\n    function CloseCurlyToken2() {\n      this.value = "}";\n      this.mirror = "{";\n      return this;\n    }\n    CloseCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseCurlyToken2.prototype.tokenType = "}";\n    function OpenSquareToken2() {\n      this.value = "[";\n      this.mirror = "]";\n      return this;\n    }\n    OpenSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenSquareToken2.prototype.tokenType = "[";\n    function CloseSquareToken2() {\n      this.value = "]";\n      this.mirror = "[";\n      return this;\n    }\n    CloseSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseSquareToken2.prototype.tokenType = "]";\n    function OpenParenToken() {\n      this.value = "(";\n      this.mirror = ")";\n      return this;\n    }\n    OpenParenToken.prototype = Object.create(GroupingToken.prototype);\n    OpenParenToken.prototype.tokenType = "(";\n    function CloseParenToken2() {\n      this.value = ")";\n      this.mirror = "(";\n      return this;\n    }\n    CloseParenToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseParenToken2.prototype.tokenType = ")";\n    function IncludeMatchToken() {\n      return this;\n    }\n    IncludeMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    IncludeMatchToken.prototype.tokenType = "~=";\n    function DashMatchToken() {\n      return this;\n    }\n    DashMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    DashMatchToken.prototype.tokenType = "|=";\n    function PrefixMatchToken() {\n      return this;\n    }\n    PrefixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    PrefixMatchToken.prototype.tokenType = "^=";\n    function SuffixMatchToken() {\n      return this;\n    }\n    SuffixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SuffixMatchToken.prototype.tokenType = "$=";\n    function SubstringMatchToken() {\n      return this;\n    }\n    SubstringMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SubstringMatchToken.prototype.tokenType = "*=";\n    function ColumnToken2() {\n      return this;\n    }\n    ColumnToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColumnToken2.prototype.tokenType = "||";\n    function EOFToken2() {\n      return this;\n    }\n    EOFToken2.prototype = Object.create(CSSParserToken.prototype);\n    EOFToken2.prototype.tokenType = "EOF";\n    EOFToken2.prototype.toSource = function() {\n      return "";\n    };\n    function DelimToken2(code) {\n      this.value = stringFromCode(code);\n      return this;\n    }\n    DelimToken2.prototype = Object.create(CSSParserToken.prototype);\n    DelimToken2.prototype.tokenType = "DELIM";\n    DelimToken2.prototype.toString = function() {\n      return "DELIM(" + this.value + ")";\n    };\n    DelimToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    DelimToken2.prototype.toSource = function() {\n      if (this.value == "\\\\")\n        return "\\\\\\n";\n      else\n        return this.value;\n    };\n    function StringValuedToken() {\n      throw "Abstract Base Class";\n    }\n    StringValuedToken.prototype = Object.create(CSSParserToken.prototype);\n    StringValuedToken.prototype.ASCIIMatch = function(str) {\n      return this.value.toLowerCase() == str.toLowerCase();\n    };\n    StringValuedToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    function IdentToken2(val) {\n      this.value = val;\n    }\n    IdentToken2.prototype = Object.create(StringValuedToken.prototype);\n    IdentToken2.prototype.tokenType = "IDENT";\n    IdentToken2.prototype.toString = function() {\n      return "IDENT(" + this.value + ")";\n    };\n    IdentToken2.prototype.toSource = function() {\n      return escapeIdent(this.value);\n    };\n    function FunctionToken2(val) {\n      this.value = val;\n      this.mirror = ")";\n    }\n    FunctionToken2.prototype = Object.create(StringValuedToken.prototype);\n    FunctionToken2.prototype.tokenType = "FUNCTION";\n    FunctionToken2.prototype.toString = function() {\n      return "FUNCTION(" + this.value + ")";\n    };\n    FunctionToken2.prototype.toSource = function() {\n      return escapeIdent(this.value) + "(";\n    };\n    function AtKeywordToken2(val) {\n      this.value = val;\n    }\n    AtKeywordToken2.prototype = Object.create(StringValuedToken.prototype);\n    AtKeywordToken2.prototype.tokenType = "AT-KEYWORD";\n    AtKeywordToken2.prototype.toString = function() {\n      return "AT(" + this.value + ")";\n    };\n    AtKeywordToken2.prototype.toSource = function() {\n      return "@" + escapeIdent(this.value);\n    };\n    function HashToken2(val) {\n      this.value = val;\n      this.type = "unrestricted";\n    }\n    HashToken2.prototype = Object.create(StringValuedToken.prototype);\n    HashToken2.prototype.tokenType = "HASH";\n    HashToken2.prototype.toString = function() {\n      return "HASH(" + this.value + ")";\n    };\n    HashToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      return json;\n    };\n    HashToken2.prototype.toSource = function() {\n      if (this.type == "id") {\n        return "#" + escapeIdent(this.value);\n      } else {\n        return "#" + escapeHash(this.value);\n      }\n    };\n    function StringToken2(val) {\n      this.value = val;\n    }\n    StringToken2.prototype = Object.create(StringValuedToken.prototype);\n    StringToken2.prototype.tokenType = "STRING";\n    StringToken2.prototype.toString = function() {\n      return \'"\' + escapeString(this.value) + \'"\';\n    };\n    function URLToken2(val) {\n      this.value = val;\n    }\n    URLToken2.prototype = Object.create(StringValuedToken.prototype);\n    URLToken2.prototype.tokenType = "URL";\n    URLToken2.prototype.toString = function() {\n      return "URL(" + this.value + ")";\n    };\n    URLToken2.prototype.toSource = function() {\n      return \'url("\' + escapeString(this.value) + \'")\';\n    };\n    function NumberToken2() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n    }\n    NumberToken2.prototype = Object.create(CSSParserToken.prototype);\n    NumberToken2.prototype.tokenType = "NUMBER";\n    NumberToken2.prototype.toString = function() {\n      if (this.type == "integer")\n        return "INT(" + this.value + ")";\n      return "NUMBER(" + this.value + ")";\n    };\n    NumberToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      return json;\n    };\n    NumberToken2.prototype.toSource = function() {\n      return this.repr;\n    };\n    function PercentageToken2() {\n      this.value = null;\n      this.repr = "";\n    }\n    PercentageToken2.prototype = Object.create(CSSParserToken.prototype);\n    PercentageToken2.prototype.tokenType = "PERCENTAGE";\n    PercentageToken2.prototype.toString = function() {\n      return "PERCENTAGE(" + this.value + ")";\n    };\n    PercentageToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.repr = this.repr;\n      return json;\n    };\n    PercentageToken2.prototype.toSource = function() {\n      return this.repr + "%";\n    };\n    function DimensionToken() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n      this.unit = "";\n    }\n    DimensionToken.prototype = Object.create(CSSParserToken.prototype);\n    DimensionToken.prototype.tokenType = "DIMENSION";\n    DimensionToken.prototype.toString = function() {\n      return "DIM(" + this.value + "," + this.unit + ")";\n    };\n    DimensionToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      json.unit = this.unit;\n      return json;\n    };\n    DimensionToken.prototype.toSource = function() {\n      var source = this.repr;\n      var unit = escapeIdent(this.unit);\n      if (unit[0].toLowerCase() == "e" && (unit[1] == "-" || between(unit.charCodeAt(1), 48, 57))) {\n        unit = "\\\\65 " + unit.slice(1, unit.length);\n      }\n      return source + unit;\n    };\n    function escapeIdent(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127 || i == 0 && between(code, 48, 57) || i == 1 && between(code, 48, 57) && firstcode == 45) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + string[i];\n        }\n      }\n      return result;\n    }\n    function escapeHash(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + code.toString(16) + " ";\n        }\n      }\n      return result;\n    }\n    function escapeString(string) {\n      string = "" + string;\n      var result = "";\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code == 34 || code == 92) {\n          result += "\\\\" + string[i];\n        } else {\n          result += string[i];\n        }\n      }\n      return result;\n    }\n    exports.tokenize = tokenize2;\n    exports.IdentToken = IdentToken2;\n    exports.FunctionToken = FunctionToken2;\n    exports.AtKeywordToken = AtKeywordToken2;\n    exports.HashToken = HashToken2;\n    exports.StringToken = StringToken2;\n    exports.BadStringToken = BadStringToken2;\n    exports.URLToken = URLToken2;\n    exports.BadURLToken = BadURLToken2;\n    exports.DelimToken = DelimToken2;\n    exports.NumberToken = NumberToken2;\n    exports.PercentageToken = PercentageToken2;\n    exports.DimensionToken = DimensionToken;\n    exports.IncludeMatchToken = IncludeMatchToken;\n    exports.DashMatchToken = DashMatchToken;\n    exports.PrefixMatchToken = PrefixMatchToken;\n    exports.SuffixMatchToken = SuffixMatchToken;\n    exports.SubstringMatchToken = SubstringMatchToken;\n    exports.ColumnToken = ColumnToken2;\n    exports.WhitespaceToken = WhitespaceToken2;\n    exports.CDOToken = CDOToken2;\n    exports.CDCToken = CDCToken2;\n    exports.ColonToken = ColonToken2;\n    exports.SemicolonToken = SemicolonToken2;\n    exports.CommaToken = CommaToken2;\n    exports.OpenParenToken = OpenParenToken;\n    exports.CloseParenToken = CloseParenToken2;\n    exports.OpenSquareToken = OpenSquareToken2;\n    exports.CloseSquareToken = CloseSquareToken2;\n    exports.OpenCurlyToken = OpenCurlyToken2;\n    exports.CloseCurlyToken = CloseCurlyToken2;\n    exports.EOFToken = EOFToken2;\n    exports.CSSParserToken = CSSParserToken;\n    exports.GroupingToken = GroupingToken;\n  }\n});\n\n// packages/playwright-core/src/server/injected/injectedScript.ts\nvar injectedScript_exports = {};\n__export(injectedScript_exports, {\n  InjectedScript: () => InjectedScript\n});\nmodule.exports = __toCommonJS(injectedScript_exports);\n\n// packages/playwright-core/src/server/injected/xpathSelectorEngine.ts\nvar XPathEngine = {\n  queryAll(root, selector) {\n    if (selector.startsWith("/"))\n      selector = "." + selector;\n    const result = [];\n    const document2 = root instanceof Document ? root : root.ownerDocument;\n    if (!document2)\n      return result;\n    const it = document2.evaluate(selector, root, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE);\n    for (let node = it.iterateNext(); node; node = it.iterateNext()) {\n      if (node.nodeType === Node.ELEMENT_NODE)\n        result.push(node);\n    }\n    return result;\n  }\n};\n\n// packages/playwright-core/src/server/injected/domUtils.ts\nfunction isInsideScope(scope, element) {\n  while (element) {\n    if (scope.contains(element))\n      return true;\n    element = enclosingShadowHost(element);\n  }\n  return false;\n}\nfunction parentElementOrShadowHost(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return;\n  if (element.parentNode.nodeType === 11 && element.parentNode.host)\n    return element.parentNode.host;\n}\nfunction enclosingShadowRootOrDocument(element) {\n  let node = element;\n  while (node.parentNode)\n    node = node.parentNode;\n  if (node.nodeType === 11 || node.nodeType === 9)\n    return node;\n}\nfunction enclosingShadowHost(element) {\n  while (element.parentElement)\n    element = element.parentElement;\n  return parentElementOrShadowHost(element);\n}\nfunction closestCrossShadow(element, css2) {\n  while (element) {\n    const closest = element.closest(css2);\n    if (closest)\n      return closest;\n    element = enclosingShadowHost(element);\n  }\n}\nfunction isElementVisible(element) {\n  if (!element.ownerDocument || !element.ownerDocument.defaultView)\n    return true;\n  const style = element.ownerDocument.defaultView.getComputedStyle(element);\n  if (style.display === "contents") {\n    for (let child = element.firstChild; child; child = child.nextSibling) {\n      if (child.nodeType === 1 && isElementVisible(child))\n        return true;\n      if (child.nodeType === 3 && isVisibleTextNode(child))\n        return true;\n    }\n    return false;\n  }\n  if (Element.prototype.checkVisibility && !element.checkVisibility({ checkOpacity: false, checkVisibilityCSS: false }))\n    return false;\n  if (!style || style.visibility === "hidden")\n    return false;\n  const rect = element.getBoundingClientRect();\n  return rect.width > 0 && rect.height > 0;\n}\nfunction isVisibleTextNode(node) {\n  const range = document.createRange();\n  range.selectNode(node);\n  const rect = range.getBoundingClientRect();\n  return rect.width > 0 && rect.height > 0;\n}\n\n// packages/playwright-core/src/server/injected/selectorUtils.ts\nfunction matchesComponentAttribute(obj, attr) {\n  for (const token of attr.jsonPath) {\n    if (obj !== void 0 && obj !== null)\n      obj = obj[token];\n  }\n  return matchesAttributePart(obj, attr);\n}\nfunction matchesAttributePart(value, attr) {\n  const objValue = typeof value === "string" && !attr.caseSensitive ? value.toUpperCase() : value;\n  const attrValue = typeof attr.value === "string" && !attr.caseSensitive ? attr.value.toUpperCase() : attr.value;\n  if (attr.op === "<truthy>")\n    return !!objValue;\n  if (attr.op === "=") {\n    if (attrValue instanceof RegExp)\n      return typeof objValue === "string" && !!objValue.match(attrValue);\n    return objValue === attrValue;\n  }\n  if (typeof objValue !== "string" || typeof attrValue !== "string")\n    return false;\n  if (attr.op === "*=")\n    return objValue.includes(attrValue);\n  if (attr.op === "^=")\n    return objValue.startsWith(attrValue);\n  if (attr.op === "$=")\n    return objValue.endsWith(attrValue);\n  if (attr.op === "|=")\n    return objValue === attrValue || objValue.startsWith(attrValue + "-");\n  if (attr.op === "~=")\n    return objValue.split(" ").includes(attrValue);\n  return false;\n}\nfunction createLaxTextMatcher(text) {\n  text = text.trim().replace(/\\s+/g, " ").toLowerCase();\n  return (elementText2) => {\n    const s = elementText2.full.trim().replace(/\\s+/g, " ").toLowerCase();\n    return s.includes(text);\n  };\n}\nfunction createStrictTextMatcher(text) {\n  text = text.trim().replace(/\\s+/g, " ");\n  return (elementText2) => {\n    if (!text && !elementText2.immediate.length)\n      return true;\n    return elementText2.immediate.some((s) => s.trim().replace(/\\s+/g, " ") === text);\n  };\n}\nfunction createStrictFullTextMatcher(text) {\n  text = text.trim().replace(/\\s+/g, " ");\n  return (elementText2) => {\n    return elementText2.full.trim().replace(/\\s+/g, " ") === text;\n  };\n}\nfunction createRegexTextMatcher(source, flags) {\n  const re = new RegExp(source, flags);\n  return (elementText2) => {\n    return re.test(elementText2.full);\n  };\n}\nfunction shouldSkipForTextMatching(element) {\n  return element.nodeName === "SCRIPT" || element.nodeName === "NOSCRIPT" || element.nodeName === "STYLE" || document.head && document.head.contains(element);\n}\nfunction elementText(cache, root) {\n  let value = cache.get(root);\n  if (value === void 0) {\n    value = { full: "", immediate: [] };\n    if (!shouldSkipForTextMatching(root)) {\n      let currentImmediate = "";\n      if (root instanceof HTMLInputElement && (root.type === "submit" || root.type === "button")) {\n        value = { full: root.value, immediate: [root.value] };\n      } else {\n        for (let child = root.firstChild; child; child = child.nextSibling) {\n          if (child.nodeType === Node.TEXT_NODE) {\n            value.full += child.nodeValue || "";\n            currentImmediate += child.nodeValue || "";\n          } else {\n            if (currentImmediate)\n              value.immediate.push(currentImmediate);\n            currentImmediate = "";\n            if (child.nodeType === Node.ELEMENT_NODE)\n              value.full += elementText(cache, child).full;\n          }\n        }\n        if (currentImmediate)\n          value.immediate.push(currentImmediate);\n        if (root.shadowRoot)\n          value.full += elementText(cache, root.shadowRoot).full;\n      }\n    }\n    cache.set(root, value);\n  }\n  return value;\n}\nfunction elementMatchesText(cache, element, matcher) {\n  if (shouldSkipForTextMatching(element))\n    return "none";\n  if (!matcher(elementText(cache, element)))\n    return "none";\n  for (let child = element.firstChild; child; child = child.nextSibling) {\n    if (child.nodeType === Node.ELEMENT_NODE && matcher(elementText(cache, child)))\n      return "selfAndChildren";\n  }\n  if (element.shadowRoot && matcher(elementText(cache, element.shadowRoot)))\n    return "selfAndChildren";\n  return "self";\n}\n\n// packages/playwright-core/src/server/isomorphic/cssParser.ts\nvar css = __toESM(require_cssTokenizer());\nvar InvalidSelectorError = class extends Error {\n};\nfunction parseCSS(selector, customNames) {\n  let tokens;\n  try {\n    tokens = css.tokenize(selector);\n    if (!(tokens[tokens.length - 1] instanceof css.EOFToken))\n      tokens.push(new css.EOFToken());\n  } catch (e) {\n    const newMessage = e.message + ` while parsing selector "${selector}"`;\n    const index = (e.stack || "").indexOf(e.message);\n    if (index !== -1)\n      e.stack = e.stack.substring(0, index) + newMessage + e.stack.substring(index + e.message.length);\n    e.message = newMessage;\n    throw e;\n  }\n  const unsupportedToken = tokens.find((token) => {\n    return token instanceof css.AtKeywordToken || token instanceof css.BadStringToken || token instanceof css.BadURLToken || token instanceof css.ColumnToken || token instanceof css.CDOToken || token instanceof css.CDCToken || token instanceof css.SemicolonToken || token instanceof css.OpenCurlyToken || token instanceof css.CloseCurlyToken || token instanceof css.URLToken || token instanceof css.PercentageToken;\n  });\n  if (unsupportedToken)\n    throw new InvalidSelectorError(`Unsupported token "${unsupportedToken.toSource()}" while parsing selector "${selector}"`);\n  let pos = 0;\n  const names = /* @__PURE__ */ new Set();\n  function unexpected() {\n    return new InvalidSelectorError(`Unexpected token "${tokens[pos].toSource()}" while parsing selector "${selector}"`);\n  }\n  function skipWhitespace() {\n    while (tokens[pos] instanceof css.WhitespaceToken)\n      pos++;\n  }\n  function isIdent(p = pos) {\n    return tokens[p] instanceof css.IdentToken;\n  }\n  function isString(p = pos) {\n    return tokens[p] instanceof css.StringToken;\n  }\n  function isNumber(p = pos) {\n    return tokens[p] instanceof css.NumberToken;\n  }\n  function isComma(p = pos) {\n    return tokens[p] instanceof css.CommaToken;\n  }\n  function isCloseParen(p = pos) {\n    return tokens[p] instanceof css.CloseParenToken;\n  }\n  function isStar(p = pos) {\n    return tokens[p] instanceof css.DelimToken && tokens[p].value === "*";\n  }\n  function isEOF(p = pos) {\n    return tokens[p] instanceof css.EOFToken;\n  }\n  function isClauseCombinator(p = pos) {\n    return tokens[p] instanceof css.DelimToken && [">", "+", "~"].includes(tokens[p].value);\n  }\n  function isSelectorClauseEnd(p = pos) {\n    return isComma(p) || isCloseParen(p) || isEOF(p) || isClauseCombinator(p) || tokens[p] instanceof css.WhitespaceToken;\n  }\n  function consumeFunctionArguments() {\n    const result2 = [consumeArgument()];\n    while (true) {\n      skipWhitespace();\n      if (!isComma())\n        break;\n      pos++;\n      result2.push(consumeArgument());\n    }\n    return result2;\n  }\n  function consumeArgument() {\n    skipWhitespace();\n    if (isNumber())\n      return tokens[pos++].value;\n    if (isString())\n      return tokens[pos++].value;\n    return consumeComplexSelector();\n  }\n  function consumeComplexSelector() {\n    const result2 = { simples: [] };\n    skipWhitespace();\n    if (isClauseCombinator()) {\n      result2.simples.push({ selector: { functions: [{ name: "scope", args: [] }] }, combinator: "" });\n    } else {\n      result2.simples.push({ selector: consumeSimpleSelector(), combinator: "" });\n    }\n    while (true) {\n      skipWhitespace();\n      if (isClauseCombinator()) {\n        result2.simples[result2.simples.length - 1].combinator = tokens[pos++].value;\n        skipWhitespace();\n      } else if (isSelectorClauseEnd()) {\n        break;\n      }\n      result2.simples.push({ combinator: "", selector: consumeSimpleSelector() });\n    }\n    return result2;\n  }\n  function consumeSimpleSelector() {\n    let rawCSSString = "";\n    const functions = [];\n    while (!isSelectorClauseEnd()) {\n      if (isIdent() || isStar()) {\n        rawCSSString += tokens[pos++].toSource();\n      } else if (tokens[pos] instanceof css.HashToken) {\n        rawCSSString += tokens[pos++].toSource();\n      } else if (tokens[pos] instanceof css.DelimToken && tokens[pos].value === ".") {\n        pos++;\n        if (isIdent())\n          rawCSSString += "." + tokens[pos++].toSource();\n        else\n          throw unexpected();\n      } else if (tokens[pos] instanceof css.ColonToken) {\n        pos++;\n        if (isIdent()) {\n          if (!customNames.has(tokens[pos].value.toLowerCase())) {\n            rawCSSString += ":" + tokens[pos++].toSource();\n          } else {\n            const name = tokens[pos++].value.toLowerCase();\n            functions.push({ name, args: [] });\n            names.add(name);\n          }\n        } else if (tokens[pos] instanceof css.FunctionToken) {\n          const name = tokens[pos++].value.toLowerCase();\n          if (!customNames.has(name)) {\n            rawCSSString += `:${name}(${consumeBuiltinFunctionArguments()})`;\n          } else {\n            functions.push({ name, args: consumeFunctionArguments() });\n            names.add(name);\n          }\n          skipWhitespace();\n          if (!isCloseParen())\n            throw unexpected();\n          pos++;\n        } else {\n          throw unexpected();\n        }\n      } else if (tokens[pos] instanceof css.OpenSquareToken) {\n        rawCSSString += "[";\n        pos++;\n        while (!(tokens[pos] instanceof css.CloseSquareToken) && !isEOF())\n          rawCSSString += tokens[pos++].toSource();\n        if (!(tokens[pos] instanceof css.CloseSquareToken))\n          throw unexpected();\n        rawCSSString += "]";\n        pos++;\n      } else {\n        throw unexpected();\n      }\n    }\n    if (!rawCSSString && !functions.length)\n      throw unexpected();\n    return { css: rawCSSString || void 0, functions };\n  }\n  function consumeBuiltinFunctionArguments() {\n    let s = "";\n    while (!isCloseParen() && !isEOF())\n      s += tokens[pos++].toSource();\n    return s;\n  }\n  const result = consumeFunctionArguments();\n  if (!isEOF())\n    throw new InvalidSelectorError(`Error while parsing selector "${selector}"`);\n  if (result.some((arg) => typeof arg !== "object" || !("simples" in arg)))\n    throw new InvalidSelectorError(`Error while parsing selector "${selector}"`);\n  return { selector: result, names: Array.from(names) };\n}\n\n// packages/playwright-core/src/server/isomorphic/selectorParser.ts\nvar kNestedSelectorNames = /* @__PURE__ */ new Set(["internal:has", "left-of", "right-of", "above", "below", "near"]);\nvar kNestedSelectorNamesWithDistance = /* @__PURE__ */ new Set(["left-of", "right-of", "above", "below", "near"]);\nvar customCSSNames = /* @__PURE__ */ new Set(["not", "is", "where", "has", "scope", "light", "visible", "text", "text-matches", "text-is", "has-text", "above", "below", "right-of", "left-of", "near", "nth-match"]);\nfunction parseSelector(selector) {\n  const result = parseSelectorString(selector);\n  const parts = result.parts.map((part) => {\n    if (part.name === "css" || part.name === "css:light") {\n      if (part.name === "css:light")\n        part.body = ":light(" + part.body + ")";\n      const parsedCSS = parseCSS(part.body, customCSSNames);\n      return {\n        name: "css",\n        body: parsedCSS.selector,\n        source: part.body\n      };\n    }\n    if (kNestedSelectorNames.has(part.name)) {\n      let innerSelector;\n      let distance;\n      try {\n        const unescaped = JSON.parse("[" + part.body + "]");\n        if (!Array.isArray(unescaped) || unescaped.length < 1 || unescaped.length > 2 || typeof unescaped[0] !== "string")\n          throw new Error(`Malformed selector: ${part.name}=` + part.body);\n        innerSelector = unescaped[0];\n        if (unescaped.length === 2) {\n          if (typeof unescaped[1] !== "number" || !kNestedSelectorNamesWithDistance.has(part.name))\n            throw new Error(`Malformed selector: ${part.name}=` + part.body);\n          distance = unescaped[1];\n        }\n      } catch (e) {\n        throw new Error(`Malformed selector: ${part.name}=` + part.body);\n      }\n      const result2 = { name: part.name, source: part.body, body: { parsed: parseSelector(innerSelector), distance } };\n      if (result2.body.parsed.parts.some((part2) => part2.name === "internal:control" && part2.body === "enter-frame"))\n        throw new Error(`Frames are not allowed inside "${part.name}" selectors`);\n      return result2;\n    }\n    return { ...part, source: part.body };\n  });\n  if (kNestedSelectorNames.has(parts[0].name))\n    throw new Error(`"${parts[0].name}" selector cannot be first`);\n  return {\n    capture: result.capture,\n    parts\n  };\n}\nfunction stringifySelector(selector) {\n  if (typeof selector === "string")\n    return selector;\n  return selector.parts.map((p, i) => {\n    const prefix = p.name === "css" ? "" : p.name + "=";\n    return `${i === selector.capture ? "*" : ""}${prefix}${p.source}`;\n  }).join(" >> ");\n}\nfunction allEngineNames(selector) {\n  const result = /* @__PURE__ */ new Set();\n  const visit = (selector2) => {\n    for (const part of selector2.parts) {\n      result.add(part.name);\n      if (kNestedSelectorNames.has(part.name))\n        visit(part.body.parsed);\n    }\n  };\n  visit(selector);\n  return result;\n}\nfunction parseSelectorString(selector) {\n  let index = 0;\n  let quote;\n  let start = 0;\n  const result = { parts: [] };\n  const append = () => {\n    const part = selector.substring(start, index).trim();\n    const eqIndex = part.indexOf("=");\n    let name;\n    let body;\n    if (eqIndex !== -1 && part.substring(0, eqIndex).trim().match(/^[a-zA-Z_0-9-+:*]+$/)) {\n      name = part.substring(0, eqIndex).trim();\n      body = part.substring(eqIndex + 1);\n    } else if (part.length > 1 && part[0] === \'"\' && part[part.length - 1] === \'"\') {\n      name = "text";\n      body = part;\n    } else if (part.length > 1 && part[0] === "\'" && part[part.length - 1] === "\'") {\n      name = "text";\n      body = part;\n    } else if (/^\\(*\\/\\//.test(part) || part.startsWith("..")) {\n      name = "xpath";\n      body = part;\n    } else {\n      name = "css";\n      body = part;\n    }\n    let capture = false;\n    if (name[0] === "*") {\n      capture = true;\n      name = name.substring(1);\n    }\n    result.parts.push({ name, body });\n    if (capture) {\n      if (result.capture !== void 0)\n        throw new InvalidSelectorError(`Only one of the selectors can capture using * modifier`);\n      result.capture = result.parts.length - 1;\n    }\n  };\n  if (!selector.includes(">>")) {\n    index = selector.length;\n    append();\n    return result;\n  }\n  const shouldIgnoreTextSelectorQuote = () => {\n    const prefix = selector.substring(start, index);\n    const match = prefix.match(/^\\s*text\\s*=(.*)$/);\n    return !!match && !!match[1];\n  };\n  while (index < selector.length) {\n    const c = selector[index];\n    if (c === "\\\\" && index + 1 < selector.length) {\n      index += 2;\n    } else if (c === quote) {\n      quote = void 0;\n      index++;\n    } else if (!quote && (c === \'"\' || c === "\'" || c === "`") && !shouldIgnoreTextSelectorQuote()) {\n      quote = c;\n      index++;\n    } else if (!quote && c === ">" && selector[index + 1] === ">") {\n      append();\n      index += 2;\n      start = index;\n    } else {\n      index++;\n    }\n  }\n  append();\n  return result;\n}\nfunction parseAttributeSelector(selector, allowUnquotedStrings) {\n  let wp = 0;\n  let EOL = selector.length === 0;\n  const next = () => selector[wp] || "";\n  const eat1 = () => {\n    const result2 = next();\n    ++wp;\n    EOL = wp >= selector.length;\n    return result2;\n  };\n  const syntaxError = (stage) => {\n    if (EOL)\n      throw new Error(`Unexpected end of selector while parsing selector \\`${selector}\\``);\n    throw new Error(`Error while parsing selector \\`${selector}\\` - unexpected symbol "${next()}" at position ${wp}` + (stage ? " during " + stage : ""));\n  };\n  function skipSpaces() {\n    while (!EOL && /\\s/.test(next()))\n      eat1();\n  }\n  function isCSSNameChar(char) {\n    return char >= "\\x80" || char >= "0" && char <= "9" || char >= "A" && char <= "Z" || char >= "a" && char <= "z" || char >= "0" && char <= "9" || char === "_" || char === "-";\n  }\n  function readIdentifier() {\n    let result2 = "";\n    skipSpaces();\n    while (!EOL && isCSSNameChar(next()))\n      result2 += eat1();\n    return result2;\n  }\n  function readQuotedString(quote) {\n    let result2 = eat1();\n    if (result2 !== quote)\n      syntaxError("parsing quoted string");\n    while (!EOL && next() !== quote) {\n      if (next() === "\\\\")\n        eat1();\n      result2 += eat1();\n    }\n    if (next() !== quote)\n      syntaxError("parsing quoted string");\n    result2 += eat1();\n    return result2;\n  }\n  function readRegularExpression() {\n    if (eat1() !== "/")\n      syntaxError("parsing regular expression");\n    let source = "";\n    let inClass = false;\n    while (!EOL) {\n      if (next() === "\\\\") {\n        source += eat1();\n        if (EOL)\n          syntaxError("parsing regular expressiion");\n      } else if (inClass && next() === "]") {\n        inClass = false;\n      } else if (!inClass && next() === "[") {\n        inClass = true;\n      } else if (!inClass && next() === "/") {\n        break;\n      }\n      source += eat1();\n    }\n    if (eat1() !== "/")\n      syntaxError("parsing regular expression");\n    let flags = "";\n    while (!EOL && next().match(/[dgimsuy]/))\n      flags += eat1();\n    try {\n      return new RegExp(source, flags);\n    } catch (e) {\n      throw new Error(`Error while parsing selector \\`${selector}\\`: ${e.message}`);\n    }\n  }\n  function readAttributeToken() {\n    let token = "";\n    skipSpaces();\n    if (next() === `\'` || next() === `"`)\n      token = readQuotedString(next()).slice(1, -1);\n    else\n      token = readIdentifier();\n    if (!token)\n      syntaxError("parsing property path");\n    return token;\n  }\n  function readOperator() {\n    skipSpaces();\n    let op = "";\n    if (!EOL)\n      op += eat1();\n    if (!EOL && op !== "=")\n      op += eat1();\n    if (!["=", "*=", "^=", "$=", "|=", "~="].includes(op))\n      syntaxError("parsing operator");\n    return op;\n  }\n  function readAttribute() {\n    eat1();\n    const jsonPath = [];\n    jsonPath.push(readAttributeToken());\n    skipSpaces();\n    while (next() === ".") {\n      eat1();\n      jsonPath.push(readAttributeToken());\n      skipSpaces();\n    }\n    if (next() === "]") {\n      eat1();\n      return { name: jsonPath.join("."), jsonPath, op: "<truthy>", value: null, caseSensitive: false };\n    }\n    const operator = readOperator();\n    let value = void 0;\n    let caseSensitive = true;\n    skipSpaces();\n    if (next() === "/") {\n      if (operator !== "=")\n        throw new Error(`Error while parsing selector \\`${selector}\\` - cannot use ${operator} in attribute with regular expression`);\n      value = readRegularExpression();\n    } else if (next() === `\'` || next() === `"`) {\n      value = readQuotedString(next()).slice(1, -1);\n      skipSpaces();\n      if (next() === "i" || next() === "I") {\n        caseSensitive = false;\n        eat1();\n      } else if (next() === "s" || next() === "S") {\n        caseSensitive = true;\n        eat1();\n      }\n    } else {\n      value = "";\n      while (!EOL && (isCSSNameChar(next()) || next() === "+" || next() === "."))\n        value += eat1();\n      if (value === "true") {\n        value = true;\n      } else if (value === "false") {\n        value = false;\n      } else {\n        if (!allowUnquotedStrings) {\n          value = +value;\n          if (Number.isNaN(value))\n            syntaxError("parsing attribute value");\n        }\n      }\n    }\n    skipSpaces();\n    if (next() !== "]")\n      syntaxError("parsing attribute value");\n    eat1();\n    if (operator !== "=" && typeof value !== "string")\n      throw new Error(`Error while parsing selector \\`${selector}\\` - cannot use ${operator} in attribute with non-string matching value - ${value}`);\n    return { name: jsonPath.join("."), jsonPath, op: operator, value, caseSensitive };\n  }\n  const result = {\n    name: "",\n    attributes: []\n  };\n  result.name = readIdentifier();\n  skipSpaces();\n  while (next() === "[") {\n    result.attributes.push(readAttribute());\n    skipSpaces();\n  }\n  if (!EOL)\n    syntaxError(void 0);\n  if (!result.name && !result.attributes.length)\n    throw new Error(`Error while parsing selector \\`${selector}\\` - selector cannot be empty`);\n  return result;\n}\n\n// packages/playwright-core/src/server/injected/reactSelectorEngine.ts\nfunction getComponentName(reactElement) {\n  if (typeof reactElement.type === "function")\n    return reactElement.type.displayName || reactElement.type.name || "Anonymous";\n  if (typeof reactElement.type === "string")\n    return reactElement.type;\n  if (reactElement._currentElement) {\n    const elementType = reactElement._currentElement.type;\n    if (typeof elementType === "string")\n      return elementType;\n    if (typeof elementType === "function")\n      return elementType.displayName || elementType.name || "Anonymous";\n  }\n  return "";\n}\nfunction getComponentKey(reactElement) {\n  var _a, _b;\n  return (_b = reactElement.key) != null ? _b : (_a = reactElement._currentElement) == null ? void 0 : _a.key;\n}\nfunction getChildren(reactElement) {\n  if (reactElement.child) {\n    const children = [];\n    for (let child = reactElement.child; child; child = child.sibling)\n      children.push(child);\n    return children;\n  }\n  if (!reactElement._currentElement)\n    return [];\n  const isKnownElement = (reactElement2) => {\n    var _a;\n    const elementType = (_a = reactElement2._currentElement) == null ? void 0 : _a.type;\n    return typeof elementType === "function" || typeof elementType === "string";\n  };\n  if (reactElement._renderedComponent) {\n    const child = reactElement._renderedComponent;\n    return isKnownElement(child) ? [child] : [];\n  }\n  if (reactElement._renderedChildren)\n    return [...Object.values(reactElement._renderedChildren)].filter(isKnownElement);\n  return [];\n}\nfunction getProps(reactElement) {\n  var _a;\n  const props = reactElement.memoizedProps || ((_a = reactElement._currentElement) == null ? void 0 : _a.props);\n  if (!props || typeof props === "string")\n    return props;\n  const result = { ...props };\n  delete result.children;\n  return result;\n}\nfunction buildComponentsTree(reactElement) {\n  var _a;\n  const treeNode = {\n    key: getComponentKey(reactElement),\n    name: getComponentName(reactElement),\n    children: getChildren(reactElement).map(buildComponentsTree),\n    rootElements: [],\n    props: getProps(reactElement)\n  };\n  const rootElement = reactElement.stateNode || reactElement._hostNode || ((_a = reactElement._renderedComponent) == null ? void 0 : _a._hostNode);\n  if (rootElement instanceof Element) {\n    treeNode.rootElements.push(rootElement);\n  } else {\n    for (const child of treeNode.children)\n      treeNode.rootElements.push(...child.rootElements);\n  }\n  return treeNode;\n}\nfunction filterComponentsTree(treeNode, searchFn, result = []) {\n  if (searchFn(treeNode))\n    result.push(treeNode);\n  for (const child of treeNode.children)\n    filterComponentsTree(child, searchFn, result);\n  return result;\n}\nfunction findReactRoots(root, roots = []) {\n  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);\n  do {\n    const node = walker.currentNode;\n    const rootKey = Object.keys(node).find((key) => key.startsWith("__reactContainer"));\n    if (rootKey) {\n      roots.push(node[rootKey].stateNode.current);\n    } else if (node.hasOwnProperty("_reactRootContainer")) {\n      roots.push(node._reactRootContainer._internalRoot.current);\n    }\n    if (node instanceof Element && node.hasAttribute("data-reactroot")) {\n      for (const key of Object.keys(node)) {\n        if (key.startsWith("__reactInternalInstance") || key.startsWith("__reactFiber"))\n          roots.push(node[key]);\n      }\n    }\n    const shadowRoot = node instanceof Element ? node.shadowRoot : null;\n    if (shadowRoot)\n      findReactRoots(shadowRoot, roots);\n  } while (walker.nextNode());\n  return roots;\n}\nvar ReactEngine = {\n  queryAll(scope, selector) {\n    const { name, attributes } = parseAttributeSelector(selector, false);\n    const reactRoots = findReactRoots(document);\n    const trees = reactRoots.map((reactRoot) => buildComponentsTree(reactRoot));\n    const treeNodes = trees.map((tree) => filterComponentsTree(tree, (treeNode) => {\n      var _a;\n      const props = (_a = treeNode.props) != null ? _a : {};\n      if (treeNode.key !== void 0)\n        props.key = treeNode.key;\n      if (name && treeNode.name !== name)\n        return false;\n      if (treeNode.rootElements.some((domNode) => !isInsideScope(scope, domNode)))\n        return false;\n      for (const attr of attributes) {\n        if (!matchesComponentAttribute(props, attr))\n          return false;\n      }\n      return true;\n    })).flat();\n    const allRootElements = /* @__PURE__ */ new Set();\n    for (const treeNode of treeNodes) {\n      for (const domNode of treeNode.rootElements)\n        allRootElements.add(domNode);\n    }\n    return [...allRootElements];\n  }\n};\n\n// packages/playwright-core/src/server/injected/vueSelectorEngine.ts\nfunction basename(filename, ext) {\n  const normalized = filename.replace(/^[a-zA-Z]:/, "").replace(/\\\\/g, "/");\n  let result = normalized.substring(normalized.lastIndexOf("/") + 1);\n  if (ext && result.endsWith(ext))\n    result = result.substring(0, result.length - ext.length);\n  return result;\n}\nfunction toUpper(_, c) {\n  return c ? c.toUpperCase() : "";\n}\nvar classifyRE = /(?:^|[-_/])(\\w)/g;\nvar classify = (str) => {\n  return str && str.replace(classifyRE, toUpper);\n};\nfunction buildComponentsTreeVue3(instance) {\n  function getComponentTypeName(options) {\n    const name = options.name || options._componentTag || options.__playwright_guessedName;\n    if (name)\n      return name;\n    const file = options.__file;\n    if (file)\n      return classify(basename(file, ".vue"));\n  }\n  function saveComponentName(instance2, key) {\n    instance2.type.__playwright_guessedName = key;\n    return key;\n  }\n  function getInstanceName(instance2) {\n    var _a, _b, _c, _d;\n    const name = getComponentTypeName(instance2.type || {});\n    if (name)\n      return name;\n    if (instance2.root === instance2)\n      return "Root";\n    for (const key in (_b = (_a = instance2.parent) == null ? void 0 : _a.type) == null ? void 0 : _b.components)\n      if (((_c = instance2.parent) == null ? void 0 : _c.type.components[key]) === instance2.type)\n        return saveComponentName(instance2, key);\n    for (const key in (_d = instance2.appContext) == null ? void 0 : _d.components)\n      if (instance2.appContext.components[key] === instance2.type)\n        return saveComponentName(instance2, key);\n    return "Anonymous Component";\n  }\n  function isBeingDestroyed(instance2) {\n    return instance2._isBeingDestroyed || instance2.isUnmounted;\n  }\n  function isFragment(instance2) {\n    return instance2.subTree.type.toString() === "Symbol(Fragment)";\n  }\n  function getInternalInstanceChildren(subTree) {\n    const list = [];\n    if (subTree.component)\n      list.push(subTree.component);\n    if (subTree.suspense)\n      list.push(...getInternalInstanceChildren(subTree.suspense.activeBranch));\n    if (Array.isArray(subTree.children)) {\n      subTree.children.forEach((childSubTree) => {\n        if (childSubTree.component)\n          list.push(childSubTree.component);\n        else\n          list.push(...getInternalInstanceChildren(childSubTree));\n      });\n    }\n    return list.filter((child) => {\n      var _a;\n      return !isBeingDestroyed(child) && !((_a = child.type.devtools) == null ? void 0 : _a.hide);\n    });\n  }\n  function getRootElementsFromComponentInstance(instance2) {\n    if (isFragment(instance2))\n      return getFragmentRootElements(instance2.subTree);\n    return [instance2.subTree.el];\n  }\n  function getFragmentRootElements(vnode) {\n    if (!vnode.children)\n      return [];\n    const list = [];\n    for (let i = 0, l = vnode.children.length; i < l; i++) {\n      const childVnode = vnode.children[i];\n      if (childVnode.component)\n        list.push(...getRootElementsFromComponentInstance(childVnode.component));\n      else if (childVnode.el)\n        list.push(childVnode.el);\n    }\n    return list;\n  }\n  function buildComponentsTree2(instance2) {\n    return {\n      name: getInstanceName(instance2),\n      children: getInternalInstanceChildren(instance2.subTree).map(buildComponentsTree2),\n      rootElements: getRootElementsFromComponentInstance(instance2),\n      props: instance2.props\n    };\n  }\n  return buildComponentsTree2(instance);\n}\nfunction buildComponentsTreeVue2(instance) {\n  function getComponentName2(options) {\n    const name = options.displayName || options.name || options._componentTag;\n    if (name)\n      return name;\n    const file = options.__file;\n    if (file)\n      return classify(basename(file, ".vue"));\n  }\n  function getInstanceName(instance2) {\n    const name = getComponentName2(instance2.$options || instance2.fnOptions || {});\n    if (name)\n      return name;\n    return instance2.$root === instance2 ? "Root" : "Anonymous Component";\n  }\n  function getInternalInstanceChildren(instance2) {\n    if (instance2.$children)\n      return instance2.$children;\n    if (Array.isArray(instance2.subTree.children))\n      return instance2.subTree.children.filter((vnode) => !!vnode.component).map((vnode) => vnode.component);\n    return [];\n  }\n  function buildComponentsTree2(instance2) {\n    return {\n      name: getInstanceName(instance2),\n      children: getInternalInstanceChildren(instance2).map(buildComponentsTree2),\n      rootElements: [instance2.$el],\n      props: instance2._props\n    };\n  }\n  return buildComponentsTree2(instance);\n}\nfunction filterComponentsTree2(treeNode, searchFn, result = []) {\n  if (searchFn(treeNode))\n    result.push(treeNode);\n  for (const child of treeNode.children)\n    filterComponentsTree2(child, searchFn, result);\n  return result;\n}\nfunction findVueRoots(root, roots = []) {\n  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT);\n  const vue2Roots = /* @__PURE__ */ new Set();\n  do {\n    const node = walker.currentNode;\n    if (node.__vue__)\n      vue2Roots.add(node.__vue__.$root);\n    if (node.__vue_app__ && node._vnode && node._vnode.component)\n      roots.push({ root: node._vnode.component, version: 3 });\n    const shadowRoot = node instanceof Element ? node.shadowRoot : null;\n    if (shadowRoot)\n      findVueRoots(shadowRoot, roots);\n  } while (walker.nextNode());\n  for (const vue2root of vue2Roots) {\n    roots.push({\n      version: 2,\n      root: vue2root\n    });\n  }\n  return roots;\n}\nvar VueEngine = {\n  queryAll(scope, selector) {\n    const { name, attributes } = parseAttributeSelector(selector, false);\n    const vueRoots = findVueRoots(document);\n    const trees = vueRoots.map((vueRoot) => vueRoot.version === 3 ? buildComponentsTreeVue3(vueRoot.root) : buildComponentsTreeVue2(vueRoot.root));\n    const treeNodes = trees.map((tree) => filterComponentsTree2(tree, (treeNode) => {\n      if (name && treeNode.name !== name)\n        return false;\n      if (treeNode.rootElements.some((rootElement) => !isInsideScope(scope, rootElement)))\n        return false;\n      for (const attr of attributes) {\n        if (!matchesComponentAttribute(treeNode.props, attr))\n          return false;\n      }\n      return true;\n    })).flat();\n    const allRootElements = /* @__PURE__ */ new Set();\n    for (const treeNode of treeNodes) {\n      for (const rootElement of treeNode.rootElements)\n        allRootElements.add(rootElement);\n    }\n    return [...allRootElements];\n  }\n};\n\n// packages/playwright-core/src/server/injected/roleUtils.ts\nfunction hasExplicitAccessibleName(e) {\n  return e.hasAttribute("aria-label") || e.hasAttribute("aria-labelledby");\n}\nvar kAncestorPreventingLandmark = "article:not([role]), aside:not([role]), main:not([role]), nav:not([role]), section:not([role]), [role=article], [role=complementary], [role=main], [role=navigation], [role=region]";\nvar kGlobalAriaAttributes = [\n  "aria-atomic",\n  "aria-busy",\n  "aria-controls",\n  "aria-current",\n  "aria-describedby",\n  "aria-details",\n  "aria-disabled",\n  "aria-dropeffect",\n  "aria-errormessage",\n  "aria-flowto",\n  "aria-grabbed",\n  "aria-haspopup",\n  "aria-hidden",\n  "aria-invalid",\n  "aria-keyshortcuts",\n  "aria-label",\n  "aria-labelledby",\n  "aria-live",\n  "aria-owns",\n  "aria-relevant",\n  "aria-roledescription"\n];\nfunction hasGlobalAriaAttribute(e) {\n  return kGlobalAriaAttributes.some((a) => e.hasAttribute(a));\n}\nvar kImplicitRoleByTagName = {\n  "A": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "AREA": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "ARTICLE": () => "article",\n  "ASIDE": () => "complementary",\n  "BLOCKQUOTE": () => "blockquote",\n  "BUTTON": () => "button",\n  "CAPTION": () => "caption",\n  "CODE": () => "code",\n  "DATALIST": () => "listbox",\n  "DD": () => "definition",\n  "DEL": () => "deletion",\n  "DETAILS": () => "group",\n  "DFN": () => "term",\n  "DIALOG": () => "dialog",\n  "DT": () => "term",\n  "EM": () => "emphasis",\n  "FIELDSET": () => "group",\n  "FIGURE": () => "figure",\n  "FOOTER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "contentinfo",\n  "FORM": (e) => hasExplicitAccessibleName(e) ? "form" : null,\n  "H1": () => "heading",\n  "H2": () => "heading",\n  "H3": () => "heading",\n  "H4": () => "heading",\n  "H5": () => "heading",\n  "H6": () => "heading",\n  "HEADER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "banner",\n  "HR": () => "separator",\n  "HTML": () => "document",\n  "IMG": (e) => e.getAttribute("alt") === "" && !hasGlobalAriaAttribute(e) && Number.isNaN(Number(String(e.getAttribute("tabindex")))) ? "presentation" : "img",\n  "INPUT": (e) => {\n    const type = e.type.toLowerCase();\n    if (type === "search")\n      return e.hasAttribute("list") ? "combobox" : "searchbox";\n    if (["email", "tel", "text", "url", ""].includes(type)) {\n      const list = getIdRefs(e, e.getAttribute("list"))[0];\n      return list && list.tagName === "DATALIST" ? "combobox" : "textbox";\n    }\n    if (type === "hidden")\n      return "";\n    return {\n      "button": "button",\n      "checkbox": "checkbox",\n      "image": "button",\n      "number": "spinbutton",\n      "radio": "radio",\n      "range": "slider",\n      "reset": "button",\n      "submit": "button"\n    }[type] || "textbox";\n  },\n  "INS": () => "insertion",\n  "LI": () => "listitem",\n  "MAIN": () => "main",\n  "MARK": () => "mark",\n  "MATH": () => "math",\n  "MENU": () => "list",\n  "METER": () => "meter",\n  "NAV": () => "navigation",\n  "OL": () => "list",\n  "OPTGROUP": () => "group",\n  "OPTION": () => "option",\n  "OUTPUT": () => "status",\n  "P": () => "paragraph",\n  "PROGRESS": () => "progressbar",\n  "SECTION": (e) => hasExplicitAccessibleName(e) ? "region" : null,\n  "SELECT": (e) => e.hasAttribute("multiple") || e.size > 1 ? "listbox" : "combobox",\n  "STRONG": () => "strong",\n  "SUB": () => "subscript",\n  "SUP": () => "superscript",\n  "TABLE": () => "table",\n  "TBODY": () => "rowgroup",\n  "TD": (e) => {\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "TEXTAREA": () => "textbox",\n  "TFOOT": () => "rowgroup",\n  "TH": (e) => {\n    if (e.getAttribute("scope") === "col")\n      return "columnheader";\n    if (e.getAttribute("scope") === "row")\n      return "rowheader";\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "THEAD": () => "rowgroup",\n  "TIME": () => "time",\n  "TR": () => "row",\n  "UL": () => "list"\n};\nvar kPresentationInheritanceParents = {\n  "DD": ["DL", "DIV"],\n  "DIV": ["DL"],\n  "DT": ["DL", "DIV"],\n  "LI": ["OL", "UL"],\n  "TBODY": ["TABLE"],\n  "TD": ["TR"],\n  "TFOOT": ["TABLE"],\n  "TH": ["TR"],\n  "THEAD": ["TABLE"],\n  "TR": ["THEAD", "TBODY", "TFOOT", "TABLE"]\n};\nfunction getImplicitAriaRole(element) {\n  var _a;\n  const implicitRole = ((_a = kImplicitRoleByTagName[element.tagName]) == null ? void 0 : _a.call(kImplicitRoleByTagName, element)) || "";\n  if (!implicitRole)\n    return null;\n  let ancestor = element;\n  while (ancestor) {\n    const parent = parentElementOrShadowHost(ancestor);\n    const parents = kPresentationInheritanceParents[ancestor.tagName];\n    if (!parents || !parent || !parents.includes(parent.tagName))\n      break;\n    const parentExplicitRole = getExplicitAriaRole(parent);\n    if ((parentExplicitRole === "none" || parentExplicitRole === "presentation") && !hasPresentationConflictResolution(parent))\n      return parentExplicitRole;\n    ancestor = parent;\n  }\n  return implicitRole;\n}\nvar allRoles = [\n  "alert",\n  "alertdialog",\n  "application",\n  "article",\n  "banner",\n  "blockquote",\n  "button",\n  "caption",\n  "cell",\n  "checkbox",\n  "code",\n  "columnheader",\n  "combobox",\n  "command",\n  "complementary",\n  "composite",\n  "contentinfo",\n  "definition",\n  "deletion",\n  "dialog",\n  "directory",\n  "document",\n  "emphasis",\n  "feed",\n  "figure",\n  "form",\n  "generic",\n  "grid",\n  "gridcell",\n  "group",\n  "heading",\n  "img",\n  "input",\n  "insertion",\n  "landmark",\n  "link",\n  "list",\n  "listbox",\n  "listitem",\n  "log",\n  "main",\n  "marquee",\n  "math",\n  "meter",\n  "menu",\n  "menubar",\n  "menuitem",\n  "menuitemcheckbox",\n  "menuitemradio",\n  "navigation",\n  "none",\n  "note",\n  "option",\n  "paragraph",\n  "presentation",\n  "progressbar",\n  "radio",\n  "radiogroup",\n  "range",\n  "region",\n  "roletype",\n  "row",\n  "rowgroup",\n  "rowheader",\n  "scrollbar",\n  "search",\n  "searchbox",\n  "section",\n  "sectionhead",\n  "select",\n  "separator",\n  "slider",\n  "spinbutton",\n  "status",\n  "strong",\n  "structure",\n  "subscript",\n  "superscript",\n  "switch",\n  "tab",\n  "table",\n  "tablist",\n  "tabpanel",\n  "term",\n  "textbox",\n  "time",\n  "timer",\n  "toolbar",\n  "tooltip",\n  "tree",\n  "treegrid",\n  "treeitem",\n  "widget",\n  "window"\n];\nvar abstractRoles = ["command", "composite", "input", "landmark", "range", "roletype", "section", "sectionhead", "select", "structure", "widget", "window"];\nvar validRoles = allRoles.filter((role) => !abstractRoles.includes(role));\nfunction getExplicitAriaRole(element) {\n  const roles = (element.getAttribute("role") || "").split(" ").map((role) => role.trim());\n  return roles.find((role) => validRoles.includes(role)) || null;\n}\nfunction hasPresentationConflictResolution(element) {\n  return !hasGlobalAriaAttribute(element);\n}\nfunction getAriaRole(element) {\n  const explicitRole = getExplicitAriaRole(element);\n  if (!explicitRole)\n    return getImplicitAriaRole(element);\n  if ((explicitRole === "none" || explicitRole === "presentation") && hasPresentationConflictResolution(element))\n    return getImplicitAriaRole(element);\n  return explicitRole;\n}\nfunction getAriaBoolean(attr) {\n  return attr === null ? void 0 : attr.toLowerCase() === "true";\n}\nfunction getComputedStyle(element, pseudo) {\n  return element.ownerDocument && element.ownerDocument.defaultView ? element.ownerDocument.defaultView.getComputedStyle(element, pseudo) : void 0;\n}\nfunction isElementHiddenForAria(element, cache) {\n  if (["STYLE", "SCRIPT", "NOSCRIPT", "TEMPLATE"].includes(element.tagName))\n    return true;\n  const style = getComputedStyle(element);\n  if (!style || style.visibility === "hidden")\n    return true;\n  return belongsToDisplayNoneOrAriaHidden(element, cache);\n}\nfunction belongsToDisplayNoneOrAriaHidden(element, cache) {\n  if (!cache.has(element)) {\n    const style = getComputedStyle(element);\n    let hidden = !style || style.display === "none" || getAriaBoolean(element.getAttribute("aria-hidden")) === true;\n    if (!hidden) {\n      const parent = parentElementOrShadowHost(element);\n      if (parent)\n        hidden = hidden || belongsToDisplayNoneOrAriaHidden(parent, cache);\n    }\n    cache.set(element, hidden);\n  }\n  return cache.get(element);\n}\nfunction getIdRefs(element, ref) {\n  if (!ref)\n    return [];\n  const root = enclosingShadowRootOrDocument(element);\n  if (!root)\n    return [];\n  try {\n    const ids = ref.split(" ").filter((id) => !!id);\n    const set = /* @__PURE__ */ new Set();\n    for (const id of ids) {\n      const firstElement = root.querySelector("#" + CSS.escape(id));\n      if (firstElement)\n        set.add(firstElement);\n    }\n    return [...set];\n  } catch (e) {\n    return [];\n  }\n}\nfunction normalizeAccessbileName(s) {\n  return s.replace(/\\r\\n/g, "\\n").replace(/\\u00A0/g, " ").replace(/\\s\\s+/g, " ").trim();\n}\nfunction queryInAriaOwned(element, selector) {\n  const result = [...element.querySelectorAll(selector)];\n  for (const owned of getIdRefs(element, element.getAttribute("aria-owns"))) {\n    if (owned.matches(selector))\n      result.push(owned);\n    result.push(...owned.querySelectorAll(selector));\n  }\n  return result;\n}\nfunction getPseudoContent(pseudoStyle) {\n  if (!pseudoStyle)\n    return "";\n  const content = pseudoStyle.getPropertyValue("content");\n  if (content[0] === "\'" && content[content.length - 1] === "\'" || content[0] === \'"\' && content[content.length - 1] === \'"\') {\n    const unquoted = content.substring(1, content.length - 1);\n    const display = pseudoStyle.getPropertyValue("display") || "inline";\n    if (display !== "inline")\n      return " " + unquoted + " ";\n    return unquoted;\n  }\n  return "";\n}\nfunction getElementAccessibleName(element, includeHidden, hiddenCache) {\n  const elementProhibitsNaming = ["caption", "code", "definition", "deletion", "emphasis", "generic", "insertion", "mark", "paragraph", "presentation", "strong", "subscript", "suggestion", "superscript", "term", "time"].includes(getAriaRole(element) || "");\n  if (elementProhibitsNaming)\n    return "";\n  const accessibleName = normalizeAccessbileName(getElementAccessibleNameInternal(element, {\n    includeHidden,\n    hiddenCache,\n    visitedElements: /* @__PURE__ */ new Set(),\n    embeddedInLabelledBy: "none",\n    embeddedInLabel: "none",\n    embeddedInTextAlternativeElement: false,\n    embeddedInTargetElement: "self"\n  }));\n  return accessibleName;\n}\nfunction getElementAccessibleNameInternal(element, options) {\n  if (options.visitedElements.has(element))\n    return "";\n  const childOptions = {\n    ...options,\n    embeddedInLabel: options.embeddedInLabel === "self" ? "descendant" : options.embeddedInLabel,\n    embeddedInLabelledBy: options.embeddedInLabelledBy === "self" ? "descendant" : options.embeddedInLabelledBy,\n    embeddedInTargetElement: options.embeddedInTargetElement === "self" ? "descendant" : options.embeddedInTargetElement\n  };\n  if (!options.includeHidden && options.embeddedInLabelledBy !== "self" && isElementHiddenForAria(element, options.hiddenCache)) {\n    options.visitedElements.add(element);\n    return "";\n  }\n  if (options.embeddedInLabelledBy === "none") {\n    const refs = getIdRefs(element, element.getAttribute("aria-labelledby"));\n    const accessibleName = refs.map((ref) => getElementAccessibleNameInternal(ref, {\n      ...options,\n      embeddedInLabelledBy: "self",\n      embeddedInTargetElement: "none",\n      embeddedInLabel: "none",\n      embeddedInTextAlternativeElement: false\n    })).join(" ");\n    if (accessibleName)\n      return accessibleName;\n  }\n  const role = getAriaRole(element) || "";\n  if (options.embeddedInLabel !== "none" || options.embeddedInLabelledBy !== "none") {\n    const isOwnLabel = [...element.labels || []].includes(element);\n    const isOwnLabelledBy = getIdRefs(element, element.getAttribute("aria-labelledby")).includes(element);\n    if (!isOwnLabel && !isOwnLabelledBy) {\n      if (role === "textbox") {\n        options.visitedElements.add(element);\n        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA")\n          return element.value;\n        return element.textContent || "";\n      }\n      if (["combobox", "listbox"].includes(role)) {\n        options.visitedElements.add(element);\n        let selectedOptions;\n        if (element.tagName === "SELECT") {\n          selectedOptions = [...element.selectedOptions];\n          if (!selectedOptions.length && element.options.length)\n            selectedOptions.push(element.options[0]);\n        } else {\n          const listbox = role === "combobox" ? queryInAriaOwned(element, "*").find((e) => getAriaRole(e) === "listbox") : element;\n          selectedOptions = listbox ? queryInAriaOwned(listbox, \'[aria-selected="true"]\').filter((e) => getAriaRole(e) === "option") : [];\n        }\n        return selectedOptions.map((option) => getElementAccessibleNameInternal(option, childOptions)).join(" ");\n      }\n      if (["progressbar", "scrollbar", "slider", "spinbutton", "meter"].includes(role)) {\n        options.visitedElements.add(element);\n        if (element.hasAttribute("aria-valuetext"))\n          return element.getAttribute("aria-valuetext") || "";\n        if (element.hasAttribute("aria-valuenow"))\n          return element.getAttribute("aria-valuenow") || "";\n        return element.getAttribute("value") || "";\n      }\n      if (["menu"].includes(role)) {\n        options.visitedElements.add(element);\n        return "";\n      }\n    }\n  }\n  const ariaLabel = element.getAttribute("aria-label") || "";\n  if (ariaLabel.trim()) {\n    options.visitedElements.add(element);\n    return ariaLabel;\n  }\n  if (!["presentation", "none"].includes(role)) {\n    if (element.tagName === "INPUT" && ["button", "submit", "reset"].includes(element.type)) {\n      options.visitedElements.add(element);\n      const value = element.value || "";\n      if (value.trim())\n        return value;\n      if (element.type === "submit")\n        return "Submit";\n      if (element.type === "reset")\n        return "Reset";\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "INPUT" && element.type === "image") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const title = element.getAttribute("title") || "";\n      if (title.trim())\n        return title;\n      return "Submit";\n    }\n    if (element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.tagName === "INPUT") {\n      options.visitedElements.add(element);\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const usePlaceholder = element.tagName === "INPUT" && ["text", "password", "search", "tel", "email", "url"].includes(element.type) || element.tagName === "TEXTAREA";\n      const placeholder = element.getAttribute("placeholder") || "";\n      const title = element.getAttribute("title") || "";\n      if (!usePlaceholder || title)\n        return title;\n      return placeholder;\n    }\n    if (element.tagName === "FIELDSET") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "LEGEND") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "FIGURE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "FIGCAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "IMG") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "TABLE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "CAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const summary = element.getAttribute("summary") || "";\n      if (summary)\n        return summary;\n    }\n    if (element.tagName === "AREA") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "SVG" && element.ownerSVGElement) {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "TITLE" && element.ownerSVGElement) {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n    }\n  }\n  const allowsNameFromContent = ["button", "cell", "checkbox", "columnheader", "gridcell", "heading", "link", "menuitem", "menuitemcheckbox", "menuitemradio", "option", "radio", "row", "rowheader", "switch", "tab", "tooltip", "treeitem"].includes(role);\n  if (allowsNameFromContent || options.embeddedInLabelledBy !== "none" || options.embeddedInLabel !== "none" || options.embeddedInTextAlternativeElement || options.embeddedInTargetElement === "descendant") {\n    options.visitedElements.add(element);\n    const tokens = [];\n    const visit = (node) => {\n      var _a;\n      if (node.nodeType === 1) {\n        const display = ((_a = getComputedStyle(node)) == null ? void 0 : _a.getPropertyValue("display")) || "inline";\n        let token = getElementAccessibleNameInternal(node, childOptions);\n        if (display !== "inline" || node.nodeName === "BR")\n          token = " " + token + " ";\n        tokens.push(token);\n      } else if (node.nodeType === 3) {\n        tokens.push(node.textContent || "");\n      }\n    };\n    tokens.push(getPseudoContent(getComputedStyle(element, "::before")));\n    for (let child = element.firstChild; child; child = child.nextSibling)\n      visit(child);\n    if (element.shadowRoot) {\n      for (let child = element.shadowRoot.firstChild; child; child = child.nextSibling)\n        visit(child);\n    }\n    for (const owned of getIdRefs(element, element.getAttribute("aria-owns")))\n      visit(owned);\n    tokens.push(getPseudoContent(getComputedStyle(element, "::after")));\n    const accessibleName = tokens.join("");\n    if (accessibleName.trim())\n      return accessibleName;\n  }\n  if (!["presentation", "none"].includes(role) || element.tagName === "IFRAME") {\n    options.visitedElements.add(element);\n    const title = element.getAttribute("title") || "";\n    if (title.trim())\n      return title;\n  }\n  options.visitedElements.add(element);\n  return "";\n}\nvar kAriaSelectedRoles = ["gridcell", "option", "row", "tab", "rowheader", "columnheader", "treeitem"];\nfunction getAriaSelected(element) {\n  if (element.tagName === "OPTION")\n    return element.selected;\n  if (kAriaSelectedRoles.includes(getAriaRole(element) || ""))\n    return getAriaBoolean(element.getAttribute("aria-selected")) === true;\n  return false;\n}\nvar kAriaCheckedRoles = ["checkbox", "menuitemcheckbox", "option", "radio", "switch", "menuitemradio", "treeitem"];\nfunction getAriaChecked(element) {\n  if (element.tagName === "INPUT" && element.indeterminate)\n    return "mixed";\n  if (element.tagName === "INPUT" && ["checkbox", "radio"].includes(element.type))\n    return element.checked;\n  if (kAriaCheckedRoles.includes(getAriaRole(element) || "")) {\n    const checked = element.getAttribute("aria-checked");\n    if (checked === "true")\n      return true;\n    if (checked === "mixed")\n      return "mixed";\n  }\n  return false;\n}\nvar kAriaPressedRoles = ["button"];\nfunction getAriaPressed(element) {\n  if (kAriaPressedRoles.includes(getAriaRole(element) || "")) {\n    const pressed = element.getAttribute("aria-pressed");\n    if (pressed === "true")\n      return true;\n    if (pressed === "mixed")\n      return "mixed";\n  }\n  return false;\n}\nvar kAriaExpandedRoles = ["application", "button", "checkbox", "combobox", "gridcell", "link", "listbox", "menuitem", "row", "rowheader", "tab", "treeitem", "columnheader", "menuitemcheckbox", "menuitemradio", "rowheader", "switch"];\nfunction getAriaExpanded(element) {\n  if (element.tagName === "DETAILS")\n    return element.open;\n  if (kAriaExpandedRoles.includes(getAriaRole(element) || ""))\n    return getAriaBoolean(element.getAttribute("aria-expanded")) === true;\n  return false;\n}\nvar kAriaLevelRoles = ["heading", "listitem", "row", "treeitem"];\nfunction getAriaLevel(element) {\n  const native = { "H1": 1, "H2": 2, "H3": 3, "H4": 4, "H5": 5, "H6": 6 }[element.tagName];\n  if (native)\n    return native;\n  if (kAriaLevelRoles.includes(getAriaRole(element) || "")) {\n    const attr = element.getAttribute("aria-level");\n    const value = attr === null ? Number.NaN : Number(attr);\n    if (Number.isInteger(value) && value >= 1)\n      return value;\n  }\n  return 0;\n}\nvar kAriaDisabledRoles = ["application", "button", "composite", "gridcell", "group", "input", "link", "menuitem", "scrollbar", "separator", "tab", "checkbox", "columnheader", "combobox", "grid", "listbox", "menu", "menubar", "menuitemcheckbox", "menuitemradio", "option", "radio", "radiogroup", "row", "rowheader", "searchbox", "select", "slider", "spinbutton", "switch", "tablist", "textbox", "toolbar", "tree", "treegrid", "treeitem"];\nfunction getAriaDisabled(element) {\n  const isNativeFormControl = ["BUTTON", "INPUT", "SELECT", "TEXTAREA", "OPTION", "OPTGROUP"].includes(element.tagName);\n  if (isNativeFormControl && (element.hasAttribute("disabled") || belongsToDisabledFieldSet(element)))\n    return true;\n  return hasExplicitAriaDisabled(element);\n}\nfunction belongsToDisabledFieldSet(element) {\n  if (!element)\n    return false;\n  if (element.tagName === "FIELDSET" && element.hasAttribute("disabled"))\n    return true;\n  return belongsToDisabledFieldSet(element.parentElement);\n}\nfunction hasExplicitAriaDisabled(element) {\n  if (!element)\n    return false;\n  if (kAriaDisabledRoles.includes(getAriaRole(element) || "")) {\n    const attribute = (element.getAttribute("aria-disabled") || "").toLowerCase();\n    if (attribute === "true")\n      return true;\n    if (attribute === "false")\n      return false;\n  }\n  return hasExplicitAriaDisabled(parentElementOrShadowHost(element));\n}\n\n// packages/playwright-core/src/server/injected/roleSelectorEngine.ts\nvar kSupportedAttributes = ["selected", "checked", "pressed", "expanded", "level", "disabled", "name", "include-hidden"];\nkSupportedAttributes.sort();\nfunction validateSupportedRole(attr, roles, role) {\n  if (!roles.includes(role))\n    throw new Error(`"${attr}" attribute is only supported for roles: ${roles.slice().sort().map((role2) => `"${role2}"`).join(", ")}`);\n}\nfunction validateSupportedValues(attr, values) {\n  if (attr.op !== "<truthy>" && !values.includes(attr.value))\n    throw new Error(`"${attr.name}" must be one of ${values.map((v) => JSON.stringify(v)).join(", ")}`);\n}\nfunction validateSupportedOp(attr, ops) {\n  if (!ops.includes(attr.op))\n    throw new Error(`"${attr.name}" does not support "${attr.op}" matcher`);\n}\nfunction validateAttributes(attrs, role) {\n  for (const attr of attrs) {\n    switch (attr.name) {\n      case "checked": {\n        validateSupportedRole(attr.name, kAriaCheckedRoles, role);\n        validateSupportedValues(attr, [true, false, "mixed"]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        if (attr.op === "<truthy>") {\n          attr.op = "=";\n          attr.value = true;\n        }\n        break;\n      }\n      case "pressed": {\n        validateSupportedRole(attr.name, kAriaPressedRoles, role);\n        validateSupportedValues(attr, [true, false, "mixed"]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        if (attr.op === "<truthy>") {\n          attr.op = "=";\n          attr.value = true;\n        }\n        break;\n      }\n      case "selected": {\n        validateSupportedRole(attr.name, kAriaSelectedRoles, role);\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      case "expanded": {\n        validateSupportedRole(attr.name, kAriaExpandedRoles, role);\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      case "level": {\n        validateSupportedRole(attr.name, kAriaLevelRoles, role);\n        if (typeof attr.value === "string")\n          attr.value = +attr.value;\n        if (attr.op !== "=" || typeof attr.value !== "number" || Number.isNaN(attr.value))\n          throw new Error(`"level" attribute must be compared to a number`);\n        break;\n      }\n      case "disabled": {\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      case "name": {\n        if (attr.op === "<truthy>")\n          throw new Error(`"name" attribute must have a value`);\n        if (typeof attr.value !== "string" && !(attr.value instanceof RegExp))\n          throw new Error(`"name" attribute must be a string or a regular expression`);\n        break;\n      }\n      case "include-hidden": {\n        validateSupportedValues(attr, [true, false]);\n        validateSupportedOp(attr, ["<truthy>", "="]);\n        break;\n      }\n      default: {\n        throw new Error(`Unknown attribute "${attr.name}", must be one of ${kSupportedAttributes.map((a) => `"${a}"`).join(", ")}.`);\n      }\n    }\n  }\n}\nvar RoleEngine = {\n  queryAll(scope, selector) {\n    const parsed = parseAttributeSelector(selector, true);\n    const role = parsed.name.toLowerCase();\n    if (!role)\n      throw new Error(`Role must not be empty`);\n    validateAttributes(parsed.attributes, role);\n    const hiddenCache = /* @__PURE__ */ new Map();\n    const result = [];\n    const match = (element) => {\n      if (getAriaRole(element) !== role)\n        return;\n      let includeHidden = false;\n      let nameAttr;\n      for (const attr of parsed.attributes) {\n        if (attr.name === "include-hidden") {\n          includeHidden = attr.op === "<truthy>" || !!attr.value;\n          continue;\n        }\n        if (attr.name === "name") {\n          nameAttr = attr;\n          continue;\n        }\n        let actual;\n        switch (attr.name) {\n          case "selected":\n            actual = getAriaSelected(element);\n            break;\n          case "checked":\n            actual = getAriaChecked(element);\n            break;\n          case "pressed":\n            actual = getAriaPressed(element);\n            break;\n          case "expanded":\n            actual = getAriaExpanded(element);\n            break;\n          case "level":\n            actual = getAriaLevel(element);\n            break;\n          case "disabled":\n            actual = getAriaDisabled(element);\n            break;\n        }\n        if (!matchesAttributePart(actual, attr))\n          return;\n      }\n      if (!includeHidden) {\n        const isHidden = isElementHiddenForAria(element, hiddenCache);\n        if (isHidden)\n          return;\n      }\n      if (nameAttr !== void 0) {\n        const accessibleName = getElementAccessibleName(element, includeHidden, hiddenCache);\n        if (!matchesAttributePart(accessibleName, nameAttr))\n          return;\n      }\n      result.push(element);\n    };\n    const query = (root) => {\n      const shadows = [];\n      if (root.shadowRoot)\n        shadows.push(root.shadowRoot);\n      for (const element of root.querySelectorAll("*")) {\n        match(element);\n        if (element.shadowRoot)\n          shadows.push(element.shadowRoot);\n      }\n      shadows.forEach(query);\n    };\n    query(scope);\n    return result;\n  }\n};\n\n// packages/playwright-core/src/server/injected/layoutSelectorUtils.ts\nfunction boxRightOf(box1, box2, maxDistance) {\n  const distance = box1.left - box2.right;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box2.bottom - box1.bottom, 0) + Math.max(box1.top - box2.top, 0);\n}\nfunction boxLeftOf(box1, box2, maxDistance) {\n  const distance = box2.left - box1.right;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box2.bottom - box1.bottom, 0) + Math.max(box1.top - box2.top, 0);\n}\nfunction boxAbove(box1, box2, maxDistance) {\n  const distance = box2.top - box1.bottom;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box1.left - box2.left, 0) + Math.max(box2.right - box1.right, 0);\n}\nfunction boxBelow(box1, box2, maxDistance) {\n  const distance = box1.top - box2.bottom;\n  if (distance < 0 || maxDistance !== void 0 && distance > maxDistance)\n    return;\n  return distance + Math.max(box1.left - box2.left, 0) + Math.max(box2.right - box1.right, 0);\n}\nfunction boxNear(box1, box2, maxDistance) {\n  const kThreshold = maxDistance === void 0 ? 50 : maxDistance;\n  let score = 0;\n  if (box1.left - box2.right >= 0)\n    score += box1.left - box2.right;\n  if (box2.left - box1.right >= 0)\n    score += box2.left - box1.right;\n  if (box2.top - box1.bottom >= 0)\n    score += box2.top - box1.bottom;\n  if (box1.top - box2.bottom >= 0)\n    score += box1.top - box2.bottom;\n  return score > kThreshold ? void 0 : score;\n}\nvar kLayoutSelectorNames = ["left-of", "right-of", "above", "below", "near"];\nfunction layoutSelectorScore(name, element, inner, maxDistance) {\n  const box = element.getBoundingClientRect();\n  const scorer = { "left-of": boxLeftOf, "right-of": boxRightOf, "above": boxAbove, "below": boxBelow, "near": boxNear }[name];\n  let bestScore;\n  for (const e of inner) {\n    if (e === element)\n      continue;\n    const score = scorer(box, e.getBoundingClientRect(), maxDistance);\n    if (score === void 0)\n      continue;\n    if (bestScore === void 0 || score < bestScore)\n      bestScore = score;\n  }\n  return bestScore;\n}\n\n// packages/playwright-core/src/server/injected/selectorEvaluator.ts\nvar SelectorEvaluatorImpl = class {\n  constructor(extraEngines) {\n    this._engines = /* @__PURE__ */ new Map();\n    this._cacheQueryCSS = /* @__PURE__ */ new Map();\n    this._cacheMatches = /* @__PURE__ */ new Map();\n    this._cacheQuery = /* @__PURE__ */ new Map();\n    this._cacheMatchesSimple = /* @__PURE__ */ new Map();\n    this._cacheMatchesParents = /* @__PURE__ */ new Map();\n    this._cacheCallMatches = /* @__PURE__ */ new Map();\n    this._cacheCallQuery = /* @__PURE__ */ new Map();\n    this._cacheQuerySimple = /* @__PURE__ */ new Map();\n    this._cacheText = /* @__PURE__ */ new Map();\n    this._retainCacheCounter = 0;\n    for (const [name, engine] of extraEngines)\n      this._engines.set(name, engine);\n    this._engines.set("not", notEngine);\n    this._engines.set("is", isEngine);\n    this._engines.set("where", isEngine);\n    this._engines.set("has", hasEngine);\n    this._engines.set("scope", scopeEngine);\n    this._engines.set("light", lightEngine);\n    this._engines.set("visible", visibleEngine);\n    this._engines.set("text", textEngine);\n    this._engines.set("text-is", textIsEngine);\n    this._engines.set("text-matches", textMatchesEngine);\n    this._engines.set("has-text", hasTextEngine);\n    this._engines.set("right-of", createLayoutEngine("right-of"));\n    this._engines.set("left-of", createLayoutEngine("left-of"));\n    this._engines.set("above", createLayoutEngine("above"));\n    this._engines.set("below", createLayoutEngine("below"));\n    this._engines.set("near", createLayoutEngine("near"));\n    this._engines.set("nth-match", nthMatchEngine);\n    const allNames = [...this._engines.keys()];\n    allNames.sort();\n    const parserNames = [...customCSSNames];\n    parserNames.sort();\n    if (allNames.join("|") !== parserNames.join("|"))\n      throw new Error(`Please keep customCSSNames in sync with evaluator engines: ${allNames.join("|")} vs ${parserNames.join("|")}`);\n  }\n  begin() {\n    ++this._retainCacheCounter;\n  }\n  end() {\n    --this._retainCacheCounter;\n    if (!this._retainCacheCounter) {\n      this._cacheQueryCSS.clear();\n      this._cacheMatches.clear();\n      this._cacheQuery.clear();\n      this._cacheMatchesSimple.clear();\n      this._cacheMatchesParents.clear();\n      this._cacheCallMatches.clear();\n      this._cacheCallQuery.clear();\n      this._cacheQuerySimple.clear();\n      this._cacheText.clear();\n    }\n  }\n  _cached(cache, main, rest, cb) {\n    if (!cache.has(main))\n      cache.set(main, []);\n    const entries = cache.get(main);\n    const entry = entries.find((e) => rest.every((value, index) => e.rest[index] === value));\n    if (entry)\n      return entry.result;\n    const result = cb();\n    entries.push({ rest, result });\n    return result;\n  }\n  _checkSelector(s) {\n    const wellFormed = typeof s === "object" && s && (Array.isArray(s) || "simples" in s && s.simples.length);\n    if (!wellFormed)\n      throw new Error(`Malformed selector "${s}"`);\n    return s;\n  }\n  matches(element, s, context) {\n    const selector = this._checkSelector(s);\n    this.begin();\n    try {\n      return this._cached(this._cacheMatches, element, [selector, context.scope, context.pierceShadow], () => {\n        if (Array.isArray(selector))\n          return this._matchesEngine(isEngine, element, selector, context);\n        if (!this._matchesSimple(element, selector.simples[selector.simples.length - 1].selector, context))\n          return false;\n        return this._matchesParents(element, selector, selector.simples.length - 2, context);\n      });\n    } finally {\n      this.end();\n    }\n  }\n  query(context, s) {\n    const selector = this._checkSelector(s);\n    this.begin();\n    try {\n      return this._cached(this._cacheQuery, selector, [context.scope, context.pierceShadow], () => {\n        if (Array.isArray(selector))\n          return this._queryEngine(isEngine, context, selector);\n        const previousScoreMap = this._scoreMap;\n        this._scoreMap = /* @__PURE__ */ new Map();\n        let elements = this._querySimple(context, selector.simples[selector.simples.length - 1].selector);\n        elements = elements.filter((element) => this._matchesParents(element, selector, selector.simples.length - 2, context));\n        if (this._scoreMap.size) {\n          elements.sort((a, b) => {\n            const aScore = this._scoreMap.get(a);\n            const bScore = this._scoreMap.get(b);\n            if (aScore === bScore)\n              return 0;\n            if (aScore === void 0)\n              return 1;\n            if (bScore === void 0)\n              return -1;\n            return aScore - bScore;\n          });\n        }\n        this._scoreMap = previousScoreMap;\n        return elements;\n      });\n    } finally {\n      this.end();\n    }\n  }\n  _markScore(element, score) {\n    if (this._scoreMap)\n      this._scoreMap.set(element, score);\n  }\n  _matchesSimple(element, simple, context) {\n    return this._cached(this._cacheMatchesSimple, element, [simple, context.scope, context.pierceShadow], () => {\n      const isPossiblyScopeClause = simple.functions.some((f) => f.name === "scope" || f.name === "is");\n      if (!isPossiblyScopeClause && element === context.scope)\n        return false;\n      if (simple.css && !this._matchesCSS(element, simple.css))\n        return false;\n      for (const func of simple.functions) {\n        if (!this._matchesEngine(this._getEngine(func.name), element, func.args, context))\n          return false;\n      }\n      return true;\n    });\n  }\n  _querySimple(context, simple) {\n    if (!simple.functions.length)\n      return this._queryCSS(context, simple.css || "*");\n    return this._cached(this._cacheQuerySimple, simple, [context.scope, context.pierceShadow], () => {\n      let css2 = simple.css;\n      const funcs = simple.functions;\n      if (css2 === "*" && funcs.length)\n        css2 = void 0;\n      let elements;\n      let firstIndex = -1;\n      if (css2 !== void 0) {\n        elements = this._queryCSS(context, css2);\n        const hasScopeClause = funcs.some((f) => f.name === "scope");\n        if (hasScopeClause && context.scope.nodeType === 1)\n          elements.unshift(context.scope);\n      } else {\n        firstIndex = funcs.findIndex((func) => this._getEngine(func.name).query !== void 0);\n        if (firstIndex === -1)\n          firstIndex = 0;\n        elements = this._queryEngine(this._getEngine(funcs[firstIndex].name), context, funcs[firstIndex].args);\n      }\n      for (let i = 0; i < funcs.length; i++) {\n        if (i === firstIndex)\n          continue;\n        const engine = this._getEngine(funcs[i].name);\n        if (engine.matches !== void 0)\n          elements = elements.filter((e) => this._matchesEngine(engine, e, funcs[i].args, context));\n      }\n      for (let i = 0; i < funcs.length; i++) {\n        if (i === firstIndex)\n          continue;\n        const engine = this._getEngine(funcs[i].name);\n        if (engine.matches === void 0)\n          elements = elements.filter((e) => this._matchesEngine(engine, e, funcs[i].args, context));\n      }\n      return elements;\n    });\n  }\n  _matchesParents(element, complex, index, context) {\n    if (index < 0)\n      return true;\n    return this._cached(this._cacheMatchesParents, element, [complex, index, context.scope, context.pierceShadow], () => {\n      const { selector: simple, combinator } = complex.simples[index];\n      if (combinator === ">") {\n        const parent = parentElementOrShadowHostInContext(element, context);\n        if (!parent || !this._matchesSimple(parent, simple, context))\n          return false;\n        return this._matchesParents(parent, complex, index - 1, context);\n      }\n      if (combinator === "+") {\n        const previousSibling = previousSiblingInContext(element, context);\n        if (!previousSibling || !this._matchesSimple(previousSibling, simple, context))\n          return false;\n        return this._matchesParents(previousSibling, complex, index - 1, context);\n      }\n      if (combinator === "") {\n        let parent = parentElementOrShadowHostInContext(element, context);\n        while (parent) {\n          if (this._matchesSimple(parent, simple, context)) {\n            if (this._matchesParents(parent, complex, index - 1, context))\n              return true;\n            if (complex.simples[index - 1].combinator === "")\n              break;\n          }\n          parent = parentElementOrShadowHostInContext(parent, context);\n        }\n        return false;\n      }\n      if (combinator === "~") {\n        let previousSibling = previousSiblingInContext(element, context);\n        while (previousSibling) {\n          if (this._matchesSimple(previousSibling, simple, context)) {\n            if (this._matchesParents(previousSibling, complex, index - 1, context))\n              return true;\n            if (complex.simples[index - 1].combinator === "~")\n              break;\n          }\n          previousSibling = previousSiblingInContext(previousSibling, context);\n        }\n        return false;\n      }\n      if (combinator === ">=") {\n        let parent = element;\n        while (parent) {\n          if (this._matchesSimple(parent, simple, context)) {\n            if (this._matchesParents(parent, complex, index - 1, context))\n              return true;\n            if (complex.simples[index - 1].combinator === "")\n              break;\n          }\n          parent = parentElementOrShadowHostInContext(parent, context);\n        }\n        return false;\n      }\n      throw new Error(`Unsupported combinator "${combinator}"`);\n    });\n  }\n  _matchesEngine(engine, element, args, context) {\n    if (engine.matches)\n      return this._callMatches(engine, element, args, context);\n    if (engine.query)\n      return this._callQuery(engine, args, context).includes(element);\n    throw new Error(`Selector engine should implement "matches" or "query"`);\n  }\n  _queryEngine(engine, context, args) {\n    if (engine.query)\n      return this._callQuery(engine, args, context);\n    if (engine.matches)\n      return this._queryCSS(context, "*").filter((element) => this._callMatches(engine, element, args, context));\n    throw new Error(`Selector engine should implement "matches" or "query"`);\n  }\n  _callMatches(engine, element, args, context) {\n    return this._cached(this._cacheCallMatches, element, [engine, context.scope, context.pierceShadow, ...args], () => {\n      return engine.matches(element, args, context, this);\n    });\n  }\n  _callQuery(engine, args, context) {\n    return this._cached(this._cacheCallQuery, engine, [context.scope, context.pierceShadow, ...args], () => {\n      return engine.query(context, args, this);\n    });\n  }\n  _matchesCSS(element, css2) {\n    return element.matches(css2);\n  }\n  _queryCSS(context, css2) {\n    return this._cached(this._cacheQueryCSS, css2, [context.scope, context.pierceShadow], () => {\n      let result = [];\n      function query(root) {\n        result = result.concat([...root.querySelectorAll(css2)]);\n        if (!context.pierceShadow)\n          return;\n        if (root.shadowRoot)\n          query(root.shadowRoot);\n        for (const element of root.querySelectorAll("*")) {\n          if (element.shadowRoot)\n            query(element.shadowRoot);\n        }\n      }\n      query(context.scope);\n      return result;\n    });\n  }\n  _getEngine(name) {\n    const engine = this._engines.get(name);\n    if (!engine)\n      throw new Error(`Unknown selector engine "${name}"`);\n    return engine;\n  }\n};\nvar isEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"is" engine expects non-empty selector list`);\n    return args.some((selector) => evaluator.matches(element, selector, context));\n  },\n  query(context, args, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"is" engine expects non-empty selector list`);\n    let elements = [];\n    for (const arg of args)\n      elements = elements.concat(evaluator.query(context, arg));\n    return args.length === 1 ? elements : sortInDOMOrder(elements);\n  }\n};\nvar hasEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"has" engine expects non-empty selector list`);\n    return evaluator.query({ ...context, scope: element }, args).length > 0;\n  }\n};\nvar scopeEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 0)\n      throw new Error(`"scope" engine expects no arguments`);\n    if (context.scope.nodeType === 9)\n      return element === context.scope.documentElement;\n    return element === context.scope;\n  },\n  query(context, args, evaluator) {\n    if (args.length !== 0)\n      throw new Error(`"scope" engine expects no arguments`);\n    if (context.scope.nodeType === 9) {\n      const root = context.scope.documentElement;\n      return root ? [root] : [];\n    }\n    if (context.scope.nodeType === 1)\n      return [context.scope];\n    return [];\n  }\n};\nvar notEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0)\n      throw new Error(`"not" engine expects non-empty selector list`);\n    return !evaluator.matches(element, args, context);\n  }\n};\nvar lightEngine = {\n  query(context, args, evaluator) {\n    return evaluator.query({ ...context, pierceShadow: false }, args);\n  },\n  matches(element, args, context, evaluator) {\n    return evaluator.matches(element, args, { ...context, pierceShadow: false });\n  }\n};\nvar visibleEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length)\n      throw new Error(`"visible" engine expects no arguments`);\n    return isElementVisible(element);\n  }\n};\nvar textEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 1 || typeof args[0] !== "string")\n      throw new Error(`"text" engine expects a single string`);\n    const matcher = createLaxTextMatcher(args[0]);\n    return elementMatchesText(evaluator._cacheText, element, matcher) === "self";\n  }\n};\nvar textIsEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 1 || typeof args[0] !== "string")\n      throw new Error(`"text-is" engine expects a single string`);\n    const matcher = createStrictTextMatcher(args[0]);\n    return elementMatchesText(evaluator._cacheText, element, matcher) !== "none";\n  }\n};\nvar textMatchesEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length === 0 || typeof args[0] !== "string" || args.length > 2 || args.length === 2 && typeof args[1] !== "string")\n      throw new Error(`"text-matches" engine expects a regexp body and optional regexp flags`);\n    const matcher = createRegexTextMatcher(args[0], args.length === 2 ? args[1] : void 0);\n    return elementMatchesText(evaluator._cacheText, element, matcher) === "self";\n  }\n};\nvar hasTextEngine = {\n  matches(element, args, context, evaluator) {\n    if (args.length !== 1 || typeof args[0] !== "string")\n      throw new Error(`"has-text" engine expects a single string`);\n    if (shouldSkipForTextMatching(element))\n      return false;\n    const matcher = createLaxTextMatcher(args[0]);\n    return matcher(elementText(evaluator._cacheText, element));\n  }\n};\nfunction createLayoutEngine(name) {\n  return {\n    matches(element, args, context, evaluator) {\n      const maxDistance = args.length && typeof args[args.length - 1] === "number" ? args[args.length - 1] : void 0;\n      const queryArgs = maxDistance === void 0 ? args : args.slice(0, args.length - 1);\n      if (args.length < 1 + (maxDistance === void 0 ? 0 : 1))\n        throw new Error(`"${name}" engine expects a selector list and optional maximum distance in pixels`);\n      const inner = evaluator.query(context, queryArgs);\n      const score = layoutSelectorScore(name, element, inner, maxDistance);\n      if (score === void 0)\n        return false;\n      evaluator._markScore(element, score);\n      return true;\n    }\n  };\n}\nvar nthMatchEngine = {\n  query(context, args, evaluator) {\n    let index = args[args.length - 1];\n    if (args.length < 2)\n      throw new Error(`"nth-match" engine expects non-empty selector list and an index argument`);\n    if (typeof index !== "number" || index < 1)\n      throw new Error(`"nth-match" engine expects a one-based index as the last argument`);\n    const elements = isEngine.query(context, args.slice(0, args.length - 1), evaluator);\n    index--;\n    return index < elements.length ? [elements[index]] : [];\n  }\n};\nfunction parentElementOrShadowHostInContext(element, context) {\n  if (element === context.scope)\n    return;\n  if (!context.pierceShadow)\n    return element.parentElement || void 0;\n  return parentElementOrShadowHost(element);\n}\nfunction previousSiblingInContext(element, context) {\n  if (element === context.scope)\n    return;\n  return element.previousElementSibling || void 0;\n}\nfunction sortInDOMOrder(elements) {\n  const elementToEntry = /* @__PURE__ */ new Map();\n  const roots = [];\n  const result = [];\n  function append(element) {\n    let entry = elementToEntry.get(element);\n    if (entry)\n      return entry;\n    const parent = parentElementOrShadowHost(element);\n    if (parent) {\n      const parentEntry = append(parent);\n      parentEntry.children.push(element);\n    } else {\n      roots.push(element);\n    }\n    entry = { children: [], taken: false };\n    elementToEntry.set(element, entry);\n    return entry;\n  }\n  elements.forEach((e) => append(e).taken = true);\n  function visit(element) {\n    const entry = elementToEntry.get(element);\n    if (entry.taken)\n      result.push(element);\n    if (entry.children.length > 1) {\n      const set = new Set(entry.children);\n      entry.children = [];\n      let child = element.firstElementChild;\n      while (child && entry.children.length < set.size) {\n        if (set.has(child))\n          entry.children.push(child);\n        child = child.nextElementSibling;\n      }\n      child = element.shadowRoot ? element.shadowRoot.firstElementChild : null;\n      while (child && entry.children.length < set.size) {\n        if (set.has(child))\n          entry.children.push(child);\n        child = child.nextElementSibling;\n      }\n    }\n    entry.children.forEach(visit);\n  }\n  roots.forEach(visit);\n  return result;\n}\n\n// packages/playwright-core/src/utils/isomorphic/stringUtils.ts\nfunction escapeWithQuotes(text, char = "\'") {\n  const stringified = JSON.stringify(text);\n  const escapedText = stringified.substring(1, stringified.length - 1).replace(/\\\\"/g, \'"\');\n  if (char === "\'")\n    return char + escapedText.replace(/[\']/g, "\\\\\'") + char;\n  if (char === \'"\')\n    return char + escapedText.replace(/["]/g, \'\\\\"\') + char;\n  if (char === "`")\n    return char + escapedText.replace(/[`]/g, "`") + char;\n  throw new Error("Invalid escape char");\n}\nfunction toTitleCase(name) {\n  return name.charAt(0).toUpperCase() + name.substring(1);\n}\nfunction toSnakeCase(name) {\n  return name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();\n}\nfunction cssEscape(s) {\n  let result = "";\n  for (let i = 0; i < s.length; i++)\n    result += cssEscapeOne(s, i);\n  return result;\n}\nfunction cssEscapeOne(s, i) {\n  const c = s.charCodeAt(i);\n  if (c === 0)\n    return "\\uFFFD";\n  if (c >= 1 && c <= 31 || c >= 48 && c <= 57 && (i === 0 || i === 1 && s.charCodeAt(0) === 45))\n    return "\\\\" + c.toString(16) + " ";\n  if (i === 0 && c === 45 && s.length === 1)\n    return "\\\\" + s.charAt(i);\n  if (c >= 128 || c === 45 || c === 95 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122)\n    return s.charAt(i);\n  return "\\\\" + s.charAt(i);\n}\nfunction escapeForRegex(text) {\n  return text.replace(/[.*+?^>${}()|[\\]\\\\]/g, "\\\\$&");\n}\nfunction escapeForTextSelector(text, exact, caseSensitive = false) {\n  if (typeof text !== "string")\n    return String(text);\n  if (exact)\n    return \'"\' + text.replace(/["]/g, \'\\\\"\') + \'"\';\n  if (text.includes(\'"\') || text.includes(">>") || text[0] === "/")\n    return `/${escapeForRegex(text).replace(/\\s+/g, "\\\\s+")}/` + (caseSensitive ? "" : "i");\n  return text;\n}\nfunction escapeForAttributeSelector(value, exact) {\n  return `"${value.replace(/["]/g, \'\\\\"\')}"${exact ? "" : "i"}`;\n}\n\n// packages/playwright-core/src/server/injected/selectorGenerator.ts\nvar cacheAllowText = /* @__PURE__ */ new Map();\nvar cacheDisallowText = /* @__PURE__ */ new Map();\nvar kNthScore = 1e3;\nfunction generateSelector(injectedScript, targetElement, strict) {\n  injectedScript._evaluator.begin();\n  try {\n    targetElement = targetElement.closest("button,select,input,[role=button],[role=checkbox],[role=radio],a,[role=link]") || targetElement;\n    const targetTokens = generateSelectorFor(injectedScript, targetElement, strict);\n    const bestTokens = targetTokens || cssFallback(injectedScript, targetElement, strict);\n    const selector = joinTokens(bestTokens);\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument)\n    };\n  } finally {\n    cacheAllowText.clear();\n    cacheDisallowText.clear();\n    injectedScript._evaluator.end();\n  }\n}\nfunction filterRegexTokens(textCandidates) {\n  return textCandidates.filter((c) => c[0].selector[0] !== "/");\n}\nfunction generateSelectorFor(injectedScript, targetElement, strict) {\n  if (targetElement.ownerDocument.documentElement === targetElement)\n    return [{ engine: "css", selector: "html", score: 1 }];\n  const accessibleNameCache = /* @__PURE__ */ new Map();\n  const calculate = (element, allowText) => {\n    const allowNthMatch = element === targetElement;\n    let textCandidates = allowText ? buildTextCandidates(injectedScript, element, element === targetElement).map((token) => [token]) : [];\n    if (element !== targetElement) {\n      textCandidates = filterRegexTokens(textCandidates);\n    }\n    const noTextCandidates = buildCandidates(injectedScript, element, accessibleNameCache).map((token) => [token]);\n    let result = chooseFirstSelector(injectedScript, targetElement.ownerDocument, element, [...textCandidates, ...noTextCandidates], allowNthMatch, strict);\n    textCandidates = filterRegexTokens(textCandidates);\n    const checkWithText = (textCandidatesToUse) => {\n      const allowParentText = allowText && !textCandidatesToUse.length;\n      const candidates = [...textCandidatesToUse, ...noTextCandidates].filter((c) => {\n        if (!result)\n          return true;\n        return combineScores(c) < combineScores(result);\n      });\n      let bestPossibleInParent = candidates[0];\n      if (!bestPossibleInParent)\n        return;\n      for (let parent = parentElementOrShadowHost2(element); parent; parent = parentElementOrShadowHost2(parent)) {\n        const parentTokens = calculateCached(parent, allowParentText);\n        if (!parentTokens)\n          continue;\n        if (result && combineScores([...parentTokens, ...bestPossibleInParent]) >= combineScores(result))\n          continue;\n        bestPossibleInParent = chooseFirstSelector(injectedScript, parent, element, candidates, allowNthMatch, strict);\n        if (!bestPossibleInParent)\n          return;\n        const combined = [...parentTokens, ...bestPossibleInParent];\n        if (!result || combineScores(combined) < combineScores(result))\n          result = combined;\n      }\n    };\n    checkWithText(textCandidates);\n    if (element === targetElement && textCandidates.length)\n      checkWithText([]);\n    return result;\n  };\n  const calculateCached = (element, allowText) => {\n    const cache = allowText ? cacheAllowText : cacheDisallowText;\n    let value = cache.get(element);\n    if (value === void 0) {\n      value = calculate(element, allowText);\n      cache.set(element, value);\n    }\n    return value;\n  };\n  return calculateCached(targetElement, true);\n}\nfunction buildCandidates(injectedScript, element, accessibleNameCache) {\n  var _a;\n  const candidates = [];\n  if (element.getAttribute("data-testid"))\n    candidates.push({ engine: "internal:attr", selector: `[data-testid=${escapeForAttributeSelector(element.getAttribute("data-testid"), true)}]`, score: 1 });\n  for (const attr of ["data-test-id", "data-test"]) {\n    if (element.getAttribute(attr))\n      candidates.push({ engine: "css", selector: `[${attr}=${quoteAttributeValue(element.getAttribute(attr))}]`, score: 2 });\n  }\n  if (element.nodeName === "INPUT" || element.nodeName === "TEXTAREA") {\n    const input = element;\n    if (input.placeholder)\n      candidates.push({ engine: "internal:attr", selector: `[placeholder=${escapeForAttributeSelector(input.placeholder, true)}]`, score: 3 });\n    const label = (_a = input.labels) == null ? void 0 : _a[0];\n    if (label) {\n      const labelText = elementText(injectedScript._evaluator._cacheText, label).full.trim();\n      candidates.push({ engine: "internal:label", selector: escapeForTextSelector(labelText, false, true), score: 3 });\n    }\n  }\n  const ariaRole = getAriaRole(element);\n  if (ariaRole) {\n    const ariaName = getElementAccessibleName(element, false, accessibleNameCache);\n    if (ariaName)\n      candidates.push({ engine: "role", selector: `${ariaRole}[name=${escapeForAttributeSelector(ariaName, true)}]`, score: 3 });\n    else\n      candidates.push({ engine: "role", selector: ariaRole, score: 150 });\n  }\n  if (element.getAttribute("alt") && ["APPLET", "AREA", "IMG", "INPUT"].includes(element.nodeName))\n    candidates.push({ engine: "internal:attr", selector: `[alt=${escapeForAttributeSelector(element.getAttribute("alt"), true)}]`, score: 10 });\n  if (element.getAttribute("name") && ["BUTTON", "FORM", "FIELDSET", "FRAME", "IFRAME", "INPUT", "KEYGEN", "OBJECT", "OUTPUT", "SELECT", "TEXTAREA", "MAP", "META", "PARAM"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[name=${quoteAttributeValue(element.getAttribute("name"))}]`, score: 50 });\n  if (["INPUT", "TEXTAREA"].includes(element.nodeName) && element.getAttribute("type") !== "hidden") {\n    if (element.getAttribute("type"))\n      candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[type=${quoteAttributeValue(element.getAttribute("type"))}]`, score: 50 });\n  }\n  if (["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 50 });\n  const idAttr = element.getAttribute("id");\n  if (idAttr && !isGuidLike(idAttr))\n    candidates.push({ engine: "css", selector: makeSelectorForId(idAttr), score: 100 });\n  candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 200 });\n  return candidates;\n}\nfunction buildTextCandidates(injectedScript, element, isTargetNode) {\n  if (element.nodeName === "SELECT")\n    return [];\n  const text = elementText(injectedScript._evaluator._cacheText, element).full.trim().replace(/\\s+/g, " ").substring(0, 80);\n  if (!text)\n    return [];\n  const candidates = [];\n  const escaped = escapeForTextSelector(text, false, true);\n  if (isTargetNode)\n    candidates.push({ engine: "text", selector: escaped, score: 10 });\n  if (escaped === text) {\n    let prefix = element.nodeName.toLowerCase();\n    if (element.hasAttribute("role"))\n      prefix += `[role=${quoteAttributeValue(element.getAttribute("role"))}]`;\n    candidates.push({ engine: "css", selector: `${prefix}:has-text("${text}")`, score: 10 });\n  }\n  return candidates;\n}\nfunction parentElementOrShadowHost2(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return null;\n  if (element.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE && element.parentNode.host)\n    return element.parentNode.host;\n  return null;\n}\nfunction makeSelectorForId(id) {\n  return /^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(id) ? "#" + id : `[id="${cssEscape(id)}"]`;\n}\nfunction cssFallback(injectedScript, targetElement, strict) {\n  const kFallbackScore = 1e7;\n  const root = targetElement.ownerDocument;\n  const tokens = [];\n  function uniqueCSSSelector(prefix) {\n    const path = tokens.slice();\n    if (prefix)\n      path.unshift(prefix);\n    const selector = path.join(" > ");\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const node = injectedScript.querySelector(parsedSelector, targetElement.ownerDocument, false);\n    return node === targetElement ? selector : void 0;\n  }\n  function makeStrict(selector) {\n    const token = { engine: "css", selector, score: kFallbackScore };\n    if (!strict)\n      return [token];\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const elements = injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument);\n    if (elements.length === 1)\n      return [token];\n    const nth = { engine: "nth", selector: String(elements.indexOf(targetElement)), score: kNthScore };\n    return [token, nth];\n  }\n  for (let element = targetElement; element && element !== root; element = parentElementOrShadowHost2(element)) {\n    const nodeName = element.nodeName.toLowerCase();\n    let bestTokenForLevel = "";\n    if (element.id) {\n      const token = makeSelectorForId(element.id);\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      bestTokenForLevel = token;\n    }\n    const parent = element.parentNode;\n    const classes = [...element.classList];\n    for (let i = 0; i < classes.length; ++i) {\n      const token = "." + cssEscape(classes.slice(0, i + 1).join("."));\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel && parent) {\n        const sameClassSiblings = parent.querySelectorAll(token);\n        if (sameClassSiblings.length === 1)\n          bestTokenForLevel = token;\n      }\n    }\n    if (parent) {\n      const siblings = [...parent.children];\n      const sameTagSiblings = siblings.filter((sibling) => sibling.nodeName.toLowerCase() === nodeName);\n      const token = sameTagSiblings.indexOf(element) === 0 ? cssEscape(nodeName) : `${cssEscape(nodeName)}:nth-child(${1 + siblings.indexOf(element)})`;\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel)\n        bestTokenForLevel = token;\n    } else if (!bestTokenForLevel) {\n      bestTokenForLevel = nodeName;\n    }\n    tokens.unshift(bestTokenForLevel);\n  }\n  return makeStrict(uniqueCSSSelector());\n}\nfunction quoteAttributeValue(text) {\n  return `"${cssEscape(text).replace(/\\\\ /g, " ")}"`;\n}\nfunction joinTokens(tokens) {\n  const parts = [];\n  let lastEngine = "";\n  for (const { engine, selector } of tokens) {\n    if (parts.length && (lastEngine !== "css" || engine !== "css" || selector.startsWith(":nth-match(")))\n      parts.push(">>");\n    lastEngine = engine;\n    if (engine === "css")\n      parts.push(selector);\n    else\n      parts.push(`${engine}=${selector}`);\n  }\n  return parts.join(" ");\n}\nfunction combineScores(tokens) {\n  let score = 0;\n  for (let i = 0; i < tokens.length; i++)\n    score += tokens[i].score * (tokens.length - i);\n  return score;\n}\nfunction chooseFirstSelector(injectedScript, scope, targetElement, selectors, allowNthMatch, strict) {\n  const joined = selectors.map((tokens) => ({ tokens, score: combineScores(tokens) }));\n  joined.sort((a, b) => a.score - b.score);\n  let bestWithIndex = null;\n  for (const { tokens } of joined) {\n    const parsedSelector = injectedScript.parseSelector(joinTokens(tokens));\n    const result = injectedScript.querySelectorAll(parsedSelector, scope);\n    const isStrictEnough = !strict || result.length === 1;\n    const index = result.indexOf(targetElement);\n    if (index === 0 && isStrictEnough) {\n      return tokens;\n    }\n    if (!allowNthMatch || bestWithIndex || index === -1 || result.length > 5)\n      continue;\n    const nth = { engine: "nth", selector: String(index), score: kNthScore };\n    bestWithIndex = [...tokens, nth];\n  }\n  return bestWithIndex;\n}\nfunction isGuidLike(id) {\n  let lastCharacterType;\n  let transitionCount = 0;\n  for (let i = 0; i < id.length; ++i) {\n    const c = id[i];\n    let characterType;\n    if (c === "-" || c === "_")\n      continue;\n    if (c >= "a" && c <= "z")\n      characterType = "lower";\n    else if (c >= "A" && c <= "Z")\n      characterType = "upper";\n    else if (c >= "0" && c <= "9")\n      characterType = "digit";\n    else\n      characterType = "other";\n    if (characterType === "lower" && lastCharacterType === "upper") {\n      lastCharacterType = characterType;\n      continue;\n    }\n    if (lastCharacterType && lastCharacterType !== characterType)\n      ++transitionCount;\n    lastCharacterType = characterType;\n  }\n  return transitionCount >= id.length / 4;\n}\n\n// packages/playwright-core/src/server/isomorphic/locatorGenerators.ts\nfunction asLocator(lang, selector, isFrameLocator = false) {\n  return innerAsLocator(generators[lang], selector, isFrameLocator);\n}\nfunction innerAsLocator(factory, selector, isFrameLocator = false) {\n  const parsed = parseSelector(selector);\n  const tokens = [];\n  for (const part of parsed.parts) {\n    const base = part === parsed.parts[0] ? isFrameLocator ? "frame-locator" : "page" : "locator";\n    if (part.name === "nth") {\n      if (part.body === "0")\n        tokens.push(factory.generateLocator(base, "first", ""));\n      else if (part.body === "-1")\n        tokens.push(factory.generateLocator(base, "last", ""));\n      else\n        tokens.push(factory.generateLocator(base, "nth", part.body));\n      continue;\n    }\n    if (part.name === "text") {\n      const { exact, text } = detectExact(part.body);\n      tokens.push(factory.generateLocator(base, "text", text, { exact }));\n      continue;\n    }\n    if (part.name === "internal:label") {\n      const { exact, text } = detectExact(part.body);\n      tokens.push(factory.generateLocator(base, "label", text, { exact }));\n      continue;\n    }\n    if (part.name === "role") {\n      const attrSelector = parseAttributeSelector(part.body, true);\n      const attrs = {};\n      for (const attr of attrSelector.attributes)\n        attrs[attr.name === "include-hidden" ? "includeHidden" : attr.name] = attr.value;\n      tokens.push(factory.generateLocator(base, "role", attrSelector.name, { attrs }));\n      continue;\n    }\n    if (part.name === "css") {\n      const parsed2 = part.body;\n      if (parsed2[0].simples.length === 1 && parsed2[0].simples[0].selector.functions.length === 1 && parsed2[0].simples[0].selector.functions[0].name === "hasText") {\n        const hasText = parsed2[0].simples[0].selector.functions[0].args[0];\n        tokens.push(factory.generateLocator(base, "has-text", parsed2[0].simples[0].selector.css, { hasText }));\n        continue;\n      }\n    }\n    if (part.name === "internal:attr") {\n      const attrSelector = parseAttributeSelector(part.body, true);\n      const { name, value } = attrSelector.attributes[0];\n      if (name === "data-testid") {\n        tokens.push(factory.generateLocator(base, "test-id", value));\n        continue;\n      }\n      const { exact, text } = detectExact(value);\n      if (name === "placeholder") {\n        tokens.push(factory.generateLocator(base, "placeholder", text, { exact }));\n        continue;\n      }\n      if (name === "alt") {\n        tokens.push(factory.generateLocator(base, "alt", text, { exact }));\n        continue;\n      }\n      if (name === "title") {\n        tokens.push(factory.generateLocator(base, "title", text, { exact }));\n        continue;\n      }\n      if (name === "label") {\n        tokens.push(factory.generateLocator(base, "label", text, { exact }));\n        continue;\n      }\n    }\n    const p = { parts: [part] };\n    tokens.push(factory.generateLocator(base, "default", stringifySelector(p)));\n  }\n  return tokens.join(".");\n}\nfunction detectExact(text) {\n  let exact = false;\n  if (text.startsWith(\'"\') && text.endsWith(\'"\')) {\n    text = JSON.parse(text);\n    exact = true;\n  }\n  return { exact, text };\n}\nvar JavaScriptLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    switch (kind) {\n      case "default":\n        return `locator(${this.quote(body)})`;\n      case "nth":\n        return `nth(${body})`;\n      case "first":\n        return `first()`;\n      case "last":\n        return `last()`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`${name}: ${typeof value === "string" ? this.quote(value) : value}`);\n        const attrString = attrs.length ? `, { ${attrs.join(", ")} }` : "";\n        return `getByRole(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `locator(${this.quote(body)}, { hasText: ${this.quote(options.hasText)} })`;\n      case "test-id":\n        return `getByTestId(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact("getByText", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact("getByAltText", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact("getByPlaceholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact("getByLabel", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact("getByTitle", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i")))\n      return `${method}(${body})`;\n    return exact ? `${method}(${this.quote(body)}, { exact: true })` : `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, "\'");\n  }\n};\nvar PythonLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    switch (kind) {\n      case "default":\n        return `locator(${this.quote(body)})`;\n      case "nth":\n        return `nth(${body})`;\n      case "first":\n        return `first`;\n      case "last":\n        return `last`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`${toSnakeCase(name)}=${typeof value === "string" ? this.quote(value) : value}`);\n        const attrString = attrs.length ? `, ${attrs.join(", ")}` : "";\n        return `get_by_role(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `locator(${this.quote(body)}, has_text=${this.quote(options.hasText)})`;\n      case "test-id":\n        return `get_by_test_id(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact("get_by_text", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact("get_by_alt_text", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact("get_by_placeholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact("get_by_label", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact("get_by_title", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {\n      const regex = body.substring(1, body.lastIndexOf("/"));\n      const suffix = body.endsWith("i") ? ", re.IGNORECASE" : "";\n      return `${method}(re.compile(r${this.quote(regex)}${suffix}))`;\n    }\n    if (exact)\n      return `${method}(${this.quote(body)}, exact=true)`;\n    return `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, \'"\');\n  }\n};\nvar JavaLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    let clazz;\n    switch (base) {\n      case "page":\n        clazz = "Page";\n        break;\n      case "frame-locator":\n        clazz = "FrameLocator";\n        break;\n      case "locator":\n        clazz = "Locator";\n        break;\n    }\n    switch (kind) {\n      case "default":\n        return `locator(${this.quote(body)})`;\n      case "nth":\n        return `nth(${body})`;\n      case "first":\n        return `first()`;\n      case "last":\n        return `last()`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`.set${toTitleCase(name)}(${typeof value === "string" ? this.quote(value) : value})`);\n        const attrString = attrs.length ? `, new ${clazz}.GetByRoleOptions()${attrs.join("")}` : "";\n        return `getByRole(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `locator(${this.quote(body)}, new ${clazz}.LocatorOptions().setHasText(${this.quote(options.hasText)}))`;\n      case "test-id":\n        return `getByTestId(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact(clazz, "getByText", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact(clazz, "getByAltText", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact(clazz, "getByPlaceholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact(clazz, "getByLabel", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact(clazz, "getByTitle", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(clazz, method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {\n      const regex = body.substring(1, body.lastIndexOf("/"));\n      const suffix = body.endsWith("i") ? ", Pattern.CASE_INSENSITIVE" : "";\n      return `${method}(Pattern.compile(${this.quote(regex)}${suffix}))`;\n    }\n    if (exact)\n      return `${method}(${this.quote(body)}, new ${clazz}.${toTitleCase(method)}Options().setExact(exact))`;\n    return `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, \'"\');\n  }\n};\nvar CSharpLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    switch (kind) {\n      case "default":\n        return `Locator(${this.quote(body)})`;\n      case "nth":\n        return `Nth(${body})`;\n      case "first":\n        return `First`;\n      case "last":\n        return `Last`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`${toTitleCase(name)} = ${typeof value === "string" ? this.quote(value) : value}`);\n        const attrString = attrs.length ? `, new () { ${attrs.join(", ")} }` : "";\n        return `GetByRole(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `Locator(${this.quote(body)}, new () { HasTextString: ${this.quote(options.hasText)} })`;\n      case "test-id":\n        return `GetByTestId(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact("GetByText", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact("GetByAltText", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact("GetByPlaceholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact("GetByLabel", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact("GetByTitle", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {\n      const regex = body.substring(1, body.lastIndexOf("/"));\n      const suffix = body.endsWith("i") ? ", RegexOptions.IgnoreCase" : "";\n      return `${method}(new Regex(${this.quote(regex)}${suffix}))`;\n    }\n    if (exact)\n      return `${method}(${this.quote(body)}, new () { Exact: true })`;\n    return `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, \'"\');\n  }\n};\nvar generators = {\n  javascript: new JavaScriptLocatorFactory(),\n  python: new PythonLocatorFactory(),\n  java: new JavaLocatorFactory(),\n  csharp: new CSharpLocatorFactory()\n};\n\n// packages/playwright-core/src/server/injected/highlight.ts\nvar Highlight = class {\n  constructor(injectedScript) {\n    this._highlightEntries = [];\n    this._language = "javascript";\n    this._injectedScript = injectedScript;\n    this._isUnderTest = injectedScript.isUnderTest;\n    this._glassPaneElement = document.createElement("x-pw-glass");\n    this._glassPaneElement.style.position = "fixed";\n    this._glassPaneElement.style.top = "0";\n    this._glassPaneElement.style.right = "0";\n    this._glassPaneElement.style.bottom = "0";\n    this._glassPaneElement.style.left = "0";\n    this._glassPaneElement.style.zIndex = "2147483647";\n    this._glassPaneElement.style.pointerEvents = "none";\n    this._glassPaneElement.style.display = "flex";\n    this._actionPointElement = document.createElement("x-pw-action-point");\n    this._actionPointElement.setAttribute("hidden", "true");\n    this._glassPaneShadow = this._glassPaneElement.attachShadow({ mode: "closed" });\n    this._glassPaneShadow.appendChild(this._actionPointElement);\n    const styleElement = document.createElement("style");\n    styleElement.textContent = `\n        x-pw-tooltip {\n          align-items: center;\n          backdrop-filter: blur(5px);\n          background-color: rgba(0, 0, 0, 0.7);\n          border-radius: 2px;\n          box-shadow: rgba(0, 0, 0, 0.1) 0px 3.6px 3.7px,\n                      rgba(0, 0, 0, 0.15) 0px 12.1px 12.3px,\n                      rgba(0, 0, 0, 0.1) 0px -2px 4px,\n                      rgba(0, 0, 0, 0.15) 0px -12.1px 24px,\n                      rgba(0, 0, 0, 0.25) 0px 54px 55px;\n          color: rgb(204, 204, 204);\n          display: none;\n          font-family: \'Dank Mono\', \'Operator Mono\', Inconsolata, \'Fira Mono\',\n                      \'SF Mono\', Monaco, \'Droid Sans Mono\', \'Source Code Pro\', monospace;\n          font-size: 12.8px;\n          font-weight: normal;\n          left: 0;\n          line-height: 1.5;\n          max-width: 600px;\n          padding: 3.2px 5.12px 3.2px;\n          position: absolute;\n          top: 0;\n        }\n        x-pw-action-point {\n          position: absolute;\n          width: 20px;\n          height: 20px;\n          background: red;\n          border-radius: 10px;\n          pointer-events: none;\n          margin: -10px 0 0 -10px;\n          z-index: 2;\n        }\n        *[hidden] {\n          display: none !important;\n        }\n    `;\n    this._glassPaneShadow.appendChild(styleElement);\n  }\n  install() {\n    document.documentElement.appendChild(this._glassPaneElement);\n  }\n  setLanguage(language) {\n    this._language = language;\n  }\n  runHighlightOnRaf(selector) {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this.updateHighlight(this._injectedScript.querySelectorAll(selector, document.documentElement), stringifySelector(selector), false);\n    this._rafRequest = requestAnimationFrame(() => this.runHighlightOnRaf(selector));\n  }\n  uninstall() {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this._glassPaneElement.remove();\n  }\n  isInstalled() {\n    return this._glassPaneElement.parentElement === document.documentElement && !this._glassPaneElement.nextElementSibling;\n  }\n  showActionPoint(x, y) {\n    this._actionPointElement.style.top = y + "px";\n    this._actionPointElement.style.left = x + "px";\n    this._actionPointElement.hidden = false;\n    if (this._isUnderTest)\n      console.error("Action point for test: " + JSON.stringify({ x, y }));\n  }\n  hideActionPoint() {\n    this._actionPointElement.hidden = true;\n  }\n  clearHighlight() {\n    var _a, _b;\n    for (const entry of this._highlightEntries) {\n      (_a = entry.highlightElement) == null ? void 0 : _a.remove();\n      (_b = entry.tooltipElement) == null ? void 0 : _b.remove();\n    }\n    this._highlightEntries = [];\n  }\n  updateHighlight(elements, selector, isRecording) {\n    let color;\n    if (isRecording)\n      color = "#dc6f6f7f";\n    else\n      color = elements.length > 1 ? "#f6b26b7f" : "#6fa8dc7f";\n    this._innerUpdateHighlight(elements, { color, tooltipText: selector ? asLocator(this._language, selector) : "" });\n  }\n  maskElements(elements) {\n    this._innerUpdateHighlight(elements, { color: "#F0F" });\n  }\n  _innerUpdateHighlight(elements, options) {\n    if (this._highlightIsUpToDate(elements))\n      return;\n    this.clearHighlight();\n    for (let i = 0; i < elements.length; ++i) {\n      const highlightElement = this._createHighlightElement();\n      this._glassPaneShadow.appendChild(highlightElement);\n      let tooltipElement;\n      if (options.tooltipText) {\n        tooltipElement = document.createElement("x-pw-tooltip");\n        this._glassPaneShadow.appendChild(tooltipElement);\n        const suffix = elements.length > 1 ? ` [${i + 1} of ${elements.length}]` : "";\n        tooltipElement.textContent = options.tooltipText + suffix;\n        tooltipElement.style.top = "0";\n        tooltipElement.style.left = "0";\n        tooltipElement.style.display = "flex";\n        if (this._isUnderTest)\n          console.error("Highlight text for test: " + JSON.stringify(tooltipElement.textContent));\n      }\n      this._highlightEntries.push({ targetElement: elements[i], tooltipElement, highlightElement });\n    }\n    for (const entry of this._highlightEntries) {\n      entry.box = entry.targetElement.getBoundingClientRect();\n      if (!entry.tooltipElement)\n        continue;\n      const tooltipWidth = entry.tooltipElement.offsetWidth;\n      const tooltipHeight = entry.tooltipElement.offsetHeight;\n      const totalWidth = this._glassPaneElement.offsetWidth;\n      const totalHeight = this._glassPaneElement.offsetHeight;\n      let anchorLeft = entry.box.left;\n      if (anchorLeft + tooltipWidth > totalWidth - 5)\n        anchorLeft = totalWidth - tooltipWidth - 5;\n      let anchorTop = entry.box.bottom + 5;\n      if (anchorTop + tooltipHeight > totalHeight - 5) {\n        if (entry.box.top > tooltipHeight + 5) {\n          anchorTop = entry.box.top - tooltipHeight - 5;\n        } else {\n          anchorTop = totalHeight - 5 - tooltipHeight;\n        }\n      }\n      entry.tooltipTop = anchorTop;\n      entry.tooltipLeft = anchorLeft;\n    }\n    for (const entry of this._highlightEntries) {\n      if (entry.tooltipElement) {\n        entry.tooltipElement.style.top = entry.tooltipTop + "px";\n        entry.tooltipElement.style.left = entry.tooltipLeft + "px";\n      }\n      const box = entry.box;\n      entry.highlightElement.style.backgroundColor = options.color;\n      entry.highlightElement.style.left = box.x + "px";\n      entry.highlightElement.style.top = box.y + "px";\n      entry.highlightElement.style.width = box.width + "px";\n      entry.highlightElement.style.height = box.height + "px";\n      entry.highlightElement.style.display = "block";\n      if (this._isUnderTest)\n        console.error("Highlight box for test: " + JSON.stringify({ x: box.x, y: box.y, width: box.width, height: box.height }));\n    }\n  }\n  _highlightIsUpToDate(elements) {\n    if (elements.length !== this._highlightEntries.length)\n      return false;\n    for (let i = 0; i < this._highlightEntries.length; ++i) {\n      if (elements[i] !== this._highlightEntries[i].targetElement)\n        return false;\n      const oldBox = this._highlightEntries[i].box;\n      if (!oldBox)\n        return false;\n      const box = elements[i].getBoundingClientRect();\n      if (box.top !== oldBox.top || box.right !== oldBox.right || box.bottom !== oldBox.bottom || box.left !== oldBox.left)\n        return false;\n    }\n    return true;\n  }\n  _createHighlightElement() {\n    const highlightElement = document.createElement("x-pw-highlight");\n    highlightElement.style.position = "absolute";\n    highlightElement.style.top = "0";\n    highlightElement.style.left = "0";\n    highlightElement.style.width = "0";\n    highlightElement.style.height = "0";\n    highlightElement.style.boxSizing = "border-box";\n    return highlightElement;\n  }\n};\n\n// packages/playwright-core/src/server/injected/injectedScript.ts\nvar InjectedScript = class {\n  constructor(isUnderTest, stableRafCount, browserName, customEngines) {\n    this.onGlobalListenersRemoved = /* @__PURE__ */ new Set();\n    this.isUnderTest = isUnderTest;\n    this._evaluator = new SelectorEvaluatorImpl(/* @__PURE__ */ new Map());\n    this._engines = /* @__PURE__ */ new Map();\n    this._engines.set("xpath", XPathEngine);\n    this._engines.set("xpath:light", XPathEngine);\n    this._engines.set("_react", ReactEngine);\n    this._engines.set("_vue", VueEngine);\n    this._engines.set("role", RoleEngine);\n    this._engines.set("text", this._createTextEngine(true));\n    this._engines.set("text:light", this._createTextEngine(false));\n    this._engines.set("id", this._createAttributeEngine("id", true));\n    this._engines.set("id:light", this._createAttributeEngine("id", false));\n    this._engines.set("data-testid", this._createAttributeEngine("data-testid", true));\n    this._engines.set("data-testid:light", this._createAttributeEngine("data-testid", false));\n    this._engines.set("data-test-id", this._createAttributeEngine("data-test-id", true));\n    this._engines.set("data-test-id:light", this._createAttributeEngine("data-test-id", false));\n    this._engines.set("data-test", this._createAttributeEngine("data-test", true));\n    this._engines.set("data-test:light", this._createAttributeEngine("data-test", false));\n    this._engines.set("css", this._createCSSEngine());\n    this._engines.set("nth", { queryAll: () => [] });\n    this._engines.set("visible", this._createVisibleEngine());\n    this._engines.set("internal:control", this._createControlEngine());\n    this._engines.set("internal:has", this._createHasEngine());\n    this._engines.set("internal:label", this._createLabelEngine());\n    this._engines.set("internal:attr", this._createNamedAttributeEngine());\n    for (const { name, engine } of customEngines)\n      this._engines.set(name, engine);\n    this._stableRafCount = stableRafCount;\n    this._browserName = browserName;\n    this._setupGlobalListenersRemovalDetection();\n    this._setupHitTargetInterceptors();\n    if (isUnderTest)\n      window.__injectedScript = this;\n  }\n  eval(expression) {\n    return globalThis.eval(expression);\n  }\n  parseSelector(selector) {\n    const result = parseSelector(selector);\n    for (const name of allEngineNames(result)) {\n      if (!this._engines.has(name))\n        throw this.createStacklessError(`Unknown engine "${name}" while parsing selector ${selector}`);\n    }\n    return result;\n  }\n  generateSelector(targetElement) {\n    return generateSelector(this, targetElement, true).selector;\n  }\n  querySelector(selector, root, strict) {\n    const result = this.querySelectorAll(selector, root);\n    if (strict && result.length > 1)\n      throw this.strictModeViolationError(selector, result);\n    return result[0];\n  }\n  _queryNth(elements, part) {\n    const list = [...elements];\n    let nth = +part.body;\n    if (nth === -1)\n      nth = list.length - 1;\n    return new Set(list.slice(nth, nth + 1));\n  }\n  _queryLayoutSelector(elements, part, originalRoot) {\n    const name = part.name;\n    const body = part.body;\n    const result = [];\n    const inner = this.querySelectorAll(body.parsed, originalRoot);\n    for (const element of elements) {\n      const score = layoutSelectorScore(name, element, inner, body.distance);\n      if (score !== void 0)\n        result.push({ element, score });\n    }\n    result.sort((a, b) => a.score - b.score);\n    return new Set(result.map((r) => r.element));\n  }\n  querySelectorAll(selector, root) {\n    if (selector.capture !== void 0) {\n      if (selector.parts.some((part) => part.name === "nth"))\n        throw this.createStacklessError(`Can\'t query n-th element in a request with the capture.`);\n      const withHas = { parts: selector.parts.slice(0, selector.capture + 1) };\n      if (selector.capture < selector.parts.length - 1) {\n        const parsed = { parts: selector.parts.slice(selector.capture + 1) };\n        const has = { name: "internal:has", body: { parsed }, source: stringifySelector(parsed) };\n        withHas.parts.push(has);\n      }\n      return this.querySelectorAll(withHas, root);\n    }\n    if (!root["querySelectorAll"])\n      throw this.createStacklessError("Node is not queryable.");\n    if (selector.capture !== void 0) {\n      throw this.createStacklessError("Internal error: there should not be a capture in the selector.");\n    }\n    this._evaluator.begin();\n    try {\n      let roots = /* @__PURE__ */ new Set([root]);\n      for (const part of selector.parts) {\n        if (part.name === "nth") {\n          roots = this._queryNth(roots, part);\n        } else if (kLayoutSelectorNames.includes(part.name)) {\n          roots = this._queryLayoutSelector(roots, part, root);\n        } else {\n          const next = /* @__PURE__ */ new Set();\n          for (const root2 of roots) {\n            const all = this._queryEngineAll(part, root2);\n            for (const one of all)\n              next.add(one);\n          }\n          roots = next;\n        }\n      }\n      return [...roots];\n    } finally {\n      this._evaluator.end();\n    }\n  }\n  _queryEngineAll(part, root) {\n    const result = this._engines.get(part.name).queryAll(root, part.body);\n    for (const element of result) {\n      if (!("nodeName" in element))\n        throw this.createStacklessError(`Expected a Node but got ${Object.prototype.toString.call(element)}`);\n    }\n    return result;\n  }\n  _createAttributeEngine(attribute, shadow) {\n    const toCSS = (selector) => {\n      const css2 = `[${attribute}=${JSON.stringify(selector)}]`;\n      return [{ simples: [{ selector: { css: css2, functions: [] }, combinator: "" }] }];\n    };\n    return {\n      queryAll: (root, selector) => {\n        return this._evaluator.query({ scope: root, pierceShadow: shadow }, toCSS(selector));\n      }\n    };\n  }\n  _createCSSEngine() {\n    const evaluator = this._evaluator;\n    return {\n      queryAll(root, body) {\n        return evaluator.query({ scope: root, pierceShadow: true }, body);\n      }\n    };\n  }\n  _createTextEngine(shadow) {\n    const queryList = (root, selector) => {\n      const { matcher, kind } = createTextMatcher(selector, false);\n      const result = [];\n      let lastDidNotMatchSelf = null;\n      const appendElement = (element) => {\n        if (kind === "lax" && lastDidNotMatchSelf && lastDidNotMatchSelf.contains(element))\n          return false;\n        const matches = elementMatchesText(this._evaluator._cacheText, element, matcher);\n        if (matches === "none")\n          lastDidNotMatchSelf = element;\n        if (matches === "self" || matches === "selfAndChildren" && kind === "strict")\n          result.push(element);\n      };\n      if (root.nodeType === Node.ELEMENT_NODE)\n        appendElement(root);\n      const elements = this._evaluator._queryCSS({ scope: root, pierceShadow: shadow }, "*");\n      for (const element of elements)\n        appendElement(element);\n      return result;\n    };\n    return {\n      queryAll: (root, selector) => {\n        return queryList(root, selector);\n      }\n    };\n  }\n  _createLabelEngine() {\n    const evaluator = this._evaluator;\n    return {\n      queryAll: (root, selector) => {\n        const { matcher } = createTextMatcher(selector, true);\n        const result = [];\n        const labels = this._evaluator._queryCSS({ scope: root, pierceShadow: true }, "label");\n        for (const label of labels) {\n          const control = label.control;\n          if (control && matcher(elementText(evaluator._cacheText, label)))\n            result.push(control);\n        }\n        return result;\n      }\n    };\n  }\n  _createNamedAttributeEngine() {\n    const queryList = (root, selector) => {\n      const parsed = parseAttributeSelector(selector, true);\n      if (parsed.name || parsed.attributes.length !== 1)\n        throw new Error("Malformed attribute selector: " + selector);\n      const { name, value, caseSensitive } = parsed.attributes[0];\n      const lowerCaseValue = caseSensitive ? null : value.toLowerCase();\n      let matcher;\n      if (value instanceof RegExp)\n        matcher = (s) => !!s.match(value);\n      else if (caseSensitive)\n        matcher = (s) => s === value;\n      else\n        matcher = (s) => s.toLowerCase().includes(lowerCaseValue);\n      const elements = this._evaluator._queryCSS({ scope: root, pierceShadow: true }, `[${name}]`);\n      return elements.filter((e) => matcher(e.getAttribute(name)));\n    };\n    return {\n      queryAll: (root, selector) => {\n        return queryList(root, selector);\n      }\n    };\n  }\n  _createControlEngine() {\n    return {\n      queryAll(root, body) {\n        if (body === "enter-frame")\n          return [];\n        if (body === "return-empty")\n          return [];\n        if (body === "component") {\n          if (root.nodeType !== 1)\n            return [];\n          return [root.childElementCount === 1 ? root.firstElementChild : root];\n        }\n        throw new Error(`Internal error, unknown internal:control selector ${body}`);\n      }\n    };\n  }\n  _createHasEngine() {\n    const queryAll = (root, body) => {\n      if (root.nodeType !== 1)\n        return [];\n      const has = !!this.querySelector(body.parsed, root, false);\n      return has ? [root] : [];\n    };\n    return { queryAll };\n  }\n  _createVisibleEngine() {\n    const queryAll = (root, body) => {\n      if (root.nodeType !== 1)\n        return [];\n      return isElementVisible(root) === Boolean(body) ? [root] : [];\n    };\n    return { queryAll };\n  }\n  extend(source, params) {\n    const constrFunction = globalThis.eval(`\n    (() => {\n      const module = {};\n      ${source}\n      return module.exports;\n    })()`);\n    return new constrFunction(this, params);\n  }\n  isVisible(element) {\n    return isElementVisible(element);\n  }\n  pollRaf(predicate) {\n    return this.poll(predicate, (next) => requestAnimationFrame(next));\n  }\n  pollInterval(pollInterval, predicate) {\n    return this.poll(predicate, (next) => setTimeout(next, pollInterval));\n  }\n  pollLogScale(predicate) {\n    const pollIntervals = [100, 250, 500];\n    let attempts = 0;\n    return this.poll(predicate, (next) => setTimeout(next, pollIntervals[attempts++] || 1e3));\n  }\n  poll(predicate, scheduleNext) {\n    return this._runAbortableTask((progress) => {\n      let fulfill;\n      let reject;\n      const result = new Promise((f, r) => {\n        fulfill = f;\n        reject = r;\n      });\n      const next = () => {\n        if (progress.aborted)\n          return;\n        try {\n          const success = predicate(progress);\n          if (success !== progress.continuePolling)\n            fulfill(success);\n          else\n            scheduleNext(next);\n        } catch (e) {\n          progress.log("  " + e.message);\n          reject(e);\n        }\n      };\n      next();\n      return result;\n    });\n  }\n  _runAbortableTask(task) {\n    let unsentLog = [];\n    let takeNextLogsCallback;\n    let taskFinished = false;\n    const logReady = () => {\n      if (!takeNextLogsCallback)\n        return;\n      takeNextLogsCallback(unsentLog);\n      unsentLog = [];\n      takeNextLogsCallback = void 0;\n    };\n    const takeNextLogs = () => new Promise((fulfill) => {\n      takeNextLogsCallback = fulfill;\n      if (unsentLog.length || taskFinished)\n        logReady();\n    });\n    let lastMessage = "";\n    let lastIntermediateResult = void 0;\n    const progress = {\n      injectedScript: this,\n      aborted: false,\n      continuePolling: Symbol("continuePolling"),\n      log: (message) => {\n        lastMessage = message;\n        unsentLog.push({ message });\n        logReady();\n      },\n      logRepeating: (message) => {\n        if (message !== lastMessage)\n          progress.log(message);\n      },\n      setIntermediateResult: (intermediateResult) => {\n        if (lastIntermediateResult === intermediateResult)\n          return;\n        lastIntermediateResult = intermediateResult;\n        unsentLog.push({ intermediateResult });\n        logReady();\n      }\n    };\n    const run = () => {\n      const result = task(progress);\n      result.finally(() => {\n        taskFinished = true;\n        logReady();\n      });\n      return result;\n    };\n    return {\n      takeNextLogs,\n      run,\n      cancel: () => {\n        progress.aborted = true;\n      },\n      takeLastLogs: () => unsentLog\n    };\n  }\n  getElementBorderWidth(node) {\n    if (node.nodeType !== Node.ELEMENT_NODE || !node.ownerDocument || !node.ownerDocument.defaultView)\n      return { left: 0, top: 0 };\n    const style = node.ownerDocument.defaultView.getComputedStyle(node);\n    return { left: parseInt(style.borderLeftWidth || "", 10), top: parseInt(style.borderTopWidth || "", 10) };\n  }\n  retarget(node, behavior) {\n    let element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;\n    if (!element)\n      return null;\n    if (behavior === "none")\n      return element;\n    if (!element.matches("input, textarea, select")) {\n      if (behavior === "button-link")\n        element = element.closest("button, [role=button], a, [role=link]") || element;\n      else\n        element = element.closest("button, [role=button], [role=checkbox], [role=radio]") || element;\n    }\n    if (behavior === "follow-label") {\n      if (!element.matches("input, textarea, button, select, [role=button], [role=checkbox], [role=radio]") && !element.isContentEditable) {\n        element = element.closest("label") || element;\n      }\n      if (element.nodeName === "LABEL")\n        element = element.control || element;\n    }\n    return element;\n  }\n  waitForElementStatesAndPerformAction(node, states, force, callback) {\n    let lastRect;\n    let counter = 0;\n    let samePositionCounter = 0;\n    let lastTime = 0;\n    return this.pollRaf((progress) => {\n      if (force) {\n        progress.log(`    forcing action`);\n        return callback(node, progress);\n      }\n      for (const state of states) {\n        if (state !== "stable") {\n          const result = this.elementState(node, state);\n          if (typeof result !== "boolean")\n            return result;\n          if (!result) {\n            progress.logRepeating(`    element is not ${state} - waiting...`);\n            return progress.continuePolling;\n          }\n          continue;\n        }\n        const element = this.retarget(node, "no-follow-label");\n        if (!element)\n          return "error:notconnected";\n        if (++counter === 1)\n          return progress.continuePolling;\n        const time = performance.now();\n        if (this._stableRafCount > 1 && time - lastTime < 15)\n          return progress.continuePolling;\n        lastTime = time;\n        const clientRect = element.getBoundingClientRect();\n        const rect = { x: clientRect.top, y: clientRect.left, width: clientRect.width, height: clientRect.height };\n        const samePosition = lastRect && rect.x === lastRect.x && rect.y === lastRect.y && rect.width === lastRect.width && rect.height === lastRect.height;\n        if (samePosition)\n          ++samePositionCounter;\n        else\n          samePositionCounter = 0;\n        const isStable = samePositionCounter >= this._stableRafCount;\n        const isStableForLogs = isStable || !lastRect;\n        lastRect = rect;\n        if (!isStableForLogs)\n          progress.logRepeating(`    element is not stable - waiting...`);\n        if (!isStable)\n          return progress.continuePolling;\n      }\n      return callback(node, progress);\n    });\n  }\n  elementState(node, state) {\n    const element = this.retarget(node, ["stable", "visible", "hidden"].includes(state) ? "none" : "follow-label");\n    if (!element || !element.isConnected) {\n      if (state === "hidden")\n        return true;\n      return "error:notconnected";\n    }\n    if (state === "visible")\n      return this.isVisible(element);\n    if (state === "hidden")\n      return !this.isVisible(element);\n    const disabled = getAriaDisabled(element);\n    if (state === "disabled")\n      return disabled;\n    if (state === "enabled")\n      return !disabled;\n    const editable = !(["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName) && element.hasAttribute("readonly"));\n    if (state === "editable")\n      return !disabled && editable;\n    if (state === "checked" || state === "unchecked") {\n      if (["checkbox", "radio"].includes(element.getAttribute("role") || "")) {\n        const result2 = element.getAttribute("aria-checked") === "true";\n        return state === "checked" ? result2 : !result2;\n      }\n      if (element.nodeName !== "INPUT")\n        throw this.createStacklessError("Not a checkbox or radio button");\n      if (!["radio", "checkbox"].includes(element.type.toLowerCase()))\n        throw this.createStacklessError("Not a checkbox or radio button");\n      const result = element.checked;\n      return state === "checked" ? result : !result;\n    }\n    throw this.createStacklessError(`Unexpected element state "${state}"`);\n  }\n  selectOptions(optionsToSelect, node, progress) {\n    const element = this.retarget(node, "follow-label");\n    if (!element)\n      return "error:notconnected";\n    if (element.nodeName.toLowerCase() !== "select")\n      throw this.createStacklessError("Element is not a <select> element");\n    const select = element;\n    const options = [...select.options];\n    const selectedOptions = [];\n    let remainingOptionsToSelect = optionsToSelect.slice();\n    for (let index = 0; index < options.length; index++) {\n      const option = options[index];\n      const filter = (optionToSelect) => {\n        if (optionToSelect instanceof Node)\n          return option === optionToSelect;\n        let matches = true;\n        if (optionToSelect.value !== void 0)\n          matches = matches && optionToSelect.value === option.value;\n        if (optionToSelect.label !== void 0)\n          matches = matches && optionToSelect.label === option.label;\n        if (optionToSelect.index !== void 0)\n          matches = matches && optionToSelect.index === index;\n        return matches;\n      };\n      if (!remainingOptionsToSelect.some(filter))\n        continue;\n      selectedOptions.push(option);\n      if (select.multiple) {\n        remainingOptionsToSelect = remainingOptionsToSelect.filter((o) => !filter(o));\n      } else {\n        remainingOptionsToSelect = [];\n        break;\n      }\n    }\n    if (remainingOptionsToSelect.length) {\n      progress.logRepeating("    did not find some options - waiting... ");\n      return progress.continuePolling;\n    }\n    select.value = void 0;\n    selectedOptions.forEach((option) => option.selected = true);\n    progress.log("    selected specified option(s)");\n    select.dispatchEvent(new Event("input", { "bubbles": true }));\n    select.dispatchEvent(new Event("change", { "bubbles": true }));\n    return selectedOptions.map((option) => option.value);\n  }\n  fill(value, node, progress) {\n    const element = this.retarget(node, "follow-label");\n    if (!element)\n      return "error:notconnected";\n    if (element.nodeName.toLowerCase() === "input") {\n      const input = element;\n      const type = input.type.toLowerCase();\n      const kInputTypesToSetValue = /* @__PURE__ */ new Set(["color", "date", "time", "datetime", "datetime-local", "month", "range", "week"]);\n      const kInputTypesToTypeInto = /* @__PURE__ */ new Set(["", "email", "number", "password", "search", "tel", "text", "url"]);\n      if (!kInputTypesToTypeInto.has(type) && !kInputTypesToSetValue.has(type)) {\n        progress.log(`    input of type "${type}" cannot be filled`);\n        throw this.createStacklessError(`Input of type "${type}" cannot be filled`);\n      }\n      if (type === "number") {\n        value = value.trim();\n        if (isNaN(Number(value)))\n          throw this.createStacklessError("Cannot type text into input[type=number]");\n      }\n      if (kInputTypesToSetValue.has(type)) {\n        value = value.trim();\n        input.focus();\n        input.value = value;\n        if (input.value !== value)\n          throw this.createStacklessError("Malformed value");\n        element.dispatchEvent(new Event("input", { "bubbles": true }));\n        element.dispatchEvent(new Event("change", { "bubbles": true }));\n        return "done";\n      }\n    } else if (element.nodeName.toLowerCase() === "textarea") {\n    } else if (!element.isContentEditable) {\n      throw this.createStacklessError("Element is not an <input>, <textarea> or [contenteditable] element");\n    }\n    this.selectText(element);\n    return "needsinput";\n  }\n  selectText(node) {\n    const element = this.retarget(node, "follow-label");\n    if (!element)\n      return "error:notconnected";\n    if (element.nodeName.toLowerCase() === "input") {\n      const input = element;\n      input.select();\n      input.focus();\n      return "done";\n    }\n    if (element.nodeName.toLowerCase() === "textarea") {\n      const textarea = element;\n      textarea.selectionStart = 0;\n      textarea.selectionEnd = textarea.value.length;\n      textarea.focus();\n      return "done";\n    }\n    const range = element.ownerDocument.createRange();\n    range.selectNodeContents(element);\n    const selection = element.ownerDocument.defaultView.getSelection();\n    if (selection) {\n      selection.removeAllRanges();\n      selection.addRange(range);\n    }\n    element.focus();\n    return "done";\n  }\n  _activelyFocused(node) {\n    const activeElement = node.getRootNode().activeElement;\n    const isFocused = activeElement === node && !!node.ownerDocument && node.ownerDocument.hasFocus();\n    return { activeElement, isFocused };\n  }\n  focusNode(node, resetSelectionIfNotFocused) {\n    if (!node.isConnected)\n      return "error:notconnected";\n    if (node.nodeType !== Node.ELEMENT_NODE)\n      throw this.createStacklessError("Node is not an element");\n    const { activeElement, isFocused: wasFocused } = this._activelyFocused(node);\n    if (node.isContentEditable && !wasFocused && activeElement && activeElement.blur) {\n      activeElement.blur();\n    }\n    node.focus();\n    if (resetSelectionIfNotFocused && !wasFocused && node.nodeName.toLowerCase() === "input") {\n      try {\n        const input = node;\n        input.setSelectionRange(0, 0);\n      } catch (e) {\n      }\n    }\n    return "done";\n  }\n  setInputFiles(node, payloads) {\n    if (node.nodeType !== Node.ELEMENT_NODE)\n      return "Node is not of type HTMLElement";\n    const element = node;\n    if (element.nodeName !== "INPUT")\n      return "Not an <input> element";\n    const input = element;\n    const type = (input.getAttribute("type") || "").toLowerCase();\n    if (type !== "file")\n      return "Not an input[type=file] element";\n    const files = payloads.map((file) => {\n      const bytes = Uint8Array.from(atob(file.buffer), (c) => c.charCodeAt(0));\n      return new File([bytes], file.name, { type: file.mimeType });\n    });\n    const dt = new DataTransfer();\n    for (const file of files)\n      dt.items.add(file);\n    input.files = dt.files;\n    input.dispatchEvent(new Event("input", { "bubbles": true }));\n    input.dispatchEvent(new Event("change", { "bubbles": true }));\n  }\n  expectHitTarget(hitPoint, targetElement) {\n    var _a;\n    const roots = [];\n    let parentElement = targetElement;\n    while (parentElement) {\n      const root = enclosingShadowRootOrDocument(parentElement);\n      if (!root)\n        break;\n      roots.push(root);\n      if (root.nodeType === 9)\n        break;\n      parentElement = root.host;\n    }\n    let hitElement;\n    for (let index = roots.length - 1; index >= 0; index--) {\n      const root = roots[index];\n      const elements = root.elementsFromPoint(hitPoint.x, hitPoint.y);\n      const singleElement = root.elementFromPoint(hitPoint.x, hitPoint.y);\n      if (singleElement && elements[0] && parentElementOrShadowHost(singleElement) === elements[0]) {\n        const style = (_a = document.defaultView) == null ? void 0 : _a.getComputedStyle(singleElement);\n        if ((style == null ? void 0 : style.display) === "contents") {\n          elements.unshift(singleElement);\n        }\n      }\n      const innerElement = elements[0];\n      if (!innerElement)\n        break;\n      hitElement = innerElement;\n      if (index && innerElement !== roots[index - 1].host)\n        break;\n    }\n    const hitParents = [];\n    while (hitElement && hitElement !== targetElement) {\n      hitParents.push(hitElement);\n      hitElement = parentElementOrShadowHost(hitElement);\n    }\n    if (hitElement === targetElement)\n      return "done";\n    const hitTargetDescription = this.previewNode(hitParents[0] || document.documentElement);\n    let rootHitTargetDescription;\n    let element = targetElement;\n    while (element) {\n      const index = hitParents.indexOf(element);\n      if (index !== -1) {\n        if (index > 1)\n          rootHitTargetDescription = this.previewNode(hitParents[index - 1]);\n        break;\n      }\n      element = parentElementOrShadowHost(element);\n    }\n    if (rootHitTargetDescription)\n      return { hitTargetDescription: `${hitTargetDescription} from ${rootHitTargetDescription} subtree` };\n    return { hitTargetDescription };\n  }\n  setupHitTargetInterceptor(node, action, hitPoint, blockAllEvents) {\n    const element = this.retarget(node, "button-link");\n    if (!element || !element.isConnected)\n      return "error:notconnected";\n    const preliminaryResult = this.expectHitTarget(hitPoint, element);\n    if (preliminaryResult !== "done")\n      return preliminaryResult.hitTargetDescription;\n    if (action === "drag")\n      return { stop: () => "done" };\n    const events = {\n      "hover": kHoverHitTargetInterceptorEvents,\n      "tap": kTapHitTargetInterceptorEvents,\n      "mouse": kMouseHitTargetInterceptorEvents\n    }[action];\n    let result;\n    const listener = (event) => {\n      if (!events.has(event.type))\n        return;\n      if (!event.isTrusted)\n        return;\n      const point = !!window.TouchEvent && event instanceof window.TouchEvent ? event.touches[0] : event;\n      if (result === void 0 && point)\n        result = this.expectHitTarget({ x: point.clientX, y: point.clientY }, element);\n      if (blockAllEvents || result !== "done" && result !== void 0) {\n        event.preventDefault();\n        event.stopPropagation();\n        event.stopImmediatePropagation();\n      }\n    };\n    const stop = () => {\n      if (this._hitTargetInterceptor === listener)\n        this._hitTargetInterceptor = void 0;\n      return result || "done";\n    };\n    this._hitTargetInterceptor = listener;\n    return { stop };\n  }\n  dispatchEvent(node, type, eventInit) {\n    let event;\n    eventInit = { bubbles: true, cancelable: true, composed: true, ...eventInit };\n    switch (eventType.get(type)) {\n      case "mouse":\n        event = new MouseEvent(type, eventInit);\n        break;\n      case "keyboard":\n        event = new KeyboardEvent(type, eventInit);\n        break;\n      case "touch":\n        event = new TouchEvent(type, eventInit);\n        break;\n      case "pointer":\n        event = new PointerEvent(type, eventInit);\n        break;\n      case "focus":\n        event = new FocusEvent(type, eventInit);\n        break;\n      case "drag":\n        event = new DragEvent(type, eventInit);\n        break;\n      case "wheel":\n        event = new WheelEvent(type, eventInit);\n        break;\n      default:\n        event = new Event(type, eventInit);\n        break;\n    }\n    node.dispatchEvent(event);\n  }\n  previewNode(node) {\n    if (node.nodeType === Node.TEXT_NODE)\n      return oneLine(`#text=${node.nodeValue || ""}`);\n    if (node.nodeType !== Node.ELEMENT_NODE)\n      return oneLine(`<${node.nodeName.toLowerCase()} />`);\n    const element = node;\n    const attrs = [];\n    for (let i = 0; i < element.attributes.length; i++) {\n      const { name, value } = element.attributes[i];\n      if (name === "style" || name.startsWith("__playwright"))\n        continue;\n      if (!value && booleanAttributes.has(name))\n        attrs.push(` ${name}`);\n      else\n        attrs.push(` ${name}="${value}"`);\n    }\n    attrs.sort((a, b) => a.length - b.length);\n    let attrText = attrs.join("");\n    if (attrText.length > 50)\n      attrText = attrText.substring(0, 49) + "\\u2026";\n    if (autoClosingTags.has(element.nodeName))\n      return oneLine(`<${element.nodeName.toLowerCase()}${attrText}/>`);\n    const children = element.childNodes;\n    let onlyText = false;\n    if (children.length <= 5) {\n      onlyText = true;\n      for (let i = 0; i < children.length; i++)\n        onlyText = onlyText && children[i].nodeType === Node.TEXT_NODE;\n    }\n    let text = onlyText ? element.textContent || "" : children.length ? "\\u2026" : "";\n    if (text.length > 50)\n      text = text.substring(0, 49) + "\\u2026";\n    return oneLine(`<${element.nodeName.toLowerCase()}${attrText}>${text}</${element.nodeName.toLowerCase()}>`);\n  }\n  strictModeViolationError(selector, matches) {\n    const infos = matches.slice(0, 10).map((m) => ({\n      preview: this.previewNode(m),\n      selector: this.generateSelector(m)\n    }));\n    const lines = infos.map((info, i) => `\n    ${i + 1}) ${info.preview} aka playwright.$("${info.selector}")`);\n    if (infos.length < matches.length)\n      lines.push("\\n    ...");\n    return this.createStacklessError(`strict mode violation: "${stringifySelector(selector)}" resolved to ${matches.length} elements:${lines.join("")}\n`);\n  }\n  createStacklessError(message) {\n    if (this._browserName === "firefox") {\n      const error2 = new Error("Error: " + message);\n      error2.stack = "";\n      return error2;\n    }\n    const error = new Error(message);\n    delete error.stack;\n    return error;\n  }\n  maskSelectors(selectors) {\n    if (this._highlight)\n      this.hideHighlight();\n    this._highlight = new Highlight(this);\n    this._highlight.install();\n    const elements = [];\n    for (const selector of selectors)\n      elements.push(this.querySelectorAll(selector, document.documentElement));\n    this._highlight.maskElements(elements.flat());\n  }\n  highlight(selector) {\n    if (!this._highlight) {\n      this._highlight = new Highlight(this);\n      this._highlight.install();\n    }\n    this._highlight.runHighlightOnRaf(selector);\n  }\n  hideHighlight() {\n    if (this._highlight) {\n      this._highlight.uninstall();\n      delete this._highlight;\n    }\n  }\n  _setupGlobalListenersRemovalDetection() {\n    const customEventName = "__playwright_global_listeners_check__";\n    let seenEvent = false;\n    const handleCustomEvent = () => seenEvent = true;\n    window.addEventListener(customEventName, handleCustomEvent);\n    new MutationObserver((entries) => {\n      const newDocumentElement = entries.some((entry) => Array.from(entry.addedNodes).includes(document.documentElement));\n      if (!newDocumentElement)\n        return;\n      seenEvent = false;\n      window.dispatchEvent(new CustomEvent(customEventName));\n      if (seenEvent)\n        return;\n      window.addEventListener(customEventName, handleCustomEvent);\n      for (const callback of this.onGlobalListenersRemoved)\n        callback();\n    }).observe(document, { childList: true });\n  }\n  _setupHitTargetInterceptors() {\n    const listener = (event) => {\n      var _a;\n      return (_a = this._hitTargetInterceptor) == null ? void 0 : _a.call(this, event);\n    };\n    const addHitTargetInterceptorListeners = () => {\n      for (const event of kAllHitTargetInterceptorEvents)\n        window.addEventListener(event, listener, { capture: true, passive: false });\n    };\n    addHitTargetInterceptorListeners();\n    this.onGlobalListenersRemoved.add(addHitTargetInterceptorListeners);\n  }\n  expectSingleElement(progress, element, options) {\n    var _a;\n    const injected = progress.injectedScript;\n    const expression = options.expression;\n    {\n      let elementState;\n      if (expression === "to.be.checked") {\n        elementState = progress.injectedScript.elementState(element, "checked");\n      } else if (expression === "to.be.unchecked") {\n        elementState = progress.injectedScript.elementState(element, "unchecked");\n      } else if (expression === "to.be.disabled") {\n        elementState = progress.injectedScript.elementState(element, "disabled");\n      } else if (expression === "to.be.editable") {\n        elementState = progress.injectedScript.elementState(element, "editable");\n      } else if (expression === "to.be.readonly") {\n        elementState = !progress.injectedScript.elementState(element, "editable");\n      } else if (expression === "to.be.empty") {\n        if (element.nodeName === "INPUT" || element.nodeName === "TEXTAREA")\n          elementState = !element.value;\n        else\n          elementState = !((_a = element.textContent) == null ? void 0 : _a.trim());\n      } else if (expression === "to.be.enabled") {\n        elementState = progress.injectedScript.elementState(element, "enabled");\n      } else if (expression === "to.be.focused") {\n        elementState = this._activelyFocused(element).isFocused;\n      } else if (expression === "to.be.hidden") {\n        elementState = progress.injectedScript.elementState(element, "hidden");\n      } else if (expression === "to.be.visible") {\n        elementState = progress.injectedScript.elementState(element, "visible");\n      }\n      if (elementState !== void 0) {\n        if (elementState === "error:notcheckbox")\n          throw injected.createStacklessError("Element is not a checkbox");\n        if (elementState === "error:notconnected")\n          throw injected.createStacklessError("Element is not connected");\n        return { received: elementState, matches: elementState };\n      }\n    }\n    {\n      if (expression === "to.have.property") {\n        const received = element[options.expressionArg];\n        const matches = deepEquals(received, options.expectedValue);\n        return { received, matches };\n      }\n    }\n    {\n      if (expression === "to.have.values") {\n        element = this.retarget(element, "follow-label");\n        if (element.nodeName !== "SELECT" || !element.multiple)\n          throw this.createStacklessError("Not a select element with a multiple attribute");\n        const received = [...element.selectedOptions].map((o) => o.value);\n        if (received.length !== options.expectedText.length)\n          return { received, matches: false };\n        return { received, matches: received.map((r, i) => new ExpectedTextMatcher(options.expectedText[i]).matches(r)).every(Boolean) };\n      }\n    }\n    {\n      let received;\n      if (expression === "to.have.attribute") {\n        const value = element.getAttribute(options.expressionArg);\n        if (value === null)\n          return { received: null, matches: false };\n        received = value;\n      } else if (expression === "to.have.class") {\n        received = element.classList.toString();\n      } else if (expression === "to.have.css") {\n        received = window.getComputedStyle(element).getPropertyValue(options.expressionArg);\n      } else if (expression === "to.have.id") {\n        received = element.id;\n      } else if (expression === "to.have.text") {\n        received = options.useInnerText ? element.innerText : elementText(/* @__PURE__ */ new Map(), element).full;\n      } else if (expression === "to.have.title") {\n        received = document.title;\n      } else if (expression === "to.have.url") {\n        received = document.location.href;\n      } else if (expression === "to.have.value") {\n        element = this.retarget(element, "follow-label");\n        if (element.nodeName !== "INPUT" && element.nodeName !== "TEXTAREA" && element.nodeName !== "SELECT")\n          throw this.createStacklessError("Not an input element");\n        received = element.value;\n      }\n      if (received !== void 0 && options.expectedText) {\n        const matcher = new ExpectedTextMatcher(options.expectedText[0]);\n        return { received, matches: matcher.matches(received) };\n      }\n    }\n    throw this.createStacklessError("Unknown expect matcher: " + expression);\n  }\n  expectArray(elements, options) {\n    const expression = options.expression;\n    if (expression === "to.have.count") {\n      const received2 = elements.length;\n      const matches = received2 === options.expectedNumber;\n      return { received: received2, matches };\n    }\n    let received;\n    if (expression === "to.have.text.array" || expression === "to.contain.text.array")\n      received = elements.map((e) => options.useInnerText ? e.innerText : elementText(/* @__PURE__ */ new Map(), e).full);\n    else if (expression === "to.have.class.array")\n      received = elements.map((e) => e.classList.toString());\n    if (received && options.expectedText) {\n      const lengthShouldMatch = expression !== "to.contain.text.array";\n      const matchesLength = received.length === options.expectedText.length || !lengthShouldMatch;\n      if (!matchesLength)\n        return { received, matches: false };\n      const matchers = options.expectedText.map((e) => new ExpectedTextMatcher(e));\n      let mIndex = 0, rIndex = 0;\n      while (mIndex < matchers.length && rIndex < received.length) {\n        if (matchers[mIndex].matches(received[rIndex]))\n          ++mIndex;\n        ++rIndex;\n      }\n      return { received, matches: mIndex === matchers.length };\n    }\n    throw this.createStacklessError("Unknown expect matcher: " + expression);\n  }\n  getElementAccessibleName(element, includeHidden) {\n    const hiddenCache = /* @__PURE__ */ new Map();\n    return getElementAccessibleName(element, !!includeHidden, hiddenCache);\n  }\n  getAriaRole(element) {\n    return getAriaRole(element);\n  }\n};\nvar autoClosingTags = /* @__PURE__ */ new Set(["AREA", "BASE", "BR", "COL", "COMMAND", "EMBED", "HR", "IMG", "INPUT", "KEYGEN", "LINK", "MENUITEM", "META", "PARAM", "SOURCE", "TRACK", "WBR"]);\nvar booleanAttributes = /* @__PURE__ */ new Set(["checked", "selected", "disabled", "readonly", "multiple"]);\nfunction oneLine(s) {\n  return s.replace(/\\n/g, "\\u21B5").replace(/\\t/g, "\\u21C6");\n}\nvar eventType = /* @__PURE__ */ new Map([\n  ["auxclick", "mouse"],\n  ["click", "mouse"],\n  ["dblclick", "mouse"],\n  ["mousedown", "mouse"],\n  ["mouseeenter", "mouse"],\n  ["mouseleave", "mouse"],\n  ["mousemove", "mouse"],\n  ["mouseout", "mouse"],\n  ["mouseover", "mouse"],\n  ["mouseup", "mouse"],\n  ["mouseleave", "mouse"],\n  ["mousewheel", "mouse"],\n  ["keydown", "keyboard"],\n  ["keyup", "keyboard"],\n  ["keypress", "keyboard"],\n  ["textInput", "keyboard"],\n  ["touchstart", "touch"],\n  ["touchmove", "touch"],\n  ["touchend", "touch"],\n  ["touchcancel", "touch"],\n  ["pointerover", "pointer"],\n  ["pointerout", "pointer"],\n  ["pointerenter", "pointer"],\n  ["pointerleave", "pointer"],\n  ["pointerdown", "pointer"],\n  ["pointerup", "pointer"],\n  ["pointermove", "pointer"],\n  ["pointercancel", "pointer"],\n  ["gotpointercapture", "pointer"],\n  ["lostpointercapture", "pointer"],\n  ["focus", "focus"],\n  ["blur", "focus"],\n  ["drag", "drag"],\n  ["dragstart", "drag"],\n  ["dragend", "drag"],\n  ["dragover", "drag"],\n  ["dragenter", "drag"],\n  ["dragleave", "drag"],\n  ["dragexit", "drag"],\n  ["drop", "drag"],\n  ["wheel", "wheel"]\n]);\nvar kHoverHitTargetInterceptorEvents = /* @__PURE__ */ new Set(["mousemove"]);\nvar kTapHitTargetInterceptorEvents = /* @__PURE__ */ new Set(["pointerdown", "pointerup", "touchstart", "touchend", "touchcancel"]);\nvar kMouseHitTargetInterceptorEvents = /* @__PURE__ */ new Set(["mousedown", "mouseup", "pointerdown", "pointerup", "click", "auxclick", "dblclick", "contextmenu"]);\nvar kAllHitTargetInterceptorEvents = /* @__PURE__ */ new Set([...kHoverHitTargetInterceptorEvents, ...kTapHitTargetInterceptorEvents, ...kMouseHitTargetInterceptorEvents]);\nfunction unescape(s) {\n  if (!s.includes("\\\\"))\n    return s;\n  const r = [];\n  let i = 0;\n  while (i < s.length) {\n    if (s[i] === "\\\\" && i + 1 < s.length)\n      i++;\n    r.push(s[i++]);\n  }\n  return r.join("");\n}\nfunction createTextMatcher(selector, strictMatchesFullText) {\n  if (selector[0] === "/" && selector.lastIndexOf("/") > 0) {\n    const lastSlash = selector.lastIndexOf("/");\n    const matcher = createRegexTextMatcher(selector.substring(1, lastSlash), selector.substring(lastSlash + 1));\n    return { matcher, kind: "regex" };\n  }\n  let strict = false;\n  if (selector.length > 1 && selector[0] === \'"\' && selector[selector.length - 1] === \'"\') {\n    selector = unescape(selector.substring(1, selector.length - 1));\n    strict = true;\n  }\n  if (selector.length > 1 && selector[0] === "\'" && selector[selector.length - 1] === "\'") {\n    selector = unescape(selector.substring(1, selector.length - 1));\n    strict = true;\n  }\n  if (strict)\n    return { matcher: strictMatchesFullText ? createStrictFullTextMatcher(selector) : createStrictTextMatcher(selector), kind: "strict" };\n  return { matcher: createLaxTextMatcher(selector), kind: "lax" };\n}\nvar ExpectedTextMatcher = class {\n  constructor(expected) {\n    this._normalizeWhiteSpace = expected.normalizeWhiteSpace;\n    this._ignoreCase = expected.ignoreCase;\n    this._string = expected.matchSubstring ? void 0 : this.normalize(expected.string);\n    this._substring = expected.matchSubstring ? this.normalize(expected.string) : void 0;\n    if (expected.regexSource) {\n      const flags = new Set((expected.regexFlags || "").split(""));\n      if (expected.ignoreCase === false)\n        flags.delete("i");\n      if (expected.ignoreCase === true)\n        flags.add("i");\n      this._regex = new RegExp(expected.regexSource, [...flags].join(""));\n    }\n  }\n  matches(text) {\n    if (!this._regex)\n      text = this.normalize(text);\n    if (this._string !== void 0)\n      return text === this._string;\n    if (this._substring !== void 0)\n      return text.includes(this._substring);\n    if (this._regex)\n      return !!this._regex.test(text);\n    return false;\n  }\n  normalize(s) {\n    if (!s)\n      return s;\n    if (this._normalizeWhiteSpace)\n      s = s.trim().replace(/\\u200b/g, "").replace(/\\s+/g, " ");\n    if (this._ignoreCase)\n      s = s.toLocaleLowerCase();\n    return s;\n  }\n};\nfunction deepEquals(a, b) {\n  if (a === b)\n    return true;\n  if (a && b && typeof a === "object" && typeof b === "object") {\n    if (a.constructor !== b.constructor)\n      return false;\n    if (Array.isArray(a)) {\n      if (a.length !== b.length)\n        return false;\n      for (let i = 0; i < a.length; ++i) {\n        if (!deepEquals(a[i], b[i]))\n          return false;\n      }\n      return true;\n    }\n    if (a instanceof RegExp)\n      return a.source === b.source && a.flags === b.flags;\n    if (a.valueOf !== Object.prototype.valueOf)\n      return a.valueOf() === b.valueOf();\n    if (a.toString !== Object.prototype.toString)\n      return a.toString() === b.toString();\n    const keys = Object.keys(a);\n    if (keys.length !== Object.keys(b).length)\n      return false;\n    for (let i = 0; i < keys.length; ++i) {\n      if (!b.hasOwnProperty(keys[i]))\n        return false;\n    }\n    for (const key of keys) {\n      if (!deepEquals(a[key], b[key]))\n        return false;\n    }\n    return true;\n  }\n  if (typeof a === "number" && typeof b === "number")\n    return isNaN(a) && isNaN(b);\n  return false;\n}\nmodule.exports = InjectedScript;\n';
     exports2.source = source;
   }
 });
@@ -17245,7 +17240,7 @@ var require_utilityScriptSource = __commonJS({
       value: true
     });
     exports2.source = void 0;
-    var source = '"use strict";\nlet __export = (target, all) => {\n  for (var name in all)\n    target[name] = all[name];\n};\nlet __commonJS = cb => function __require() {\n  let fn;\n  for (const name in cb) {\n    fn = cb[name];\n    break;\n  }\n  const exports = {};\n  fn(exports);\n  return exports;\n};\nlet __toESM = mod => ({ ...mod, \'default\': mod });\nlet __toCommonJS = mod =>  ({ ...mod, __esModule: true });\n// packages/playwright-core/src/server/injected/utilityScript.ts\nvar utilityScript_exports = {};\n__export(utilityScript_exports, {\n  UtilityScript: () => UtilityScript\n});\nmodule.exports = __toCommonJS(utilityScript_exports);\n\n// packages/playwright-core/src/server/isomorphic/utilityScriptSerializers.ts\nfunction source() {\n  function isRegExp(obj) {\n    return obj instanceof RegExp || Object.prototype.toString.call(obj) === "[object RegExp]";\n  }\n  function isDate(obj) {\n    return obj instanceof Date || Object.prototype.toString.call(obj) === "[object Date]";\n  }\n  function isURL(obj) {\n    return obj instanceof URL || Object.prototype.toString.call(obj) === "[object URL]";\n  }\n  function isError(obj) {\n    try {\n      return obj instanceof Error || obj && obj.__proto__ && obj.__proto__.name === "Error";\n    } catch (error) {\n      return false;\n    }\n  }\n  function parseEvaluationResultValue2(value, handles = [], refs = /* @__PURE__ */ new Map()) {\n    if (Object.is(value, void 0))\n      return void 0;\n    if (typeof value === "object" && value) {\n      if ("ref" in value)\n        return refs.get(value.ref);\n      if ("v" in value) {\n        if (value.v === "undefined")\n          return void 0;\n        if (value.v === "null")\n          return null;\n        if (value.v === "NaN")\n          return NaN;\n        if (value.v === "Infinity")\n          return Infinity;\n        if (value.v === "-Infinity")\n          return -Infinity;\n        if (value.v === "-0")\n          return -0;\n        return void 0;\n      }\n      if ("d" in value)\n        return new Date(value.d);\n      if ("u" in value)\n        return new URL(value.u);\n      if ("r" in value)\n        return new RegExp(value.r.p, value.r.f);\n      if ("a" in value) {\n        const result2 = [];\n        refs.set(value.id, result2);\n        for (const a of value.a)\n          result2.push(parseEvaluationResultValue2(a, handles, refs));\n        return result2;\n      }\n      if ("o" in value) {\n        const result2 = {};\n        refs.set(value.id, result2);\n        for (const { k, v } of value.o)\n          result2[k] = parseEvaluationResultValue2(v, handles, refs);\n        return result2;\n      }\n      if ("h" in value)\n        return handles[value.h];\n    }\n    return value;\n  }\n  function serializeAsCallArgument2(value, handleSerializer) {\n    return serialize(value, handleSerializer, { visited: /* @__PURE__ */ new Map(), lastId: 0 });\n  }\n  function serialize(value, handleSerializer, visitorInfo) {\n    if (value && typeof value === "object") {\n      if (globalThis.Window && value instanceof globalThis.Window)\n        return "ref: <Window>";\n      if (globalThis.Document && value instanceof globalThis.Document)\n        return "ref: <Document>";\n      if (globalThis.Node && value instanceof globalThis.Node)\n        return "ref: <Node>";\n    }\n    return innerSerialize(value, handleSerializer, visitorInfo);\n  }\n  function innerSerialize(value, handleSerializer, visitorInfo) {\n    const result2 = handleSerializer(value);\n    if ("fallThrough" in result2)\n      value = result2.fallThrough;\n    else\n      return result2;\n    if (typeof value === "symbol")\n      return { v: "undefined" };\n    if (Object.is(value, void 0))\n      return { v: "undefined" };\n    if (Object.is(value, null))\n      return { v: "null" };\n    if (Object.is(value, NaN))\n      return { v: "NaN" };\n    if (Object.is(value, Infinity))\n      return { v: "Infinity" };\n    if (Object.is(value, -Infinity))\n      return { v: "-Infinity" };\n    if (Object.is(value, -0))\n      return { v: "-0" };\n    if (typeof value === "boolean")\n      return value;\n    if (typeof value === "number")\n      return value;\n    if (typeof value === "string")\n      return value;\n    if (isError(value)) {\n      const error = value;\n      if ("captureStackTrace" in globalThis.Error) {\n        return error.stack || "";\n      }\n      return `${error.name}: ${error.message}\n${error.stack}`;\n    }\n    if (isDate(value))\n      return { d: value.toJSON() };\n    if (isURL(value))\n      return { u: value.toJSON() };\n    if (isRegExp(value))\n      return { r: { p: value.source, f: value.flags } };\n    const id = visitorInfo.visited.get(value);\n    if (id)\n      return { ref: id };\n    if (Array.isArray(value)) {\n      const a = [];\n      const id2 = ++visitorInfo.lastId;\n      visitorInfo.visited.set(value, id2);\n      for (let i = 0; i < value.length; ++i)\n        a.push(serialize(value[i], handleSerializer, visitorInfo));\n      return { a, id: id2 };\n    }\n    if (typeof value === "object") {\n      const o = [];\n      const id2 = ++visitorInfo.lastId;\n      visitorInfo.visited.set(value, id2);\n      for (const name of Object.keys(value)) {\n        let item;\n        try {\n          item = value[name];\n        } catch (e) {\n          continue;\n        }\n        if (name === "toJSON" && typeof item === "function")\n          o.push({ k: name, v: { o: [], id: 0 } });\n        else\n          o.push({ k: name, v: serialize(item, handleSerializer, visitorInfo) });\n      }\n      if (o.length === 0 && value.toJSON && typeof value.toJSON === "function")\n        return innerSerialize(value.toJSON(), handleSerializer, visitorInfo);\n      return { o, id: id2 };\n    }\n  }\n  return { parseEvaluationResultValue: parseEvaluationResultValue2, serializeAsCallArgument: serializeAsCallArgument2 };\n}\nvar result = source();\nvar parseEvaluationResultValue = result.parseEvaluationResultValue;\nvar serializeAsCallArgument = result.serializeAsCallArgument;\n\n// packages/playwright-core/src/server/injected/utilityScript.ts\nvar UtilityScript = class {\n  evaluate(isFunction, returnByValue, expression, argCount, ...argsAndHandles) {\n    const args = argsAndHandles.slice(0, argCount);\n    const handles = argsAndHandles.slice(argCount);\n    const parameters = args.map((a) => parseEvaluationResultValue(a, handles));\n    let result2 = globalThis.eval(expression);\n    if (isFunction === true) {\n      result2 = result2(...parameters);\n    } else if (isFunction === false) {\n      result2 = result2;\n    } else {\n      if (typeof result2 === "function")\n        result2 = result2(...parameters);\n    }\n    return returnByValue ? this._promiseAwareJsonValueNoThrow(result2) : result2;\n  }\n  jsonValue(returnByValue, value) {\n    if (Object.is(value, void 0))\n      return void 0;\n    return serializeAsCallArgument(value, (value2) => ({ fallThrough: value2 }));\n  }\n  _promiseAwareJsonValueNoThrow(value) {\n    const safeJson = (value2) => {\n      try {\n        return this.jsonValue(true, value2);\n      } catch (e) {\n        return void 0;\n      }\n    };\n    if (value && typeof value === "object" && typeof value.then === "function") {\n      return (async () => {\n        const promiseValue = await value;\n        return safeJson(promiseValue);\n      })();\n    }\n    return safeJson(value);\n  }\n};\nmodule.exports = UtilityScript;\n';
+    var source = '"use strict";\nlet __export = (target, all) => {\n  for (var name in all)\n    target[name] = all[name];\n};\nlet __commonJS = cb => function __require() {\n  let fn;\n  for (const name in cb) {\n    fn = cb[name];\n    break;\n  }\n  const exports = {};\n  fn(exports);\n  return exports;\n};\nlet __toESM = mod => ({ ...mod, \'default\': mod });\nlet __toCommonJS = mod =>  ({ ...mod, __esModule: true });\n// packages/playwright-core/src/server/injected/utilityScript.ts\nvar utilityScript_exports = {};\n__export(utilityScript_exports, {\n  UtilityScript: () => UtilityScript\n});\nmodule.exports = __toCommonJS(utilityScript_exports);\n\n// packages/playwright-core/src/server/isomorphic/utilityScriptSerializers.ts\nfunction source() {\n  function isRegExp(obj) {\n    return obj instanceof RegExp || Object.prototype.toString.call(obj) === "[object RegExp]";\n  }\n  function isDate(obj) {\n    return obj instanceof Date || Object.prototype.toString.call(obj) === "[object Date]";\n  }\n  function isURL(obj) {\n    return obj instanceof URL || Object.prototype.toString.call(obj) === "[object URL]";\n  }\n  function isError(obj) {\n    var _a;\n    try {\n      return obj instanceof Error || obj && ((_a = Object.getPrototypeOf(obj)) == null ? void 0 : _a.name) === "Error";\n    } catch (error) {\n      return false;\n    }\n  }\n  function parseEvaluationResultValue2(value, handles = [], refs = /* @__PURE__ */ new Map()) {\n    if (Object.is(value, void 0))\n      return void 0;\n    if (typeof value === "object" && value) {\n      if ("ref" in value)\n        return refs.get(value.ref);\n      if ("v" in value) {\n        if (value.v === "undefined")\n          return void 0;\n        if (value.v === "null")\n          return null;\n        if (value.v === "NaN")\n          return NaN;\n        if (value.v === "Infinity")\n          return Infinity;\n        if (value.v === "-Infinity")\n          return -Infinity;\n        if (value.v === "-0")\n          return -0;\n        return void 0;\n      }\n      if ("d" in value)\n        return new Date(value.d);\n      if ("u" in value)\n        return new URL(value.u);\n      if ("r" in value)\n        return new RegExp(value.r.p, value.r.f);\n      if ("a" in value) {\n        const result2 = [];\n        refs.set(value.id, result2);\n        for (const a of value.a)\n          result2.push(parseEvaluationResultValue2(a, handles, refs));\n        return result2;\n      }\n      if ("o" in value) {\n        const result2 = {};\n        refs.set(value.id, result2);\n        for (const { k, v } of value.o)\n          result2[k] = parseEvaluationResultValue2(v, handles, refs);\n        return result2;\n      }\n      if ("h" in value)\n        return handles[value.h];\n    }\n    return value;\n  }\n  function serializeAsCallArgument2(value, handleSerializer) {\n    return serialize(value, handleSerializer, { visited: /* @__PURE__ */ new Map(), lastId: 0 });\n  }\n  function serialize(value, handleSerializer, visitorInfo) {\n    if (value && typeof value === "object") {\n      if (typeof globalThis.Window === "function" && value instanceof globalThis.Window)\n        return "ref: <Window>";\n      if (typeof globalThis.Document === "function" && value instanceof globalThis.Document)\n        return "ref: <Document>";\n      if (typeof globalThis.Node === "function" && value instanceof globalThis.Node)\n        return "ref: <Node>";\n    }\n    return innerSerialize(value, handleSerializer, visitorInfo);\n  }\n  function innerSerialize(value, handleSerializer, visitorInfo) {\n    const result2 = handleSerializer(value);\n    if ("fallThrough" in result2)\n      value = result2.fallThrough;\n    else\n      return result2;\n    if (typeof value === "symbol")\n      return { v: "undefined" };\n    if (Object.is(value, void 0))\n      return { v: "undefined" };\n    if (Object.is(value, null))\n      return { v: "null" };\n    if (Object.is(value, NaN))\n      return { v: "NaN" };\n    if (Object.is(value, Infinity))\n      return { v: "Infinity" };\n    if (Object.is(value, -Infinity))\n      return { v: "-Infinity" };\n    if (Object.is(value, -0))\n      return { v: "-0" };\n    if (typeof value === "boolean")\n      return value;\n    if (typeof value === "number")\n      return value;\n    if (typeof value === "string")\n      return value;\n    if (isError(value)) {\n      const error = value;\n      if ("captureStackTrace" in globalThis.Error) {\n        return error.stack || "";\n      }\n      return `${error.name}: ${error.message}\n${error.stack}`;\n    }\n    if (isDate(value))\n      return { d: value.toJSON() };\n    if (isURL(value))\n      return { u: value.toJSON() };\n    if (isRegExp(value))\n      return { r: { p: value.source, f: value.flags } };\n    const id = visitorInfo.visited.get(value);\n    if (id)\n      return { ref: id };\n    if (Array.isArray(value)) {\n      const a = [];\n      const id2 = ++visitorInfo.lastId;\n      visitorInfo.visited.set(value, id2);\n      for (let i = 0; i < value.length; ++i)\n        a.push(serialize(value[i], handleSerializer, visitorInfo));\n      return { a, id: id2 };\n    }\n    if (typeof value === "object") {\n      const o = [];\n      const id2 = ++visitorInfo.lastId;\n      visitorInfo.visited.set(value, id2);\n      for (const name of Object.keys(value)) {\n        let item;\n        try {\n          item = value[name];\n        } catch (e) {\n          continue;\n        }\n        if (name === "toJSON" && typeof item === "function")\n          o.push({ k: name, v: { o: [], id: 0 } });\n        else\n          o.push({ k: name, v: serialize(item, handleSerializer, visitorInfo) });\n      }\n      if (o.length === 0 && value.toJSON && typeof value.toJSON === "function")\n        return innerSerialize(value.toJSON(), handleSerializer, visitorInfo);\n      return { o, id: id2 };\n    }\n  }\n  return { parseEvaluationResultValue: parseEvaluationResultValue2, serializeAsCallArgument: serializeAsCallArgument2 };\n}\nvar result = source();\nvar parseEvaluationResultValue = result.parseEvaluationResultValue;\nvar serializeAsCallArgument = result.serializeAsCallArgument;\n\n// packages/playwright-core/src/server/injected/utilityScript.ts\nvar UtilityScript = class {\n  evaluate(isFunction, returnByValue, expression, argCount, ...argsAndHandles) {\n    const args = argsAndHandles.slice(0, argCount);\n    const handles = argsAndHandles.slice(argCount);\n    const parameters = args.map((a) => parseEvaluationResultValue(a, handles));\n    let result2 = globalThis.eval(expression);\n    if (isFunction === true) {\n      result2 = result2(...parameters);\n    } else if (isFunction === false) {\n      result2 = result2;\n    } else {\n      if (typeof result2 === "function")\n        result2 = result2(...parameters);\n    }\n    return returnByValue ? this._promiseAwareJsonValueNoThrow(result2) : result2;\n  }\n  jsonValue(returnByValue, value) {\n    if (Object.is(value, void 0))\n      return void 0;\n    return serializeAsCallArgument(value, (value2) => ({ fallThrough: value2 }));\n  }\n  _promiseAwareJsonValueNoThrow(value) {\n    const safeJson = (value2) => {\n      try {\n        return this.jsonValue(true, value2);\n      } catch (e) {\n        return void 0;\n      }\n    };\n    if (value && typeof value === "object" && typeof value.then === "function") {\n      return (async () => {\n        const promiseValue = await value;\n        return safeJson(promiseValue);\n      })();\n    }\n    return safeJson(value);\n  }\n};\nmodule.exports = UtilityScript;\n';
     exports2.source = source;
   }
 });
@@ -17271,7 +17266,8 @@ var require_utilityScriptSerializers = __commonJS({
       }
       function isError(obj) {
         try {
-          return obj instanceof Error || obj && obj.__proto__ && obj.__proto__.name === "Error";
+          var _Object$getPrototypeO;
+          return obj instanceof Error || obj && ((_Object$getPrototypeO = Object.getPrototypeOf(obj)) === null || _Object$getPrototypeO === void 0 ? void 0 : _Object$getPrototypeO.name) === "Error";
         } catch (error) {
           return false;
         }
@@ -17333,11 +17329,11 @@ var require_utilityScriptSerializers = __commonJS({
       }
       function serialize(value, handleSerializer, visitorInfo) {
         if (value && typeof value === "object") {
-          if (globalThis.Window && value instanceof globalThis.Window)
+          if (typeof globalThis.Window === "function" && value instanceof globalThis.Window)
             return "ref: <Window>";
-          if (globalThis.Document && value instanceof globalThis.Document)
+          if (typeof globalThis.Document === "function" && value instanceof globalThis.Document)
             return "ref: <Document>";
-          if (globalThis.Node && value instanceof globalThis.Node)
+          if (typeof globalThis.Node === "function" && value instanceof globalThis.Node)
             return "ref: <Node>";
         }
         return innerSerialize(value, handleSerializer, visitorInfo);
@@ -20309,7 +20305,7 @@ var require_selectorParser = __commonJS({
     exports2.splitSelectorByFrame = splitSelectorByFrame;
     exports2.stringifySelector = stringifySelector;
     var _cssParser = require_cssParser();
-    var kNestedSelectorNames = /* @__PURE__ */ new Set(["has", "left-of", "right-of", "above", "below", "near"]);
+    var kNestedSelectorNames = /* @__PURE__ */ new Set(["internal:has", "left-of", "right-of", "above", "below", "near"]);
     var kNestedSelectorNamesWithDistance = /* @__PURE__ */ new Set(["left-of", "right-of", "above", "below", "near"]);
     var customCSSNames = /* @__PURE__ */ new Set(["not", "is", "where", "has", "scope", "light", "visible", "text", "text-matches", "text-is", "has-text", "above", "below", "right-of", "left-of", "near", "nth-match"]);
     exports2.customCSSNames = customCSSNames;
@@ -20350,7 +20346,7 @@ var require_selectorParser = __commonJS({
               distance
             }
           };
-          if (result2.body.parsed.parts.some((part2) => part2.name === "control" && part2.body === "enter-frame"))
+          if (result2.body.parsed.parts.some((part2) => part2.name === "internal:control" && part2.body === "enter-frame"))
             throw new Error(`Frames are not allowed inside "${part.name}" selectors`);
           return result2;
         }
@@ -20374,7 +20370,7 @@ var require_selectorParser = __commonJS({
       let chunkStartIndex = 0;
       for (let i = 0; i < selector.parts.length; ++i) {
         const part = selector.parts[i];
-        if (part.name === "control" && part.body === "enter-frame") {
+        if (part.name === "internal:control" && part.body === "enter-frame") {
           if (!chunk.parts.length)
             throw new _cssParser.InvalidSelectorError("Selector cannot start with entering frame, select the iframe first");
           result.push(chunk);
@@ -22175,9 +22171,9 @@ var require_frames = __commonJS({
               info: {
                 parsed: {
                   parts: [{
-                    name: "control",
+                    name: "internal:control",
                     body: "return-empty",
-                    source: "control=return-empty"
+                    source: "internal:control=return-empty"
                   }]
                 },
                 world: "utility",
@@ -26427,9 +26423,9 @@ var require_page = __commonJS({
   }
 });
 
-// node_modules/playwright-core/lib/protocol/channels.js
-var require_channels = __commonJS({
-  "node_modules/playwright-core/lib/protocol/channels.js"(exports2) {
+// node_modules/playwright-core/lib/protocol/debug.js
+var require_debug = __commonJS({
+  "node_modules/playwright-core/lib/protocol/debug.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", {
       value: true
@@ -26453,7 +26449,7 @@ var require_debugger = __commonJS({
     var _events = require("events");
     var _utils = require_utils();
     var _browserContext = require_browserContext();
-    var _channels = require_channels();
+    var _debug = require_debug();
     var symbol = Symbol("Debugger");
     var Debugger = class extends _events.EventEmitter {
       constructor(context) {
@@ -26565,7 +26561,7 @@ var require_debugger = __commonJS({
       if (metadata.method === "waitForSelector" || metadata.method === "waitForEventInfo")
         return false;
       const step = metadata.type + "." + metadata.method;
-      return _channels.commandsWithTracingSnapshots.has(step) && !_channels.pausesBeforeInputActions.has(metadata.type + "." + metadata.method);
+      return _debug.commandsWithTracingSnapshots.has(step) && !_debug.pausesBeforeInputActions.has(metadata.type + "." + metadata.method);
     }
   }
 });
@@ -27288,19 +27284,6 @@ var require_harTracer = __commonJS({
   }
 });
 
-// node_modules/playwright-core/lib/server/trace/common/traceEvents.js
-var require_traceEvents = __commonJS({
-  "node_modules/playwright-core/lib/server/trace/common/traceEvents.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", {
-      value: true
-    });
-    exports2.VERSION = void 0;
-    var VERSION = 3;
-    exports2.VERSION = VERSION;
-  }
-});
-
 // node_modules/playwright-core/lib/server/trace/recorder/snapshotterInjected.js
 var require_snapshotterInjected = __commonJS({
   "node_modules/playwright-core/lib/server/trace/recorder/snapshotterInjected.js"(exports2) {
@@ -27936,7 +27919,7 @@ var require_tracing = __commonJS({
     var _fs = _interopRequireDefault(require("fs"));
     var _os = _interopRequireDefault(require("os"));
     var _path = _interopRequireDefault(require("path"));
-    var _channels = require_channels();
+    var _debug = require_debug();
     var _manualPromise = require_manualPromise();
     var _eventsHelper = require_eventsHelper();
     var _utils = require_utils();
@@ -27947,12 +27930,12 @@ var require_tracing = __commonJS({
     var _instrumentation = require_instrumentation();
     var _page = require_page();
     var _harTracer = require_harTracer();
-    var _traceEvents = require_traceEvents();
     var _snapshotter = require_snapshotter();
     var _zipBundle = require_zipBundle();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
+    var version = 3;
     var kScreencastOptions = {
       width: 800,
       height: 600,
@@ -27983,7 +27966,7 @@ var require_tracing = __commonJS({
           skipScripts: true
         });
         this._contextCreatedEvent = {
-          version: _traceEvents.VERSION,
+          version,
           type: "context-options",
           browserName: "",
           options: {},
@@ -28404,7 +28387,7 @@ var require_tracing = __commonJS({
       }
     }
     function shouldCaptureSnapshot(metadata) {
-      return _channels.commandsWithTracingSnapshots.has(metadata.type + "." + metadata.method);
+      return _debug.commandsWithTracingSnapshots.has(metadata.type + "." + metadata.method);
     }
   }
 });
@@ -28786,51 +28769,6 @@ var require_language = __commonJS({
   }
 });
 
-// node_modules/playwright-core/lib/server/recorder/recorderActions.js
-var require_recorderActions = __commonJS({
-  "node_modules/playwright-core/lib/server/recorder/recorderActions.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", {
-      value: true
-    });
-    exports2.actionTitle = actionTitle;
-    function actionTitle(action) {
-      switch (action.name) {
-        case "openPage":
-          return `Open new page`;
-        case "closePage":
-          return `Close page`;
-        case "check":
-          return `Check ${action.selector}`;
-        case "uncheck":
-          return `Uncheck ${action.selector}`;
-        case "click": {
-          if (action.clickCount === 1)
-            return `Click ${action.selector}`;
-          if (action.clickCount === 2)
-            return `Double click ${action.selector}`;
-          if (action.clickCount === 3)
-            return `Triple click ${action.selector}`;
-          return `${action.clickCount}\xD7 click`;
-        }
-        case "fill":
-          return `Fill ${action.selector}`;
-        case "setInputFiles":
-          if (action.files.length === 0)
-            return `Clear selected files`;
-          else
-            return `Upload ${action.files.join(", ")}`;
-        case "navigate":
-          return `Go to ${action.url}`;
-        case "press":
-          return `Press ${action.key}` + (action.modifiers ? " with modifiers" : "");
-        case "select":
-          return `Select ${action.options.join(", ")}`;
-      }
-    }
-  }
-});
-
 // node_modules/playwright-core/lib/server/deviceDescriptorsSource.json
 var require_deviceDescriptorsSource = __commonJS({
   "node_modules/playwright-core/lib/server/deviceDescriptorsSource.json"(exports2, module2) {
@@ -28946,7 +28884,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "Galaxy S5": {
-        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 640
@@ -28957,7 +28895,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S5 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 360
@@ -28968,7 +28906,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S8": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 740
@@ -28979,7 +28917,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S8 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 740,
           height: 360
@@ -28990,7 +28928,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S9+": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 320,
           height: 658
@@ -29001,7 +28939,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy S9+ landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; SM-G965U Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 658,
           height: 320
@@ -29012,7 +28950,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy Tab S4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         viewport: {
           width: 712,
           height: 1138
@@ -29023,7 +28961,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Galaxy Tab S4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.1.0; SM-T837A) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         viewport: {
           width: 1138,
           height: 712
@@ -29672,7 +29610,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "LG Optimus L70": {
-        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 384,
           height: 640
@@ -29683,7 +29621,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "LG Optimus L70 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; U; Android 4.4.2; en-us; LGMS323 Build/KOT49I.MS32310c) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 384
@@ -29694,7 +29632,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 550": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 640,
           height: 360
@@ -29705,7 +29643,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 550 landscape": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 550) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 360,
           height: 640
@@ -29716,7 +29654,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 950": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 360,
           height: 640
@@ -29727,7 +29665,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Microsoft Lumia 950 landscape": {
-        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36 Edge/14.14263",
+        userAgent: "Mozilla/5.0 (Windows Phone 10.0; Android 4.2.1; Microsoft; Lumia 950) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36 Edge/14.14263",
         viewport: {
           width: 640,
           height: 360
@@ -29738,7 +29676,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 10": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         viewport: {
           width: 800,
           height: 1280
@@ -29749,7 +29687,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 10 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 10 Build/MOB31T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         viewport: {
           width: 1280,
           height: 800
@@ -29760,7 +29698,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 384,
           height: 640
@@ -29771,7 +29709,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 4.4.2; Nexus 4 Build/KOT49H) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 384
@@ -29782,7 +29720,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 640
@@ -29793,7 +29731,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 360
@@ -29804,7 +29742,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5X": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 412,
           height: 732
@@ -29815,7 +29753,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 5X landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 5X Build/OPR4.170623.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 732,
           height: 412
@@ -29826,7 +29764,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 412,
           height: 732
@@ -29837,7 +29775,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.1.1; Nexus 6 Build/N6F26U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 732,
           height: 412
@@ -29848,7 +29786,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6P": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 412,
           height: 732
@@ -29859,7 +29797,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 6P landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Nexus 6P Build/OPP3.170518.006) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 732,
           height: 412
@@ -29870,7 +29808,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 7": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         viewport: {
           width: 600,
           height: 960
@@ -29881,7 +29819,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Nexus 7 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 7 Build/MOB30X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         viewport: {
           width: 960,
           height: 600
@@ -29936,7 +29874,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "Pixel 2": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 411,
           height: 731
@@ -29947,7 +29885,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 2 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 731,
           height: 411
@@ -29958,7 +29896,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 2 XL": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 411,
           height: 823
@@ -29969,7 +29907,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 2 XL landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 823,
           height: 411
@@ -29980,7 +29918,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 3": {
-        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 393,
           height: 786
@@ -29991,7 +29929,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 3 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 9; Pixel 3 Build/PQ1A.181105.017.A1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 786,
           height: 393
@@ -30002,7 +29940,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 353,
           height: 745
@@ -30013,7 +29951,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 10; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 745,
           height: 353
@@ -30024,7 +29962,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4a (5G)": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         screen: {
           width: 412,
           height: 892
@@ -30039,7 +29977,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 4a (5G) landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 4a (5G)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         screen: {
           height: 892,
           width: 412
@@ -30054,7 +29992,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 5": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         screen: {
           width: 393,
           height: 851
@@ -30069,7 +30007,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Pixel 5 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         screen: {
           width: 851,
           height: 393
@@ -30084,7 +30022,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Moto G4": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 360,
           height: 640
@@ -30095,7 +30033,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Moto G4 landscape": {
-        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Mobile Safari/537.36",
+        userAgent: "Mozilla/5.0 (Linux; Android 7.0; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Mobile Safari/537.36",
         viewport: {
           width: 640,
           height: 360
@@ -30106,7 +30044,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Chrome HiDPI": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         screen: {
           width: 1792,
           height: 1120
@@ -30121,7 +30059,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Edge HiDPI": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36 Edg/106.0.5249.30",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36 Edg/107.0.5304.18",
         screen: {
           width: 1792,
           height: 1120
@@ -30136,7 +30074,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Firefox HiDPI": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0.1) Gecko/20100101 Firefox/105.0.1",
         screen: {
           width: 1792,
           height: 1120
@@ -30166,7 +30104,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "webkit"
       },
       "Desktop Chrome": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36",
         screen: {
           width: 1920,
           height: 1080
@@ -30181,7 +30119,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Edge": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.5249.30 Safari/537.36 Edg/106.0.5249.30",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.5304.18 Safari/537.36 Edg/107.0.5304.18",
         screen: {
           width: 1920,
           height: 1080
@@ -30196,7 +30134,7 @@ var require_deviceDescriptorsSource = __commonJS({
         defaultBrowserType: "chromium"
       },
       "Desktop Firefox": {
-        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
+        userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:105.0.1) Gecko/20100101 Firefox/105.0.1",
         screen: {
           width: 1920,
           height: 1080
@@ -30228,7 +30166,12 @@ var require_stringUtils = __commonJS({
     Object.defineProperty(exports2, "__esModule", {
       value: true
     });
+    exports2.cssEscape = cssEscape;
+    exports2.escapeForAttributeSelector = escapeForAttributeSelector;
+    exports2.escapeForTextSelector = escapeForTextSelector;
     exports2.escapeWithQuotes = escapeWithQuotes;
+    exports2.toSnakeCase = toSnakeCase;
+    exports2.toTitleCase = toTitleCase;
     function escapeWithQuotes(text, char = "'") {
       const stringified = JSON.stringify(text);
       const escapedText = stringified.substring(1, stringified.length - 1).replace(/\\"/g, '"');
@@ -30240,6 +30183,386 @@ var require_stringUtils = __commonJS({
         return char + escapedText.replace(/[`]/g, "`") + char;
       throw new Error("Invalid escape char");
     }
+    function toTitleCase(name) {
+      return name.charAt(0).toUpperCase() + name.substring(1);
+    }
+    function toSnakeCase(name) {
+      return name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();
+    }
+    function cssEscape(s) {
+      let result = "";
+      for (let i = 0; i < s.length; i++)
+        result += cssEscapeOne(s, i);
+      return result;
+    }
+    function cssEscapeOne(s, i) {
+      const c = s.charCodeAt(i);
+      if (c === 0)
+        return "\uFFFD";
+      if (c >= 1 && c <= 31 || c >= 48 && c <= 57 && (i === 0 || i === 1 && s.charCodeAt(0) === 45))
+        return "\\" + c.toString(16) + " ";
+      if (i === 0 && c === 45 && s.length === 1)
+        return "\\" + s.charAt(i);
+      if (c >= 128 || c === 45 || c === 95 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122)
+        return s.charAt(i);
+      return "\\" + s.charAt(i);
+    }
+    function escapeForRegex(text) {
+      return text.replace(/[.*+?^>${}()|[\]\\]/g, "\\$&");
+    }
+    function escapeForTextSelector(text, exact, caseSensitive = false) {
+      if (typeof text !== "string")
+        return String(text);
+      if (exact)
+        return '"' + text.replace(/["]/g, '\\"') + '"';
+      if (text.includes('"') || text.includes(">>") || text[0] === "/")
+        return `/${escapeForRegex(text).replace(/\s+/g, "\\s+")}/` + (caseSensitive ? "" : "i");
+      return text;
+    }
+    function escapeForAttributeSelector(value, exact) {
+      return `"${value.replace(/["]/g, '\\"')}"${exact ? "" : "i"}`;
+    }
+  }
+});
+
+// node_modules/playwright-core/lib/server/isomorphic/locatorGenerators.js
+var require_locatorGenerators = __commonJS({
+  "node_modules/playwright-core/lib/server/isomorphic/locatorGenerators.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", {
+      value: true
+    });
+    exports2.PythonLocatorFactory = exports2.JavaScriptLocatorFactory = exports2.JavaLocatorFactory = exports2.CSharpLocatorFactory = void 0;
+    exports2.asLocator = asLocator;
+    var _stringUtils = require_stringUtils();
+    var _selectorParser = require_selectorParser();
+    function asLocator(lang, selector, isFrameLocator = false) {
+      return innerAsLocator(generators[lang], selector, isFrameLocator);
+    }
+    function innerAsLocator(factory, selector, isFrameLocator = false) {
+      const parsed = (0, _selectorParser.parseSelector)(selector);
+      const tokens = [];
+      for (const part of parsed.parts) {
+        const base = part === parsed.parts[0] ? isFrameLocator ? "frame-locator" : "page" : "locator";
+        if (part.name === "nth") {
+          if (part.body === "0")
+            tokens.push(factory.generateLocator(base, "first", ""));
+          else if (part.body === "-1")
+            tokens.push(factory.generateLocator(base, "last", ""));
+          else
+            tokens.push(factory.generateLocator(base, "nth", part.body));
+          continue;
+        }
+        if (part.name === "text") {
+          const {
+            exact,
+            text
+          } = detectExact(part.body);
+          tokens.push(factory.generateLocator(base, "text", text, {
+            exact
+          }));
+          continue;
+        }
+        if (part.name === "internal:label") {
+          const {
+            exact,
+            text
+          } = detectExact(part.body);
+          tokens.push(factory.generateLocator(base, "label", text, {
+            exact
+          }));
+          continue;
+        }
+        if (part.name === "role") {
+          const attrSelector = (0, _selectorParser.parseAttributeSelector)(part.body, true);
+          const attrs = {};
+          for (const attr of attrSelector.attributes)
+            attrs[attr.name === "include-hidden" ? "includeHidden" : attr.name] = attr.value;
+          tokens.push(factory.generateLocator(base, "role", attrSelector.name, {
+            attrs
+          }));
+          continue;
+        }
+        if (part.name === "css") {
+          const parsed2 = part.body;
+          if (parsed2[0].simples.length === 1 && parsed2[0].simples[0].selector.functions.length === 1 && parsed2[0].simples[0].selector.functions[0].name === "hasText") {
+            const hasText = parsed2[0].simples[0].selector.functions[0].args[0];
+            tokens.push(factory.generateLocator(base, "has-text", parsed2[0].simples[0].selector.css, {
+              hasText
+            }));
+            continue;
+          }
+        }
+        if (part.name === "internal:attr") {
+          const attrSelector = (0, _selectorParser.parseAttributeSelector)(part.body, true);
+          const {
+            name,
+            value
+          } = attrSelector.attributes[0];
+          if (name === "data-testid") {
+            tokens.push(factory.generateLocator(base, "test-id", value));
+            continue;
+          }
+          const {
+            exact,
+            text
+          } = detectExact(value);
+          if (name === "placeholder") {
+            tokens.push(factory.generateLocator(base, "placeholder", text, {
+              exact
+            }));
+            continue;
+          }
+          if (name === "alt") {
+            tokens.push(factory.generateLocator(base, "alt", text, {
+              exact
+            }));
+            continue;
+          }
+          if (name === "title") {
+            tokens.push(factory.generateLocator(base, "title", text, {
+              exact
+            }));
+            continue;
+          }
+          if (name === "label") {
+            tokens.push(factory.generateLocator(base, "label", text, {
+              exact
+            }));
+            continue;
+          }
+        }
+        const p = {
+          parts: [part]
+        };
+        tokens.push(factory.generateLocator(base, "default", (0, _selectorParser.stringifySelector)(p)));
+      }
+      return tokens.join(".");
+    }
+    function detectExact(text) {
+      let exact = false;
+      if (text.startsWith('"') && text.endsWith('"')) {
+        text = JSON.parse(text);
+        exact = true;
+      }
+      return {
+        exact,
+        text
+      };
+    }
+    var JavaScriptLocatorFactory = class {
+      generateLocator(base, kind, body, options = {}) {
+        switch (kind) {
+          case "default":
+            return `locator(${this.quote(body)})`;
+          case "nth":
+            return `nth(${body})`;
+          case "first":
+            return `first()`;
+          case "last":
+            return `last()`;
+          case "role":
+            const attrs = [];
+            for (const [name, value] of Object.entries(options.attrs))
+              attrs.push(`${name}: ${typeof value === "string" ? this.quote(value) : value}`);
+            const attrString = attrs.length ? `, { ${attrs.join(", ")} }` : "";
+            return `getByRole(${this.quote(body)}${attrString})`;
+          case "has-text":
+            return `locator(${this.quote(body)}, { hasText: ${this.quote(options.hasText)} })`;
+          case "test-id":
+            return `getByTestId(${this.quote(body)})`;
+          case "text":
+            return this.toCallWithExact("getByText", body, !!options.exact);
+          case "alt":
+            return this.toCallWithExact("getByAltText", body, !!options.exact);
+          case "placeholder":
+            return this.toCallWithExact("getByPlaceholder", body, !!options.exact);
+          case "label":
+            return this.toCallWithExact("getByLabel", body, !!options.exact);
+          case "title":
+            return this.toCallWithExact("getByTitle", body, !!options.exact);
+          default:
+            throw new Error("Unknown selector kind " + kind);
+        }
+      }
+      toCallWithExact(method, body, exact) {
+        if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i")))
+          return `${method}(${body})`;
+        return exact ? `${method}(${this.quote(body)}, { exact: true })` : `${method}(${this.quote(body)})`;
+      }
+      quote(text) {
+        return (0, _stringUtils.escapeWithQuotes)(text, "'");
+      }
+    };
+    exports2.JavaScriptLocatorFactory = JavaScriptLocatorFactory;
+    var PythonLocatorFactory = class {
+      generateLocator(base, kind, body, options = {}) {
+        switch (kind) {
+          case "default":
+            return `locator(${this.quote(body)})`;
+          case "nth":
+            return `nth(${body})`;
+          case "first":
+            return `first`;
+          case "last":
+            return `last`;
+          case "role":
+            const attrs = [];
+            for (const [name, value] of Object.entries(options.attrs))
+              attrs.push(`${(0, _stringUtils.toSnakeCase)(name)}=${typeof value === "string" ? this.quote(value) : value}`);
+            const attrString = attrs.length ? `, ${attrs.join(", ")}` : "";
+            return `get_by_role(${this.quote(body)}${attrString})`;
+          case "has-text":
+            return `locator(${this.quote(body)}, has_text=${this.quote(options.hasText)})`;
+          case "test-id":
+            return `get_by_test_id(${this.quote(body)})`;
+          case "text":
+            return this.toCallWithExact("get_by_text", body, !!options.exact);
+          case "alt":
+            return this.toCallWithExact("get_by_alt_text", body, !!options.exact);
+          case "placeholder":
+            return this.toCallWithExact("get_by_placeholder", body, !!options.exact);
+          case "label":
+            return this.toCallWithExact("get_by_label", body, !!options.exact);
+          case "title":
+            return this.toCallWithExact("get_by_title", body, !!options.exact);
+          default:
+            throw new Error("Unknown selector kind " + kind);
+        }
+      }
+      toCallWithExact(method, body, exact) {
+        if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {
+          const regex = body.substring(1, body.lastIndexOf("/"));
+          const suffix = body.endsWith("i") ? ", re.IGNORECASE" : "";
+          return `${method}(re.compile(r${this.quote(regex)}${suffix}))`;
+        }
+        if (exact)
+          return `${method}(${this.quote(body)}, exact=true)`;
+        return `${method}(${this.quote(body)})`;
+      }
+      quote(text) {
+        return (0, _stringUtils.escapeWithQuotes)(text, '"');
+      }
+    };
+    exports2.PythonLocatorFactory = PythonLocatorFactory;
+    var JavaLocatorFactory = class {
+      generateLocator(base, kind, body, options = {}) {
+        let clazz;
+        switch (base) {
+          case "page":
+            clazz = "Page";
+            break;
+          case "frame-locator":
+            clazz = "FrameLocator";
+            break;
+          case "locator":
+            clazz = "Locator";
+            break;
+        }
+        switch (kind) {
+          case "default":
+            return `locator(${this.quote(body)})`;
+          case "nth":
+            return `nth(${body})`;
+          case "first":
+            return `first()`;
+          case "last":
+            return `last()`;
+          case "role":
+            const attrs = [];
+            for (const [name, value] of Object.entries(options.attrs))
+              attrs.push(`.set${(0, _stringUtils.toTitleCase)(name)}(${typeof value === "string" ? this.quote(value) : value})`);
+            const attrString = attrs.length ? `, new ${clazz}.GetByRoleOptions()${attrs.join("")}` : "";
+            return `getByRole(${this.quote(body)}${attrString})`;
+          case "has-text":
+            return `locator(${this.quote(body)}, new ${clazz}.LocatorOptions().setHasText(${this.quote(options.hasText)}))`;
+          case "test-id":
+            return `getByTestId(${this.quote(body)})`;
+          case "text":
+            return this.toCallWithExact(clazz, "getByText", body, !!options.exact);
+          case "alt":
+            return this.toCallWithExact(clazz, "getByAltText", body, !!options.exact);
+          case "placeholder":
+            return this.toCallWithExact(clazz, "getByPlaceholder", body, !!options.exact);
+          case "label":
+            return this.toCallWithExact(clazz, "getByLabel", body, !!options.exact);
+          case "title":
+            return this.toCallWithExact(clazz, "getByTitle", body, !!options.exact);
+          default:
+            throw new Error("Unknown selector kind " + kind);
+        }
+      }
+      toCallWithExact(clazz, method, body, exact) {
+        if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {
+          const regex = body.substring(1, body.lastIndexOf("/"));
+          const suffix = body.endsWith("i") ? ", Pattern.CASE_INSENSITIVE" : "";
+          return `${method}(Pattern.compile(${this.quote(regex)}${suffix}))`;
+        }
+        if (exact)
+          return `${method}(${this.quote(body)}, new ${clazz}.${(0, _stringUtils.toTitleCase)(method)}Options().setExact(exact))`;
+        return `${method}(${this.quote(body)})`;
+      }
+      quote(text) {
+        return (0, _stringUtils.escapeWithQuotes)(text, '"');
+      }
+    };
+    exports2.JavaLocatorFactory = JavaLocatorFactory;
+    var CSharpLocatorFactory = class {
+      generateLocator(base, kind, body, options = {}) {
+        switch (kind) {
+          case "default":
+            return `Locator(${this.quote(body)})`;
+          case "nth":
+            return `Nth(${body})`;
+          case "first":
+            return `First`;
+          case "last":
+            return `Last`;
+          case "role":
+            const attrs = [];
+            for (const [name, value] of Object.entries(options.attrs))
+              attrs.push(`${(0, _stringUtils.toTitleCase)(name)} = ${typeof value === "string" ? this.quote(value) : value}`);
+            const attrString = attrs.length ? `, new () { ${attrs.join(", ")} }` : "";
+            return `GetByRole(${this.quote(body)}${attrString})`;
+          case "has-text":
+            return `Locator(${this.quote(body)}, new () { HasTextString: ${this.quote(options.hasText)} })`;
+          case "test-id":
+            return `GetByTestId(${this.quote(body)})`;
+          case "text":
+            return this.toCallWithExact("GetByText", body, !!options.exact);
+          case "alt":
+            return this.toCallWithExact("GetByAltText", body, !!options.exact);
+          case "placeholder":
+            return this.toCallWithExact("GetByPlaceholder", body, !!options.exact);
+          case "label":
+            return this.toCallWithExact("GetByLabel", body, !!options.exact);
+          case "title":
+            return this.toCallWithExact("GetByTitle", body, !!options.exact);
+          default:
+            throw new Error("Unknown selector kind " + kind);
+        }
+      }
+      toCallWithExact(method, body, exact) {
+        if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {
+          const regex = body.substring(1, body.lastIndexOf("/"));
+          const suffix = body.endsWith("i") ? ", RegexOptions.IgnoreCase" : "";
+          return `${method}(new Regex(${this.quote(regex)}${suffix}))`;
+        }
+        if (exact)
+          return `${method}(${this.quote(body)}, new () { Exact: true })`;
+        return `${method}(${this.quote(body)})`;
+      }
+      quote(text) {
+        return (0, _stringUtils.escapeWithQuotes)(text, '"');
+      }
+    };
+    exports2.CSharpLocatorFactory = CSharpLocatorFactory;
+    var generators = {
+      javascript: new JavaScriptLocatorFactory(),
+      python: new PythonLocatorFactory(),
+      java: new JavaLocatorFactory(),
+      csharp: new CSharpLocatorFactory()
+    };
   }
 });
 
@@ -30252,10 +30575,10 @@ var require_javascript2 = __commonJS({
     });
     exports2.JavaScriptLanguageGenerator = exports2.JavaScriptFormatter = void 0;
     var _language = require_language();
-    var _recorderActions = require_recorderActions();
     var _utils = require_utils2();
     var _deviceDescriptors = _interopRequireDefault(require_deviceDescriptors());
     var _stringUtils = require_stringUtils();
+    var _locatorGenerators = require_locatorGenerators();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -30277,7 +30600,6 @@ var require_javascript2 = __commonJS({
         const pageAlias = actionInContext.frame.pageAlias;
         const formatter = new JavaScriptFormatter(2);
         formatter.newLine();
-        formatter.add("// " + (0, _recorderActions.actionTitle)(action));
         if (action.name === "openPage") {
           formatter.add(`const ${pageAlias} = await context.newPage();`);
           if (action.url && action.url !== "about:blank" && action.url !== "chrome://newtab/")
@@ -30288,7 +30610,7 @@ var require_javascript2 = __commonJS({
         if (actionInContext.frame.isMainFrame) {
           subject = pageAlias;
         } else if (actionInContext.frame.selectorsChain && action.name !== "navigate") {
-          const locators = actionInContext.frame.selectorsChain.map((selector) => "." + asLocator(selector, "frameLocator"));
+          const locators = actionInContext.frame.selectorsChain.map((selector) => `.frameLocator(${quote(selector)})`);
           subject = `${pageAlias}${locators.join("")}`;
         } else if (actionInContext.frame.name) {
           subject = `${pageAlias}.frame(${formatObject({
@@ -30354,26 +30676,29 @@ var require_javascript2 = __commonJS({
             if (action.position)
               options.position = action.position;
             const optionsString = formatOptions(options, false);
-            return asLocator(action.selector) + `.${method}(${optionsString})`;
+            return this._asLocator(action.selector) + `.${method}(${optionsString})`;
           }
           case "check":
-            return asLocator(action.selector) + `.check()`;
+            return this._asLocator(action.selector) + `.check()`;
           case "uncheck":
-            return asLocator(action.selector) + `.uncheck()`;
+            return this._asLocator(action.selector) + `.uncheck()`;
           case "fill":
-            return asLocator(action.selector) + `.fill(${quote(action.text)})`;
+            return this._asLocator(action.selector) + `.fill(${quote(action.text)})`;
           case "setInputFiles":
-            return asLocator(action.selector) + `.setInputFiles(${formatObject(action.files.length === 1 ? action.files[0] : action.files)})`;
+            return this._asLocator(action.selector) + `.setInputFiles(${formatObject(action.files.length === 1 ? action.files[0] : action.files)})`;
           case "press": {
             const modifiers = (0, _utils.toModifiers)(action.modifiers);
             const shortcut = [...modifiers, action.key].join("+");
-            return asLocator(action.selector) + `.press(${quote(shortcut)})`;
+            return this._asLocator(action.selector) + `.press(${quote(shortcut)})`;
           }
           case "navigate":
             return `goto(${quote(action.url)})`;
           case "select":
-            return asLocator(action.selector) + `.selectOption(${formatObject(action.options.length > 1 ? action.options : action.options[0])})`;
+            return this._asLocator(action.selector) + `.selectOption(${formatObject(action.options.length > 1 ? action.options : action.options[0])})`;
         }
+      }
+      _asLocator(selector) {
+        return (0, _locatorGenerators.asLocator)("javascript", selector);
       }
       generateHeader(options) {
         if (this._isTest)
@@ -30419,14 +30744,6 @@ ${useText ? "\ntest.use(" + useText + ");\n" : ""}
       }
     };
     exports2.JavaScriptLanguageGenerator = JavaScriptLanguageGenerator;
-    function asLocator(selector, locatorFn = "locator") {
-      const match = selector.match(/(.*)\s+>>\s+nth=(\d+)$/);
-      if (!match)
-        return `${locatorFn}(${quote(selector)})`;
-      if (+match[2] === 0)
-        return `${locatorFn}(${quote(match[1])}).first()`;
-      return `${locatorFn}(${quote(match[1])}).nth(${match[2]})`;
-    }
     function formatOptions(value, hasArguments) {
       const keys = Object.keys(value);
       if (!keys.length)
@@ -30518,11 +30835,11 @@ var require_java = __commonJS({
     });
     exports2.JavaLanguageGenerator = void 0;
     var _language = require_language();
-    var _recorderActions = require_recorderActions();
     var _utils = require_utils2();
     var _deviceDescriptors = _interopRequireDefault(require_deviceDescriptors());
     var _javascript = require_javascript2();
     var _stringUtils = require_stringUtils();
+    var _locatorGenerators = require_locatorGenerators();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -30538,7 +30855,6 @@ var require_java = __commonJS({
         const pageAlias = actionInContext.frame.pageAlias;
         const formatter = new _javascript.JavaScriptFormatter(6);
         formatter.newLine();
-        formatter.add("// " + (0, _recorderActions.actionTitle)(action));
         if (action.name === "openPage") {
           formatter.add(`Page ${pageAlias} = context.newPage();`);
           if (action.url && action.url !== "about:blank" && action.url !== "chrome://newtab/")
@@ -30546,11 +30862,13 @@ var require_java = __commonJS({
           return formatter.format();
         }
         let subject;
+        let inFrameLocator = false;
         if (actionInContext.frame.isMainFrame) {
           subject = pageAlias;
         } else if (actionInContext.frame.selectorsChain && action.name !== "navigate") {
-          const locators = actionInContext.frame.selectorsChain.map((selector) => "." + asLocator(selector, "frameLocator"));
+          const locators = actionInContext.frame.selectorsChain.map((selector) => `.frameLocator(${quote(selector)})`);
           subject = `${pageAlias}${locators.join("")}`;
+          inFrameLocator = true;
         } else if (actionInContext.frame.name) {
           subject = `${pageAlias}.frame(${quote(actionInContext.frame.name)})`;
         } else {
@@ -30563,7 +30881,7 @@ var require_java = __commonJS({
         dialog.dismiss();
       });`);
         }
-        const actionCall = this._generateActionCall(action);
+        const actionCall = this._generateActionCall(action, inFrameLocator);
         let code = `${subject}.${actionCall};`;
         if (signals.popup) {
           code = `Page ${signals.popup.popupAlias} = ${pageAlias}.waitForPopup(() -> {
@@ -30580,7 +30898,7 @@ var require_java = __commonJS({
           formatter.add(`assertThat(${pageAlias}).hasURL(${quote(signals.assertNavigation.url)});`);
         return formatter.format();
       }
-      _generateActionCall(action) {
+      _generateActionCall(action, inFrameLocator) {
         switch (action.name) {
           case "openPage":
             throw Error("Not reached");
@@ -30601,26 +30919,29 @@ var require_java = __commonJS({
             if (action.position)
               options.position = action.position;
             const optionsText = formatClickOptions(options);
-            return asLocator(action.selector) + `.${method}(${optionsText})`;
+            return this._asLocator(action.selector, inFrameLocator) + `.${method}(${optionsText})`;
           }
           case "check":
-            return asLocator(action.selector) + `.check()`;
+            return this._asLocator(action.selector, inFrameLocator) + `.check()`;
           case "uncheck":
-            return asLocator(action.selector) + `.uncheck()`;
+            return this._asLocator(action.selector, inFrameLocator) + `.uncheck()`;
           case "fill":
-            return asLocator(action.selector) + `.fill(${quote(action.text)})`;
+            return this._asLocator(action.selector, inFrameLocator) + `.fill(${quote(action.text)})`;
           case "setInputFiles":
-            return asLocator(action.selector) + `.setInputFiles(${formatPath(action.files.length === 1 ? action.files[0] : action.files)})`;
+            return this._asLocator(action.selector, inFrameLocator) + `.setInputFiles(${formatPath(action.files.length === 1 ? action.files[0] : action.files)})`;
           case "press": {
             const modifiers = (0, _utils.toModifiers)(action.modifiers);
             const shortcut = [...modifiers, action.key].join("+");
-            return asLocator(action.selector) + `.press(${quote(shortcut)})`;
+            return this._asLocator(action.selector, inFrameLocator) + `.press(${quote(shortcut)})`;
           }
           case "navigate":
             return `navigate(${quote(action.url)})`;
           case "select":
-            return asLocator(action.selector) + `.selectOption(${formatSelectOption(action.options.length > 1 ? action.options : action.options[0])})`;
+            return this._asLocator(action.selector, inFrameLocator) + `.selectOption(${formatSelectOption(action.options.length > 1 ? action.options : action.options[0])})`;
         }
+      }
+      _asLocator(selector, inFrameLocator) {
+        return (0, _locatorGenerators.asLocator)("java", selector, inFrameLocator);
       }
       generateHeader(options) {
         const formatter = new _javascript.JavaScriptFormatter();
@@ -30740,14 +31061,6 @@ var require_java = __commonJS({
     function quote(text) {
       return (0, _stringUtils.escapeWithQuotes)(text, '"');
     }
-    function asLocator(selector, locatorFn = "locator") {
-      const match = selector.match(/(.*)\s+>>\s+nth=(\d+)$/);
-      if (!match)
-        return `${locatorFn}(${quote(selector)})`;
-      if (+match[2] === 0)
-        return `${locatorFn}(${quote(match[1])}).first()`;
-      return `${locatorFn}(${quote(match[1])}).nth(${match[2]})`;
-    }
   }
 });
 
@@ -30760,10 +31073,10 @@ var require_csharp = __commonJS({
     });
     exports2.CSharpLanguageGenerator = void 0;
     var _language = require_language();
-    var _recorderActions = require_recorderActions();
     var _utils = require_utils2();
     var _stringUtils = require_stringUtils();
     var _deviceDescriptors = _interopRequireDefault(require_deviceDescriptors());
+    var _locatorGenerators = require_locatorGenerators();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -30802,7 +31115,6 @@ var require_csharp = __commonJS({
         if (this._mode !== "library")
           pageAlias = pageAlias.replace("page", "Page");
         const formatter = new CSharpFormatter(8);
-        formatter.add("// " + (0, _recorderActions.actionTitle)(action));
         if (action.name === "openPage") {
           formatter.add(`var ${pageAlias} = await context.NewPageAsync();`);
           if (action.url && action.url !== "about:blank" && action.url !== "chrome://newtab/")
@@ -30813,7 +31125,7 @@ var require_csharp = __commonJS({
         if (actionInContext.frame.isMainFrame) {
           subject = pageAlias;
         } else if (actionInContext.frame.selectorsChain && action.name !== "navigate") {
-          const locators = actionInContext.frame.selectorsChain.map((selector) => "." + asLocator(selector, "FrameLocator"));
+          const locators = actionInContext.frame.selectorsChain.map((selector) => `.FrameLocator(${quote(selector)})`);
           subject = `${pageAlias}${locators.join("")}`;
         } else if (actionInContext.frame.name) {
           subject = `${pageAlias}.Frame(${quote(actionInContext.frame.name)})`;
@@ -30870,28 +31182,31 @@ var require_csharp = __commonJS({
             if (action.position)
               options.position = action.position;
             if (!Object.entries(options).length)
-              return asLocator(action.selector) + `.${method}Async()`;
+              return this._asLocator(action.selector) + `.${method}Async()`;
             const optionsString = formatObject(options, "    ", "Locator" + method + "Options");
-            return asLocator(action.selector) + `.${method}Async(${optionsString})`;
+            return this._asLocator(action.selector) + `.${method}Async(${optionsString})`;
           }
           case "check":
-            return asLocator(action.selector) + `.CheckAsync()`;
+            return this._asLocator(action.selector) + `.CheckAsync()`;
           case "uncheck":
-            return asLocator(action.selector) + `.UncheckAsync()`;
+            return this._asLocator(action.selector) + `.UncheckAsync()`;
           case "fill":
-            return asLocator(action.selector) + `.FillAsync(${quote(action.text)})`;
+            return this._asLocator(action.selector) + `.FillAsync(${quote(action.text)})`;
           case "setInputFiles":
-            return asLocator(action.selector) + `.SetInputFilesAsync(${formatObject(action.files)})`;
+            return this._asLocator(action.selector) + `.SetInputFilesAsync(${formatObject(action.files)})`;
           case "press": {
             const modifiers = (0, _utils.toModifiers)(action.modifiers);
             const shortcut = [...modifiers, action.key].join("+");
-            return asLocator(action.selector) + `.PressAsync(${quote(shortcut)})`;
+            return this._asLocator(action.selector) + `.PressAsync(${quote(shortcut)})`;
           }
           case "navigate":
             return `GotoAsync(${quote(action.url)})`;
           case "select":
-            return asLocator(action.selector) + `.SelectOptionAsync(${formatObject(action.options)})`;
+            return this._asLocator(action.selector) + `.SelectOptionAsync(${formatObject(action.options)})`;
         }
+      }
+      _asLocator(selector) {
+        return (0, _locatorGenerators.asLocator)("csharp", selector);
       }
       generateHeader(options) {
         if (this._mode === "library")
@@ -31081,14 +31396,6 @@ ${indent}}`;
     function quote(text) {
       return (0, _stringUtils.escapeWithQuotes)(text, '"');
     }
-    function asLocator(selector, locatorFn = "Locator") {
-      const match = selector.match(/(.*)\s+>>\s+nth=(\d+)$/);
-      if (!match)
-        return `${locatorFn}(${quote(selector)})`;
-      if (+match[2] === 0)
-        return `${locatorFn}(${quote(match[1])}).First`;
-      return `${locatorFn}(${quote(match[1])}).Nth(${match[2]})`;
-    }
   }
 });
 
@@ -31101,10 +31408,10 @@ var require_python = __commonJS({
     });
     exports2.PythonLanguageGenerator = void 0;
     var _language = require_language();
-    var _recorderActions = require_recorderActions();
     var _utils = require_utils2();
     var _stringUtils = require_stringUtils();
     var _deviceDescriptors = _interopRequireDefault(require_deviceDescriptors());
+    var _locatorGenerators = require_locatorGenerators();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -31132,7 +31439,6 @@ var require_python = __commonJS({
         const pageAlias = actionInContext.frame.pageAlias;
         const formatter = new PythonFormatter(4);
         formatter.newLine();
-        formatter.add("# " + (0, _recorderActions.actionTitle)(action));
         if (action.name === "openPage") {
           formatter.add(`${pageAlias} = ${this._awaitPrefix}context.new_page()`);
           if (action.url && action.url !== "about:blank" && action.url !== "chrome://newtab/")
@@ -31143,7 +31449,7 @@ var require_python = __commonJS({
         if (actionInContext.frame.isMainFrame) {
           subject = pageAlias;
         } else if (actionInContext.frame.selectorsChain && action.name !== "navigate") {
-          const locators = actionInContext.frame.selectorsChain.map((selector) => "." + asLocator(selector, "frame_locator"));
+          const locators = actionInContext.frame.selectorsChain.map((selector) => `.frame_locator(${quote(selector)})`);
           subject = `${pageAlias}${locators.join("")}`;
         } else if (actionInContext.frame.name) {
           subject = `${pageAlias}.frame(${formatOptions({
@@ -31201,26 +31507,29 @@ var require_python = __commonJS({
             if (action.position)
               options.position = action.position;
             const optionsString = formatOptions(options, false);
-            return asLocator(action.selector) + `.${method}(${optionsString})`;
+            return this._asLocator(action.selector) + `.${method}(${optionsString})`;
           }
           case "check":
-            return asLocator(action.selector) + `.check()`;
+            return this._asLocator(action.selector) + `.check()`;
           case "uncheck":
-            return asLocator(action.selector) + `.uncheck()`;
+            return this._asLocator(action.selector) + `.uncheck()`;
           case "fill":
-            return asLocator(action.selector) + `.fill(${quote(action.text)})`;
+            return this._asLocator(action.selector) + `.fill(${quote(action.text)})`;
           case "setInputFiles":
-            return asLocator(action.selector) + `.set_input_files(${formatValue(action.files.length === 1 ? action.files[0] : action.files)})`;
+            return this._asLocator(action.selector) + `.set_input_files(${formatValue(action.files.length === 1 ? action.files[0] : action.files)})`;
           case "press": {
             const modifiers = (0, _utils.toModifiers)(action.modifiers);
             const shortcut = [...modifiers, action.key].join("+");
-            return asLocator(action.selector) + `.press(${quote(shortcut)})`;
+            return this._asLocator(action.selector) + `.press(${quote(shortcut)})`;
           }
           case "navigate":
             return `goto(${quote(action.url)})`;
           case "select":
-            return asLocator(action.selector) + `.select_option(${formatValue(action.options.length === 1 ? action.options[0] : action.options)})`;
+            return this._asLocator(action.selector) + `.select_option(${formatValue(action.options.length === 1 ? action.options[0] : action.options)})`;
         }
+      }
+      _asLocator(selector) {
+        return (0, _locatorGenerators.asLocator)("python", selector);
       }
       generateHeader(options) {
         const formatter = new PythonFormatter();
@@ -31309,18 +31618,14 @@ with sync_playwright() as playwright:
         return JSON.stringify(value);
       return String(value);
     }
-    function toSnakeCase(name) {
-      const toSnakeCaseRegex = /((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))/g;
-      return name.replace(toSnakeCaseRegex, `_$1`).toLowerCase();
-    }
     function formatOptions(value, hasArguments, asDict) {
       const keys = Object.keys(value).filter((key) => value[key] !== void 0).sort();
       if (!keys.length)
         return "";
       return (hasArguments ? ", " : "") + keys.map((key) => {
         if (asDict)
-          return `"${toSnakeCase(key)}": ${formatValue(value[key])}`;
-        return `${toSnakeCase(key)}=${formatValue(value[key])}`;
+          return `"${(0, _stringUtils.toSnakeCase)(key)}": ${formatValue(value[key])}`;
+        return `${(0, _stringUtils.toSnakeCase)(key)}=${formatValue(value[key])}`;
       }).join(", ");
     }
     function convertContextOptions(options) {
@@ -31381,14 +31686,6 @@ with sync_playwright() as playwright:
     function quote(text) {
       return (0, _stringUtils.escapeWithQuotes)(text, '"');
     }
-    function asLocator(selector, locatorFn = "locator") {
-      const match = selector.match(/(.*)\s+>>\s+nth=(\d+)$/);
-      if (!match)
-        return `${locatorFn}(${quote(selector)})`;
-      if (+match[2] === 0)
-        return `${locatorFn}(${quote(match[1])}).first`;
-      return `${locatorFn}(${quote(match[1])}).nth(${match[2]})`;
-    }
   }
 });
 
@@ -31400,7 +31697,7 @@ var require_recorderSource = __commonJS({
       value: true
     });
     exports2.source = void 0;
-    var source = '"use strict";\nlet __export = (target, all) => {\n  for (var name in all)\n    target[name] = all[name];\n};\nlet __commonJS = cb => function __require() {\n  let fn;\n  for (const name in cb) {\n    fn = cb[name];\n    break;\n  }\n  const exports = {};\n  fn(exports);\n  return exports;\n};\nlet __toESM = mod => ({ ...mod, \'default\': mod });\nlet __toCommonJS = mod =>  ({ ...mod, __esModule: true });\n// packages/playwright-core/src/server/isomorphic/cssTokenizer.js\nvar require_cssTokenizer = __commonJS({\n  "packages/playwright-core/src/server/isomorphic/cssTokenizer.js"(exports2) {\n    "use strict";\n    var between = function(num, first, last) {\n      return num >= first && num <= last;\n    };\n    function digit(code) {\n      return between(code, 48, 57);\n    }\n    function hexdigit(code) {\n      return digit(code) || between(code, 65, 70) || between(code, 97, 102);\n    }\n    function uppercaseletter(code) {\n      return between(code, 65, 90);\n    }\n    function lowercaseletter(code) {\n      return between(code, 97, 122);\n    }\n    function letter(code) {\n      return uppercaseletter(code) || lowercaseletter(code);\n    }\n    function nonascii(code) {\n      return code >= 128;\n    }\n    function namestartchar(code) {\n      return letter(code) || nonascii(code) || code == 95;\n    }\n    function namechar(code) {\n      return namestartchar(code) || digit(code) || code == 45;\n    }\n    function nonprintable(code) {\n      return between(code, 0, 8) || code == 11 || between(code, 14, 31) || code == 127;\n    }\n    function newline(code) {\n      return code == 10;\n    }\n    function whitespace(code) {\n      return newline(code) || code == 9 || code == 32;\n    }\n    var maximumallowedcodepoint = 1114111;\n    var InvalidCharacterError = function(message) {\n      this.message = message;\n    };\n    InvalidCharacterError.prototype = new Error();\n    InvalidCharacterError.prototype.name = "InvalidCharacterError";\n    function preprocess(str) {\n      var codepoints = [];\n      for (var i = 0; i < str.length; i++) {\n        var code = str.charCodeAt(i);\n        if (code == 13 && str.charCodeAt(i + 1) == 10) {\n          code = 10;\n          i++;\n        }\n        if (code == 13 || code == 12)\n          code = 10;\n        if (code == 0)\n          code = 65533;\n        if (between(code, 55296, 56319) && between(str.charCodeAt(i + 1), 56320, 57343)) {\n          var lead = code - 55296;\n          var trail = str.charCodeAt(i + 1) - 56320;\n          code = Math.pow(2, 16) + lead * Math.pow(2, 10) + trail;\n          i++;\n        }\n        codepoints.push(code);\n      }\n      return codepoints;\n    }\n    function stringFromCode(code) {\n      if (code <= 65535)\n        return String.fromCharCode(code);\n      code -= Math.pow(2, 16);\n      var lead = Math.floor(code / Math.pow(2, 10)) + 55296;\n      var trail = code % Math.pow(2, 10) + 56320;\n      return String.fromCharCode(lead) + String.fromCharCode(trail);\n    }\n    function tokenize2(str) {\n      str = preprocess(str);\n      var i = -1;\n      var tokens = [];\n      var code;\n      var line = 0;\n      var column = 0;\n      var lastLineLength = 0;\n      var incrLineno = function() {\n        line += 1;\n        lastLineLength = column;\n        column = 0;\n      };\n      var locStart = { line, column };\n      var codepoint = function(i2) {\n        if (i2 >= str.length) {\n          return -1;\n        }\n        return str[i2];\n      };\n      var next = function(num) {\n        if (num === void 0)\n          num = 1;\n        if (num > 3)\n          throw "Spec Error: no more than three codepoints of lookahead.";\n        return codepoint(i + num);\n      };\n      var consume = function(num) {\n        if (num === void 0)\n          num = 1;\n        i += num;\n        code = codepoint(i);\n        if (newline(code))\n          incrLineno();\n        else\n          column += num;\n        return true;\n      };\n      var reconsume = function() {\n        i -= 1;\n        if (newline(code)) {\n          line -= 1;\n          column = lastLineLength;\n        } else {\n          column -= 1;\n        }\n        locStart.line = line;\n        locStart.column = column;\n        return true;\n      };\n      var eof = function(codepoint2) {\n        if (codepoint2 === void 0)\n          codepoint2 = code;\n        return codepoint2 == -1;\n      };\n      var donothing = function() {\n      };\n      var parseerror = function() {\n        console.log("Parse error at index " + i + ", processing codepoint 0x" + code.toString(16) + ".");\n        return true;\n      };\n      var consumeAToken = function() {\n        consumeComments();\n        consume();\n        if (whitespace(code)) {\n          while (whitespace(next()))\n            consume();\n          return new WhitespaceToken2();\n        } else if (code == 34)\n          return consumeAStringToken();\n        else if (code == 35) {\n          if (namechar(next()) || areAValidEscape(next(1), next(2))) {\n            var token = new HashToken2();\n            if (wouldStartAnIdentifier(next(1), next(2), next(3)))\n              token.type = "id";\n            token.value = consumeAName();\n            return token;\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 36) {\n          if (next() == 61) {\n            consume();\n            return new SuffixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 39)\n          return consumeAStringToken();\n        else if (code == 40)\n          return new OpenParenToken();\n        else if (code == 41)\n          return new CloseParenToken2();\n        else if (code == 42) {\n          if (next() == 61) {\n            consume();\n            return new SubstringMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 43) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 44)\n          return new CommaToken2();\n        else if (code == 45) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else if (next(1) == 45 && next(2) == 62) {\n            consume(2);\n            return new CDCToken2();\n          } else if (startsWithAnIdentifier()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 46) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 58)\n          return new ColonToken2();\n        else if (code == 59)\n          return new SemicolonToken2();\n        else if (code == 60) {\n          if (next(1) == 33 && next(2) == 45 && next(3) == 45) {\n            consume(3);\n            return new CDOToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 64) {\n          if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n            return new AtKeywordToken2(consumeAName());\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 91)\n          return new OpenSquareToken2();\n        else if (code == 92) {\n          if (startsWithAValidEscape()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            parseerror();\n            return new DelimToken2(code);\n          }\n        } else if (code == 93)\n          return new CloseSquareToken2();\n        else if (code == 94) {\n          if (next() == 61) {\n            consume();\n            return new PrefixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 123)\n          return new OpenCurlyToken2();\n        else if (code == 124) {\n          if (next() == 61) {\n            consume();\n            return new DashMatchToken();\n          } else if (next() == 124) {\n            consume();\n            return new ColumnToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 125)\n          return new CloseCurlyToken2();\n        else if (code == 126) {\n          if (next() == 61) {\n            consume();\n            return new IncludeMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (digit(code)) {\n          reconsume();\n          return consumeANumericToken();\n        } else if (namestartchar(code)) {\n          reconsume();\n          return consumeAnIdentlikeToken();\n        } else if (eof())\n          return new EOFToken2();\n        else\n          return new DelimToken2(code);\n      };\n      var consumeComments = function() {\n        while (next(1) == 47 && next(2) == 42) {\n          consume(2);\n          while (true) {\n            consume();\n            if (code == 42 && next() == 47) {\n              consume();\n              break;\n            } else if (eof()) {\n              parseerror();\n              return;\n            }\n          }\n        }\n      };\n      var consumeANumericToken = function() {\n        var num = consumeANumber();\n        if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n          var token = new DimensionToken();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          token.unit = consumeAName();\n          return token;\n        } else if (next() == 37) {\n          consume();\n          var token = new PercentageToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          return token;\n        } else {\n          var token = new NumberToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          return token;\n        }\n      };\n      var consumeAnIdentlikeToken = function() {\n        var str2 = consumeAName();\n        if (str2.toLowerCase() == "url" && next() == 40) {\n          consume();\n          while (whitespace(next(1)) && whitespace(next(2)))\n            consume();\n          if (next() == 34 || next() == 39) {\n            return new FunctionToken2(str2);\n          } else if (whitespace(next()) && (next(2) == 34 || next(2) == 39)) {\n            return new FunctionToken2(str2);\n          } else {\n            return consumeAURLToken();\n          }\n        } else if (next() == 40) {\n          consume();\n          return new FunctionToken2(str2);\n        } else {\n          return new IdentToken2(str2);\n        }\n      };\n      var consumeAStringToken = function(endingCodePoint) {\n        if (endingCodePoint === void 0)\n          endingCodePoint = code;\n        var string = "";\n        while (consume()) {\n          if (code == endingCodePoint || eof()) {\n            return new StringToken2(string);\n          } else if (newline(code)) {\n            parseerror();\n            reconsume();\n            return new BadStringToken2();\n          } else if (code == 92) {\n            if (eof(next())) {\n              donothing();\n            } else if (newline(next())) {\n              consume();\n            } else {\n              string += stringFromCode(consumeEscape());\n            }\n          } else {\n            string += stringFromCode(code);\n          }\n        }\n      };\n      var consumeAURLToken = function() {\n        var token = new URLToken2("");\n        while (whitespace(next()))\n          consume();\n        if (eof(next()))\n          return token;\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return token;\n          } else if (whitespace(code)) {\n            while (whitespace(next()))\n              consume();\n            if (next() == 41 || eof(next())) {\n              consume();\n              return token;\n            } else {\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else if (code == 34 || code == 39 || code == 40 || nonprintable(code)) {\n            parseerror();\n            consumeTheRemnantsOfABadURL();\n            return new BadURLToken2();\n          } else if (code == 92) {\n            if (startsWithAValidEscape()) {\n              token.value += stringFromCode(consumeEscape());\n            } else {\n              parseerror();\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else {\n            token.value += stringFromCode(code);\n          }\n        }\n      };\n      var consumeEscape = function() {\n        consume();\n        if (hexdigit(code)) {\n          var digits = [code];\n          for (var total = 0; total < 5; total++) {\n            if (hexdigit(next())) {\n              consume();\n              digits.push(code);\n            } else {\n              break;\n            }\n          }\n          if (whitespace(next()))\n            consume();\n          var value = parseInt(digits.map(function(x) {\n            return String.fromCharCode(x);\n          }).join(""), 16);\n          if (value > maximumallowedcodepoint)\n            value = 65533;\n          return value;\n        } else if (eof()) {\n          return 65533;\n        } else {\n          return code;\n        }\n      };\n      var areAValidEscape = function(c1, c2) {\n        if (c1 != 92)\n          return false;\n        if (newline(c2))\n          return false;\n        return true;\n      };\n      var startsWithAValidEscape = function() {\n        return areAValidEscape(code, next());\n      };\n      var wouldStartAnIdentifier = function(c1, c2, c3) {\n        if (c1 == 45) {\n          return namestartchar(c2) || c2 == 45 || areAValidEscape(c2, c3);\n        } else if (namestartchar(c1)) {\n          return true;\n        } else if (c1 == 92) {\n          return areAValidEscape(c1, c2);\n        } else {\n          return false;\n        }\n      };\n      var startsWithAnIdentifier = function() {\n        return wouldStartAnIdentifier(code, next(1), next(2));\n      };\n      var wouldStartANumber = function(c1, c2, c3) {\n        if (c1 == 43 || c1 == 45) {\n          if (digit(c2))\n            return true;\n          if (c2 == 46 && digit(c3))\n            return true;\n          return false;\n        } else if (c1 == 46) {\n          if (digit(c2))\n            return true;\n          return false;\n        } else if (digit(c1)) {\n          return true;\n        } else {\n          return false;\n        }\n      };\n      var startsWithANumber = function() {\n        return wouldStartANumber(code, next(1), next(2));\n      };\n      var consumeAName = function() {\n        var result = "";\n        while (consume()) {\n          if (namechar(code)) {\n            result += stringFromCode(code);\n          } else if (startsWithAValidEscape()) {\n            result += stringFromCode(consumeEscape());\n          } else {\n            reconsume();\n            return result;\n          }\n        }\n      };\n      var consumeANumber = function() {\n        var repr = [];\n        var type = "integer";\n        if (next() == 43 || next() == 45) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        while (digit(next())) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        if (next(1) == 46 && digit(next(2))) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var c1 = next(1), c2 = next(2), c3 = next(3);\n        if ((c1 == 69 || c1 == 101) && digit(c2)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        } else if ((c1 == 69 || c1 == 101) && (c2 == 43 || c2 == 45) && digit(c3)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var value = convertAStringToANumber(repr);\n        return { type, value, repr };\n      };\n      var convertAStringToANumber = function(string) {\n        return +string;\n      };\n      var consumeTheRemnantsOfABadURL = function() {\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return;\n          } else if (startsWithAValidEscape()) {\n            consumeEscape();\n            donothing();\n          } else {\n            donothing();\n          }\n        }\n      };\n      var iterationCount = 0;\n      while (!eof(next())) {\n        tokens.push(consumeAToken());\n        iterationCount++;\n        if (iterationCount > str.length * 2)\n          return "I\'m infinite-looping!";\n      }\n      return tokens;\n    }\n    function CSSParserToken() {\n      throw "Abstract Base Class";\n    }\n    CSSParserToken.prototype.toJSON = function() {\n      return { token: this.tokenType };\n    };\n    CSSParserToken.prototype.toString = function() {\n      return this.tokenType;\n    };\n    CSSParserToken.prototype.toSource = function() {\n      return "" + this;\n    };\n    function BadStringToken2() {\n      return this;\n    }\n    BadStringToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadStringToken2.prototype.tokenType = "BADSTRING";\n    function BadURLToken2() {\n      return this;\n    }\n    BadURLToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadURLToken2.prototype.tokenType = "BADURL";\n    function WhitespaceToken2() {\n      return this;\n    }\n    WhitespaceToken2.prototype = Object.create(CSSParserToken.prototype);\n    WhitespaceToken2.prototype.tokenType = "WHITESPACE";\n    WhitespaceToken2.prototype.toString = function() {\n      return "WS";\n    };\n    WhitespaceToken2.prototype.toSource = function() {\n      return " ";\n    };\n    function CDOToken2() {\n      return this;\n    }\n    CDOToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDOToken2.prototype.tokenType = "CDO";\n    CDOToken2.prototype.toSource = function() {\n      return "<!--";\n    };\n    function CDCToken2() {\n      return this;\n    }\n    CDCToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDCToken2.prototype.tokenType = "CDC";\n    CDCToken2.prototype.toSource = function() {\n      return "-->";\n    };\n    function ColonToken2() {\n      return this;\n    }\n    ColonToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColonToken2.prototype.tokenType = ":";\n    function SemicolonToken2() {\n      return this;\n    }\n    SemicolonToken2.prototype = Object.create(CSSParserToken.prototype);\n    SemicolonToken2.prototype.tokenType = ";";\n    function CommaToken2() {\n      return this;\n    }\n    CommaToken2.prototype = Object.create(CSSParserToken.prototype);\n    CommaToken2.prototype.tokenType = ",";\n    function GroupingToken() {\n      throw "Abstract Base Class";\n    }\n    GroupingToken.prototype = Object.create(CSSParserToken.prototype);\n    function OpenCurlyToken2() {\n      this.value = "{";\n      this.mirror = "}";\n      return this;\n    }\n    OpenCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenCurlyToken2.prototype.tokenType = "{";\n    function CloseCurlyToken2() {\n      this.value = "}";\n      this.mirror = "{";\n      return this;\n    }\n    CloseCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseCurlyToken2.prototype.tokenType = "}";\n    function OpenSquareToken2() {\n      this.value = "[";\n      this.mirror = "]";\n      return this;\n    }\n    OpenSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenSquareToken2.prototype.tokenType = "[";\n    function CloseSquareToken2() {\n      this.value = "]";\n      this.mirror = "[";\n      return this;\n    }\n    CloseSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseSquareToken2.prototype.tokenType = "]";\n    function OpenParenToken() {\n      this.value = "(";\n      this.mirror = ")";\n      return this;\n    }\n    OpenParenToken.prototype = Object.create(GroupingToken.prototype);\n    OpenParenToken.prototype.tokenType = "(";\n    function CloseParenToken2() {\n      this.value = ")";\n      this.mirror = "(";\n      return this;\n    }\n    CloseParenToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseParenToken2.prototype.tokenType = ")";\n    function IncludeMatchToken() {\n      return this;\n    }\n    IncludeMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    IncludeMatchToken.prototype.tokenType = "~=";\n    function DashMatchToken() {\n      return this;\n    }\n    DashMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    DashMatchToken.prototype.tokenType = "|=";\n    function PrefixMatchToken() {\n      return this;\n    }\n    PrefixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    PrefixMatchToken.prototype.tokenType = "^=";\n    function SuffixMatchToken() {\n      return this;\n    }\n    SuffixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SuffixMatchToken.prototype.tokenType = "$=";\n    function SubstringMatchToken() {\n      return this;\n    }\n    SubstringMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SubstringMatchToken.prototype.tokenType = "*=";\n    function ColumnToken2() {\n      return this;\n    }\n    ColumnToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColumnToken2.prototype.tokenType = "||";\n    function EOFToken2() {\n      return this;\n    }\n    EOFToken2.prototype = Object.create(CSSParserToken.prototype);\n    EOFToken2.prototype.tokenType = "EOF";\n    EOFToken2.prototype.toSource = function() {\n      return "";\n    };\n    function DelimToken2(code) {\n      this.value = stringFromCode(code);\n      return this;\n    }\n    DelimToken2.prototype = Object.create(CSSParserToken.prototype);\n    DelimToken2.prototype.tokenType = "DELIM";\n    DelimToken2.prototype.toString = function() {\n      return "DELIM(" + this.value + ")";\n    };\n    DelimToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    DelimToken2.prototype.toSource = function() {\n      if (this.value == "\\\\")\n        return "\\\\\\n";\n      else\n        return this.value;\n    };\n    function StringValuedToken() {\n      throw "Abstract Base Class";\n    }\n    StringValuedToken.prototype = Object.create(CSSParserToken.prototype);\n    StringValuedToken.prototype.ASCIIMatch = function(str) {\n      return this.value.toLowerCase() == str.toLowerCase();\n    };\n    StringValuedToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    function IdentToken2(val) {\n      this.value = val;\n    }\n    IdentToken2.prototype = Object.create(StringValuedToken.prototype);\n    IdentToken2.prototype.tokenType = "IDENT";\n    IdentToken2.prototype.toString = function() {\n      return "IDENT(" + this.value + ")";\n    };\n    IdentToken2.prototype.toSource = function() {\n      return escapeIdent(this.value);\n    };\n    function FunctionToken2(val) {\n      this.value = val;\n      this.mirror = ")";\n    }\n    FunctionToken2.prototype = Object.create(StringValuedToken.prototype);\n    FunctionToken2.prototype.tokenType = "FUNCTION";\n    FunctionToken2.prototype.toString = function() {\n      return "FUNCTION(" + this.value + ")";\n    };\n    FunctionToken2.prototype.toSource = function() {\n      return escapeIdent(this.value) + "(";\n    };\n    function AtKeywordToken2(val) {\n      this.value = val;\n    }\n    AtKeywordToken2.prototype = Object.create(StringValuedToken.prototype);\n    AtKeywordToken2.prototype.tokenType = "AT-KEYWORD";\n    AtKeywordToken2.prototype.toString = function() {\n      return "AT(" + this.value + ")";\n    };\n    AtKeywordToken2.prototype.toSource = function() {\n      return "@" + escapeIdent(this.value);\n    };\n    function HashToken2(val) {\n      this.value = val;\n      this.type = "unrestricted";\n    }\n    HashToken2.prototype = Object.create(StringValuedToken.prototype);\n    HashToken2.prototype.tokenType = "HASH";\n    HashToken2.prototype.toString = function() {\n      return "HASH(" + this.value + ")";\n    };\n    HashToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      return json;\n    };\n    HashToken2.prototype.toSource = function() {\n      if (this.type == "id") {\n        return "#" + escapeIdent(this.value);\n      } else {\n        return "#" + escapeHash(this.value);\n      }\n    };\n    function StringToken2(val) {\n      this.value = val;\n    }\n    StringToken2.prototype = Object.create(StringValuedToken.prototype);\n    StringToken2.prototype.tokenType = "STRING";\n    StringToken2.prototype.toString = function() {\n      return \'"\' + escapeString(this.value) + \'"\';\n    };\n    function URLToken2(val) {\n      this.value = val;\n    }\n    URLToken2.prototype = Object.create(StringValuedToken.prototype);\n    URLToken2.prototype.tokenType = "URL";\n    URLToken2.prototype.toString = function() {\n      return "URL(" + this.value + ")";\n    };\n    URLToken2.prototype.toSource = function() {\n      return \'url("\' + escapeString(this.value) + \'")\';\n    };\n    function NumberToken2() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n    }\n    NumberToken2.prototype = Object.create(CSSParserToken.prototype);\n    NumberToken2.prototype.tokenType = "NUMBER";\n    NumberToken2.prototype.toString = function() {\n      if (this.type == "integer")\n        return "INT(" + this.value + ")";\n      return "NUMBER(" + this.value + ")";\n    };\n    NumberToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      return json;\n    };\n    NumberToken2.prototype.toSource = function() {\n      return this.repr;\n    };\n    function PercentageToken2() {\n      this.value = null;\n      this.repr = "";\n    }\n    PercentageToken2.prototype = Object.create(CSSParserToken.prototype);\n    PercentageToken2.prototype.tokenType = "PERCENTAGE";\n    PercentageToken2.prototype.toString = function() {\n      return "PERCENTAGE(" + this.value + ")";\n    };\n    PercentageToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.repr = this.repr;\n      return json;\n    };\n    PercentageToken2.prototype.toSource = function() {\n      return this.repr + "%";\n    };\n    function DimensionToken() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n      this.unit = "";\n    }\n    DimensionToken.prototype = Object.create(CSSParserToken.prototype);\n    DimensionToken.prototype.tokenType = "DIMENSION";\n    DimensionToken.prototype.toString = function() {\n      return "DIM(" + this.value + "," + this.unit + ")";\n    };\n    DimensionToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      json.unit = this.unit;\n      return json;\n    };\n    DimensionToken.prototype.toSource = function() {\n      var source = this.repr;\n      var unit = escapeIdent(this.unit);\n      if (unit[0].toLowerCase() == "e" && (unit[1] == "-" || between(unit.charCodeAt(1), 48, 57))) {\n        unit = "\\\\65 " + unit.slice(1, unit.length);\n      }\n      return source + unit;\n    };\n    function escapeIdent(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127 || i == 0 && between(code, 48, 57) || i == 1 && between(code, 48, 57) && firstcode == 45) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + string[i];\n        }\n      }\n      return result;\n    }\n    function escapeHash(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + code.toString(16) + " ";\n        }\n      }\n      return result;\n    }\n    function escapeString(string) {\n      string = "" + string;\n      var result = "";\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code == 34 || code == 92) {\n          result += "\\\\" + string[i];\n        } else {\n          result += string[i];\n        }\n      }\n      return result;\n    }\n    exports2.tokenize = tokenize2;\n    exports2.IdentToken = IdentToken2;\n    exports2.FunctionToken = FunctionToken2;\n    exports2.AtKeywordToken = AtKeywordToken2;\n    exports2.HashToken = HashToken2;\n    exports2.StringToken = StringToken2;\n    exports2.BadStringToken = BadStringToken2;\n    exports2.URLToken = URLToken2;\n    exports2.BadURLToken = BadURLToken2;\n    exports2.DelimToken = DelimToken2;\n    exports2.NumberToken = NumberToken2;\n    exports2.PercentageToken = PercentageToken2;\n    exports2.DimensionToken = DimensionToken;\n    exports2.IncludeMatchToken = IncludeMatchToken;\n    exports2.DashMatchToken = DashMatchToken;\n    exports2.PrefixMatchToken = PrefixMatchToken;\n    exports2.SuffixMatchToken = SuffixMatchToken;\n    exports2.SubstringMatchToken = SubstringMatchToken;\n    exports2.ColumnToken = ColumnToken2;\n    exports2.WhitespaceToken = WhitespaceToken2;\n    exports2.CDOToken = CDOToken2;\n    exports2.CDCToken = CDCToken2;\n    exports2.ColonToken = ColonToken2;\n    exports2.SemicolonToken = SemicolonToken2;\n    exports2.CommaToken = CommaToken2;\n    exports2.OpenParenToken = OpenParenToken;\n    exports2.CloseParenToken = CloseParenToken2;\n    exports2.OpenSquareToken = OpenSquareToken2;\n    exports2.CloseSquareToken = CloseSquareToken2;\n    exports2.OpenCurlyToken = OpenCurlyToken2;\n    exports2.CloseCurlyToken = CloseCurlyToken2;\n    exports2.EOFToken = EOFToken2;\n    exports2.CSSParserToken = CSSParserToken;\n    exports2.GroupingToken = GroupingToken;\n  }\n});\n\n// packages/playwright-core/src/server/injected/selectorUtils.ts\nfunction shouldSkipForTextMatching(element) {\n  return element.nodeName === "SCRIPT" || element.nodeName === "NOSCRIPT" || element.nodeName === "STYLE" || document.head && document.head.contains(element);\n}\nfunction elementText(cache, root) {\n  let value = cache.get(root);\n  if (value === void 0) {\n    value = { full: "", immediate: [] };\n    if (!shouldSkipForTextMatching(root)) {\n      let currentImmediate = "";\n      if (root instanceof HTMLInputElement && (root.type === "submit" || root.type === "button")) {\n        value = { full: root.value, immediate: [root.value] };\n      } else {\n        for (let child = root.firstChild; child; child = child.nextSibling) {\n          if (child.nodeType === Node.TEXT_NODE) {\n            value.full += child.nodeValue || "";\n            currentImmediate += child.nodeValue || "";\n          } else {\n            if (currentImmediate)\n              value.immediate.push(currentImmediate);\n            currentImmediate = "";\n            if (child.nodeType === Node.ELEMENT_NODE)\n              value.full += elementText(cache, child).full;\n          }\n        }\n        if (currentImmediate)\n          value.immediate.push(currentImmediate);\n        if (root.shadowRoot)\n          value.full += elementText(cache, root.shadowRoot).full;\n      }\n    }\n    cache.set(root, value);\n  }\n  return value;\n}\n\n// packages/playwright-core/src/server/injected/selectorGenerator.ts\nvar cacheAllowText = /* @__PURE__ */ new Map();\nvar cacheDisallowText = /* @__PURE__ */ new Map();\nvar kNthScore = 1e3;\nfunction querySelector(injectedScript, selector, ownerDocument) {\n  try {\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, ownerDocument)\n    };\n  } catch (e) {\n    return {\n      selector,\n      elements: []\n    };\n  }\n}\nfunction generateSelector(injectedScript, targetElement, strict) {\n  injectedScript._evaluator.begin();\n  try {\n    targetElement = targetElement.closest("button,select,input,[role=button],[role=checkbox],[role=radio]") || targetElement;\n    const targetTokens = generateSelectorFor(injectedScript, targetElement, strict);\n    const bestTokens = targetTokens || cssFallback(injectedScript, targetElement, strict);\n    const selector = joinTokens(bestTokens);\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument)\n    };\n  } finally {\n    cacheAllowText.clear();\n    cacheDisallowText.clear();\n    injectedScript._evaluator.end();\n  }\n}\nfunction filterRegexTokens(textCandidates) {\n  return textCandidates.filter((c) => c[0].selector[0] !== "/");\n}\nfunction generateSelectorFor(injectedScript, targetElement, strict) {\n  if (targetElement.ownerDocument.documentElement === targetElement)\n    return [{ engine: "css", selector: "html", score: 1 }];\n  const calculate = (element, allowText) => {\n    const allowNthMatch = element === targetElement;\n    let textCandidates = allowText ? buildTextCandidates(injectedScript, element, element === targetElement).map((token) => [token]) : [];\n    if (element !== targetElement) {\n      textCandidates = filterRegexTokens(textCandidates);\n    }\n    const noTextCandidates = buildCandidates(injectedScript, element).map((token) => [token]);\n    let result = chooseFirstSelector(injectedScript, targetElement.ownerDocument, element, [...textCandidates, ...noTextCandidates], allowNthMatch, strict);\n    textCandidates = filterRegexTokens(textCandidates);\n    const checkWithText = (textCandidatesToUse) => {\n      const allowParentText = allowText && !textCandidatesToUse.length;\n      const candidates = [...textCandidatesToUse, ...noTextCandidates].filter((c) => {\n        if (!result)\n          return true;\n        return combineScores(c) < combineScores(result);\n      });\n      let bestPossibleInParent = candidates[0];\n      if (!bestPossibleInParent)\n        return;\n      for (let parent = parentElementOrShadowHost(element); parent; parent = parentElementOrShadowHost(parent)) {\n        const parentTokens = calculateCached(parent, allowParentText);\n        if (!parentTokens)\n          continue;\n        if (result && combineScores([...parentTokens, ...bestPossibleInParent]) >= combineScores(result))\n          continue;\n        bestPossibleInParent = chooseFirstSelector(injectedScript, parent, element, candidates, allowNthMatch, strict);\n        if (!bestPossibleInParent)\n          return;\n        const combined = [...parentTokens, ...bestPossibleInParent];\n        if (!result || combineScores(combined) < combineScores(result))\n          result = combined;\n      }\n    };\n    checkWithText(textCandidates);\n    if (element === targetElement && textCandidates.length)\n      checkWithText([]);\n    return result;\n  };\n  const calculateCached = (element, allowText) => {\n    const cache = allowText ? cacheAllowText : cacheDisallowText;\n    let value = cache.get(element);\n    if (value === void 0) {\n      value = calculate(element, allowText);\n      cache.set(element, value);\n    }\n    return value;\n  };\n  return calculateCached(targetElement, true);\n}\nfunction buildCandidates(injectedScript, element) {\n  const candidates = [];\n  for (const attribute of ["data-testid", "data-test-id", "data-test"]) {\n    if (element.getAttribute(attribute))\n      candidates.push({ engine: "css", selector: `[${attribute}=${quoteAttributeValue(element.getAttribute(attribute))}]`, score: 1 });\n  }\n  if (element.nodeName === "INPUT") {\n    const input = element;\n    if (input.placeholder)\n      candidates.push({ engine: "css", selector: `[placeholder=${quoteAttributeValue(input.placeholder)}]`, score: 10 });\n  }\n  if (element.getAttribute("aria-label"))\n    candidates.push({ engine: "css", selector: `[aria-label=${quoteAttributeValue(element.getAttribute("aria-label"))}]`, score: 10 });\n  if (element.getAttribute("alt") && ["APPLET", "AREA", "IMG", "INPUT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[alt=${quoteAttributeValue(element.getAttribute("alt"))}]`, score: 10 });\n  if (element.getAttribute("role"))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[role=${quoteAttributeValue(element.getAttribute("role"))}]`, score: 50 });\n  if (element.getAttribute("name") && ["BUTTON", "FORM", "FIELDSET", "FRAME", "IFRAME", "INPUT", "KEYGEN", "OBJECT", "OUTPUT", "SELECT", "TEXTAREA", "MAP", "META", "PARAM"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[name=${quoteAttributeValue(element.getAttribute("name"))}]`, score: 50 });\n  if (["INPUT", "TEXTAREA"].includes(element.nodeName) && element.getAttribute("type") !== "hidden") {\n    if (element.getAttribute("type"))\n      candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[type=${quoteAttributeValue(element.getAttribute("type"))}]`, score: 50 });\n  }\n  if (["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 50 });\n  const idAttr = element.getAttribute("id");\n  if (idAttr && !isGuidLike(idAttr))\n    candidates.push({ engine: "css", selector: makeSelectorForId(idAttr), score: 100 });\n  candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 200 });\n  return candidates;\n}\nfunction buildTextCandidates(injectedScript, element, allowHasText) {\n  if (element.nodeName === "SELECT")\n    return [];\n  const text = elementText(injectedScript._evaluator._cacheText, element).full.trim().replace(/\\s+/g, " ").substring(0, 80);\n  if (!text)\n    return [];\n  const candidates = [];\n  let escaped = text;\n  if (text.includes(\'"\') || text.includes(">>") || text[0] === "/")\n    escaped = `/.*${escapeForRegex(text)}.*/`;\n  candidates.push({ engine: "text", selector: escaped, score: 10 });\n  if (allowHasText && escaped === text) {\n    let prefix = element.nodeName.toLowerCase();\n    if (element.hasAttribute("role"))\n      prefix += `[role=${quoteAttributeValue(element.getAttribute("role"))}]`;\n    candidates.push({ engine: "css", selector: `${prefix}:has-text("${text}")`, score: 30 });\n  }\n  return candidates;\n}\nfunction parentElementOrShadowHost(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return null;\n  if (element.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE && element.parentNode.host)\n    return element.parentNode.host;\n  return null;\n}\nfunction makeSelectorForId(id) {\n  return /^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(id) ? "#" + id : `[id="${cssEscape(id)}"]`;\n}\nfunction cssFallback(injectedScript, targetElement, strict) {\n  const kFallbackScore = 1e7;\n  const root = targetElement.ownerDocument;\n  const tokens = [];\n  function uniqueCSSSelector(prefix) {\n    const path = tokens.slice();\n    if (prefix)\n      path.unshift(prefix);\n    const selector = path.join(" > ");\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const node = injectedScript.querySelector(parsedSelector, targetElement.ownerDocument, false);\n    return node === targetElement ? selector : void 0;\n  }\n  function makeStrict(selector) {\n    const token = { engine: "css", selector, score: kFallbackScore };\n    if (!strict)\n      return [token];\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const elements = injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument);\n    if (elements.length === 1)\n      return [token];\n    const nth = { engine: "nth", selector: String(elements.indexOf(targetElement)), score: kNthScore };\n    return [token, nth];\n  }\n  for (let element = targetElement; element && element !== root; element = parentElementOrShadowHost(element)) {\n    const nodeName = element.nodeName.toLowerCase();\n    let bestTokenForLevel = "";\n    if (element.id) {\n      const token = makeSelectorForId(element.id);\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      bestTokenForLevel = token;\n    }\n    const parent = element.parentNode;\n    const classes = [...element.classList];\n    for (let i = 0; i < classes.length; ++i) {\n      const token = "." + cssEscape(classes.slice(0, i + 1).join("."));\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel && parent) {\n        const sameClassSiblings = parent.querySelectorAll(token);\n        if (sameClassSiblings.length === 1)\n          bestTokenForLevel = token;\n      }\n    }\n    if (parent) {\n      const siblings = [...parent.children];\n      const sameTagSiblings = siblings.filter((sibling) => sibling.nodeName.toLowerCase() === nodeName);\n      const token = sameTagSiblings.indexOf(element) === 0 ? cssEscape(nodeName) : `${cssEscape(nodeName)}:nth-child(${1 + siblings.indexOf(element)})`;\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel)\n        bestTokenForLevel = token;\n    } else if (!bestTokenForLevel) {\n      bestTokenForLevel = nodeName;\n    }\n    tokens.unshift(bestTokenForLevel);\n  }\n  return makeStrict(uniqueCSSSelector());\n}\nfunction escapeForRegex(text) {\n  return text.replace(/[.*+?^>${}()|[\\]\\\\]/g, "\\\\$&");\n}\nfunction quoteAttributeValue(text) {\n  return `"${cssEscape(text).replace(/\\\\ /g, " ")}"`;\n}\nfunction joinTokens(tokens) {\n  const parts = [];\n  let lastEngine = "";\n  for (const { engine, selector } of tokens) {\n    if (parts.length && (lastEngine !== "css" || engine !== "css" || selector.startsWith(":nth-match(")))\n      parts.push(">>");\n    lastEngine = engine;\n    if (engine === "css")\n      parts.push(selector);\n    else\n      parts.push(`${engine}=${selector}`);\n  }\n  return parts.join(" ");\n}\nfunction combineScores(tokens) {\n  let score = 0;\n  for (let i = 0; i < tokens.length; i++)\n    score += tokens[i].score * (tokens.length - i);\n  return score;\n}\nfunction chooseFirstSelector(injectedScript, scope, targetElement, selectors, allowNthMatch, strict) {\n  const joined = selectors.map((tokens) => ({ tokens, score: combineScores(tokens) }));\n  joined.sort((a, b) => a.score - b.score);\n  let bestWithIndex = null;\n  for (const { tokens } of joined) {\n    const parsedSelector = injectedScript.parseSelector(joinTokens(tokens));\n    const result = injectedScript.querySelectorAll(parsedSelector, scope);\n    const isStrictEnough = !strict || result.length === 1;\n    const index = result.indexOf(targetElement);\n    if (index === 0 && isStrictEnough) {\n      return tokens;\n    }\n    if (!allowNthMatch || bestWithIndex || index === -1 || result.length > 5)\n      continue;\n    const nth = { engine: "nth", selector: String(index), score: kNthScore };\n    bestWithIndex = [...tokens, nth];\n  }\n  return bestWithIndex;\n}\nfunction isGuidLike(id) {\n  let lastCharacterType;\n  let transitionCount = 0;\n  for (let i = 0; i < id.length; ++i) {\n    const c = id[i];\n    let characterType;\n    if (c === "-" || c === "_")\n      continue;\n    if (c >= "a" && c <= "z")\n      characterType = "lower";\n    else if (c >= "A" && c <= "Z")\n      characterType = "upper";\n    else if (c >= "0" && c <= "9")\n      characterType = "digit";\n    else\n      characterType = "other";\n    if (characterType === "lower" && lastCharacterType === "upper") {\n      lastCharacterType = characterType;\n      continue;\n    }\n    if (lastCharacterType && lastCharacterType !== characterType)\n      ++transitionCount;\n    lastCharacterType = characterType;\n  }\n  return transitionCount >= id.length / 4;\n}\nfunction cssEscape(s) {\n  let result = "";\n  for (let i = 0; i < s.length; i++)\n    result += cssEscapeOne(s, i);\n  return result;\n}\nfunction cssEscapeOne(s, i) {\n  const c = s.charCodeAt(i);\n  if (c === 0)\n    return "\\uFFFD";\n  if (c >= 1 && c <= 31 || c >= 48 && c <= 57 && (i === 0 || i === 1 && s.charCodeAt(0) === 45))\n    return "\\\\" + c.toString(16) + " ";\n  if (i === 0 && c === 45 && s.length === 1)\n    return "\\\\" + s.charAt(i);\n  if (c >= 128 || c === 45 || c === 95 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122)\n    return s.charAt(i);\n  return "\\\\" + s.charAt(i);\n}\n\n// packages/playwright-core/src/server/isomorphic/cssParser.ts\nvar css = __toESM(require_cssTokenizer());\n\n// packages/playwright-core/src/server/isomorphic/selectorParser.ts\nfunction stringifySelector(selector) {\n  if (typeof selector === "string")\n    return selector;\n  return selector.parts.map((p, i) => {\n    const prefix = p.name === "css" ? "" : p.name + "=";\n    return `${i === selector.capture ? "*" : ""}${prefix}${p.source}`;\n  }).join(" >> ");\n}\n\n// packages/playwright-core/src/server/injected/highlight.ts\nvar Highlight = class {\n  constructor(injectedScript) {\n    this._highlightEntries = [];\n    this._injectedScript = injectedScript;\n    this._isUnderTest = injectedScript.isUnderTest;\n    this._glassPaneElement = document.createElement("x-pw-glass");\n    this._glassPaneElement.style.position = "fixed";\n    this._glassPaneElement.style.top = "0";\n    this._glassPaneElement.style.right = "0";\n    this._glassPaneElement.style.bottom = "0";\n    this._glassPaneElement.style.left = "0";\n    this._glassPaneElement.style.zIndex = "2147483647";\n    this._glassPaneElement.style.pointerEvents = "none";\n    this._glassPaneElement.style.display = "flex";\n    this._actionPointElement = document.createElement("x-pw-action-point");\n    this._actionPointElement.setAttribute("hidden", "true");\n    this._glassPaneShadow = this._glassPaneElement.attachShadow({ mode: "closed" });\n    this._glassPaneShadow.appendChild(this._actionPointElement);\n    const styleElement = document.createElement("style");\n    styleElement.textContent = `\n        x-pw-tooltip {\n          align-items: center;\n          backdrop-filter: blur(5px);\n          background-color: rgba(0, 0, 0, 0.7);\n          border-radius: 2px;\n          box-shadow: rgba(0, 0, 0, 0.1) 0px 3.6px 3.7px,\n                      rgba(0, 0, 0, 0.15) 0px 12.1px 12.3px,\n                      rgba(0, 0, 0, 0.1) 0px -2px 4px,\n                      rgba(0, 0, 0, 0.15) 0px -12.1px 24px,\n                      rgba(0, 0, 0, 0.25) 0px 54px 55px;\n          color: rgb(204, 204, 204);\n          display: none;\n          font-family: \'Dank Mono\', \'Operator Mono\', Inconsolata, \'Fira Mono\',\n                      \'SF Mono\', Monaco, \'Droid Sans Mono\', \'Source Code Pro\', monospace;\n          font-size: 12.8px;\n          font-weight: normal;\n          left: 0;\n          line-height: 1.5;\n          max-width: 600px;\n          padding: 3.2px 5.12px 3.2px;\n          position: absolute;\n          top: 0;\n        }\n        x-pw-action-point {\n          position: absolute;\n          width: 20px;\n          height: 20px;\n          background: red;\n          border-radius: 10px;\n          pointer-events: none;\n          margin: -10px 0 0 -10px;\n          z-index: 2;\n        }\n        *[hidden] {\n          display: none !important;\n        }\n    `;\n    this._glassPaneShadow.appendChild(styleElement);\n  }\n  install() {\n    document.documentElement.appendChild(this._glassPaneElement);\n  }\n  runHighlightOnRaf(selector) {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this.updateHighlight(this._injectedScript.querySelectorAll(selector, document.documentElement), stringifySelector(selector), false);\n    this._rafRequest = requestAnimationFrame(() => this.runHighlightOnRaf(selector));\n  }\n  uninstall() {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this._glassPaneElement.remove();\n  }\n  isInstalled() {\n    return this._glassPaneElement.parentElement === document.documentElement && !this._glassPaneElement.nextElementSibling;\n  }\n  showActionPoint(x, y) {\n    this._actionPointElement.style.top = y + "px";\n    this._actionPointElement.style.left = x + "px";\n    this._actionPointElement.hidden = false;\n    if (this._isUnderTest)\n      console.error("Action point for test: " + JSON.stringify({ x, y }));\n  }\n  hideActionPoint() {\n    this._actionPointElement.hidden = true;\n  }\n  clearHighlight() {\n    var _a, _b;\n    for (const entry of this._highlightEntries) {\n      (_a = entry.highlightElement) == null ? void 0 : _a.remove();\n      (_b = entry.tooltipElement) == null ? void 0 : _b.remove();\n    }\n    this._highlightEntries = [];\n  }\n  updateHighlight(elements, selector, isRecording) {\n    let color;\n    if (isRecording)\n      color = "#dc6f6f7f";\n    else\n      color = elements.length > 1 ? "#f6b26b7f" : "#6fa8dc7f";\n    this._innerUpdateHighlight(elements, { color, tooltipText: selector });\n  }\n  maskElements(elements) {\n    this._innerUpdateHighlight(elements, { color: "#F0F" });\n  }\n  _innerUpdateHighlight(elements, options) {\n    if (this._highlightIsUpToDate(elements))\n      return;\n    this.clearHighlight();\n    for (let i = 0; i < elements.length; ++i) {\n      const highlightElement = this._createHighlightElement();\n      this._glassPaneShadow.appendChild(highlightElement);\n      let tooltipElement;\n      if (options.tooltipText) {\n        tooltipElement = document.createElement("x-pw-tooltip");\n        this._glassPaneShadow.appendChild(tooltipElement);\n        const suffix = elements.length > 1 ? ` [${i + 1} of ${elements.length}]` : "";\n        tooltipElement.textContent = options.tooltipText + suffix;\n        tooltipElement.style.top = "0";\n        tooltipElement.style.left = "0";\n        tooltipElement.style.display = "flex";\n        if (this._isUnderTest)\n          console.error("Highlight text for test: " + JSON.stringify(tooltipElement.textContent));\n      }\n      this._highlightEntries.push({ targetElement: elements[i], tooltipElement, highlightElement });\n    }\n    for (const entry of this._highlightEntries) {\n      entry.box = entry.targetElement.getBoundingClientRect();\n      if (!entry.tooltipElement)\n        continue;\n      const tooltipWidth = entry.tooltipElement.offsetWidth;\n      const tooltipHeight = entry.tooltipElement.offsetHeight;\n      const totalWidth = this._glassPaneElement.offsetWidth;\n      const totalHeight = this._glassPaneElement.offsetHeight;\n      let anchorLeft = entry.box.left;\n      if (anchorLeft + tooltipWidth > totalWidth - 5)\n        anchorLeft = totalWidth - tooltipWidth - 5;\n      let anchorTop = entry.box.bottom + 5;\n      if (anchorTop + tooltipHeight > totalHeight - 5) {\n        if (entry.box.top > tooltipHeight + 5) {\n          anchorTop = entry.box.top - tooltipHeight - 5;\n        } else {\n          anchorTop = totalHeight - 5 - tooltipHeight;\n        }\n      }\n      entry.tooltipTop = anchorTop;\n      entry.tooltipLeft = anchorLeft;\n    }\n    for (const entry of this._highlightEntries) {\n      if (entry.tooltipElement) {\n        entry.tooltipElement.style.top = entry.tooltipTop + "px";\n        entry.tooltipElement.style.left = entry.tooltipLeft + "px";\n      }\n      const box = entry.box;\n      entry.highlightElement.style.backgroundColor = options.color;\n      entry.highlightElement.style.left = box.x + "px";\n      entry.highlightElement.style.top = box.y + "px";\n      entry.highlightElement.style.width = box.width + "px";\n      entry.highlightElement.style.height = box.height + "px";\n      entry.highlightElement.style.display = "block";\n      if (this._isUnderTest)\n        console.error("Highlight box for test: " + JSON.stringify({ x: box.x, y: box.y, width: box.width, height: box.height }));\n    }\n  }\n  _highlightIsUpToDate(elements) {\n    if (elements.length !== this._highlightEntries.length)\n      return false;\n    for (let i = 0; i < this._highlightEntries.length; ++i) {\n      if (elements[i] !== this._highlightEntries[i].targetElement)\n        return false;\n      const oldBox = this._highlightEntries[i].box;\n      if (!oldBox)\n        return false;\n      const box = elements[i].getBoundingClientRect();\n      if (box.top !== oldBox.top || box.right !== oldBox.right || box.bottom !== oldBox.bottom || box.left !== oldBox.left)\n        return false;\n    }\n    return true;\n  }\n  _createHighlightElement() {\n    const highlightElement = document.createElement("x-pw-highlight");\n    highlightElement.style.position = "absolute";\n    highlightElement.style.top = "0";\n    highlightElement.style.left = "0";\n    highlightElement.style.width = "0";\n    highlightElement.style.height = "0";\n    highlightElement.style.boxSizing = "border-box";\n    return highlightElement;\n  }\n};\n\n// packages/playwright-core/src/server/injected/recorder.ts\nvar Recorder = class {\n  constructor(injectedScript) {\n    this._performingAction = false;\n    this._listeners = [];\n    this._hoveredModel = null;\n    this._hoveredElement = null;\n    this._activeModel = null;\n    this._expectProgrammaticKeyUp = false;\n    this._mode = "none";\n    this._injectedScript = injectedScript;\n    this._highlight = new Highlight(injectedScript);\n    this._refreshListenersIfNeeded();\n    injectedScript.onGlobalListenersRemoved.add(() => this._refreshListenersIfNeeded());\n    globalThis.__pw_refreshOverlay = () => {\n      this._pollRecorderMode().catch((e) => console.log(e));\n    };\n    globalThis.__pw_refreshOverlay();\n    if (injectedScript.isUnderTest)\n      console.error("Recorder script ready for test");\n  }\n  _refreshListenersIfNeeded() {\n    if (this._highlight.isInstalled())\n      return;\n    removeEventListeners(this._listeners);\n    this._listeners = [\n      addEventListener(document, "click", (event) => this._onClick(event), true),\n      addEventListener(document, "auxclick", (event) => this._onClick(event), true),\n      addEventListener(document, "input", (event) => this._onInput(event), true),\n      addEventListener(document, "keydown", (event) => this._onKeyDown(event), true),\n      addEventListener(document, "keyup", (event) => this._onKeyUp(event), true),\n      addEventListener(document, "mousedown", (event) => this._onMouseDown(event), true),\n      addEventListener(document, "mouseup", (event) => this._onMouseUp(event), true),\n      addEventListener(document, "mousemove", (event) => this._onMouseMove(event), true),\n      addEventListener(document, "mouseleave", (event) => this._onMouseLeave(event), true),\n      addEventListener(document, "focus", () => this._onFocus(), true),\n      addEventListener(document, "scroll", () => {\n        this._hoveredModel = null;\n        this._highlight.hideActionPoint();\n        this._updateHighlight();\n      }, true)\n    ];\n    this._highlight.install();\n  }\n  async _pollRecorderMode() {\n    var _a;\n    const pollPeriod = 1e3;\n    if (this._pollRecorderModeTimer)\n      clearTimeout(this._pollRecorderModeTimer);\n    const state = await globalThis.__pw_recorderState().catch((e) => null);\n    if (!state) {\n      this._pollRecorderModeTimer = setTimeout(() => this._pollRecorderMode(), pollPeriod);\n      return;\n    }\n    const { mode, actionPoint, actionSelector } = state;\n    if (mode !== this._mode) {\n      this._mode = mode;\n      this._clearHighlight();\n    }\n    if (actionPoint && this._actionPoint && actionPoint.x === this._actionPoint.x && actionPoint.y === this._actionPoint.y) {\n    } else if (!actionPoint && !this._actionPoint) {\n    } else {\n      if (actionPoint)\n        this._highlight.showActionPoint(actionPoint.x, actionPoint.y);\n      else\n        this._highlight.hideActionPoint();\n      this._actionPoint = actionPoint;\n    }\n    if (this._actionSelector && !((_a = this._hoveredModel) == null ? void 0 : _a.elements.length))\n      this._actionSelector = void 0;\n    if (actionSelector !== this._actionSelector) {\n      this._hoveredModel = actionSelector ? querySelector(this._injectedScript, actionSelector, document) : null;\n      this._updateHighlight();\n      this._actionSelector = actionSelector;\n    }\n    this._pollRecorderModeTimer = setTimeout(() => this._pollRecorderMode(), pollPeriod);\n  }\n  _clearHighlight() {\n    this._hoveredModel = null;\n    this._activeModel = null;\n    this._updateHighlight();\n  }\n  _actionInProgress(event) {\n    if (this._performingAction)\n      return true;\n    consumeEvent(event);\n    return false;\n  }\n  _consumedDueToNoModel(event, model) {\n    if (model)\n      return false;\n    consumeEvent(event);\n    return true;\n  }\n  _consumedDueWrongTarget(event) {\n    if (this._activeModel && this._activeModel.elements[0] === this._deepEventTarget(event))\n      return false;\n    consumeEvent(event);\n    return true;\n  }\n  _onClick(event) {\n    if (this._mode === "inspecting")\n      globalThis.__pw_recorderSetSelector(this._hoveredModel ? this._hoveredModel.selector : "");\n    if (this._shouldIgnoreMouseEvent(event))\n      return;\n    if (this._actionInProgress(event))\n      return;\n    if (this._consumedDueToNoModel(event, this._hoveredModel))\n      return;\n    const checkbox = asCheckbox(this._deepEventTarget(event));\n    if (checkbox) {\n      this._performAction({\n        name: checkbox.checked ? "check" : "uncheck",\n        selector: this._hoveredModel.selector,\n        signals: []\n      });\n      return;\n    }\n    this._performAction({\n      name: "click",\n      selector: this._hoveredModel.selector,\n      position: positionForEvent(event),\n      signals: [],\n      button: buttonForEvent(event),\n      modifiers: modifiersForEvent(event),\n      clickCount: event.detail\n    });\n  }\n  _shouldIgnoreMouseEvent(event) {\n    const target = this._deepEventTarget(event);\n    if (this._mode === "none")\n      return true;\n    if (this._mode === "inspecting") {\n      consumeEvent(event);\n      return true;\n    }\n    const nodeName = target.nodeName;\n    if (nodeName === "SELECT")\n      return true;\n    if (nodeName === "INPUT" && ["date"].includes(target.type))\n      return true;\n    return false;\n  }\n  _onMouseDown(event) {\n    if (this._shouldIgnoreMouseEvent(event))\n      return;\n    if (!this._performingAction)\n      consumeEvent(event);\n    this._activeModel = this._hoveredModel;\n  }\n  _onMouseUp(event) {\n    if (this._shouldIgnoreMouseEvent(event))\n      return;\n    if (!this._performingAction)\n      consumeEvent(event);\n  }\n  _onMouseMove(event) {\n    if (this._mode === "none")\n      return;\n    const target = this._deepEventTarget(event);\n    if (this._hoveredElement === target)\n      return;\n    this._hoveredElement = target;\n    this._updateModelForHoveredElement();\n  }\n  _onMouseLeave(event) {\n    if (this._deepEventTarget(event).nodeType === Node.DOCUMENT_NODE) {\n      this._hoveredElement = null;\n      this._updateModelForHoveredElement();\n    }\n  }\n  _onFocus() {\n    const activeElement = this._deepActiveElement(document);\n    const result = activeElement ? generateSelector(this._injectedScript, activeElement, true) : null;\n    this._activeModel = result && result.selector ? result : null;\n    if (this._injectedScript.isUnderTest)\n      console.error("Highlight updated for test: " + (result ? result.selector : null));\n  }\n  _updateModelForHoveredElement() {\n    if (!this._hoveredElement) {\n      this._hoveredModel = null;\n      this._updateHighlight();\n      return;\n    }\n    const hoveredElement = this._hoveredElement;\n    const { selector, elements } = generateSelector(this._injectedScript, hoveredElement, true);\n    if (this._hoveredModel && this._hoveredModel.selector === selector || this._hoveredElement !== hoveredElement)\n      return;\n    this._hoveredModel = selector ? { selector, elements } : null;\n    this._updateHighlight();\n    if (this._injectedScript.isUnderTest)\n      console.error("Highlight updated for test: " + selector);\n  }\n  _updateHighlight() {\n    const elements = this._hoveredModel ? this._hoveredModel.elements : [];\n    const selector = this._hoveredModel ? this._hoveredModel.selector : "";\n    this._highlight.updateHighlight(elements, selector, this._mode === "recording");\n  }\n  _onInput(event) {\n    if (this._mode !== "recording")\n      return true;\n    const target = this._deepEventTarget(event);\n    if (["INPUT", "TEXTAREA"].includes(target.nodeName)) {\n      const inputElement = target;\n      const elementType = (inputElement.type || "").toLowerCase();\n      if (["checkbox", "radio"].includes(elementType)) {\n        return;\n      }\n      if (elementType === "file") {\n        globalThis.__pw_recorderRecordAction({\n          name: "setInputFiles",\n          selector: this._activeModel.selector,\n          signals: [],\n          files: [...inputElement.files || []].map((file) => file.name)\n        });\n        return;\n      }\n      if (this._consumedDueWrongTarget(event))\n        return;\n      globalThis.__pw_recorderRecordAction({\n        name: "fill",\n        selector: this._activeModel.selector,\n        signals: [],\n        text: inputElement.value\n      });\n    }\n    if (target.nodeName === "SELECT") {\n      const selectElement = target;\n      if (this._actionInProgress(event))\n        return;\n      this._performAction({\n        name: "select",\n        selector: this._hoveredModel.selector,\n        options: [...selectElement.selectedOptions].map((option) => option.value),\n        signals: []\n      });\n    }\n  }\n  _shouldGenerateKeyPressFor(event) {\n    if (["Backspace", "Delete", "AltGraph"].includes(event.key))\n      return false;\n    if (event.key === "@" && event.code === "KeyL")\n      return false;\n    if (navigator.platform.includes("Mac")) {\n      if (event.key === "v" && event.metaKey)\n        return false;\n    } else {\n      if (event.key === "v" && event.ctrlKey)\n        return false;\n      if (event.key === "Insert" && event.shiftKey)\n        return false;\n    }\n    if (["Shift", "Control", "Meta", "Alt", "Process"].includes(event.key))\n      return false;\n    const hasModifier = event.ctrlKey || event.altKey || event.metaKey;\n    if (event.key.length === 1 && !hasModifier)\n      return !!asCheckbox(this._deepEventTarget(event));\n    return true;\n  }\n  _onKeyDown(event) {\n    if (this._mode === "inspecting") {\n      consumeEvent(event);\n      return;\n    }\n    if (this._mode !== "recording")\n      return;\n    if (!this._shouldGenerateKeyPressFor(event))\n      return;\n    if (this._actionInProgress(event)) {\n      this._expectProgrammaticKeyUp = true;\n      return;\n    }\n    if (this._consumedDueWrongTarget(event))\n      return;\n    if (event.key === " ") {\n      const checkbox = asCheckbox(this._deepEventTarget(event));\n      if (checkbox) {\n        this._performAction({\n          name: checkbox.checked ? "uncheck" : "check",\n          selector: this._activeModel.selector,\n          signals: []\n        });\n        return;\n      }\n    }\n    this._performAction({\n      name: "press",\n      selector: this._activeModel.selector,\n      signals: [],\n      key: event.key,\n      modifiers: modifiersForEvent(event)\n    });\n  }\n  _onKeyUp(event) {\n    if (this._mode === "none")\n      return;\n    if (!this._shouldGenerateKeyPressFor(event))\n      return;\n    if (!this._expectProgrammaticKeyUp) {\n      consumeEvent(event);\n      return;\n    }\n    this._expectProgrammaticKeyUp = false;\n  }\n  async _performAction(action) {\n    this._clearHighlight();\n    this._performingAction = true;\n    await globalThis.__pw_recorderPerformAction(action).catch(() => {\n    });\n    this._performingAction = false;\n    this._updateModelForHoveredElement();\n    this._onFocus();\n    if (this._injectedScript.isUnderTest) {\n      console.error("Action performed for test: " + JSON.stringify({\n        hovered: this._hoveredModel ? this._hoveredModel.selector : null,\n        active: this._activeModel ? this._activeModel.selector : null\n      }));\n    }\n  }\n  _deepEventTarget(event) {\n    return event.composedPath()[0];\n  }\n  _deepActiveElement(document2) {\n    let activeElement = document2.activeElement;\n    while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement)\n      activeElement = activeElement.shadowRoot.activeElement;\n    return activeElement;\n  }\n};\nfunction modifiersForEvent(event) {\n  return (event.altKey ? 1 : 0) | (event.ctrlKey ? 2 : 0) | (event.metaKey ? 4 : 0) | (event.shiftKey ? 8 : 0);\n}\nfunction buttonForEvent(event) {\n  switch (event.which) {\n    case 1:\n      return "left";\n    case 2:\n      return "middle";\n    case 3:\n      return "right";\n  }\n  return "left";\n}\nfunction positionForEvent(event) {\n  const targetElement = event.target;\n  if (targetElement.nodeName !== "CANVAS")\n    return;\n  return {\n    x: event.offsetX,\n    y: event.offsetY\n  };\n}\nfunction consumeEvent(e) {\n  e.preventDefault();\n  e.stopPropagation();\n  e.stopImmediatePropagation();\n}\nfunction asCheckbox(node) {\n  if (!node || node.nodeName !== "INPUT")\n    return null;\n  const inputElement = node;\n  return ["checkbox", "radio"].includes(inputElement.type) ? inputElement : null;\n}\nfunction addEventListener(target, eventName, listener, useCapture) {\n  target.addEventListener(eventName, listener, useCapture);\n  const remove = () => {\n    target.removeEventListener(eventName, listener, useCapture);\n  };\n  return remove;\n}\nfunction removeEventListeners(listeners) {\n  for (const listener of listeners)\n    listener();\n  listeners.splice(0, listeners.length);\n}\nmodule.exports = Recorder;\n';
+    var source = '"use strict";\nlet __export = (target, all) => {\n  for (var name in all)\n    target[name] = all[name];\n};\nlet __commonJS = cb => function __require() {\n  let fn;\n  for (const name in cb) {\n    fn = cb[name];\n    break;\n  }\n  const exports = {};\n  fn(exports);\n  return exports;\n};\nlet __toESM = mod => ({ ...mod, \'default\': mod });\nlet __toCommonJS = mod =>  ({ ...mod, __esModule: true });\n// packages/playwright-core/src/server/isomorphic/cssTokenizer.js\nvar require_cssTokenizer = __commonJS({\n  "packages/playwright-core/src/server/isomorphic/cssTokenizer.js"(exports2) {\n    "use strict";\n    var between = function(num, first, last) {\n      return num >= first && num <= last;\n    };\n    function digit(code) {\n      return between(code, 48, 57);\n    }\n    function hexdigit(code) {\n      return digit(code) || between(code, 65, 70) || between(code, 97, 102);\n    }\n    function uppercaseletter(code) {\n      return between(code, 65, 90);\n    }\n    function lowercaseletter(code) {\n      return between(code, 97, 122);\n    }\n    function letter(code) {\n      return uppercaseletter(code) || lowercaseletter(code);\n    }\n    function nonascii(code) {\n      return code >= 128;\n    }\n    function namestartchar(code) {\n      return letter(code) || nonascii(code) || code == 95;\n    }\n    function namechar(code) {\n      return namestartchar(code) || digit(code) || code == 45;\n    }\n    function nonprintable(code) {\n      return between(code, 0, 8) || code == 11 || between(code, 14, 31) || code == 127;\n    }\n    function newline(code) {\n      return code == 10;\n    }\n    function whitespace(code) {\n      return newline(code) || code == 9 || code == 32;\n    }\n    var maximumallowedcodepoint = 1114111;\n    var InvalidCharacterError = function(message) {\n      this.message = message;\n    };\n    InvalidCharacterError.prototype = new Error();\n    InvalidCharacterError.prototype.name = "InvalidCharacterError";\n    function preprocess(str) {\n      var codepoints = [];\n      for (var i = 0; i < str.length; i++) {\n        var code = str.charCodeAt(i);\n        if (code == 13 && str.charCodeAt(i + 1) == 10) {\n          code = 10;\n          i++;\n        }\n        if (code == 13 || code == 12)\n          code = 10;\n        if (code == 0)\n          code = 65533;\n        if (between(code, 55296, 56319) && between(str.charCodeAt(i + 1), 56320, 57343)) {\n          var lead = code - 55296;\n          var trail = str.charCodeAt(i + 1) - 56320;\n          code = Math.pow(2, 16) + lead * Math.pow(2, 10) + trail;\n          i++;\n        }\n        codepoints.push(code);\n      }\n      return codepoints;\n    }\n    function stringFromCode(code) {\n      if (code <= 65535)\n        return String.fromCharCode(code);\n      code -= Math.pow(2, 16);\n      var lead = Math.floor(code / Math.pow(2, 10)) + 55296;\n      var trail = code % Math.pow(2, 10) + 56320;\n      return String.fromCharCode(lead) + String.fromCharCode(trail);\n    }\n    function tokenize2(str) {\n      str = preprocess(str);\n      var i = -1;\n      var tokens = [];\n      var code;\n      var line = 0;\n      var column = 0;\n      var lastLineLength = 0;\n      var incrLineno = function() {\n        line += 1;\n        lastLineLength = column;\n        column = 0;\n      };\n      var locStart = { line, column };\n      var codepoint = function(i2) {\n        if (i2 >= str.length) {\n          return -1;\n        }\n        return str[i2];\n      };\n      var next = function(num) {\n        if (num === void 0)\n          num = 1;\n        if (num > 3)\n          throw "Spec Error: no more than three codepoints of lookahead.";\n        return codepoint(i + num);\n      };\n      var consume = function(num) {\n        if (num === void 0)\n          num = 1;\n        i += num;\n        code = codepoint(i);\n        if (newline(code))\n          incrLineno();\n        else\n          column += num;\n        return true;\n      };\n      var reconsume = function() {\n        i -= 1;\n        if (newline(code)) {\n          line -= 1;\n          column = lastLineLength;\n        } else {\n          column -= 1;\n        }\n        locStart.line = line;\n        locStart.column = column;\n        return true;\n      };\n      var eof = function(codepoint2) {\n        if (codepoint2 === void 0)\n          codepoint2 = code;\n        return codepoint2 == -1;\n      };\n      var donothing = function() {\n      };\n      var parseerror = function() {\n        console.log("Parse error at index " + i + ", processing codepoint 0x" + code.toString(16) + ".");\n        return true;\n      };\n      var consumeAToken = function() {\n        consumeComments();\n        consume();\n        if (whitespace(code)) {\n          while (whitespace(next()))\n            consume();\n          return new WhitespaceToken2();\n        } else if (code == 34)\n          return consumeAStringToken();\n        else if (code == 35) {\n          if (namechar(next()) || areAValidEscape(next(1), next(2))) {\n            var token = new HashToken2();\n            if (wouldStartAnIdentifier(next(1), next(2), next(3)))\n              token.type = "id";\n            token.value = consumeAName();\n            return token;\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 36) {\n          if (next() == 61) {\n            consume();\n            return new SuffixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 39)\n          return consumeAStringToken();\n        else if (code == 40)\n          return new OpenParenToken();\n        else if (code == 41)\n          return new CloseParenToken2();\n        else if (code == 42) {\n          if (next() == 61) {\n            consume();\n            return new SubstringMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 43) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 44)\n          return new CommaToken2();\n        else if (code == 45) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else if (next(1) == 45 && next(2) == 62) {\n            consume(2);\n            return new CDCToken2();\n          } else if (startsWithAnIdentifier()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 46) {\n          if (startsWithANumber()) {\n            reconsume();\n            return consumeANumericToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 58)\n          return new ColonToken2();\n        else if (code == 59)\n          return new SemicolonToken2();\n        else if (code == 60) {\n          if (next(1) == 33 && next(2) == 45 && next(3) == 45) {\n            consume(3);\n            return new CDOToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 64) {\n          if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n            return new AtKeywordToken2(consumeAName());\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 91)\n          return new OpenSquareToken2();\n        else if (code == 92) {\n          if (startsWithAValidEscape()) {\n            reconsume();\n            return consumeAnIdentlikeToken();\n          } else {\n            parseerror();\n            return new DelimToken2(code);\n          }\n        } else if (code == 93)\n          return new CloseSquareToken2();\n        else if (code == 94) {\n          if (next() == 61) {\n            consume();\n            return new PrefixMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 123)\n          return new OpenCurlyToken2();\n        else if (code == 124) {\n          if (next() == 61) {\n            consume();\n            return new DashMatchToken();\n          } else if (next() == 124) {\n            consume();\n            return new ColumnToken2();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (code == 125)\n          return new CloseCurlyToken2();\n        else if (code == 126) {\n          if (next() == 61) {\n            consume();\n            return new IncludeMatchToken();\n          } else {\n            return new DelimToken2(code);\n          }\n        } else if (digit(code)) {\n          reconsume();\n          return consumeANumericToken();\n        } else if (namestartchar(code)) {\n          reconsume();\n          return consumeAnIdentlikeToken();\n        } else if (eof())\n          return new EOFToken2();\n        else\n          return new DelimToken2(code);\n      };\n      var consumeComments = function() {\n        while (next(1) == 47 && next(2) == 42) {\n          consume(2);\n          while (true) {\n            consume();\n            if (code == 42 && next() == 47) {\n              consume();\n              break;\n            } else if (eof()) {\n              parseerror();\n              return;\n            }\n          }\n        }\n      };\n      var consumeANumericToken = function() {\n        var num = consumeANumber();\n        if (wouldStartAnIdentifier(next(1), next(2), next(3))) {\n          var token = new DimensionToken();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          token.unit = consumeAName();\n          return token;\n        } else if (next() == 37) {\n          consume();\n          var token = new PercentageToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          return token;\n        } else {\n          var token = new NumberToken2();\n          token.value = num.value;\n          token.repr = num.repr;\n          token.type = num.type;\n          return token;\n        }\n      };\n      var consumeAnIdentlikeToken = function() {\n        var str2 = consumeAName();\n        if (str2.toLowerCase() == "url" && next() == 40) {\n          consume();\n          while (whitespace(next(1)) && whitespace(next(2)))\n            consume();\n          if (next() == 34 || next() == 39) {\n            return new FunctionToken2(str2);\n          } else if (whitespace(next()) && (next(2) == 34 || next(2) == 39)) {\n            return new FunctionToken2(str2);\n          } else {\n            return consumeAURLToken();\n          }\n        } else if (next() == 40) {\n          consume();\n          return new FunctionToken2(str2);\n        } else {\n          return new IdentToken2(str2);\n        }\n      };\n      var consumeAStringToken = function(endingCodePoint) {\n        if (endingCodePoint === void 0)\n          endingCodePoint = code;\n        var string = "";\n        while (consume()) {\n          if (code == endingCodePoint || eof()) {\n            return new StringToken2(string);\n          } else if (newline(code)) {\n            parseerror();\n            reconsume();\n            return new BadStringToken2();\n          } else if (code == 92) {\n            if (eof(next())) {\n              donothing();\n            } else if (newline(next())) {\n              consume();\n            } else {\n              string += stringFromCode(consumeEscape());\n            }\n          } else {\n            string += stringFromCode(code);\n          }\n        }\n      };\n      var consumeAURLToken = function() {\n        var token = new URLToken2("");\n        while (whitespace(next()))\n          consume();\n        if (eof(next()))\n          return token;\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return token;\n          } else if (whitespace(code)) {\n            while (whitespace(next()))\n              consume();\n            if (next() == 41 || eof(next())) {\n              consume();\n              return token;\n            } else {\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else if (code == 34 || code == 39 || code == 40 || nonprintable(code)) {\n            parseerror();\n            consumeTheRemnantsOfABadURL();\n            return new BadURLToken2();\n          } else if (code == 92) {\n            if (startsWithAValidEscape()) {\n              token.value += stringFromCode(consumeEscape());\n            } else {\n              parseerror();\n              consumeTheRemnantsOfABadURL();\n              return new BadURLToken2();\n            }\n          } else {\n            token.value += stringFromCode(code);\n          }\n        }\n      };\n      var consumeEscape = function() {\n        consume();\n        if (hexdigit(code)) {\n          var digits = [code];\n          for (var total = 0; total < 5; total++) {\n            if (hexdigit(next())) {\n              consume();\n              digits.push(code);\n            } else {\n              break;\n            }\n          }\n          if (whitespace(next()))\n            consume();\n          var value = parseInt(digits.map(function(x) {\n            return String.fromCharCode(x);\n          }).join(""), 16);\n          if (value > maximumallowedcodepoint)\n            value = 65533;\n          return value;\n        } else if (eof()) {\n          return 65533;\n        } else {\n          return code;\n        }\n      };\n      var areAValidEscape = function(c1, c2) {\n        if (c1 != 92)\n          return false;\n        if (newline(c2))\n          return false;\n        return true;\n      };\n      var startsWithAValidEscape = function() {\n        return areAValidEscape(code, next());\n      };\n      var wouldStartAnIdentifier = function(c1, c2, c3) {\n        if (c1 == 45) {\n          return namestartchar(c2) || c2 == 45 || areAValidEscape(c2, c3);\n        } else if (namestartchar(c1)) {\n          return true;\n        } else if (c1 == 92) {\n          return areAValidEscape(c1, c2);\n        } else {\n          return false;\n        }\n      };\n      var startsWithAnIdentifier = function() {\n        return wouldStartAnIdentifier(code, next(1), next(2));\n      };\n      var wouldStartANumber = function(c1, c2, c3) {\n        if (c1 == 43 || c1 == 45) {\n          if (digit(c2))\n            return true;\n          if (c2 == 46 && digit(c3))\n            return true;\n          return false;\n        } else if (c1 == 46) {\n          if (digit(c2))\n            return true;\n          return false;\n        } else if (digit(c1)) {\n          return true;\n        } else {\n          return false;\n        }\n      };\n      var startsWithANumber = function() {\n        return wouldStartANumber(code, next(1), next(2));\n      };\n      var consumeAName = function() {\n        var result = "";\n        while (consume()) {\n          if (namechar(code)) {\n            result += stringFromCode(code);\n          } else if (startsWithAValidEscape()) {\n            result += stringFromCode(consumeEscape());\n          } else {\n            reconsume();\n            return result;\n          }\n        }\n      };\n      var consumeANumber = function() {\n        var repr = [];\n        var type = "integer";\n        if (next() == 43 || next() == 45) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        while (digit(next())) {\n          consume();\n          repr += stringFromCode(code);\n        }\n        if (next(1) == 46 && digit(next(2))) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var c1 = next(1), c2 = next(2), c3 = next(3);\n        if ((c1 == 69 || c1 == 101) && digit(c2)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        } else if ((c1 == 69 || c1 == 101) && (c2 == 43 || c2 == 45) && digit(c3)) {\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          consume();\n          repr += stringFromCode(code);\n          type = "number";\n          while (digit(next())) {\n            consume();\n            repr += stringFromCode(code);\n          }\n        }\n        var value = convertAStringToANumber(repr);\n        return { type, value, repr };\n      };\n      var convertAStringToANumber = function(string) {\n        return +string;\n      };\n      var consumeTheRemnantsOfABadURL = function() {\n        while (consume()) {\n          if (code == 41 || eof()) {\n            return;\n          } else if (startsWithAValidEscape()) {\n            consumeEscape();\n            donothing();\n          } else {\n            donothing();\n          }\n        }\n      };\n      var iterationCount = 0;\n      while (!eof(next())) {\n        tokens.push(consumeAToken());\n        iterationCount++;\n        if (iterationCount > str.length * 2)\n          return "I\'m infinite-looping!";\n      }\n      return tokens;\n    }\n    function CSSParserToken() {\n      throw "Abstract Base Class";\n    }\n    CSSParserToken.prototype.toJSON = function() {\n      return { token: this.tokenType };\n    };\n    CSSParserToken.prototype.toString = function() {\n      return this.tokenType;\n    };\n    CSSParserToken.prototype.toSource = function() {\n      return "" + this;\n    };\n    function BadStringToken2() {\n      return this;\n    }\n    BadStringToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadStringToken2.prototype.tokenType = "BADSTRING";\n    function BadURLToken2() {\n      return this;\n    }\n    BadURLToken2.prototype = Object.create(CSSParserToken.prototype);\n    BadURLToken2.prototype.tokenType = "BADURL";\n    function WhitespaceToken2() {\n      return this;\n    }\n    WhitespaceToken2.prototype = Object.create(CSSParserToken.prototype);\n    WhitespaceToken2.prototype.tokenType = "WHITESPACE";\n    WhitespaceToken2.prototype.toString = function() {\n      return "WS";\n    };\n    WhitespaceToken2.prototype.toSource = function() {\n      return " ";\n    };\n    function CDOToken2() {\n      return this;\n    }\n    CDOToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDOToken2.prototype.tokenType = "CDO";\n    CDOToken2.prototype.toSource = function() {\n      return "<!--";\n    };\n    function CDCToken2() {\n      return this;\n    }\n    CDCToken2.prototype = Object.create(CSSParserToken.prototype);\n    CDCToken2.prototype.tokenType = "CDC";\n    CDCToken2.prototype.toSource = function() {\n      return "-->";\n    };\n    function ColonToken2() {\n      return this;\n    }\n    ColonToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColonToken2.prototype.tokenType = ":";\n    function SemicolonToken2() {\n      return this;\n    }\n    SemicolonToken2.prototype = Object.create(CSSParserToken.prototype);\n    SemicolonToken2.prototype.tokenType = ";";\n    function CommaToken2() {\n      return this;\n    }\n    CommaToken2.prototype = Object.create(CSSParserToken.prototype);\n    CommaToken2.prototype.tokenType = ",";\n    function GroupingToken() {\n      throw "Abstract Base Class";\n    }\n    GroupingToken.prototype = Object.create(CSSParserToken.prototype);\n    function OpenCurlyToken2() {\n      this.value = "{";\n      this.mirror = "}";\n      return this;\n    }\n    OpenCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenCurlyToken2.prototype.tokenType = "{";\n    function CloseCurlyToken2() {\n      this.value = "}";\n      this.mirror = "{";\n      return this;\n    }\n    CloseCurlyToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseCurlyToken2.prototype.tokenType = "}";\n    function OpenSquareToken2() {\n      this.value = "[";\n      this.mirror = "]";\n      return this;\n    }\n    OpenSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    OpenSquareToken2.prototype.tokenType = "[";\n    function CloseSquareToken2() {\n      this.value = "]";\n      this.mirror = "[";\n      return this;\n    }\n    CloseSquareToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseSquareToken2.prototype.tokenType = "]";\n    function OpenParenToken() {\n      this.value = "(";\n      this.mirror = ")";\n      return this;\n    }\n    OpenParenToken.prototype = Object.create(GroupingToken.prototype);\n    OpenParenToken.prototype.tokenType = "(";\n    function CloseParenToken2() {\n      this.value = ")";\n      this.mirror = "(";\n      return this;\n    }\n    CloseParenToken2.prototype = Object.create(GroupingToken.prototype);\n    CloseParenToken2.prototype.tokenType = ")";\n    function IncludeMatchToken() {\n      return this;\n    }\n    IncludeMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    IncludeMatchToken.prototype.tokenType = "~=";\n    function DashMatchToken() {\n      return this;\n    }\n    DashMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    DashMatchToken.prototype.tokenType = "|=";\n    function PrefixMatchToken() {\n      return this;\n    }\n    PrefixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    PrefixMatchToken.prototype.tokenType = "^=";\n    function SuffixMatchToken() {\n      return this;\n    }\n    SuffixMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SuffixMatchToken.prototype.tokenType = "$=";\n    function SubstringMatchToken() {\n      return this;\n    }\n    SubstringMatchToken.prototype = Object.create(CSSParserToken.prototype);\n    SubstringMatchToken.prototype.tokenType = "*=";\n    function ColumnToken2() {\n      return this;\n    }\n    ColumnToken2.prototype = Object.create(CSSParserToken.prototype);\n    ColumnToken2.prototype.tokenType = "||";\n    function EOFToken2() {\n      return this;\n    }\n    EOFToken2.prototype = Object.create(CSSParserToken.prototype);\n    EOFToken2.prototype.tokenType = "EOF";\n    EOFToken2.prototype.toSource = function() {\n      return "";\n    };\n    function DelimToken2(code) {\n      this.value = stringFromCode(code);\n      return this;\n    }\n    DelimToken2.prototype = Object.create(CSSParserToken.prototype);\n    DelimToken2.prototype.tokenType = "DELIM";\n    DelimToken2.prototype.toString = function() {\n      return "DELIM(" + this.value + ")";\n    };\n    DelimToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    DelimToken2.prototype.toSource = function() {\n      if (this.value == "\\\\")\n        return "\\\\\\n";\n      else\n        return this.value;\n    };\n    function StringValuedToken() {\n      throw "Abstract Base Class";\n    }\n    StringValuedToken.prototype = Object.create(CSSParserToken.prototype);\n    StringValuedToken.prototype.ASCIIMatch = function(str) {\n      return this.value.toLowerCase() == str.toLowerCase();\n    };\n    StringValuedToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      return json;\n    };\n    function IdentToken2(val) {\n      this.value = val;\n    }\n    IdentToken2.prototype = Object.create(StringValuedToken.prototype);\n    IdentToken2.prototype.tokenType = "IDENT";\n    IdentToken2.prototype.toString = function() {\n      return "IDENT(" + this.value + ")";\n    };\n    IdentToken2.prototype.toSource = function() {\n      return escapeIdent(this.value);\n    };\n    function FunctionToken2(val) {\n      this.value = val;\n      this.mirror = ")";\n    }\n    FunctionToken2.prototype = Object.create(StringValuedToken.prototype);\n    FunctionToken2.prototype.tokenType = "FUNCTION";\n    FunctionToken2.prototype.toString = function() {\n      return "FUNCTION(" + this.value + ")";\n    };\n    FunctionToken2.prototype.toSource = function() {\n      return escapeIdent(this.value) + "(";\n    };\n    function AtKeywordToken2(val) {\n      this.value = val;\n    }\n    AtKeywordToken2.prototype = Object.create(StringValuedToken.prototype);\n    AtKeywordToken2.prototype.tokenType = "AT-KEYWORD";\n    AtKeywordToken2.prototype.toString = function() {\n      return "AT(" + this.value + ")";\n    };\n    AtKeywordToken2.prototype.toSource = function() {\n      return "@" + escapeIdent(this.value);\n    };\n    function HashToken2(val) {\n      this.value = val;\n      this.type = "unrestricted";\n    }\n    HashToken2.prototype = Object.create(StringValuedToken.prototype);\n    HashToken2.prototype.tokenType = "HASH";\n    HashToken2.prototype.toString = function() {\n      return "HASH(" + this.value + ")";\n    };\n    HashToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      return json;\n    };\n    HashToken2.prototype.toSource = function() {\n      if (this.type == "id") {\n        return "#" + escapeIdent(this.value);\n      } else {\n        return "#" + escapeHash(this.value);\n      }\n    };\n    function StringToken2(val) {\n      this.value = val;\n    }\n    StringToken2.prototype = Object.create(StringValuedToken.prototype);\n    StringToken2.prototype.tokenType = "STRING";\n    StringToken2.prototype.toString = function() {\n      return \'"\' + escapeString(this.value) + \'"\';\n    };\n    function URLToken2(val) {\n      this.value = val;\n    }\n    URLToken2.prototype = Object.create(StringValuedToken.prototype);\n    URLToken2.prototype.tokenType = "URL";\n    URLToken2.prototype.toString = function() {\n      return "URL(" + this.value + ")";\n    };\n    URLToken2.prototype.toSource = function() {\n      return \'url("\' + escapeString(this.value) + \'")\';\n    };\n    function NumberToken2() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n    }\n    NumberToken2.prototype = Object.create(CSSParserToken.prototype);\n    NumberToken2.prototype.tokenType = "NUMBER";\n    NumberToken2.prototype.toString = function() {\n      if (this.type == "integer")\n        return "INT(" + this.value + ")";\n      return "NUMBER(" + this.value + ")";\n    };\n    NumberToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      return json;\n    };\n    NumberToken2.prototype.toSource = function() {\n      return this.repr;\n    };\n    function PercentageToken2() {\n      this.value = null;\n      this.repr = "";\n    }\n    PercentageToken2.prototype = Object.create(CSSParserToken.prototype);\n    PercentageToken2.prototype.tokenType = "PERCENTAGE";\n    PercentageToken2.prototype.toString = function() {\n      return "PERCENTAGE(" + this.value + ")";\n    };\n    PercentageToken2.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.repr = this.repr;\n      return json;\n    };\n    PercentageToken2.prototype.toSource = function() {\n      return this.repr + "%";\n    };\n    function DimensionToken() {\n      this.value = null;\n      this.type = "integer";\n      this.repr = "";\n      this.unit = "";\n    }\n    DimensionToken.prototype = Object.create(CSSParserToken.prototype);\n    DimensionToken.prototype.tokenType = "DIMENSION";\n    DimensionToken.prototype.toString = function() {\n      return "DIM(" + this.value + "," + this.unit + ")";\n    };\n    DimensionToken.prototype.toJSON = function() {\n      var json = this.constructor.prototype.constructor.prototype.toJSON.call(this);\n      json.value = this.value;\n      json.type = this.type;\n      json.repr = this.repr;\n      json.unit = this.unit;\n      return json;\n    };\n    DimensionToken.prototype.toSource = function() {\n      var source = this.repr;\n      var unit = escapeIdent(this.unit);\n      if (unit[0].toLowerCase() == "e" && (unit[1] == "-" || between(unit.charCodeAt(1), 48, 57))) {\n        unit = "\\\\65 " + unit.slice(1, unit.length);\n      }\n      return source + unit;\n    };\n    function escapeIdent(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127 || i == 0 && between(code, 48, 57) || i == 1 && between(code, 48, 57) && firstcode == 45) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + string[i];\n        }\n      }\n      return result;\n    }\n    function escapeHash(string) {\n      string = "" + string;\n      var result = "";\n      var firstcode = string.charCodeAt(0);\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (code >= 128 || code == 45 || code == 95 || between(code, 48, 57) || between(code, 65, 90) || between(code, 97, 122)) {\n          result += string[i];\n        } else {\n          result += "\\\\" + code.toString(16) + " ";\n        }\n      }\n      return result;\n    }\n    function escapeString(string) {\n      string = "" + string;\n      var result = "";\n      for (var i = 0; i < string.length; i++) {\n        var code = string.charCodeAt(i);\n        if (code == 0) {\n          throw new InvalidCharacterError("Invalid character: the input contains U+0000.");\n        }\n        if (between(code, 1, 31) || code == 127) {\n          result += "\\\\" + code.toString(16) + " ";\n        } else if (code == 34 || code == 92) {\n          result += "\\\\" + string[i];\n        } else {\n          result += string[i];\n        }\n      }\n      return result;\n    }\n    exports2.tokenize = tokenize2;\n    exports2.IdentToken = IdentToken2;\n    exports2.FunctionToken = FunctionToken2;\n    exports2.AtKeywordToken = AtKeywordToken2;\n    exports2.HashToken = HashToken2;\n    exports2.StringToken = StringToken2;\n    exports2.BadStringToken = BadStringToken2;\n    exports2.URLToken = URLToken2;\n    exports2.BadURLToken = BadURLToken2;\n    exports2.DelimToken = DelimToken2;\n    exports2.NumberToken = NumberToken2;\n    exports2.PercentageToken = PercentageToken2;\n    exports2.DimensionToken = DimensionToken;\n    exports2.IncludeMatchToken = IncludeMatchToken;\n    exports2.DashMatchToken = DashMatchToken;\n    exports2.PrefixMatchToken = PrefixMatchToken;\n    exports2.SuffixMatchToken = SuffixMatchToken;\n    exports2.SubstringMatchToken = SubstringMatchToken;\n    exports2.ColumnToken = ColumnToken2;\n    exports2.WhitespaceToken = WhitespaceToken2;\n    exports2.CDOToken = CDOToken2;\n    exports2.CDCToken = CDCToken2;\n    exports2.ColonToken = ColonToken2;\n    exports2.SemicolonToken = SemicolonToken2;\n    exports2.CommaToken = CommaToken2;\n    exports2.OpenParenToken = OpenParenToken;\n    exports2.CloseParenToken = CloseParenToken2;\n    exports2.OpenSquareToken = OpenSquareToken2;\n    exports2.CloseSquareToken = CloseSquareToken2;\n    exports2.OpenCurlyToken = OpenCurlyToken2;\n    exports2.CloseCurlyToken = CloseCurlyToken2;\n    exports2.EOFToken = EOFToken2;\n    exports2.CSSParserToken = CSSParserToken;\n    exports2.GroupingToken = GroupingToken;\n  }\n});\n\n// packages/playwright-core/src/utils/isomorphic/stringUtils.ts\nfunction escapeWithQuotes(text, char = "\'") {\n  const stringified = JSON.stringify(text);\n  const escapedText = stringified.substring(1, stringified.length - 1).replace(/\\\\"/g, \'"\');\n  if (char === "\'")\n    return char + escapedText.replace(/[\']/g, "\\\\\'") + char;\n  if (char === \'"\')\n    return char + escapedText.replace(/["]/g, \'\\\\"\') + char;\n  if (char === "`")\n    return char + escapedText.replace(/[`]/g, "`") + char;\n  throw new Error("Invalid escape char");\n}\nfunction toTitleCase(name) {\n  return name.charAt(0).toUpperCase() + name.substring(1);\n}\nfunction toSnakeCase(name) {\n  return name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase();\n}\nfunction cssEscape(s) {\n  let result = "";\n  for (let i = 0; i < s.length; i++)\n    result += cssEscapeOne(s, i);\n  return result;\n}\nfunction cssEscapeOne(s, i) {\n  const c = s.charCodeAt(i);\n  if (c === 0)\n    return "\\uFFFD";\n  if (c >= 1 && c <= 31 || c >= 48 && c <= 57 && (i === 0 || i === 1 && s.charCodeAt(0) === 45))\n    return "\\\\" + c.toString(16) + " ";\n  if (i === 0 && c === 45 && s.length === 1)\n    return "\\\\" + s.charAt(i);\n  if (c >= 128 || c === 45 || c === 95 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122)\n    return s.charAt(i);\n  return "\\\\" + s.charAt(i);\n}\nfunction escapeForRegex(text) {\n  return text.replace(/[.*+?^>${}()|[\\]\\\\]/g, "\\\\$&");\n}\nfunction escapeForTextSelector(text, exact, caseSensitive = false) {\n  if (typeof text !== "string")\n    return String(text);\n  if (exact)\n    return \'"\' + text.replace(/["]/g, \'\\\\"\') + \'"\';\n  if (text.includes(\'"\') || text.includes(">>") || text[0] === "/")\n    return `/${escapeForRegex(text).replace(/\\s+/g, "\\\\s+")}/` + (caseSensitive ? "" : "i");\n  return text;\n}\nfunction escapeForAttributeSelector(value, exact) {\n  return `"${value.replace(/["]/g, \'\\\\"\')}"${exact ? "" : "i"}`;\n}\n\n// packages/playwright-core/src/server/injected/domUtils.ts\nfunction parentElementOrShadowHost(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return;\n  if (element.parentNode.nodeType === 11 && element.parentNode.host)\n    return element.parentNode.host;\n}\nfunction enclosingShadowRootOrDocument(element) {\n  let node = element;\n  while (node.parentNode)\n    node = node.parentNode;\n  if (node.nodeType === 11 || node.nodeType === 9)\n    return node;\n}\nfunction enclosingShadowHost(element) {\n  while (element.parentElement)\n    element = element.parentElement;\n  return parentElementOrShadowHost(element);\n}\nfunction closestCrossShadow(element, css2) {\n  while (element) {\n    const closest = element.closest(css2);\n    if (closest)\n      return closest;\n    element = enclosingShadowHost(element);\n  }\n}\n\n// packages/playwright-core/src/server/injected/roleUtils.ts\nfunction hasExplicitAccessibleName(e) {\n  return e.hasAttribute("aria-label") || e.hasAttribute("aria-labelledby");\n}\nvar kAncestorPreventingLandmark = "article:not([role]), aside:not([role]), main:not([role]), nav:not([role]), section:not([role]), [role=article], [role=complementary], [role=main], [role=navigation], [role=region]";\nvar kGlobalAriaAttributes = [\n  "aria-atomic",\n  "aria-busy",\n  "aria-controls",\n  "aria-current",\n  "aria-describedby",\n  "aria-details",\n  "aria-disabled",\n  "aria-dropeffect",\n  "aria-errormessage",\n  "aria-flowto",\n  "aria-grabbed",\n  "aria-haspopup",\n  "aria-hidden",\n  "aria-invalid",\n  "aria-keyshortcuts",\n  "aria-label",\n  "aria-labelledby",\n  "aria-live",\n  "aria-owns",\n  "aria-relevant",\n  "aria-roledescription"\n];\nfunction hasGlobalAriaAttribute(e) {\n  return kGlobalAriaAttributes.some((a) => e.hasAttribute(a));\n}\nvar kImplicitRoleByTagName = {\n  "A": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "AREA": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "ARTICLE": () => "article",\n  "ASIDE": () => "complementary",\n  "BLOCKQUOTE": () => "blockquote",\n  "BUTTON": () => "button",\n  "CAPTION": () => "caption",\n  "CODE": () => "code",\n  "DATALIST": () => "listbox",\n  "DD": () => "definition",\n  "DEL": () => "deletion",\n  "DETAILS": () => "group",\n  "DFN": () => "term",\n  "DIALOG": () => "dialog",\n  "DT": () => "term",\n  "EM": () => "emphasis",\n  "FIELDSET": () => "group",\n  "FIGURE": () => "figure",\n  "FOOTER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "contentinfo",\n  "FORM": (e) => hasExplicitAccessibleName(e) ? "form" : null,\n  "H1": () => "heading",\n  "H2": () => "heading",\n  "H3": () => "heading",\n  "H4": () => "heading",\n  "H5": () => "heading",\n  "H6": () => "heading",\n  "HEADER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "banner",\n  "HR": () => "separator",\n  "HTML": () => "document",\n  "IMG": (e) => e.getAttribute("alt") === "" && !hasGlobalAriaAttribute(e) && Number.isNaN(Number(String(e.getAttribute("tabindex")))) ? "presentation" : "img",\n  "INPUT": (e) => {\n    const type = e.type.toLowerCase();\n    if (type === "search")\n      return e.hasAttribute("list") ? "combobox" : "searchbox";\n    if (["email", "tel", "text", "url", ""].includes(type)) {\n      const list = getIdRefs(e, e.getAttribute("list"))[0];\n      return list && list.tagName === "DATALIST" ? "combobox" : "textbox";\n    }\n    if (type === "hidden")\n      return "";\n    return {\n      "button": "button",\n      "checkbox": "checkbox",\n      "image": "button",\n      "number": "spinbutton",\n      "radio": "radio",\n      "range": "slider",\n      "reset": "button",\n      "submit": "button"\n    }[type] || "textbox";\n  },\n  "INS": () => "insertion",\n  "LI": () => "listitem",\n  "MAIN": () => "main",\n  "MARK": () => "mark",\n  "MATH": () => "math",\n  "MENU": () => "list",\n  "METER": () => "meter",\n  "NAV": () => "navigation",\n  "OL": () => "list",\n  "OPTGROUP": () => "group",\n  "OPTION": () => "option",\n  "OUTPUT": () => "status",\n  "P": () => "paragraph",\n  "PROGRESS": () => "progressbar",\n  "SECTION": (e) => hasExplicitAccessibleName(e) ? "region" : null,\n  "SELECT": (e) => e.hasAttribute("multiple") || e.size > 1 ? "listbox" : "combobox",\n  "STRONG": () => "strong",\n  "SUB": () => "subscript",\n  "SUP": () => "superscript",\n  "TABLE": () => "table",\n  "TBODY": () => "rowgroup",\n  "TD": (e) => {\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "TEXTAREA": () => "textbox",\n  "TFOOT": () => "rowgroup",\n  "TH": (e) => {\n    if (e.getAttribute("scope") === "col")\n      return "columnheader";\n    if (e.getAttribute("scope") === "row")\n      return "rowheader";\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "THEAD": () => "rowgroup",\n  "TIME": () => "time",\n  "TR": () => "row",\n  "UL": () => "list"\n};\nvar kPresentationInheritanceParents = {\n  "DD": ["DL", "DIV"],\n  "DIV": ["DL"],\n  "DT": ["DL", "DIV"],\n  "LI": ["OL", "UL"],\n  "TBODY": ["TABLE"],\n  "TD": ["TR"],\n  "TFOOT": ["TABLE"],\n  "TH": ["TR"],\n  "THEAD": ["TABLE"],\n  "TR": ["THEAD", "TBODY", "TFOOT", "TABLE"]\n};\nfunction getImplicitAriaRole(element) {\n  var _a;\n  const implicitRole = ((_a = kImplicitRoleByTagName[element.tagName]) == null ? void 0 : _a.call(kImplicitRoleByTagName, element)) || "";\n  if (!implicitRole)\n    return null;\n  let ancestor = element;\n  while (ancestor) {\n    const parent = parentElementOrShadowHost(ancestor);\n    const parents = kPresentationInheritanceParents[ancestor.tagName];\n    if (!parents || !parent || !parents.includes(parent.tagName))\n      break;\n    const parentExplicitRole = getExplicitAriaRole(parent);\n    if ((parentExplicitRole === "none" || parentExplicitRole === "presentation") && !hasPresentationConflictResolution(parent))\n      return parentExplicitRole;\n    ancestor = parent;\n  }\n  return implicitRole;\n}\nvar allRoles = [\n  "alert",\n  "alertdialog",\n  "application",\n  "article",\n  "banner",\n  "blockquote",\n  "button",\n  "caption",\n  "cell",\n  "checkbox",\n  "code",\n  "columnheader",\n  "combobox",\n  "command",\n  "complementary",\n  "composite",\n  "contentinfo",\n  "definition",\n  "deletion",\n  "dialog",\n  "directory",\n  "document",\n  "emphasis",\n  "feed",\n  "figure",\n  "form",\n  "generic",\n  "grid",\n  "gridcell",\n  "group",\n  "heading",\n  "img",\n  "input",\n  "insertion",\n  "landmark",\n  "link",\n  "list",\n  "listbox",\n  "listitem",\n  "log",\n  "main",\n  "marquee",\n  "math",\n  "meter",\n  "menu",\n  "menubar",\n  "menuitem",\n  "menuitemcheckbox",\n  "menuitemradio",\n  "navigation",\n  "none",\n  "note",\n  "option",\n  "paragraph",\n  "presentation",\n  "progressbar",\n  "radio",\n  "radiogroup",\n  "range",\n  "region",\n  "roletype",\n  "row",\n  "rowgroup",\n  "rowheader",\n  "scrollbar",\n  "search",\n  "searchbox",\n  "section",\n  "sectionhead",\n  "select",\n  "separator",\n  "slider",\n  "spinbutton",\n  "status",\n  "strong",\n  "structure",\n  "subscript",\n  "superscript",\n  "switch",\n  "tab",\n  "table",\n  "tablist",\n  "tabpanel",\n  "term",\n  "textbox",\n  "time",\n  "timer",\n  "toolbar",\n  "tooltip",\n  "tree",\n  "treegrid",\n  "treeitem",\n  "widget",\n  "window"\n];\nvar abstractRoles = ["command", "composite", "input", "landmark", "range", "roletype", "section", "sectionhead", "select", "structure", "widget", "window"];\nvar validRoles = allRoles.filter((role) => !abstractRoles.includes(role));\nfunction getExplicitAriaRole(element) {\n  const roles = (element.getAttribute("role") || "").split(" ").map((role) => role.trim());\n  return roles.find((role) => validRoles.includes(role)) || null;\n}\nfunction hasPresentationConflictResolution(element) {\n  return !hasGlobalAriaAttribute(element);\n}\nfunction getAriaRole(element) {\n  const explicitRole = getExplicitAriaRole(element);\n  if (!explicitRole)\n    return getImplicitAriaRole(element);\n  if ((explicitRole === "none" || explicitRole === "presentation") && hasPresentationConflictResolution(element))\n    return getImplicitAriaRole(element);\n  return explicitRole;\n}\nfunction getAriaBoolean(attr) {\n  return attr === null ? void 0 : attr.toLowerCase() === "true";\n}\nfunction getComputedStyle(element, pseudo) {\n  return element.ownerDocument && element.ownerDocument.defaultView ? element.ownerDocument.defaultView.getComputedStyle(element, pseudo) : void 0;\n}\nfunction isElementHiddenForAria(element, cache) {\n  if (["STYLE", "SCRIPT", "NOSCRIPT", "TEMPLATE"].includes(element.tagName))\n    return true;\n  const style = getComputedStyle(element);\n  if (!style || style.visibility === "hidden")\n    return true;\n  return belongsToDisplayNoneOrAriaHidden(element, cache);\n}\nfunction belongsToDisplayNoneOrAriaHidden(element, cache) {\n  if (!cache.has(element)) {\n    const style = getComputedStyle(element);\n    let hidden = !style || style.display === "none" || getAriaBoolean(element.getAttribute("aria-hidden")) === true;\n    if (!hidden) {\n      const parent = parentElementOrShadowHost(element);\n      if (parent)\n        hidden = hidden || belongsToDisplayNoneOrAriaHidden(parent, cache);\n    }\n    cache.set(element, hidden);\n  }\n  return cache.get(element);\n}\nfunction getIdRefs(element, ref) {\n  if (!ref)\n    return [];\n  const root = enclosingShadowRootOrDocument(element);\n  if (!root)\n    return [];\n  try {\n    const ids = ref.split(" ").filter((id) => !!id);\n    const set = /* @__PURE__ */ new Set();\n    for (const id of ids) {\n      const firstElement = root.querySelector("#" + CSS.escape(id));\n      if (firstElement)\n        set.add(firstElement);\n    }\n    return [...set];\n  } catch (e) {\n    return [];\n  }\n}\nfunction normalizeAccessbileName(s) {\n  return s.replace(/\\r\\n/g, "\\n").replace(/\\u00A0/g, " ").replace(/\\s\\s+/g, " ").trim();\n}\nfunction queryInAriaOwned(element, selector) {\n  const result = [...element.querySelectorAll(selector)];\n  for (const owned of getIdRefs(element, element.getAttribute("aria-owns"))) {\n    if (owned.matches(selector))\n      result.push(owned);\n    result.push(...owned.querySelectorAll(selector));\n  }\n  return result;\n}\nfunction getPseudoContent(pseudoStyle) {\n  if (!pseudoStyle)\n    return "";\n  const content = pseudoStyle.getPropertyValue("content");\n  if (content[0] === "\'" && content[content.length - 1] === "\'" || content[0] === \'"\' && content[content.length - 1] === \'"\') {\n    const unquoted = content.substring(1, content.length - 1);\n    const display = pseudoStyle.getPropertyValue("display") || "inline";\n    if (display !== "inline")\n      return " " + unquoted + " ";\n    return unquoted;\n  }\n  return "";\n}\nfunction getElementAccessibleName(element, includeHidden, hiddenCache) {\n  const elementProhibitsNaming = ["caption", "code", "definition", "deletion", "emphasis", "generic", "insertion", "mark", "paragraph", "presentation", "strong", "subscript", "suggestion", "superscript", "term", "time"].includes(getAriaRole(element) || "");\n  if (elementProhibitsNaming)\n    return "";\n  const accessibleName = normalizeAccessbileName(getElementAccessibleNameInternal(element, {\n    includeHidden,\n    hiddenCache,\n    visitedElements: /* @__PURE__ */ new Set(),\n    embeddedInLabelledBy: "none",\n    embeddedInLabel: "none",\n    embeddedInTextAlternativeElement: false,\n    embeddedInTargetElement: "self"\n  }));\n  return accessibleName;\n}\nfunction getElementAccessibleNameInternal(element, options) {\n  if (options.visitedElements.has(element))\n    return "";\n  const childOptions = {\n    ...options,\n    embeddedInLabel: options.embeddedInLabel === "self" ? "descendant" : options.embeddedInLabel,\n    embeddedInLabelledBy: options.embeddedInLabelledBy === "self" ? "descendant" : options.embeddedInLabelledBy,\n    embeddedInTargetElement: options.embeddedInTargetElement === "self" ? "descendant" : options.embeddedInTargetElement\n  };\n  if (!options.includeHidden && options.embeddedInLabelledBy !== "self" && isElementHiddenForAria(element, options.hiddenCache)) {\n    options.visitedElements.add(element);\n    return "";\n  }\n  if (options.embeddedInLabelledBy === "none") {\n    const refs = getIdRefs(element, element.getAttribute("aria-labelledby"));\n    const accessibleName = refs.map((ref) => getElementAccessibleNameInternal(ref, {\n      ...options,\n      embeddedInLabelledBy: "self",\n      embeddedInTargetElement: "none",\n      embeddedInLabel: "none",\n      embeddedInTextAlternativeElement: false\n    })).join(" ");\n    if (accessibleName)\n      return accessibleName;\n  }\n  const role = getAriaRole(element) || "";\n  if (options.embeddedInLabel !== "none" || options.embeddedInLabelledBy !== "none") {\n    const isOwnLabel = [...element.labels || []].includes(element);\n    const isOwnLabelledBy = getIdRefs(element, element.getAttribute("aria-labelledby")).includes(element);\n    if (!isOwnLabel && !isOwnLabelledBy) {\n      if (role === "textbox") {\n        options.visitedElements.add(element);\n        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA")\n          return element.value;\n        return element.textContent || "";\n      }\n      if (["combobox", "listbox"].includes(role)) {\n        options.visitedElements.add(element);\n        let selectedOptions;\n        if (element.tagName === "SELECT") {\n          selectedOptions = [...element.selectedOptions];\n          if (!selectedOptions.length && element.options.length)\n            selectedOptions.push(element.options[0]);\n        } else {\n          const listbox = role === "combobox" ? queryInAriaOwned(element, "*").find((e) => getAriaRole(e) === "listbox") : element;\n          selectedOptions = listbox ? queryInAriaOwned(listbox, \'[aria-selected="true"]\').filter((e) => getAriaRole(e) === "option") : [];\n        }\n        return selectedOptions.map((option) => getElementAccessibleNameInternal(option, childOptions)).join(" ");\n      }\n      if (["progressbar", "scrollbar", "slider", "spinbutton", "meter"].includes(role)) {\n        options.visitedElements.add(element);\n        if (element.hasAttribute("aria-valuetext"))\n          return element.getAttribute("aria-valuetext") || "";\n        if (element.hasAttribute("aria-valuenow"))\n          return element.getAttribute("aria-valuenow") || "";\n        return element.getAttribute("value") || "";\n      }\n      if (["menu"].includes(role)) {\n        options.visitedElements.add(element);\n        return "";\n      }\n    }\n  }\n  const ariaLabel = element.getAttribute("aria-label") || "";\n  if (ariaLabel.trim()) {\n    options.visitedElements.add(element);\n    return ariaLabel;\n  }\n  if (!["presentation", "none"].includes(role)) {\n    if (element.tagName === "INPUT" && ["button", "submit", "reset"].includes(element.type)) {\n      options.visitedElements.add(element);\n      const value = element.value || "";\n      if (value.trim())\n        return value;\n      if (element.type === "submit")\n        return "Submit";\n      if (element.type === "reset")\n        return "Reset";\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "INPUT" && element.type === "image") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const title = element.getAttribute("title") || "";\n      if (title.trim())\n        return title;\n      return "Submit";\n    }\n    if (element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.tagName === "INPUT") {\n      options.visitedElements.add(element);\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const usePlaceholder = element.tagName === "INPUT" && ["text", "password", "search", "tel", "email", "url"].includes(element.type) || element.tagName === "TEXTAREA";\n      const placeholder = element.getAttribute("placeholder") || "";\n      const title = element.getAttribute("title") || "";\n      if (!usePlaceholder || title)\n        return title;\n      return placeholder;\n    }\n    if (element.tagName === "FIELDSET") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "LEGEND") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "FIGURE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "FIGCAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "IMG") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "TABLE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "CAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const summary = element.getAttribute("summary") || "";\n      if (summary)\n        return summary;\n    }\n    if (element.tagName === "AREA") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "SVG" && element.ownerSVGElement) {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "TITLE" && element.ownerSVGElement) {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n    }\n  }\n  const allowsNameFromContent = ["button", "cell", "checkbox", "columnheader", "gridcell", "heading", "link", "menuitem", "menuitemcheckbox", "menuitemradio", "option", "radio", "row", "rowheader", "switch", "tab", "tooltip", "treeitem"].includes(role);\n  if (allowsNameFromContent || options.embeddedInLabelledBy !== "none" || options.embeddedInLabel !== "none" || options.embeddedInTextAlternativeElement || options.embeddedInTargetElement === "descendant") {\n    options.visitedElements.add(element);\n    const tokens = [];\n    const visit = (node) => {\n      var _a;\n      if (node.nodeType === 1) {\n        const display = ((_a = getComputedStyle(node)) == null ? void 0 : _a.getPropertyValue("display")) || "inline";\n        let token = getElementAccessibleNameInternal(node, childOptions);\n        if (display !== "inline" || node.nodeName === "BR")\n          token = " " + token + " ";\n        tokens.push(token);\n      } else if (node.nodeType === 3) {\n        tokens.push(node.textContent || "");\n      }\n    };\n    tokens.push(getPseudoContent(getComputedStyle(element, "::before")));\n    for (let child = element.firstChild; child; child = child.nextSibling)\n      visit(child);\n    if (element.shadowRoot) {\n      for (let child = element.shadowRoot.firstChild; child; child = child.nextSibling)\n        visit(child);\n    }\n    for (const owned of getIdRefs(element, element.getAttribute("aria-owns")))\n      visit(owned);\n    tokens.push(getPseudoContent(getComputedStyle(element, "::after")));\n    const accessibleName = tokens.join("");\n    if (accessibleName.trim())\n      return accessibleName;\n  }\n  if (!["presentation", "none"].includes(role) || element.tagName === "IFRAME") {\n    options.visitedElements.add(element);\n    const title = element.getAttribute("title") || "";\n    if (title.trim())\n      return title;\n  }\n  options.visitedElements.add(element);\n  return "";\n}\n\n// packages/playwright-core/src/server/injected/selectorUtils.ts\nfunction shouldSkipForTextMatching(element) {\n  return element.nodeName === "SCRIPT" || element.nodeName === "NOSCRIPT" || element.nodeName === "STYLE" || document.head && document.head.contains(element);\n}\nfunction elementText(cache, root) {\n  let value = cache.get(root);\n  if (value === void 0) {\n    value = { full: "", immediate: [] };\n    if (!shouldSkipForTextMatching(root)) {\n      let currentImmediate = "";\n      if (root instanceof HTMLInputElement && (root.type === "submit" || root.type === "button")) {\n        value = { full: root.value, immediate: [root.value] };\n      } else {\n        for (let child = root.firstChild; child; child = child.nextSibling) {\n          if (child.nodeType === Node.TEXT_NODE) {\n            value.full += child.nodeValue || "";\n            currentImmediate += child.nodeValue || "";\n          } else {\n            if (currentImmediate)\n              value.immediate.push(currentImmediate);\n            currentImmediate = "";\n            if (child.nodeType === Node.ELEMENT_NODE)\n              value.full += elementText(cache, child).full;\n          }\n        }\n        if (currentImmediate)\n          value.immediate.push(currentImmediate);\n        if (root.shadowRoot)\n          value.full += elementText(cache, root.shadowRoot).full;\n      }\n    }\n    cache.set(root, value);\n  }\n  return value;\n}\n\n// packages/playwright-core/src/server/injected/selectorGenerator.ts\nvar cacheAllowText = /* @__PURE__ */ new Map();\nvar cacheDisallowText = /* @__PURE__ */ new Map();\nvar kNthScore = 1e3;\nfunction querySelector(injectedScript, selector, ownerDocument) {\n  try {\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, ownerDocument)\n    };\n  } catch (e) {\n    return {\n      selector,\n      elements: []\n    };\n  }\n}\nfunction generateSelector(injectedScript, targetElement, strict) {\n  injectedScript._evaluator.begin();\n  try {\n    targetElement = targetElement.closest("button,select,input,[role=button],[role=checkbox],[role=radio],a,[role=link]") || targetElement;\n    const targetTokens = generateSelectorFor(injectedScript, targetElement, strict);\n    const bestTokens = targetTokens || cssFallback(injectedScript, targetElement, strict);\n    const selector = joinTokens(bestTokens);\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument)\n    };\n  } finally {\n    cacheAllowText.clear();\n    cacheDisallowText.clear();\n    injectedScript._evaluator.end();\n  }\n}\nfunction filterRegexTokens(textCandidates) {\n  return textCandidates.filter((c) => c[0].selector[0] !== "/");\n}\nfunction generateSelectorFor(injectedScript, targetElement, strict) {\n  if (targetElement.ownerDocument.documentElement === targetElement)\n    return [{ engine: "css", selector: "html", score: 1 }];\n  const accessibleNameCache = /* @__PURE__ */ new Map();\n  const calculate = (element, allowText) => {\n    const allowNthMatch = element === targetElement;\n    let textCandidates = allowText ? buildTextCandidates(injectedScript, element, element === targetElement).map((token) => [token]) : [];\n    if (element !== targetElement) {\n      textCandidates = filterRegexTokens(textCandidates);\n    }\n    const noTextCandidates = buildCandidates(injectedScript, element, accessibleNameCache).map((token) => [token]);\n    let result = chooseFirstSelector(injectedScript, targetElement.ownerDocument, element, [...textCandidates, ...noTextCandidates], allowNthMatch, strict);\n    textCandidates = filterRegexTokens(textCandidates);\n    const checkWithText = (textCandidatesToUse) => {\n      const allowParentText = allowText && !textCandidatesToUse.length;\n      const candidates = [...textCandidatesToUse, ...noTextCandidates].filter((c) => {\n        if (!result)\n          return true;\n        return combineScores(c) < combineScores(result);\n      });\n      let bestPossibleInParent = candidates[0];\n      if (!bestPossibleInParent)\n        return;\n      for (let parent = parentElementOrShadowHost2(element); parent; parent = parentElementOrShadowHost2(parent)) {\n        const parentTokens = calculateCached(parent, allowParentText);\n        if (!parentTokens)\n          continue;\n        if (result && combineScores([...parentTokens, ...bestPossibleInParent]) >= combineScores(result))\n          continue;\n        bestPossibleInParent = chooseFirstSelector(injectedScript, parent, element, candidates, allowNthMatch, strict);\n        if (!bestPossibleInParent)\n          return;\n        const combined = [...parentTokens, ...bestPossibleInParent];\n        if (!result || combineScores(combined) < combineScores(result))\n          result = combined;\n      }\n    };\n    checkWithText(textCandidates);\n    if (element === targetElement && textCandidates.length)\n      checkWithText([]);\n    return result;\n  };\n  const calculateCached = (element, allowText) => {\n    const cache = allowText ? cacheAllowText : cacheDisallowText;\n    let value = cache.get(element);\n    if (value === void 0) {\n      value = calculate(element, allowText);\n      cache.set(element, value);\n    }\n    return value;\n  };\n  return calculateCached(targetElement, true);\n}\nfunction buildCandidates(injectedScript, element, accessibleNameCache) {\n  var _a;\n  const candidates = [];\n  if (element.getAttribute("data-testid"))\n    candidates.push({ engine: "internal:attr", selector: `[data-testid=${escapeForAttributeSelector(element.getAttribute("data-testid"), true)}]`, score: 1 });\n  for (const attr of ["data-test-id", "data-test"]) {\n    if (element.getAttribute(attr))\n      candidates.push({ engine: "css", selector: `[${attr}=${quoteAttributeValue(element.getAttribute(attr))}]`, score: 2 });\n  }\n  if (element.nodeName === "INPUT" || element.nodeName === "TEXTAREA") {\n    const input = element;\n    if (input.placeholder)\n      candidates.push({ engine: "internal:attr", selector: `[placeholder=${escapeForAttributeSelector(input.placeholder, true)}]`, score: 3 });\n    const label = (_a = input.labels) == null ? void 0 : _a[0];\n    if (label) {\n      const labelText = elementText(injectedScript._evaluator._cacheText, label).full.trim();\n      candidates.push({ engine: "internal:label", selector: escapeForTextSelector(labelText, false, true), score: 3 });\n    }\n  }\n  const ariaRole = getAriaRole(element);\n  if (ariaRole) {\n    const ariaName = getElementAccessibleName(element, false, accessibleNameCache);\n    if (ariaName)\n      candidates.push({ engine: "role", selector: `${ariaRole}[name=${escapeForAttributeSelector(ariaName, true)}]`, score: 3 });\n    else\n      candidates.push({ engine: "role", selector: ariaRole, score: 150 });\n  }\n  if (element.getAttribute("alt") && ["APPLET", "AREA", "IMG", "INPUT"].includes(element.nodeName))\n    candidates.push({ engine: "internal:attr", selector: `[alt=${escapeForAttributeSelector(element.getAttribute("alt"), true)}]`, score: 10 });\n  if (element.getAttribute("name") && ["BUTTON", "FORM", "FIELDSET", "FRAME", "IFRAME", "INPUT", "KEYGEN", "OBJECT", "OUTPUT", "SELECT", "TEXTAREA", "MAP", "META", "PARAM"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[name=${quoteAttributeValue(element.getAttribute("name"))}]`, score: 50 });\n  if (["INPUT", "TEXTAREA"].includes(element.nodeName) && element.getAttribute("type") !== "hidden") {\n    if (element.getAttribute("type"))\n      candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[type=${quoteAttributeValue(element.getAttribute("type"))}]`, score: 50 });\n  }\n  if (["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 50 });\n  const idAttr = element.getAttribute("id");\n  if (idAttr && !isGuidLike(idAttr))\n    candidates.push({ engine: "css", selector: makeSelectorForId(idAttr), score: 100 });\n  candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 200 });\n  return candidates;\n}\nfunction buildTextCandidates(injectedScript, element, isTargetNode) {\n  if (element.nodeName === "SELECT")\n    return [];\n  const text = elementText(injectedScript._evaluator._cacheText, element).full.trim().replace(/\\s+/g, " ").substring(0, 80);\n  if (!text)\n    return [];\n  const candidates = [];\n  const escaped = escapeForTextSelector(text, false, true);\n  if (isTargetNode)\n    candidates.push({ engine: "text", selector: escaped, score: 10 });\n  if (escaped === text) {\n    let prefix = element.nodeName.toLowerCase();\n    if (element.hasAttribute("role"))\n      prefix += `[role=${quoteAttributeValue(element.getAttribute("role"))}]`;\n    candidates.push({ engine: "css", selector: `${prefix}:has-text("${text}")`, score: 10 });\n  }\n  return candidates;\n}\nfunction parentElementOrShadowHost2(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return null;\n  if (element.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE && element.parentNode.host)\n    return element.parentNode.host;\n  return null;\n}\nfunction makeSelectorForId(id) {\n  return /^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(id) ? "#" + id : `[id="${cssEscape(id)}"]`;\n}\nfunction cssFallback(injectedScript, targetElement, strict) {\n  const kFallbackScore = 1e7;\n  const root = targetElement.ownerDocument;\n  const tokens = [];\n  function uniqueCSSSelector(prefix) {\n    const path = tokens.slice();\n    if (prefix)\n      path.unshift(prefix);\n    const selector = path.join(" > ");\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const node = injectedScript.querySelector(parsedSelector, targetElement.ownerDocument, false);\n    return node === targetElement ? selector : void 0;\n  }\n  function makeStrict(selector) {\n    const token = { engine: "css", selector, score: kFallbackScore };\n    if (!strict)\n      return [token];\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const elements = injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument);\n    if (elements.length === 1)\n      return [token];\n    const nth = { engine: "nth", selector: String(elements.indexOf(targetElement)), score: kNthScore };\n    return [token, nth];\n  }\n  for (let element = targetElement; element && element !== root; element = parentElementOrShadowHost2(element)) {\n    const nodeName = element.nodeName.toLowerCase();\n    let bestTokenForLevel = "";\n    if (element.id) {\n      const token = makeSelectorForId(element.id);\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      bestTokenForLevel = token;\n    }\n    const parent = element.parentNode;\n    const classes = [...element.classList];\n    for (let i = 0; i < classes.length; ++i) {\n      const token = "." + cssEscape(classes.slice(0, i + 1).join("."));\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel && parent) {\n        const sameClassSiblings = parent.querySelectorAll(token);\n        if (sameClassSiblings.length === 1)\n          bestTokenForLevel = token;\n      }\n    }\n    if (parent) {\n      const siblings = [...parent.children];\n      const sameTagSiblings = siblings.filter((sibling) => sibling.nodeName.toLowerCase() === nodeName);\n      const token = sameTagSiblings.indexOf(element) === 0 ? cssEscape(nodeName) : `${cssEscape(nodeName)}:nth-child(${1 + siblings.indexOf(element)})`;\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel)\n        bestTokenForLevel = token;\n    } else if (!bestTokenForLevel) {\n      bestTokenForLevel = nodeName;\n    }\n    tokens.unshift(bestTokenForLevel);\n  }\n  return makeStrict(uniqueCSSSelector());\n}\nfunction quoteAttributeValue(text) {\n  return `"${cssEscape(text).replace(/\\\\ /g, " ")}"`;\n}\nfunction joinTokens(tokens) {\n  const parts = [];\n  let lastEngine = "";\n  for (const { engine, selector } of tokens) {\n    if (parts.length && (lastEngine !== "css" || engine !== "css" || selector.startsWith(":nth-match(")))\n      parts.push(">>");\n    lastEngine = engine;\n    if (engine === "css")\n      parts.push(selector);\n    else\n      parts.push(`${engine}=${selector}`);\n  }\n  return parts.join(" ");\n}\nfunction combineScores(tokens) {\n  let score = 0;\n  for (let i = 0; i < tokens.length; i++)\n    score += tokens[i].score * (tokens.length - i);\n  return score;\n}\nfunction chooseFirstSelector(injectedScript, scope, targetElement, selectors, allowNthMatch, strict) {\n  const joined = selectors.map((tokens) => ({ tokens, score: combineScores(tokens) }));\n  joined.sort((a, b) => a.score - b.score);\n  let bestWithIndex = null;\n  for (const { tokens } of joined) {\n    const parsedSelector = injectedScript.parseSelector(joinTokens(tokens));\n    const result = injectedScript.querySelectorAll(parsedSelector, scope);\n    const isStrictEnough = !strict || result.length === 1;\n    const index = result.indexOf(targetElement);\n    if (index === 0 && isStrictEnough) {\n      return tokens;\n    }\n    if (!allowNthMatch || bestWithIndex || index === -1 || result.length > 5)\n      continue;\n    const nth = { engine: "nth", selector: String(index), score: kNthScore };\n    bestWithIndex = [...tokens, nth];\n  }\n  return bestWithIndex;\n}\nfunction isGuidLike(id) {\n  let lastCharacterType;\n  let transitionCount = 0;\n  for (let i = 0; i < id.length; ++i) {\n    const c = id[i];\n    let characterType;\n    if (c === "-" || c === "_")\n      continue;\n    if (c >= "a" && c <= "z")\n      characterType = "lower";\n    else if (c >= "A" && c <= "Z")\n      characterType = "upper";\n    else if (c >= "0" && c <= "9")\n      characterType = "digit";\n    else\n      characterType = "other";\n    if (characterType === "lower" && lastCharacterType === "upper") {\n      lastCharacterType = characterType;\n      continue;\n    }\n    if (lastCharacterType && lastCharacterType !== characterType)\n      ++transitionCount;\n    lastCharacterType = characterType;\n  }\n  return transitionCount >= id.length / 4;\n}\n\n// packages/playwright-core/src/server/isomorphic/cssParser.ts\nvar css = __toESM(require_cssTokenizer());\nvar InvalidSelectorError = class extends Error {\n};\nfunction parseCSS(selector, customNames) {\n  let tokens;\n  try {\n    tokens = css.tokenize(selector);\n    if (!(tokens[tokens.length - 1] instanceof css.EOFToken))\n      tokens.push(new css.EOFToken());\n  } catch (e) {\n    const newMessage = e.message + ` while parsing selector "${selector}"`;\n    const index = (e.stack || "").indexOf(e.message);\n    if (index !== -1)\n      e.stack = e.stack.substring(0, index) + newMessage + e.stack.substring(index + e.message.length);\n    e.message = newMessage;\n    throw e;\n  }\n  const unsupportedToken = tokens.find((token) => {\n    return token instanceof css.AtKeywordToken || token instanceof css.BadStringToken || token instanceof css.BadURLToken || token instanceof css.ColumnToken || token instanceof css.CDOToken || token instanceof css.CDCToken || token instanceof css.SemicolonToken || token instanceof css.OpenCurlyToken || token instanceof css.CloseCurlyToken || token instanceof css.URLToken || token instanceof css.PercentageToken;\n  });\n  if (unsupportedToken)\n    throw new InvalidSelectorError(`Unsupported token "${unsupportedToken.toSource()}" while parsing selector "${selector}"`);\n  let pos = 0;\n  const names = /* @__PURE__ */ new Set();\n  function unexpected() {\n    return new InvalidSelectorError(`Unexpected token "${tokens[pos].toSource()}" while parsing selector "${selector}"`);\n  }\n  function skipWhitespace() {\n    while (tokens[pos] instanceof css.WhitespaceToken)\n      pos++;\n  }\n  function isIdent(p = pos) {\n    return tokens[p] instanceof css.IdentToken;\n  }\n  function isString(p = pos) {\n    return tokens[p] instanceof css.StringToken;\n  }\n  function isNumber(p = pos) {\n    return tokens[p] instanceof css.NumberToken;\n  }\n  function isComma(p = pos) {\n    return tokens[p] instanceof css.CommaToken;\n  }\n  function isCloseParen(p = pos) {\n    return tokens[p] instanceof css.CloseParenToken;\n  }\n  function isStar(p = pos) {\n    return tokens[p] instanceof css.DelimToken && tokens[p].value === "*";\n  }\n  function isEOF(p = pos) {\n    return tokens[p] instanceof css.EOFToken;\n  }\n  function isClauseCombinator(p = pos) {\n    return tokens[p] instanceof css.DelimToken && [">", "+", "~"].includes(tokens[p].value);\n  }\n  function isSelectorClauseEnd(p = pos) {\n    return isComma(p) || isCloseParen(p) || isEOF(p) || isClauseCombinator(p) || tokens[p] instanceof css.WhitespaceToken;\n  }\n  function consumeFunctionArguments() {\n    const result2 = [consumeArgument()];\n    while (true) {\n      skipWhitespace();\n      if (!isComma())\n        break;\n      pos++;\n      result2.push(consumeArgument());\n    }\n    return result2;\n  }\n  function consumeArgument() {\n    skipWhitespace();\n    if (isNumber())\n      return tokens[pos++].value;\n    if (isString())\n      return tokens[pos++].value;\n    return consumeComplexSelector();\n  }\n  function consumeComplexSelector() {\n    const result2 = { simples: [] };\n    skipWhitespace();\n    if (isClauseCombinator()) {\n      result2.simples.push({ selector: { functions: [{ name: "scope", args: [] }] }, combinator: "" });\n    } else {\n      result2.simples.push({ selector: consumeSimpleSelector(), combinator: "" });\n    }\n    while (true) {\n      skipWhitespace();\n      if (isClauseCombinator()) {\n        result2.simples[result2.simples.length - 1].combinator = tokens[pos++].value;\n        skipWhitespace();\n      } else if (isSelectorClauseEnd()) {\n        break;\n      }\n      result2.simples.push({ combinator: "", selector: consumeSimpleSelector() });\n    }\n    return result2;\n  }\n  function consumeSimpleSelector() {\n    let rawCSSString = "";\n    const functions = [];\n    while (!isSelectorClauseEnd()) {\n      if (isIdent() || isStar()) {\n        rawCSSString += tokens[pos++].toSource();\n      } else if (tokens[pos] instanceof css.HashToken) {\n        rawCSSString += tokens[pos++].toSource();\n      } else if (tokens[pos] instanceof css.DelimToken && tokens[pos].value === ".") {\n        pos++;\n        if (isIdent())\n          rawCSSString += "." + tokens[pos++].toSource();\n        else\n          throw unexpected();\n      } else if (tokens[pos] instanceof css.ColonToken) {\n        pos++;\n        if (isIdent()) {\n          if (!customNames.has(tokens[pos].value.toLowerCase())) {\n            rawCSSString += ":" + tokens[pos++].toSource();\n          } else {\n            const name = tokens[pos++].value.toLowerCase();\n            functions.push({ name, args: [] });\n            names.add(name);\n          }\n        } else if (tokens[pos] instanceof css.FunctionToken) {\n          const name = tokens[pos++].value.toLowerCase();\n          if (!customNames.has(name)) {\n            rawCSSString += `:${name}(${consumeBuiltinFunctionArguments()})`;\n          } else {\n            functions.push({ name, args: consumeFunctionArguments() });\n            names.add(name);\n          }\n          skipWhitespace();\n          if (!isCloseParen())\n            throw unexpected();\n          pos++;\n        } else {\n          throw unexpected();\n        }\n      } else if (tokens[pos] instanceof css.OpenSquareToken) {\n        rawCSSString += "[";\n        pos++;\n        while (!(tokens[pos] instanceof css.CloseSquareToken) && !isEOF())\n          rawCSSString += tokens[pos++].toSource();\n        if (!(tokens[pos] instanceof css.CloseSquareToken))\n          throw unexpected();\n        rawCSSString += "]";\n        pos++;\n      } else {\n        throw unexpected();\n      }\n    }\n    if (!rawCSSString && !functions.length)\n      throw unexpected();\n    return { css: rawCSSString || void 0, functions };\n  }\n  function consumeBuiltinFunctionArguments() {\n    let s = "";\n    while (!isCloseParen() && !isEOF())\n      s += tokens[pos++].toSource();\n    return s;\n  }\n  const result = consumeFunctionArguments();\n  if (!isEOF())\n    throw new InvalidSelectorError(`Error while parsing selector "${selector}"`);\n  if (result.some((arg) => typeof arg !== "object" || !("simples" in arg)))\n    throw new InvalidSelectorError(`Error while parsing selector "${selector}"`);\n  return { selector: result, names: Array.from(names) };\n}\n\n// packages/playwright-core/src/server/isomorphic/selectorParser.ts\nvar kNestedSelectorNames = /* @__PURE__ */ new Set(["internal:has", "left-of", "right-of", "above", "below", "near"]);\nvar kNestedSelectorNamesWithDistance = /* @__PURE__ */ new Set(["left-of", "right-of", "above", "below", "near"]);\nvar customCSSNames = /* @__PURE__ */ new Set(["not", "is", "where", "has", "scope", "light", "visible", "text", "text-matches", "text-is", "has-text", "above", "below", "right-of", "left-of", "near", "nth-match"]);\nfunction parseSelector(selector) {\n  const result = parseSelectorString(selector);\n  const parts = result.parts.map((part) => {\n    if (part.name === "css" || part.name === "css:light") {\n      if (part.name === "css:light")\n        part.body = ":light(" + part.body + ")";\n      const parsedCSS = parseCSS(part.body, customCSSNames);\n      return {\n        name: "css",\n        body: parsedCSS.selector,\n        source: part.body\n      };\n    }\n    if (kNestedSelectorNames.has(part.name)) {\n      let innerSelector;\n      let distance;\n      try {\n        const unescaped = JSON.parse("[" + part.body + "]");\n        if (!Array.isArray(unescaped) || unescaped.length < 1 || unescaped.length > 2 || typeof unescaped[0] !== "string")\n          throw new Error(`Malformed selector: ${part.name}=` + part.body);\n        innerSelector = unescaped[0];\n        if (unescaped.length === 2) {\n          if (typeof unescaped[1] !== "number" || !kNestedSelectorNamesWithDistance.has(part.name))\n            throw new Error(`Malformed selector: ${part.name}=` + part.body);\n          distance = unescaped[1];\n        }\n      } catch (e) {\n        throw new Error(`Malformed selector: ${part.name}=` + part.body);\n      }\n      const result2 = { name: part.name, source: part.body, body: { parsed: parseSelector(innerSelector), distance } };\n      if (result2.body.parsed.parts.some((part2) => part2.name === "internal:control" && part2.body === "enter-frame"))\n        throw new Error(`Frames are not allowed inside "${part.name}" selectors`);\n      return result2;\n    }\n    return { ...part, source: part.body };\n  });\n  if (kNestedSelectorNames.has(parts[0].name))\n    throw new Error(`"${parts[0].name}" selector cannot be first`);\n  return {\n    capture: result.capture,\n    parts\n  };\n}\nfunction stringifySelector(selector) {\n  if (typeof selector === "string")\n    return selector;\n  return selector.parts.map((p, i) => {\n    const prefix = p.name === "css" ? "" : p.name + "=";\n    return `${i === selector.capture ? "*" : ""}${prefix}${p.source}`;\n  }).join(" >> ");\n}\nfunction parseSelectorString(selector) {\n  let index = 0;\n  let quote;\n  let start = 0;\n  const result = { parts: [] };\n  const append = () => {\n    const part = selector.substring(start, index).trim();\n    const eqIndex = part.indexOf("=");\n    let name;\n    let body;\n    if (eqIndex !== -1 && part.substring(0, eqIndex).trim().match(/^[a-zA-Z_0-9-+:*]+$/)) {\n      name = part.substring(0, eqIndex).trim();\n      body = part.substring(eqIndex + 1);\n    } else if (part.length > 1 && part[0] === \'"\' && part[part.length - 1] === \'"\') {\n      name = "text";\n      body = part;\n    } else if (part.length > 1 && part[0] === "\'" && part[part.length - 1] === "\'") {\n      name = "text";\n      body = part;\n    } else if (/^\\(*\\/\\//.test(part) || part.startsWith("..")) {\n      name = "xpath";\n      body = part;\n    } else {\n      name = "css";\n      body = part;\n    }\n    let capture = false;\n    if (name[0] === "*") {\n      capture = true;\n      name = name.substring(1);\n    }\n    result.parts.push({ name, body });\n    if (capture) {\n      if (result.capture !== void 0)\n        throw new InvalidSelectorError(`Only one of the selectors can capture using * modifier`);\n      result.capture = result.parts.length - 1;\n    }\n  };\n  if (!selector.includes(">>")) {\n    index = selector.length;\n    append();\n    return result;\n  }\n  const shouldIgnoreTextSelectorQuote = () => {\n    const prefix = selector.substring(start, index);\n    const match = prefix.match(/^\\s*text\\s*=(.*)$/);\n    return !!match && !!match[1];\n  };\n  while (index < selector.length) {\n    const c = selector[index];\n    if (c === "\\\\" && index + 1 < selector.length) {\n      index += 2;\n    } else if (c === quote) {\n      quote = void 0;\n      index++;\n    } else if (!quote && (c === \'"\' || c === "\'" || c === "`") && !shouldIgnoreTextSelectorQuote()) {\n      quote = c;\n      index++;\n    } else if (!quote && c === ">" && selector[index + 1] === ">") {\n      append();\n      index += 2;\n      start = index;\n    } else {\n      index++;\n    }\n  }\n  append();\n  return result;\n}\nfunction parseAttributeSelector(selector, allowUnquotedStrings) {\n  let wp = 0;\n  let EOL = selector.length === 0;\n  const next = () => selector[wp] || "";\n  const eat1 = () => {\n    const result2 = next();\n    ++wp;\n    EOL = wp >= selector.length;\n    return result2;\n  };\n  const syntaxError = (stage) => {\n    if (EOL)\n      throw new Error(`Unexpected end of selector while parsing selector \\`${selector}\\``);\n    throw new Error(`Error while parsing selector \\`${selector}\\` - unexpected symbol "${next()}" at position ${wp}` + (stage ? " during " + stage : ""));\n  };\n  function skipSpaces() {\n    while (!EOL && /\\s/.test(next()))\n      eat1();\n  }\n  function isCSSNameChar(char) {\n    return char >= "\\x80" || char >= "0" && char <= "9" || char >= "A" && char <= "Z" || char >= "a" && char <= "z" || char >= "0" && char <= "9" || char === "_" || char === "-";\n  }\n  function readIdentifier() {\n    let result2 = "";\n    skipSpaces();\n    while (!EOL && isCSSNameChar(next()))\n      result2 += eat1();\n    return result2;\n  }\n  function readQuotedString(quote) {\n    let result2 = eat1();\n    if (result2 !== quote)\n      syntaxError("parsing quoted string");\n    while (!EOL && next() !== quote) {\n      if (next() === "\\\\")\n        eat1();\n      result2 += eat1();\n    }\n    if (next() !== quote)\n      syntaxError("parsing quoted string");\n    result2 += eat1();\n    return result2;\n  }\n  function readRegularExpression() {\n    if (eat1() !== "/")\n      syntaxError("parsing regular expression");\n    let source = "";\n    let inClass = false;\n    while (!EOL) {\n      if (next() === "\\\\") {\n        source += eat1();\n        if (EOL)\n          syntaxError("parsing regular expressiion");\n      } else if (inClass && next() === "]") {\n        inClass = false;\n      } else if (!inClass && next() === "[") {\n        inClass = true;\n      } else if (!inClass && next() === "/") {\n        break;\n      }\n      source += eat1();\n    }\n    if (eat1() !== "/")\n      syntaxError("parsing regular expression");\n    let flags = "";\n    while (!EOL && next().match(/[dgimsuy]/))\n      flags += eat1();\n    try {\n      return new RegExp(source, flags);\n    } catch (e) {\n      throw new Error(`Error while parsing selector \\`${selector}\\`: ${e.message}`);\n    }\n  }\n  function readAttributeToken() {\n    let token = "";\n    skipSpaces();\n    if (next() === `\'` || next() === `"`)\n      token = readQuotedString(next()).slice(1, -1);\n    else\n      token = readIdentifier();\n    if (!token)\n      syntaxError("parsing property path");\n    return token;\n  }\n  function readOperator() {\n    skipSpaces();\n    let op = "";\n    if (!EOL)\n      op += eat1();\n    if (!EOL && op !== "=")\n      op += eat1();\n    if (!["=", "*=", "^=", "$=", "|=", "~="].includes(op))\n      syntaxError("parsing operator");\n    return op;\n  }\n  function readAttribute() {\n    eat1();\n    const jsonPath = [];\n    jsonPath.push(readAttributeToken());\n    skipSpaces();\n    while (next() === ".") {\n      eat1();\n      jsonPath.push(readAttributeToken());\n      skipSpaces();\n    }\n    if (next() === "]") {\n      eat1();\n      return { name: jsonPath.join("."), jsonPath, op: "<truthy>", value: null, caseSensitive: false };\n    }\n    const operator = readOperator();\n    let value = void 0;\n    let caseSensitive = true;\n    skipSpaces();\n    if (next() === "/") {\n      if (operator !== "=")\n        throw new Error(`Error while parsing selector \\`${selector}\\` - cannot use ${operator} in attribute with regular expression`);\n      value = readRegularExpression();\n    } else if (next() === `\'` || next() === `"`) {\n      value = readQuotedString(next()).slice(1, -1);\n      skipSpaces();\n      if (next() === "i" || next() === "I") {\n        caseSensitive = false;\n        eat1();\n      } else if (next() === "s" || next() === "S") {\n        caseSensitive = true;\n        eat1();\n      }\n    } else {\n      value = "";\n      while (!EOL && (isCSSNameChar(next()) || next() === "+" || next() === "."))\n        value += eat1();\n      if (value === "true") {\n        value = true;\n      } else if (value === "false") {\n        value = false;\n      } else {\n        if (!allowUnquotedStrings) {\n          value = +value;\n          if (Number.isNaN(value))\n            syntaxError("parsing attribute value");\n        }\n      }\n    }\n    skipSpaces();\n    if (next() !== "]")\n      syntaxError("parsing attribute value");\n    eat1();\n    if (operator !== "=" && typeof value !== "string")\n      throw new Error(`Error while parsing selector \\`${selector}\\` - cannot use ${operator} in attribute with non-string matching value - ${value}`);\n    return { name: jsonPath.join("."), jsonPath, op: operator, value, caseSensitive };\n  }\n  const result = {\n    name: "",\n    attributes: []\n  };\n  result.name = readIdentifier();\n  skipSpaces();\n  while (next() === "[") {\n    result.attributes.push(readAttribute());\n    skipSpaces();\n  }\n  if (!EOL)\n    syntaxError(void 0);\n  if (!result.name && !result.attributes.length)\n    throw new Error(`Error while parsing selector \\`${selector}\\` - selector cannot be empty`);\n  return result;\n}\n\n// packages/playwright-core/src/server/isomorphic/locatorGenerators.ts\nfunction asLocator(lang, selector, isFrameLocator = false) {\n  return innerAsLocator(generators[lang], selector, isFrameLocator);\n}\nfunction innerAsLocator(factory, selector, isFrameLocator = false) {\n  const parsed = parseSelector(selector);\n  const tokens = [];\n  for (const part of parsed.parts) {\n    const base = part === parsed.parts[0] ? isFrameLocator ? "frame-locator" : "page" : "locator";\n    if (part.name === "nth") {\n      if (part.body === "0")\n        tokens.push(factory.generateLocator(base, "first", ""));\n      else if (part.body === "-1")\n        tokens.push(factory.generateLocator(base, "last", ""));\n      else\n        tokens.push(factory.generateLocator(base, "nth", part.body));\n      continue;\n    }\n    if (part.name === "text") {\n      const { exact, text } = detectExact(part.body);\n      tokens.push(factory.generateLocator(base, "text", text, { exact }));\n      continue;\n    }\n    if (part.name === "internal:label") {\n      const { exact, text } = detectExact(part.body);\n      tokens.push(factory.generateLocator(base, "label", text, { exact }));\n      continue;\n    }\n    if (part.name === "role") {\n      const attrSelector = parseAttributeSelector(part.body, true);\n      const attrs = {};\n      for (const attr of attrSelector.attributes)\n        attrs[attr.name === "include-hidden" ? "includeHidden" : attr.name] = attr.value;\n      tokens.push(factory.generateLocator(base, "role", attrSelector.name, { attrs }));\n      continue;\n    }\n    if (part.name === "css") {\n      const parsed2 = part.body;\n      if (parsed2[0].simples.length === 1 && parsed2[0].simples[0].selector.functions.length === 1 && parsed2[0].simples[0].selector.functions[0].name === "hasText") {\n        const hasText = parsed2[0].simples[0].selector.functions[0].args[0];\n        tokens.push(factory.generateLocator(base, "has-text", parsed2[0].simples[0].selector.css, { hasText }));\n        continue;\n      }\n    }\n    if (part.name === "internal:attr") {\n      const attrSelector = parseAttributeSelector(part.body, true);\n      const { name, value } = attrSelector.attributes[0];\n      if (name === "data-testid") {\n        tokens.push(factory.generateLocator(base, "test-id", value));\n        continue;\n      }\n      const { exact, text } = detectExact(value);\n      if (name === "placeholder") {\n        tokens.push(factory.generateLocator(base, "placeholder", text, { exact }));\n        continue;\n      }\n      if (name === "alt") {\n        tokens.push(factory.generateLocator(base, "alt", text, { exact }));\n        continue;\n      }\n      if (name === "title") {\n        tokens.push(factory.generateLocator(base, "title", text, { exact }));\n        continue;\n      }\n      if (name === "label") {\n        tokens.push(factory.generateLocator(base, "label", text, { exact }));\n        continue;\n      }\n    }\n    const p = { parts: [part] };\n    tokens.push(factory.generateLocator(base, "default", stringifySelector(p)));\n  }\n  return tokens.join(".");\n}\nfunction detectExact(text) {\n  let exact = false;\n  if (text.startsWith(\'"\') && text.endsWith(\'"\')) {\n    text = JSON.parse(text);\n    exact = true;\n  }\n  return { exact, text };\n}\nvar JavaScriptLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    switch (kind) {\n      case "default":\n        return `locator(${this.quote(body)})`;\n      case "nth":\n        return `nth(${body})`;\n      case "first":\n        return `first()`;\n      case "last":\n        return `last()`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`${name}: ${typeof value === "string" ? this.quote(value) : value}`);\n        const attrString = attrs.length ? `, { ${attrs.join(", ")} }` : "";\n        return `getByRole(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `locator(${this.quote(body)}, { hasText: ${this.quote(options.hasText)} })`;\n      case "test-id":\n        return `getByTestId(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact("getByText", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact("getByAltText", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact("getByPlaceholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact("getByLabel", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact("getByTitle", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i")))\n      return `${method}(${body})`;\n    return exact ? `${method}(${this.quote(body)}, { exact: true })` : `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, "\'");\n  }\n};\nvar PythonLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    switch (kind) {\n      case "default":\n        return `locator(${this.quote(body)})`;\n      case "nth":\n        return `nth(${body})`;\n      case "first":\n        return `first`;\n      case "last":\n        return `last`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`${toSnakeCase(name)}=${typeof value === "string" ? this.quote(value) : value}`);\n        const attrString = attrs.length ? `, ${attrs.join(", ")}` : "";\n        return `get_by_role(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `locator(${this.quote(body)}, has_text=${this.quote(options.hasText)})`;\n      case "test-id":\n        return `get_by_test_id(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact("get_by_text", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact("get_by_alt_text", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact("get_by_placeholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact("get_by_label", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact("get_by_title", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {\n      const regex = body.substring(1, body.lastIndexOf("/"));\n      const suffix = body.endsWith("i") ? ", re.IGNORECASE" : "";\n      return `${method}(re.compile(r${this.quote(regex)}${suffix}))`;\n    }\n    if (exact)\n      return `${method}(${this.quote(body)}, exact=true)`;\n    return `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, \'"\');\n  }\n};\nvar JavaLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    let clazz;\n    switch (base) {\n      case "page":\n        clazz = "Page";\n        break;\n      case "frame-locator":\n        clazz = "FrameLocator";\n        break;\n      case "locator":\n        clazz = "Locator";\n        break;\n    }\n    switch (kind) {\n      case "default":\n        return `locator(${this.quote(body)})`;\n      case "nth":\n        return `nth(${body})`;\n      case "first":\n        return `first()`;\n      case "last":\n        return `last()`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`.set${toTitleCase(name)}(${typeof value === "string" ? this.quote(value) : value})`);\n        const attrString = attrs.length ? `, new ${clazz}.GetByRoleOptions()${attrs.join("")}` : "";\n        return `getByRole(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `locator(${this.quote(body)}, new ${clazz}.LocatorOptions().setHasText(${this.quote(options.hasText)}))`;\n      case "test-id":\n        return `getByTestId(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact(clazz, "getByText", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact(clazz, "getByAltText", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact(clazz, "getByPlaceholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact(clazz, "getByLabel", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact(clazz, "getByTitle", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(clazz, method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {\n      const regex = body.substring(1, body.lastIndexOf("/"));\n      const suffix = body.endsWith("i") ? ", Pattern.CASE_INSENSITIVE" : "";\n      return `${method}(Pattern.compile(${this.quote(regex)}${suffix}))`;\n    }\n    if (exact)\n      return `${method}(${this.quote(body)}, new ${clazz}.${toTitleCase(method)}Options().setExact(exact))`;\n    return `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, \'"\');\n  }\n};\nvar CSharpLocatorFactory = class {\n  generateLocator(base, kind, body, options = {}) {\n    switch (kind) {\n      case "default":\n        return `Locator(${this.quote(body)})`;\n      case "nth":\n        return `Nth(${body})`;\n      case "first":\n        return `First`;\n      case "last":\n        return `Last`;\n      case "role":\n        const attrs = [];\n        for (const [name, value] of Object.entries(options.attrs))\n          attrs.push(`${toTitleCase(name)} = ${typeof value === "string" ? this.quote(value) : value}`);\n        const attrString = attrs.length ? `, new () { ${attrs.join(", ")} }` : "";\n        return `GetByRole(${this.quote(body)}${attrString})`;\n      case "has-text":\n        return `Locator(${this.quote(body)}, new () { HasTextString: ${this.quote(options.hasText)} })`;\n      case "test-id":\n        return `GetByTestId(${this.quote(body)})`;\n      case "text":\n        return this.toCallWithExact("GetByText", body, !!options.exact);\n      case "alt":\n        return this.toCallWithExact("GetByAltText", body, !!options.exact);\n      case "placeholder":\n        return this.toCallWithExact("GetByPlaceholder", body, !!options.exact);\n      case "label":\n        return this.toCallWithExact("GetByLabel", body, !!options.exact);\n      case "title":\n        return this.toCallWithExact("GetByTitle", body, !!options.exact);\n      default:\n        throw new Error("Unknown selector kind " + kind);\n    }\n  }\n  toCallWithExact(method, body, exact) {\n    if (body.startsWith("/") && (body.endsWith("/") || body.endsWith("/i"))) {\n      const regex = body.substring(1, body.lastIndexOf("/"));\n      const suffix = body.endsWith("i") ? ", RegexOptions.IgnoreCase" : "";\n      return `${method}(new Regex(${this.quote(regex)}${suffix}))`;\n    }\n    if (exact)\n      return `${method}(${this.quote(body)}, new () { Exact: true })`;\n    return `${method}(${this.quote(body)})`;\n  }\n  quote(text) {\n    return escapeWithQuotes(text, \'"\');\n  }\n};\nvar generators = {\n  javascript: new JavaScriptLocatorFactory(),\n  python: new PythonLocatorFactory(),\n  java: new JavaLocatorFactory(),\n  csharp: new CSharpLocatorFactory()\n};\n\n// packages/playwright-core/src/server/injected/highlight.ts\nvar Highlight = class {\n  constructor(injectedScript) {\n    this._highlightEntries = [];\n    this._language = "javascript";\n    this._injectedScript = injectedScript;\n    this._isUnderTest = injectedScript.isUnderTest;\n    this._glassPaneElement = document.createElement("x-pw-glass");\n    this._glassPaneElement.style.position = "fixed";\n    this._glassPaneElement.style.top = "0";\n    this._glassPaneElement.style.right = "0";\n    this._glassPaneElement.style.bottom = "0";\n    this._glassPaneElement.style.left = "0";\n    this._glassPaneElement.style.zIndex = "2147483647";\n    this._glassPaneElement.style.pointerEvents = "none";\n    this._glassPaneElement.style.display = "flex";\n    this._actionPointElement = document.createElement("x-pw-action-point");\n    this._actionPointElement.setAttribute("hidden", "true");\n    this._glassPaneShadow = this._glassPaneElement.attachShadow({ mode: "closed" });\n    this._glassPaneShadow.appendChild(this._actionPointElement);\n    const styleElement = document.createElement("style");\n    styleElement.textContent = `\n        x-pw-tooltip {\n          align-items: center;\n          backdrop-filter: blur(5px);\n          background-color: rgba(0, 0, 0, 0.7);\n          border-radius: 2px;\n          box-shadow: rgba(0, 0, 0, 0.1) 0px 3.6px 3.7px,\n                      rgba(0, 0, 0, 0.15) 0px 12.1px 12.3px,\n                      rgba(0, 0, 0, 0.1) 0px -2px 4px,\n                      rgba(0, 0, 0, 0.15) 0px -12.1px 24px,\n                      rgba(0, 0, 0, 0.25) 0px 54px 55px;\n          color: rgb(204, 204, 204);\n          display: none;\n          font-family: \'Dank Mono\', \'Operator Mono\', Inconsolata, \'Fira Mono\',\n                      \'SF Mono\', Monaco, \'Droid Sans Mono\', \'Source Code Pro\', monospace;\n          font-size: 12.8px;\n          font-weight: normal;\n          left: 0;\n          line-height: 1.5;\n          max-width: 600px;\n          padding: 3.2px 5.12px 3.2px;\n          position: absolute;\n          top: 0;\n        }\n        x-pw-action-point {\n          position: absolute;\n          width: 20px;\n          height: 20px;\n          background: red;\n          border-radius: 10px;\n          pointer-events: none;\n          margin: -10px 0 0 -10px;\n          z-index: 2;\n        }\n        *[hidden] {\n          display: none !important;\n        }\n    `;\n    this._glassPaneShadow.appendChild(styleElement);\n  }\n  install() {\n    document.documentElement.appendChild(this._glassPaneElement);\n  }\n  setLanguage(language) {\n    this._language = language;\n  }\n  runHighlightOnRaf(selector) {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this.updateHighlight(this._injectedScript.querySelectorAll(selector, document.documentElement), stringifySelector(selector), false);\n    this._rafRequest = requestAnimationFrame(() => this.runHighlightOnRaf(selector));\n  }\n  uninstall() {\n    if (this._rafRequest)\n      cancelAnimationFrame(this._rafRequest);\n    this._glassPaneElement.remove();\n  }\n  isInstalled() {\n    return this._glassPaneElement.parentElement === document.documentElement && !this._glassPaneElement.nextElementSibling;\n  }\n  showActionPoint(x, y) {\n    this._actionPointElement.style.top = y + "px";\n    this._actionPointElement.style.left = x + "px";\n    this._actionPointElement.hidden = false;\n    if (this._isUnderTest)\n      console.error("Action point for test: " + JSON.stringify({ x, y }));\n  }\n  hideActionPoint() {\n    this._actionPointElement.hidden = true;\n  }\n  clearHighlight() {\n    var _a, _b;\n    for (const entry of this._highlightEntries) {\n      (_a = entry.highlightElement) == null ? void 0 : _a.remove();\n      (_b = entry.tooltipElement) == null ? void 0 : _b.remove();\n    }\n    this._highlightEntries = [];\n  }\n  updateHighlight(elements, selector, isRecording) {\n    let color;\n    if (isRecording)\n      color = "#dc6f6f7f";\n    else\n      color = elements.length > 1 ? "#f6b26b7f" : "#6fa8dc7f";\n    this._innerUpdateHighlight(elements, { color, tooltipText: selector ? asLocator(this._language, selector) : "" });\n  }\n  maskElements(elements) {\n    this._innerUpdateHighlight(elements, { color: "#F0F" });\n  }\n  _innerUpdateHighlight(elements, options) {\n    if (this._highlightIsUpToDate(elements))\n      return;\n    this.clearHighlight();\n    for (let i = 0; i < elements.length; ++i) {\n      const highlightElement = this._createHighlightElement();\n      this._glassPaneShadow.appendChild(highlightElement);\n      let tooltipElement;\n      if (options.tooltipText) {\n        tooltipElement = document.createElement("x-pw-tooltip");\n        this._glassPaneShadow.appendChild(tooltipElement);\n        const suffix = elements.length > 1 ? ` [${i + 1} of ${elements.length}]` : "";\n        tooltipElement.textContent = options.tooltipText + suffix;\n        tooltipElement.style.top = "0";\n        tooltipElement.style.left = "0";\n        tooltipElement.style.display = "flex";\n        if (this._isUnderTest)\n          console.error("Highlight text for test: " + JSON.stringify(tooltipElement.textContent));\n      }\n      this._highlightEntries.push({ targetElement: elements[i], tooltipElement, highlightElement });\n    }\n    for (const entry of this._highlightEntries) {\n      entry.box = entry.targetElement.getBoundingClientRect();\n      if (!entry.tooltipElement)\n        continue;\n      const tooltipWidth = entry.tooltipElement.offsetWidth;\n      const tooltipHeight = entry.tooltipElement.offsetHeight;\n      const totalWidth = this._glassPaneElement.offsetWidth;\n      const totalHeight = this._glassPaneElement.offsetHeight;\n      let anchorLeft = entry.box.left;\n      if (anchorLeft + tooltipWidth > totalWidth - 5)\n        anchorLeft = totalWidth - tooltipWidth - 5;\n      let anchorTop = entry.box.bottom + 5;\n      if (anchorTop + tooltipHeight > totalHeight - 5) {\n        if (entry.box.top > tooltipHeight + 5) {\n          anchorTop = entry.box.top - tooltipHeight - 5;\n        } else {\n          anchorTop = totalHeight - 5 - tooltipHeight;\n        }\n      }\n      entry.tooltipTop = anchorTop;\n      entry.tooltipLeft = anchorLeft;\n    }\n    for (const entry of this._highlightEntries) {\n      if (entry.tooltipElement) {\n        entry.tooltipElement.style.top = entry.tooltipTop + "px";\n        entry.tooltipElement.style.left = entry.tooltipLeft + "px";\n      }\n      const box = entry.box;\n      entry.highlightElement.style.backgroundColor = options.color;\n      entry.highlightElement.style.left = box.x + "px";\n      entry.highlightElement.style.top = box.y + "px";\n      entry.highlightElement.style.width = box.width + "px";\n      entry.highlightElement.style.height = box.height + "px";\n      entry.highlightElement.style.display = "block";\n      if (this._isUnderTest)\n        console.error("Highlight box for test: " + JSON.stringify({ x: box.x, y: box.y, width: box.width, height: box.height }));\n    }\n  }\n  _highlightIsUpToDate(elements) {\n    if (elements.length !== this._highlightEntries.length)\n      return false;\n    for (let i = 0; i < this._highlightEntries.length; ++i) {\n      if (elements[i] !== this._highlightEntries[i].targetElement)\n        return false;\n      const oldBox = this._highlightEntries[i].box;\n      if (!oldBox)\n        return false;\n      const box = elements[i].getBoundingClientRect();\n      if (box.top !== oldBox.top || box.right !== oldBox.right || box.bottom !== oldBox.bottom || box.left !== oldBox.left)\n        return false;\n    }\n    return true;\n  }\n  _createHighlightElement() {\n    const highlightElement = document.createElement("x-pw-highlight");\n    highlightElement.style.position = "absolute";\n    highlightElement.style.top = "0";\n    highlightElement.style.left = "0";\n    highlightElement.style.width = "0";\n    highlightElement.style.height = "0";\n    highlightElement.style.boxSizing = "border-box";\n    return highlightElement;\n  }\n};\n\n// packages/playwright-core/src/server/injected/recorder.ts\nvar Recorder = class {\n  constructor(injectedScript) {\n    this._performingAction = false;\n    this._listeners = [];\n    this._hoveredModel = null;\n    this._hoveredElement = null;\n    this._activeModel = null;\n    this._expectProgrammaticKeyUp = false;\n    this._mode = "none";\n    this._injectedScript = injectedScript;\n    this._highlight = new Highlight(injectedScript);\n    this._refreshListenersIfNeeded();\n    injectedScript.onGlobalListenersRemoved.add(() => this._refreshListenersIfNeeded());\n    globalThis.__pw_refreshOverlay = () => {\n      this._pollRecorderMode().catch((e) => console.log(e));\n    };\n    globalThis.__pw_refreshOverlay();\n    if (injectedScript.isUnderTest)\n      console.error("Recorder script ready for test");\n  }\n  _refreshListenersIfNeeded() {\n    if (this._highlight.isInstalled())\n      return;\n    removeEventListeners(this._listeners);\n    this._listeners = [\n      addEventListener(document, "click", (event) => this._onClick(event), true),\n      addEventListener(document, "auxclick", (event) => this._onClick(event), true),\n      addEventListener(document, "input", (event) => this._onInput(event), true),\n      addEventListener(document, "keydown", (event) => this._onKeyDown(event), true),\n      addEventListener(document, "keyup", (event) => this._onKeyUp(event), true),\n      addEventListener(document, "mousedown", (event) => this._onMouseDown(event), true),\n      addEventListener(document, "mouseup", (event) => this._onMouseUp(event), true),\n      addEventListener(document, "mousemove", (event) => this._onMouseMove(event), true),\n      addEventListener(document, "mouseleave", (event) => this._onMouseLeave(event), true),\n      addEventListener(document, "focus", () => this._onFocus(), true),\n      addEventListener(document, "scroll", () => {\n        this._hoveredModel = null;\n        this._highlight.hideActionPoint();\n        this._updateHighlight();\n      }, true)\n    ];\n    this._highlight.install();\n  }\n  async _pollRecorderMode() {\n    var _a;\n    const pollPeriod = 1e3;\n    if (this._pollRecorderModeTimer)\n      clearTimeout(this._pollRecorderModeTimer);\n    const state = await globalThis.__pw_recorderState().catch((e) => null);\n    if (!state) {\n      this._pollRecorderModeTimer = setTimeout(() => this._pollRecorderMode(), pollPeriod);\n      return;\n    }\n    const { mode, actionPoint, actionSelector, language } = state;\n    this._highlight.setLanguage(language);\n    if (mode !== this._mode) {\n      this._mode = mode;\n      this._clearHighlight();\n    }\n    if (actionPoint && this._actionPoint && actionPoint.x === this._actionPoint.x && actionPoint.y === this._actionPoint.y) {\n    } else if (!actionPoint && !this._actionPoint) {\n    } else {\n      if (actionPoint)\n        this._highlight.showActionPoint(actionPoint.x, actionPoint.y);\n      else\n        this._highlight.hideActionPoint();\n      this._actionPoint = actionPoint;\n    }\n    if (this._actionSelector && !((_a = this._hoveredModel) == null ? void 0 : _a.elements.length))\n      this._actionSelector = void 0;\n    if (actionSelector !== this._actionSelector) {\n      this._hoveredModel = actionSelector ? querySelector(this._injectedScript, actionSelector, document) : null;\n      this._updateHighlight();\n      this._actionSelector = actionSelector;\n    }\n    this._pollRecorderModeTimer = setTimeout(() => this._pollRecorderMode(), pollPeriod);\n  }\n  _clearHighlight() {\n    this._hoveredModel = null;\n    this._activeModel = null;\n    this._updateHighlight();\n  }\n  _actionInProgress(event) {\n    if (this._performingAction)\n      return true;\n    consumeEvent(event);\n    return false;\n  }\n  _consumedDueToNoModel(event, model) {\n    if (model)\n      return false;\n    consumeEvent(event);\n    return true;\n  }\n  _consumedDueWrongTarget(event) {\n    if (this._activeModel && this._activeModel.elements[0] === this._deepEventTarget(event))\n      return false;\n    consumeEvent(event);\n    return true;\n  }\n  _onClick(event) {\n    if (this._mode === "inspecting")\n      globalThis.__pw_recorderSetSelector(this._hoveredModel ? this._hoveredModel.selector : "");\n    if (this._shouldIgnoreMouseEvent(event))\n      return;\n    if (this._actionInProgress(event))\n      return;\n    if (this._consumedDueToNoModel(event, this._hoveredModel))\n      return;\n    const checkbox = asCheckbox(this._deepEventTarget(event));\n    if (checkbox) {\n      this._performAction({\n        name: checkbox.checked ? "check" : "uncheck",\n        selector: this._hoveredModel.selector,\n        signals: []\n      });\n      return;\n    }\n    this._performAction({\n      name: "click",\n      selector: this._hoveredModel.selector,\n      position: positionForEvent(event),\n      signals: [],\n      button: buttonForEvent(event),\n      modifiers: modifiersForEvent(event),\n      clickCount: event.detail\n    });\n  }\n  _shouldIgnoreMouseEvent(event) {\n    const target = this._deepEventTarget(event);\n    if (this._mode === "none")\n      return true;\n    if (this._mode === "inspecting") {\n      consumeEvent(event);\n      return true;\n    }\n    const nodeName = target.nodeName;\n    if (nodeName === "SELECT")\n      return true;\n    if (nodeName === "INPUT" && ["date"].includes(target.type))\n      return true;\n    return false;\n  }\n  _onMouseDown(event) {\n    if (this._shouldIgnoreMouseEvent(event))\n      return;\n    if (!this._performingAction)\n      consumeEvent(event);\n    this._activeModel = this._hoveredModel;\n  }\n  _onMouseUp(event) {\n    if (this._shouldIgnoreMouseEvent(event))\n      return;\n    if (!this._performingAction)\n      consumeEvent(event);\n  }\n  _onMouseMove(event) {\n    if (this._mode === "none")\n      return;\n    const target = this._deepEventTarget(event);\n    if (this._hoveredElement === target)\n      return;\n    this._hoveredElement = target;\n    this._updateModelForHoveredElement();\n  }\n  _onMouseLeave(event) {\n    if (this._deepEventTarget(event).nodeType === Node.DOCUMENT_NODE) {\n      this._hoveredElement = null;\n      this._updateModelForHoveredElement();\n    }\n  }\n  _onFocus() {\n    const activeElement = this._deepActiveElement(document);\n    const result = activeElement ? generateSelector(this._injectedScript, activeElement, true) : null;\n    this._activeModel = result && result.selector ? result : null;\n    if (this._injectedScript.isUnderTest)\n      console.error("Highlight updated for test: " + (result ? result.selector : null));\n  }\n  _updateModelForHoveredElement() {\n    if (!this._hoveredElement) {\n      this._hoveredModel = null;\n      this._updateHighlight();\n      return;\n    }\n    const hoveredElement = this._hoveredElement;\n    const { selector, elements } = generateSelector(this._injectedScript, hoveredElement, true);\n    if (this._hoveredModel && this._hoveredModel.selector === selector || this._hoveredElement !== hoveredElement)\n      return;\n    this._hoveredModel = selector ? { selector, elements } : null;\n    this._updateHighlight();\n    if (this._injectedScript.isUnderTest)\n      console.error("Highlight updated for test: " + selector);\n  }\n  _updateHighlight() {\n    const elements = this._hoveredModel ? this._hoveredModel.elements : [];\n    const selector = this._hoveredModel ? this._hoveredModel.selector : "";\n    this._highlight.updateHighlight(elements, selector, this._mode === "recording");\n  }\n  _onInput(event) {\n    if (this._mode !== "recording")\n      return true;\n    const target = this._deepEventTarget(event);\n    if (["INPUT", "TEXTAREA"].includes(target.nodeName)) {\n      const inputElement = target;\n      const elementType = (inputElement.type || "").toLowerCase();\n      if (["checkbox", "radio"].includes(elementType)) {\n        return;\n      }\n      if (elementType === "file") {\n        globalThis.__pw_recorderRecordAction({\n          name: "setInputFiles",\n          selector: this._activeModel.selector,\n          signals: [],\n          files: [...inputElement.files || []].map((file) => file.name)\n        });\n        return;\n      }\n      if (this._consumedDueWrongTarget(event))\n        return;\n      globalThis.__pw_recorderRecordAction({\n        name: "fill",\n        selector: this._activeModel.selector,\n        signals: [],\n        text: inputElement.value\n      });\n    }\n    if (target.nodeName === "SELECT") {\n      const selectElement = target;\n      if (this._actionInProgress(event))\n        return;\n      this._performAction({\n        name: "select",\n        selector: this._hoveredModel.selector,\n        options: [...selectElement.selectedOptions].map((option) => option.value),\n        signals: []\n      });\n    }\n  }\n  _shouldGenerateKeyPressFor(event) {\n    if (["Backspace", "Delete", "AltGraph"].includes(event.key))\n      return false;\n    if (event.key === "@" && event.code === "KeyL")\n      return false;\n    if (navigator.platform.includes("Mac")) {\n      if (event.key === "v" && event.metaKey)\n        return false;\n    } else {\n      if (event.key === "v" && event.ctrlKey)\n        return false;\n      if (event.key === "Insert" && event.shiftKey)\n        return false;\n    }\n    if (["Shift", "Control", "Meta", "Alt", "Process"].includes(event.key))\n      return false;\n    const hasModifier = event.ctrlKey || event.altKey || event.metaKey;\n    if (event.key.length === 1 && !hasModifier)\n      return !!asCheckbox(this._deepEventTarget(event));\n    return true;\n  }\n  _onKeyDown(event) {\n    if (this._mode === "inspecting") {\n      consumeEvent(event);\n      return;\n    }\n    if (this._mode !== "recording")\n      return;\n    if (!this._shouldGenerateKeyPressFor(event))\n      return;\n    if (this._actionInProgress(event)) {\n      this._expectProgrammaticKeyUp = true;\n      return;\n    }\n    if (this._consumedDueWrongTarget(event))\n      return;\n    if (event.key === " ") {\n      const checkbox = asCheckbox(this._deepEventTarget(event));\n      if (checkbox) {\n        this._performAction({\n          name: checkbox.checked ? "uncheck" : "check",\n          selector: this._activeModel.selector,\n          signals: []\n        });\n        return;\n      }\n    }\n    this._performAction({\n      name: "press",\n      selector: this._activeModel.selector,\n      signals: [],\n      key: event.key,\n      modifiers: modifiersForEvent(event)\n    });\n  }\n  _onKeyUp(event) {\n    if (this._mode === "none")\n      return;\n    if (!this._shouldGenerateKeyPressFor(event))\n      return;\n    if (!this._expectProgrammaticKeyUp) {\n      consumeEvent(event);\n      return;\n    }\n    this._expectProgrammaticKeyUp = false;\n  }\n  async _performAction(action) {\n    this._clearHighlight();\n    this._performingAction = true;\n    await globalThis.__pw_recorderPerformAction(action).catch(() => {\n    });\n    this._performingAction = false;\n    this._updateModelForHoveredElement();\n    this._onFocus();\n    if (this._injectedScript.isUnderTest) {\n      console.error("Action performed for test: " + JSON.stringify({\n        hovered: this._hoveredModel ? this._hoveredModel.selector : null,\n        active: this._activeModel ? this._activeModel.selector : null\n      }));\n    }\n  }\n  _deepEventTarget(event) {\n    return event.composedPath()[0];\n  }\n  _deepActiveElement(document2) {\n    let activeElement = document2.activeElement;\n    while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement)\n      activeElement = activeElement.shadowRoot.activeElement;\n    return activeElement;\n  }\n};\nfunction modifiersForEvent(event) {\n  return (event.altKey ? 1 : 0) | (event.ctrlKey ? 2 : 0) | (event.metaKey ? 4 : 0) | (event.shiftKey ? 8 : 0);\n}\nfunction buttonForEvent(event) {\n  switch (event.which) {\n    case 1:\n      return "left";\n    case 2:\n      return "middle";\n    case 3:\n      return "right";\n  }\n  return "left";\n}\nfunction positionForEvent(event) {\n  const targetElement = event.target;\n  if (targetElement.nodeName !== "CANVAS")\n    return;\n  return {\n    x: event.offsetX,\n    y: event.offsetY\n  };\n}\nfunction consumeEvent(e) {\n  e.preventDefault();\n  e.stopPropagation();\n  e.stopImmediatePropagation();\n}\nfunction asCheckbox(node) {\n  if (!node || node.nodeName !== "INPUT")\n    return null;\n  const inputElement = node;\n  return ["checkbox", "radio"].includes(inputElement.type) ? inputElement : null;\n}\nfunction addEventListener(target, eventName, listener, useCapture) {\n  target.addEventListener(eventName, listener, useCapture);\n  const remove = () => {\n    target.removeEventListener(eventName, listener, useCapture);\n  };\n  return remove;\n}\nfunction removeEventListeners(listeners) {\n  for (const listener of listeners)\n    listener();\n  listeners.splice(0, listeners.length);\n}\nmodule.exports = Recorder;\n';
     exports2.source = source;
   }
 });
@@ -31413,7 +31710,7 @@ var require_consoleApiSource = __commonJS({
       value: true
     });
     exports2.source = void 0;
-    var source = '"use strict";\n\n// packages/playwright-core/src/utils/isomorphic/stringUtils.ts\nfunction escapeWithQuotes(text, char = "\'") {\n  const stringified = JSON.stringify(text);\n  const escapedText = stringified.substring(1, stringified.length - 1).replace(/\\\\"/g, \'"\');\n  if (char === "\'")\n    return char + escapedText.replace(/[\']/g, "\\\\\'") + char;\n  if (char === \'"\')\n    return char + escapedText.replace(/["]/g, \'\\\\"\') + char;\n  if (char === "`")\n    return char + escapedText.replace(/[`]/g, "`") + char;\n  throw new Error("Invalid escape char");\n}\n\n// packages/playwright-core/src/server/injected/selectorUtils.ts\nfunction shouldSkipForTextMatching(element) {\n  return element.nodeName === "SCRIPT" || element.nodeName === "NOSCRIPT" || element.nodeName === "STYLE" || document.head && document.head.contains(element);\n}\nfunction elementText(cache, root) {\n  let value = cache.get(root);\n  if (value === void 0) {\n    value = { full: "", immediate: [] };\n    if (!shouldSkipForTextMatching(root)) {\n      let currentImmediate = "";\n      if (root instanceof HTMLInputElement && (root.type === "submit" || root.type === "button")) {\n        value = { full: root.value, immediate: [root.value] };\n      } else {\n        for (let child = root.firstChild; child; child = child.nextSibling) {\n          if (child.nodeType === Node.TEXT_NODE) {\n            value.full += child.nodeValue || "";\n            currentImmediate += child.nodeValue || "";\n          } else {\n            if (currentImmediate)\n              value.immediate.push(currentImmediate);\n            currentImmediate = "";\n            if (child.nodeType === Node.ELEMENT_NODE)\n              value.full += elementText(cache, child).full;\n          }\n        }\n        if (currentImmediate)\n          value.immediate.push(currentImmediate);\n        if (root.shadowRoot)\n          value.full += elementText(cache, root.shadowRoot).full;\n      }\n    }\n    cache.set(root, value);\n  }\n  return value;\n}\n\n// packages/playwright-core/src/server/injected/selectorGenerator.ts\nvar cacheAllowText = /* @__PURE__ */ new Map();\nvar cacheDisallowText = /* @__PURE__ */ new Map();\nvar kNthScore = 1e3;\nfunction generateSelector(injectedScript, targetElement, strict) {\n  injectedScript._evaluator.begin();\n  try {\n    targetElement = targetElement.closest("button,select,input,[role=button],[role=checkbox],[role=radio]") || targetElement;\n    const targetTokens = generateSelectorFor(injectedScript, targetElement, strict);\n    const bestTokens = targetTokens || cssFallback(injectedScript, targetElement, strict);\n    const selector = joinTokens(bestTokens);\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument)\n    };\n  } finally {\n    cacheAllowText.clear();\n    cacheDisallowText.clear();\n    injectedScript._evaluator.end();\n  }\n}\nfunction filterRegexTokens(textCandidates) {\n  return textCandidates.filter((c) => c[0].selector[0] !== "/");\n}\nfunction generateSelectorFor(injectedScript, targetElement, strict) {\n  if (targetElement.ownerDocument.documentElement === targetElement)\n    return [{ engine: "css", selector: "html", score: 1 }];\n  const calculate = (element, allowText) => {\n    const allowNthMatch = element === targetElement;\n    let textCandidates = allowText ? buildTextCandidates(injectedScript, element, element === targetElement).map((token) => [token]) : [];\n    if (element !== targetElement) {\n      textCandidates = filterRegexTokens(textCandidates);\n    }\n    const noTextCandidates = buildCandidates(injectedScript, element).map((token) => [token]);\n    let result = chooseFirstSelector(injectedScript, targetElement.ownerDocument, element, [...textCandidates, ...noTextCandidates], allowNthMatch, strict);\n    textCandidates = filterRegexTokens(textCandidates);\n    const checkWithText = (textCandidatesToUse) => {\n      const allowParentText = allowText && !textCandidatesToUse.length;\n      const candidates = [...textCandidatesToUse, ...noTextCandidates].filter((c) => {\n        if (!result)\n          return true;\n        return combineScores(c) < combineScores(result);\n      });\n      let bestPossibleInParent = candidates[0];\n      if (!bestPossibleInParent)\n        return;\n      for (let parent = parentElementOrShadowHost(element); parent; parent = parentElementOrShadowHost(parent)) {\n        const parentTokens = calculateCached(parent, allowParentText);\n        if (!parentTokens)\n          continue;\n        if (result && combineScores([...parentTokens, ...bestPossibleInParent]) >= combineScores(result))\n          continue;\n        bestPossibleInParent = chooseFirstSelector(injectedScript, parent, element, candidates, allowNthMatch, strict);\n        if (!bestPossibleInParent)\n          return;\n        const combined = [...parentTokens, ...bestPossibleInParent];\n        if (!result || combineScores(combined) < combineScores(result))\n          result = combined;\n      }\n    };\n    checkWithText(textCandidates);\n    if (element === targetElement && textCandidates.length)\n      checkWithText([]);\n    return result;\n  };\n  const calculateCached = (element, allowText) => {\n    const cache = allowText ? cacheAllowText : cacheDisallowText;\n    let value = cache.get(element);\n    if (value === void 0) {\n      value = calculate(element, allowText);\n      cache.set(element, value);\n    }\n    return value;\n  };\n  return calculateCached(targetElement, true);\n}\nfunction buildCandidates(injectedScript, element) {\n  const candidates = [];\n  for (const attribute of ["data-testid", "data-test-id", "data-test"]) {\n    if (element.getAttribute(attribute))\n      candidates.push({ engine: "css", selector: `[${attribute}=${quoteAttributeValue(element.getAttribute(attribute))}]`, score: 1 });\n  }\n  if (element.nodeName === "INPUT") {\n    const input = element;\n    if (input.placeholder)\n      candidates.push({ engine: "css", selector: `[placeholder=${quoteAttributeValue(input.placeholder)}]`, score: 10 });\n  }\n  if (element.getAttribute("aria-label"))\n    candidates.push({ engine: "css", selector: `[aria-label=${quoteAttributeValue(element.getAttribute("aria-label"))}]`, score: 10 });\n  if (element.getAttribute("alt") && ["APPLET", "AREA", "IMG", "INPUT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[alt=${quoteAttributeValue(element.getAttribute("alt"))}]`, score: 10 });\n  if (element.getAttribute("role"))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[role=${quoteAttributeValue(element.getAttribute("role"))}]`, score: 50 });\n  if (element.getAttribute("name") && ["BUTTON", "FORM", "FIELDSET", "FRAME", "IFRAME", "INPUT", "KEYGEN", "OBJECT", "OUTPUT", "SELECT", "TEXTAREA", "MAP", "META", "PARAM"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[name=${quoteAttributeValue(element.getAttribute("name"))}]`, score: 50 });\n  if (["INPUT", "TEXTAREA"].includes(element.nodeName) && element.getAttribute("type") !== "hidden") {\n    if (element.getAttribute("type"))\n      candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[type=${quoteAttributeValue(element.getAttribute("type"))}]`, score: 50 });\n  }\n  if (["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 50 });\n  const idAttr = element.getAttribute("id");\n  if (idAttr && !isGuidLike(idAttr))\n    candidates.push({ engine: "css", selector: makeSelectorForId(idAttr), score: 100 });\n  candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 200 });\n  return candidates;\n}\nfunction buildTextCandidates(injectedScript, element, allowHasText) {\n  if (element.nodeName === "SELECT")\n    return [];\n  const text = elementText(injectedScript._evaluator._cacheText, element).full.trim().replace(/\\s+/g, " ").substring(0, 80);\n  if (!text)\n    return [];\n  const candidates = [];\n  let escaped = text;\n  if (text.includes(\'"\') || text.includes(">>") || text[0] === "/")\n    escaped = `/.*${escapeForRegex(text)}.*/`;\n  candidates.push({ engine: "text", selector: escaped, score: 10 });\n  if (allowHasText && escaped === text) {\n    let prefix = element.nodeName.toLowerCase();\n    if (element.hasAttribute("role"))\n      prefix += `[role=${quoteAttributeValue(element.getAttribute("role"))}]`;\n    candidates.push({ engine: "css", selector: `${prefix}:has-text("${text}")`, score: 30 });\n  }\n  return candidates;\n}\nfunction parentElementOrShadowHost(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return null;\n  if (element.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE && element.parentNode.host)\n    return element.parentNode.host;\n  return null;\n}\nfunction makeSelectorForId(id) {\n  return /^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(id) ? "#" + id : `[id="${cssEscape(id)}"]`;\n}\nfunction cssFallback(injectedScript, targetElement, strict) {\n  const kFallbackScore = 1e7;\n  const root = targetElement.ownerDocument;\n  const tokens = [];\n  function uniqueCSSSelector(prefix) {\n    const path = tokens.slice();\n    if (prefix)\n      path.unshift(prefix);\n    const selector = path.join(" > ");\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const node = injectedScript.querySelector(parsedSelector, targetElement.ownerDocument, false);\n    return node === targetElement ? selector : void 0;\n  }\n  function makeStrict(selector) {\n    const token = { engine: "css", selector, score: kFallbackScore };\n    if (!strict)\n      return [token];\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const elements = injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument);\n    if (elements.length === 1)\n      return [token];\n    const nth = { engine: "nth", selector: String(elements.indexOf(targetElement)), score: kNthScore };\n    return [token, nth];\n  }\n  for (let element = targetElement; element && element !== root; element = parentElementOrShadowHost(element)) {\n    const nodeName = element.nodeName.toLowerCase();\n    let bestTokenForLevel = "";\n    if (element.id) {\n      const token = makeSelectorForId(element.id);\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      bestTokenForLevel = token;\n    }\n    const parent = element.parentNode;\n    const classes = [...element.classList];\n    for (let i = 0; i < classes.length; ++i) {\n      const token = "." + cssEscape(classes.slice(0, i + 1).join("."));\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel && parent) {\n        const sameClassSiblings = parent.querySelectorAll(token);\n        if (sameClassSiblings.length === 1)\n          bestTokenForLevel = token;\n      }\n    }\n    if (parent) {\n      const siblings = [...parent.children];\n      const sameTagSiblings = siblings.filter((sibling) => sibling.nodeName.toLowerCase() === nodeName);\n      const token = sameTagSiblings.indexOf(element) === 0 ? cssEscape(nodeName) : `${cssEscape(nodeName)}:nth-child(${1 + siblings.indexOf(element)})`;\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel)\n        bestTokenForLevel = token;\n    } else if (!bestTokenForLevel) {\n      bestTokenForLevel = nodeName;\n    }\n    tokens.unshift(bestTokenForLevel);\n  }\n  return makeStrict(uniqueCSSSelector());\n}\nfunction escapeForRegex(text) {\n  return text.replace(/[.*+?^>${}()|[\\]\\\\]/g, "\\\\$&");\n}\nfunction quoteAttributeValue(text) {\n  return `"${cssEscape(text).replace(/\\\\ /g, " ")}"`;\n}\nfunction joinTokens(tokens) {\n  const parts = [];\n  let lastEngine = "";\n  for (const { engine, selector } of tokens) {\n    if (parts.length && (lastEngine !== "css" || engine !== "css" || selector.startsWith(":nth-match(")))\n      parts.push(">>");\n    lastEngine = engine;\n    if (engine === "css")\n      parts.push(selector);\n    else\n      parts.push(`${engine}=${selector}`);\n  }\n  return parts.join(" ");\n}\nfunction combineScores(tokens) {\n  let score = 0;\n  for (let i = 0; i < tokens.length; i++)\n    score += tokens[i].score * (tokens.length - i);\n  return score;\n}\nfunction chooseFirstSelector(injectedScript, scope, targetElement, selectors, allowNthMatch, strict) {\n  const joined = selectors.map((tokens) => ({ tokens, score: combineScores(tokens) }));\n  joined.sort((a, b) => a.score - b.score);\n  let bestWithIndex = null;\n  for (const { tokens } of joined) {\n    const parsedSelector = injectedScript.parseSelector(joinTokens(tokens));\n    const result = injectedScript.querySelectorAll(parsedSelector, scope);\n    const isStrictEnough = !strict || result.length === 1;\n    const index = result.indexOf(targetElement);\n    if (index === 0 && isStrictEnough) {\n      return tokens;\n    }\n    if (!allowNthMatch || bestWithIndex || index === -1 || result.length > 5)\n      continue;\n    const nth = { engine: "nth", selector: String(index), score: kNthScore };\n    bestWithIndex = [...tokens, nth];\n  }\n  return bestWithIndex;\n}\nfunction isGuidLike(id) {\n  let lastCharacterType;\n  let transitionCount = 0;\n  for (let i = 0; i < id.length; ++i) {\n    const c = id[i];\n    let characterType;\n    if (c === "-" || c === "_")\n      continue;\n    if (c >= "a" && c <= "z")\n      characterType = "lower";\n    else if (c >= "A" && c <= "Z")\n      characterType = "upper";\n    else if (c >= "0" && c <= "9")\n      characterType = "digit";\n    else\n      characterType = "other";\n    if (characterType === "lower" && lastCharacterType === "upper") {\n      lastCharacterType = characterType;\n      continue;\n    }\n    if (lastCharacterType && lastCharacterType !== characterType)\n      ++transitionCount;\n    lastCharacterType = characterType;\n  }\n  return transitionCount >= id.length / 4;\n}\nfunction cssEscape(s) {\n  let result = "";\n  for (let i = 0; i < s.length; i++)\n    result += cssEscapeOne(s, i);\n  return result;\n}\nfunction cssEscapeOne(s, i) {\n  const c = s.charCodeAt(i);\n  if (c === 0)\n    return "\\uFFFD";\n  if (c >= 1 && c <= 31 || c >= 48 && c <= 57 && (i === 0 || i === 1 && s.charCodeAt(0) === 45))\n    return "\\\\" + c.toString(16) + " ";\n  if (i === 0 && c === 45 && s.length === 1)\n    return "\\\\" + s.charAt(i);\n  if (c >= 128 || c === 45 || c === 95 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122)\n    return s.charAt(i);\n  return "\\\\" + s.charAt(i);\n}\n\n// packages/playwright-core/src/server/injected/consoleApi.ts\nfunction createLocator(injectedScript, initial, options) {\n  class Locator {\n    constructor(selector, options2) {\n      this.selector = selector;\n      if (options2 == null ? void 0 : options2.hasText) {\n        const text = options2.hasText;\n        if (text instanceof RegExp)\n          this.selector += ` >> :scope:text-matches(${escapeWithQuotes(text.source, \'"\')}, "${text.flags}")`;\n        else\n          this.selector += ` >> :scope:has-text(${escapeWithQuotes(text)})`;\n      }\n      if (options2 == null ? void 0 : options2.has)\n        this.selector += ` >> has=` + JSON.stringify(options2.has.selector);\n      const parsed = injectedScript.parseSelector(this.selector);\n      this.element = injectedScript.querySelector(parsed, document, false);\n      this.elements = injectedScript.querySelectorAll(parsed, document);\n    }\n    locator(selector, options2) {\n      return new Locator(this.selector ? this.selector + " >> " + selector : selector, options2);\n    }\n  }\n  return new Locator(initial, options);\n}\nvar ConsoleAPI = class {\n  constructor(injectedScript) {\n    this._injectedScript = injectedScript;\n    if (window.playwright)\n      return;\n    window.playwright = {\n      $: (selector, strict) => this._querySelector(selector, !!strict),\n      $$: (selector) => this._querySelectorAll(selector),\n      locator: (selector, options) => createLocator(this._injectedScript, selector, options),\n      inspect: (selector) => this._inspect(selector),\n      selector: (element) => this._selector(element),\n      resume: () => this._resume()\n    };\n  }\n  _querySelector(selector, strict) {\n    if (typeof selector !== "string")\n      throw new Error(`Usage: playwright.query(\'Playwright >> selector\').`);\n    const parsed = this._injectedScript.parseSelector(selector);\n    return this._injectedScript.querySelector(parsed, document, strict);\n  }\n  _querySelectorAll(selector) {\n    if (typeof selector !== "string")\n      throw new Error(`Usage: playwright.$$(\'Playwright >> selector\').`);\n    const parsed = this._injectedScript.parseSelector(selector);\n    return this._injectedScript.querySelectorAll(parsed, document);\n  }\n  _inspect(selector) {\n    if (typeof selector !== "string")\n      throw new Error(`Usage: playwright.inspect(\'Playwright >> selector\').`);\n    window.inspect(this._querySelector(selector, false));\n  }\n  _selector(element) {\n    if (!(element instanceof Element))\n      throw new Error(`Usage: playwright.selector(element).`);\n    return generateSelector(this._injectedScript, element, true).selector;\n  }\n  _resume() {\n    window.__pw_resume().catch(() => {\n    });\n  }\n};\nmodule.exports = ConsoleAPI;\n';
+    var source = '"use strict";\n\n// packages/playwright-core/src/utils/isomorphic/stringUtils.ts\nfunction cssEscape(s) {\n  let result = "";\n  for (let i = 0; i < s.length; i++)\n    result += cssEscapeOne(s, i);\n  return result;\n}\nfunction cssEscapeOne(s, i) {\n  const c = s.charCodeAt(i);\n  if (c === 0)\n    return "\\uFFFD";\n  if (c >= 1 && c <= 31 || c >= 48 && c <= 57 && (i === 0 || i === 1 && s.charCodeAt(0) === 45))\n    return "\\\\" + c.toString(16) + " ";\n  if (i === 0 && c === 45 && s.length === 1)\n    return "\\\\" + s.charAt(i);\n  if (c >= 128 || c === 45 || c === 95 || c >= 48 && c <= 57 || c >= 65 && c <= 90 || c >= 97 && c <= 122)\n    return s.charAt(i);\n  return "\\\\" + s.charAt(i);\n}\nfunction escapeForRegex(text) {\n  return text.replace(/[.*+?^>${}()|[\\]\\\\]/g, "\\\\$&");\n}\nfunction escapeForTextSelector(text, exact, caseSensitive = false) {\n  if (typeof text !== "string")\n    return String(text);\n  if (exact)\n    return \'"\' + text.replace(/["]/g, \'\\\\"\') + \'"\';\n  if (text.includes(\'"\') || text.includes(">>") || text[0] === "/")\n    return `/${escapeForRegex(text).replace(/\\s+/g, "\\\\s+")}/` + (caseSensitive ? "" : "i");\n  return text;\n}\nfunction escapeForAttributeSelector(value, exact) {\n  return `"${value.replace(/["]/g, \'\\\\"\')}"${exact ? "" : "i"}`;\n}\n\n// packages/playwright-core/src/server/injected/domUtils.ts\nfunction parentElementOrShadowHost(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return;\n  if (element.parentNode.nodeType === 11 && element.parentNode.host)\n    return element.parentNode.host;\n}\nfunction enclosingShadowRootOrDocument(element) {\n  let node = element;\n  while (node.parentNode)\n    node = node.parentNode;\n  if (node.nodeType === 11 || node.nodeType === 9)\n    return node;\n}\nfunction enclosingShadowHost(element) {\n  while (element.parentElement)\n    element = element.parentElement;\n  return parentElementOrShadowHost(element);\n}\nfunction closestCrossShadow(element, css) {\n  while (element) {\n    const closest = element.closest(css);\n    if (closest)\n      return closest;\n    element = enclosingShadowHost(element);\n  }\n}\n\n// packages/playwright-core/src/server/injected/roleUtils.ts\nfunction hasExplicitAccessibleName(e) {\n  return e.hasAttribute("aria-label") || e.hasAttribute("aria-labelledby");\n}\nvar kAncestorPreventingLandmark = "article:not([role]), aside:not([role]), main:not([role]), nav:not([role]), section:not([role]), [role=article], [role=complementary], [role=main], [role=navigation], [role=region]";\nvar kGlobalAriaAttributes = [\n  "aria-atomic",\n  "aria-busy",\n  "aria-controls",\n  "aria-current",\n  "aria-describedby",\n  "aria-details",\n  "aria-disabled",\n  "aria-dropeffect",\n  "aria-errormessage",\n  "aria-flowto",\n  "aria-grabbed",\n  "aria-haspopup",\n  "aria-hidden",\n  "aria-invalid",\n  "aria-keyshortcuts",\n  "aria-label",\n  "aria-labelledby",\n  "aria-live",\n  "aria-owns",\n  "aria-relevant",\n  "aria-roledescription"\n];\nfunction hasGlobalAriaAttribute(e) {\n  return kGlobalAriaAttributes.some((a) => e.hasAttribute(a));\n}\nvar kImplicitRoleByTagName = {\n  "A": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "AREA": (e) => {\n    return e.hasAttribute("href") ? "link" : null;\n  },\n  "ARTICLE": () => "article",\n  "ASIDE": () => "complementary",\n  "BLOCKQUOTE": () => "blockquote",\n  "BUTTON": () => "button",\n  "CAPTION": () => "caption",\n  "CODE": () => "code",\n  "DATALIST": () => "listbox",\n  "DD": () => "definition",\n  "DEL": () => "deletion",\n  "DETAILS": () => "group",\n  "DFN": () => "term",\n  "DIALOG": () => "dialog",\n  "DT": () => "term",\n  "EM": () => "emphasis",\n  "FIELDSET": () => "group",\n  "FIGURE": () => "figure",\n  "FOOTER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "contentinfo",\n  "FORM": (e) => hasExplicitAccessibleName(e) ? "form" : null,\n  "H1": () => "heading",\n  "H2": () => "heading",\n  "H3": () => "heading",\n  "H4": () => "heading",\n  "H5": () => "heading",\n  "H6": () => "heading",\n  "HEADER": (e) => closestCrossShadow(e, kAncestorPreventingLandmark) ? null : "banner",\n  "HR": () => "separator",\n  "HTML": () => "document",\n  "IMG": (e) => e.getAttribute("alt") === "" && !hasGlobalAriaAttribute(e) && Number.isNaN(Number(String(e.getAttribute("tabindex")))) ? "presentation" : "img",\n  "INPUT": (e) => {\n    const type = e.type.toLowerCase();\n    if (type === "search")\n      return e.hasAttribute("list") ? "combobox" : "searchbox";\n    if (["email", "tel", "text", "url", ""].includes(type)) {\n      const list = getIdRefs(e, e.getAttribute("list"))[0];\n      return list && list.tagName === "DATALIST" ? "combobox" : "textbox";\n    }\n    if (type === "hidden")\n      return "";\n    return {\n      "button": "button",\n      "checkbox": "checkbox",\n      "image": "button",\n      "number": "spinbutton",\n      "radio": "radio",\n      "range": "slider",\n      "reset": "button",\n      "submit": "button"\n    }[type] || "textbox";\n  },\n  "INS": () => "insertion",\n  "LI": () => "listitem",\n  "MAIN": () => "main",\n  "MARK": () => "mark",\n  "MATH": () => "math",\n  "MENU": () => "list",\n  "METER": () => "meter",\n  "NAV": () => "navigation",\n  "OL": () => "list",\n  "OPTGROUP": () => "group",\n  "OPTION": () => "option",\n  "OUTPUT": () => "status",\n  "P": () => "paragraph",\n  "PROGRESS": () => "progressbar",\n  "SECTION": (e) => hasExplicitAccessibleName(e) ? "region" : null,\n  "SELECT": (e) => e.hasAttribute("multiple") || e.size > 1 ? "listbox" : "combobox",\n  "STRONG": () => "strong",\n  "SUB": () => "subscript",\n  "SUP": () => "superscript",\n  "TABLE": () => "table",\n  "TBODY": () => "rowgroup",\n  "TD": (e) => {\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "TEXTAREA": () => "textbox",\n  "TFOOT": () => "rowgroup",\n  "TH": (e) => {\n    if (e.getAttribute("scope") === "col")\n      return "columnheader";\n    if (e.getAttribute("scope") === "row")\n      return "rowheader";\n    const table = closestCrossShadow(e, "table");\n    const role = table ? getExplicitAriaRole(table) : "";\n    return role === "grid" || role === "treegrid" ? "gridcell" : "cell";\n  },\n  "THEAD": () => "rowgroup",\n  "TIME": () => "time",\n  "TR": () => "row",\n  "UL": () => "list"\n};\nvar kPresentationInheritanceParents = {\n  "DD": ["DL", "DIV"],\n  "DIV": ["DL"],\n  "DT": ["DL", "DIV"],\n  "LI": ["OL", "UL"],\n  "TBODY": ["TABLE"],\n  "TD": ["TR"],\n  "TFOOT": ["TABLE"],\n  "TH": ["TR"],\n  "THEAD": ["TABLE"],\n  "TR": ["THEAD", "TBODY", "TFOOT", "TABLE"]\n};\nfunction getImplicitAriaRole(element) {\n  var _a;\n  const implicitRole = ((_a = kImplicitRoleByTagName[element.tagName]) == null ? void 0 : _a.call(kImplicitRoleByTagName, element)) || "";\n  if (!implicitRole)\n    return null;\n  let ancestor = element;\n  while (ancestor) {\n    const parent = parentElementOrShadowHost(ancestor);\n    const parents = kPresentationInheritanceParents[ancestor.tagName];\n    if (!parents || !parent || !parents.includes(parent.tagName))\n      break;\n    const parentExplicitRole = getExplicitAriaRole(parent);\n    if ((parentExplicitRole === "none" || parentExplicitRole === "presentation") && !hasPresentationConflictResolution(parent))\n      return parentExplicitRole;\n    ancestor = parent;\n  }\n  return implicitRole;\n}\nvar allRoles = [\n  "alert",\n  "alertdialog",\n  "application",\n  "article",\n  "banner",\n  "blockquote",\n  "button",\n  "caption",\n  "cell",\n  "checkbox",\n  "code",\n  "columnheader",\n  "combobox",\n  "command",\n  "complementary",\n  "composite",\n  "contentinfo",\n  "definition",\n  "deletion",\n  "dialog",\n  "directory",\n  "document",\n  "emphasis",\n  "feed",\n  "figure",\n  "form",\n  "generic",\n  "grid",\n  "gridcell",\n  "group",\n  "heading",\n  "img",\n  "input",\n  "insertion",\n  "landmark",\n  "link",\n  "list",\n  "listbox",\n  "listitem",\n  "log",\n  "main",\n  "marquee",\n  "math",\n  "meter",\n  "menu",\n  "menubar",\n  "menuitem",\n  "menuitemcheckbox",\n  "menuitemradio",\n  "navigation",\n  "none",\n  "note",\n  "option",\n  "paragraph",\n  "presentation",\n  "progressbar",\n  "radio",\n  "radiogroup",\n  "range",\n  "region",\n  "roletype",\n  "row",\n  "rowgroup",\n  "rowheader",\n  "scrollbar",\n  "search",\n  "searchbox",\n  "section",\n  "sectionhead",\n  "select",\n  "separator",\n  "slider",\n  "spinbutton",\n  "status",\n  "strong",\n  "structure",\n  "subscript",\n  "superscript",\n  "switch",\n  "tab",\n  "table",\n  "tablist",\n  "tabpanel",\n  "term",\n  "textbox",\n  "time",\n  "timer",\n  "toolbar",\n  "tooltip",\n  "tree",\n  "treegrid",\n  "treeitem",\n  "widget",\n  "window"\n];\nvar abstractRoles = ["command", "composite", "input", "landmark", "range", "roletype", "section", "sectionhead", "select", "structure", "widget", "window"];\nvar validRoles = allRoles.filter((role) => !abstractRoles.includes(role));\nfunction getExplicitAriaRole(element) {\n  const roles = (element.getAttribute("role") || "").split(" ").map((role) => role.trim());\n  return roles.find((role) => validRoles.includes(role)) || null;\n}\nfunction hasPresentationConflictResolution(element) {\n  return !hasGlobalAriaAttribute(element);\n}\nfunction getAriaRole(element) {\n  const explicitRole = getExplicitAriaRole(element);\n  if (!explicitRole)\n    return getImplicitAriaRole(element);\n  if ((explicitRole === "none" || explicitRole === "presentation") && hasPresentationConflictResolution(element))\n    return getImplicitAriaRole(element);\n  return explicitRole;\n}\nfunction getAriaBoolean(attr) {\n  return attr === null ? void 0 : attr.toLowerCase() === "true";\n}\nfunction getComputedStyle(element, pseudo) {\n  return element.ownerDocument && element.ownerDocument.defaultView ? element.ownerDocument.defaultView.getComputedStyle(element, pseudo) : void 0;\n}\nfunction isElementHiddenForAria(element, cache) {\n  if (["STYLE", "SCRIPT", "NOSCRIPT", "TEMPLATE"].includes(element.tagName))\n    return true;\n  const style = getComputedStyle(element);\n  if (!style || style.visibility === "hidden")\n    return true;\n  return belongsToDisplayNoneOrAriaHidden(element, cache);\n}\nfunction belongsToDisplayNoneOrAriaHidden(element, cache) {\n  if (!cache.has(element)) {\n    const style = getComputedStyle(element);\n    let hidden = !style || style.display === "none" || getAriaBoolean(element.getAttribute("aria-hidden")) === true;\n    if (!hidden) {\n      const parent = parentElementOrShadowHost(element);\n      if (parent)\n        hidden = hidden || belongsToDisplayNoneOrAriaHidden(parent, cache);\n    }\n    cache.set(element, hidden);\n  }\n  return cache.get(element);\n}\nfunction getIdRefs(element, ref) {\n  if (!ref)\n    return [];\n  const root = enclosingShadowRootOrDocument(element);\n  if (!root)\n    return [];\n  try {\n    const ids = ref.split(" ").filter((id) => !!id);\n    const set = /* @__PURE__ */ new Set();\n    for (const id of ids) {\n      const firstElement = root.querySelector("#" + CSS.escape(id));\n      if (firstElement)\n        set.add(firstElement);\n    }\n    return [...set];\n  } catch (e) {\n    return [];\n  }\n}\nfunction normalizeAccessbileName(s) {\n  return s.replace(/\\r\\n/g, "\\n").replace(/\\u00A0/g, " ").replace(/\\s\\s+/g, " ").trim();\n}\nfunction queryInAriaOwned(element, selector) {\n  const result = [...element.querySelectorAll(selector)];\n  for (const owned of getIdRefs(element, element.getAttribute("aria-owns"))) {\n    if (owned.matches(selector))\n      result.push(owned);\n    result.push(...owned.querySelectorAll(selector));\n  }\n  return result;\n}\nfunction getPseudoContent(pseudoStyle) {\n  if (!pseudoStyle)\n    return "";\n  const content = pseudoStyle.getPropertyValue("content");\n  if (content[0] === "\'" && content[content.length - 1] === "\'" || content[0] === \'"\' && content[content.length - 1] === \'"\') {\n    const unquoted = content.substring(1, content.length - 1);\n    const display = pseudoStyle.getPropertyValue("display") || "inline";\n    if (display !== "inline")\n      return " " + unquoted + " ";\n    return unquoted;\n  }\n  return "";\n}\nfunction getElementAccessibleName(element, includeHidden, hiddenCache) {\n  const elementProhibitsNaming = ["caption", "code", "definition", "deletion", "emphasis", "generic", "insertion", "mark", "paragraph", "presentation", "strong", "subscript", "suggestion", "superscript", "term", "time"].includes(getAriaRole(element) || "");\n  if (elementProhibitsNaming)\n    return "";\n  const accessibleName = normalizeAccessbileName(getElementAccessibleNameInternal(element, {\n    includeHidden,\n    hiddenCache,\n    visitedElements: /* @__PURE__ */ new Set(),\n    embeddedInLabelledBy: "none",\n    embeddedInLabel: "none",\n    embeddedInTextAlternativeElement: false,\n    embeddedInTargetElement: "self"\n  }));\n  return accessibleName;\n}\nfunction getElementAccessibleNameInternal(element, options) {\n  if (options.visitedElements.has(element))\n    return "";\n  const childOptions = {\n    ...options,\n    embeddedInLabel: options.embeddedInLabel === "self" ? "descendant" : options.embeddedInLabel,\n    embeddedInLabelledBy: options.embeddedInLabelledBy === "self" ? "descendant" : options.embeddedInLabelledBy,\n    embeddedInTargetElement: options.embeddedInTargetElement === "self" ? "descendant" : options.embeddedInTargetElement\n  };\n  if (!options.includeHidden && options.embeddedInLabelledBy !== "self" && isElementHiddenForAria(element, options.hiddenCache)) {\n    options.visitedElements.add(element);\n    return "";\n  }\n  if (options.embeddedInLabelledBy === "none") {\n    const refs = getIdRefs(element, element.getAttribute("aria-labelledby"));\n    const accessibleName = refs.map((ref) => getElementAccessibleNameInternal(ref, {\n      ...options,\n      embeddedInLabelledBy: "self",\n      embeddedInTargetElement: "none",\n      embeddedInLabel: "none",\n      embeddedInTextAlternativeElement: false\n    })).join(" ");\n    if (accessibleName)\n      return accessibleName;\n  }\n  const role = getAriaRole(element) || "";\n  if (options.embeddedInLabel !== "none" || options.embeddedInLabelledBy !== "none") {\n    const isOwnLabel = [...element.labels || []].includes(element);\n    const isOwnLabelledBy = getIdRefs(element, element.getAttribute("aria-labelledby")).includes(element);\n    if (!isOwnLabel && !isOwnLabelledBy) {\n      if (role === "textbox") {\n        options.visitedElements.add(element);\n        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA")\n          return element.value;\n        return element.textContent || "";\n      }\n      if (["combobox", "listbox"].includes(role)) {\n        options.visitedElements.add(element);\n        let selectedOptions;\n        if (element.tagName === "SELECT") {\n          selectedOptions = [...element.selectedOptions];\n          if (!selectedOptions.length && element.options.length)\n            selectedOptions.push(element.options[0]);\n        } else {\n          const listbox = role === "combobox" ? queryInAriaOwned(element, "*").find((e) => getAriaRole(e) === "listbox") : element;\n          selectedOptions = listbox ? queryInAriaOwned(listbox, \'[aria-selected="true"]\').filter((e) => getAriaRole(e) === "option") : [];\n        }\n        return selectedOptions.map((option) => getElementAccessibleNameInternal(option, childOptions)).join(" ");\n      }\n      if (["progressbar", "scrollbar", "slider", "spinbutton", "meter"].includes(role)) {\n        options.visitedElements.add(element);\n        if (element.hasAttribute("aria-valuetext"))\n          return element.getAttribute("aria-valuetext") || "";\n        if (element.hasAttribute("aria-valuenow"))\n          return element.getAttribute("aria-valuenow") || "";\n        return element.getAttribute("value") || "";\n      }\n      if (["menu"].includes(role)) {\n        options.visitedElements.add(element);\n        return "";\n      }\n    }\n  }\n  const ariaLabel = element.getAttribute("aria-label") || "";\n  if (ariaLabel.trim()) {\n    options.visitedElements.add(element);\n    return ariaLabel;\n  }\n  if (!["presentation", "none"].includes(role)) {\n    if (element.tagName === "INPUT" && ["button", "submit", "reset"].includes(element.type)) {\n      options.visitedElements.add(element);\n      const value = element.value || "";\n      if (value.trim())\n        return value;\n      if (element.type === "submit")\n        return "Submit";\n      if (element.type === "reset")\n        return "Reset";\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "INPUT" && element.type === "image") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const title = element.getAttribute("title") || "";\n      if (title.trim())\n        return title;\n      return "Submit";\n    }\n    if (element.tagName === "TEXTAREA" || element.tagName === "SELECT" || element.tagName === "INPUT") {\n      options.visitedElements.add(element);\n      const labels = element.labels || [];\n      if (labels.length) {\n        return [...labels].map((label) => getElementAccessibleNameInternal(label, {\n          ...options,\n          embeddedInLabel: "self",\n          embeddedInTextAlternativeElement: false,\n          embeddedInLabelledBy: "none",\n          embeddedInTargetElement: "none"\n        })).filter((accessibleName) => !!accessibleName).join(" ");\n      }\n      const usePlaceholder = element.tagName === "INPUT" && ["text", "password", "search", "tel", "email", "url"].includes(element.type) || element.tagName === "TEXTAREA";\n      const placeholder = element.getAttribute("placeholder") || "";\n      const title = element.getAttribute("title") || "";\n      if (!usePlaceholder || title)\n        return title;\n      return placeholder;\n    }\n    if (element.tagName === "FIELDSET") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "LEGEND") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "FIGURE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "FIGCAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "IMG") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "TABLE") {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "CAPTION") {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n      const summary = element.getAttribute("summary") || "";\n      if (summary)\n        return summary;\n    }\n    if (element.tagName === "AREA") {\n      options.visitedElements.add(element);\n      const alt = element.getAttribute("alt") || "";\n      if (alt.trim())\n        return alt;\n      const title = element.getAttribute("title") || "";\n      return title;\n    }\n    if (element.tagName === "SVG" && element.ownerSVGElement) {\n      options.visitedElements.add(element);\n      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {\n        if (child.tagName === "TITLE" && element.ownerSVGElement) {\n          return getElementAccessibleNameInternal(child, {\n            ...childOptions,\n            embeddedInTextAlternativeElement: true\n          });\n        }\n      }\n    }\n  }\n  const allowsNameFromContent = ["button", "cell", "checkbox", "columnheader", "gridcell", "heading", "link", "menuitem", "menuitemcheckbox", "menuitemradio", "option", "radio", "row", "rowheader", "switch", "tab", "tooltip", "treeitem"].includes(role);\n  if (allowsNameFromContent || options.embeddedInLabelledBy !== "none" || options.embeddedInLabel !== "none" || options.embeddedInTextAlternativeElement || options.embeddedInTargetElement === "descendant") {\n    options.visitedElements.add(element);\n    const tokens = [];\n    const visit = (node) => {\n      var _a;\n      if (node.nodeType === 1) {\n        const display = ((_a = getComputedStyle(node)) == null ? void 0 : _a.getPropertyValue("display")) || "inline";\n        let token = getElementAccessibleNameInternal(node, childOptions);\n        if (display !== "inline" || node.nodeName === "BR")\n          token = " " + token + " ";\n        tokens.push(token);\n      } else if (node.nodeType === 3) {\n        tokens.push(node.textContent || "");\n      }\n    };\n    tokens.push(getPseudoContent(getComputedStyle(element, "::before")));\n    for (let child = element.firstChild; child; child = child.nextSibling)\n      visit(child);\n    if (element.shadowRoot) {\n      for (let child = element.shadowRoot.firstChild; child; child = child.nextSibling)\n        visit(child);\n    }\n    for (const owned of getIdRefs(element, element.getAttribute("aria-owns")))\n      visit(owned);\n    tokens.push(getPseudoContent(getComputedStyle(element, "::after")));\n    const accessibleName = tokens.join("");\n    if (accessibleName.trim())\n      return accessibleName;\n  }\n  if (!["presentation", "none"].includes(role) || element.tagName === "IFRAME") {\n    options.visitedElements.add(element);\n    const title = element.getAttribute("title") || "";\n    if (title.trim())\n      return title;\n  }\n  options.visitedElements.add(element);\n  return "";\n}\n\n// packages/playwright-core/src/server/injected/selectorUtils.ts\nfunction shouldSkipForTextMatching(element) {\n  return element.nodeName === "SCRIPT" || element.nodeName === "NOSCRIPT" || element.nodeName === "STYLE" || document.head && document.head.contains(element);\n}\nfunction elementText(cache, root) {\n  let value = cache.get(root);\n  if (value === void 0) {\n    value = { full: "", immediate: [] };\n    if (!shouldSkipForTextMatching(root)) {\n      let currentImmediate = "";\n      if (root instanceof HTMLInputElement && (root.type === "submit" || root.type === "button")) {\n        value = { full: root.value, immediate: [root.value] };\n      } else {\n        for (let child = root.firstChild; child; child = child.nextSibling) {\n          if (child.nodeType === Node.TEXT_NODE) {\n            value.full += child.nodeValue || "";\n            currentImmediate += child.nodeValue || "";\n          } else {\n            if (currentImmediate)\n              value.immediate.push(currentImmediate);\n            currentImmediate = "";\n            if (child.nodeType === Node.ELEMENT_NODE)\n              value.full += elementText(cache, child).full;\n          }\n        }\n        if (currentImmediate)\n          value.immediate.push(currentImmediate);\n        if (root.shadowRoot)\n          value.full += elementText(cache, root.shadowRoot).full;\n      }\n    }\n    cache.set(root, value);\n  }\n  return value;\n}\n\n// packages/playwright-core/src/server/injected/selectorGenerator.ts\nvar cacheAllowText = /* @__PURE__ */ new Map();\nvar cacheDisallowText = /* @__PURE__ */ new Map();\nvar kNthScore = 1e3;\nfunction generateSelector(injectedScript, targetElement, strict) {\n  injectedScript._evaluator.begin();\n  try {\n    targetElement = targetElement.closest("button,select,input,[role=button],[role=checkbox],[role=radio],a,[role=link]") || targetElement;\n    const targetTokens = generateSelectorFor(injectedScript, targetElement, strict);\n    const bestTokens = targetTokens || cssFallback(injectedScript, targetElement, strict);\n    const selector = joinTokens(bestTokens);\n    const parsedSelector = injectedScript.parseSelector(selector);\n    return {\n      selector,\n      elements: injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument)\n    };\n  } finally {\n    cacheAllowText.clear();\n    cacheDisallowText.clear();\n    injectedScript._evaluator.end();\n  }\n}\nfunction filterRegexTokens(textCandidates) {\n  return textCandidates.filter((c) => c[0].selector[0] !== "/");\n}\nfunction generateSelectorFor(injectedScript, targetElement, strict) {\n  if (targetElement.ownerDocument.documentElement === targetElement)\n    return [{ engine: "css", selector: "html", score: 1 }];\n  const accessibleNameCache = /* @__PURE__ */ new Map();\n  const calculate = (element, allowText) => {\n    const allowNthMatch = element === targetElement;\n    let textCandidates = allowText ? buildTextCandidates(injectedScript, element, element === targetElement).map((token) => [token]) : [];\n    if (element !== targetElement) {\n      textCandidates = filterRegexTokens(textCandidates);\n    }\n    const noTextCandidates = buildCandidates(injectedScript, element, accessibleNameCache).map((token) => [token]);\n    let result = chooseFirstSelector(injectedScript, targetElement.ownerDocument, element, [...textCandidates, ...noTextCandidates], allowNthMatch, strict);\n    textCandidates = filterRegexTokens(textCandidates);\n    const checkWithText = (textCandidatesToUse) => {\n      const allowParentText = allowText && !textCandidatesToUse.length;\n      const candidates = [...textCandidatesToUse, ...noTextCandidates].filter((c) => {\n        if (!result)\n          return true;\n        return combineScores(c) < combineScores(result);\n      });\n      let bestPossibleInParent = candidates[0];\n      if (!bestPossibleInParent)\n        return;\n      for (let parent = parentElementOrShadowHost2(element); parent; parent = parentElementOrShadowHost2(parent)) {\n        const parentTokens = calculateCached(parent, allowParentText);\n        if (!parentTokens)\n          continue;\n        if (result && combineScores([...parentTokens, ...bestPossibleInParent]) >= combineScores(result))\n          continue;\n        bestPossibleInParent = chooseFirstSelector(injectedScript, parent, element, candidates, allowNthMatch, strict);\n        if (!bestPossibleInParent)\n          return;\n        const combined = [...parentTokens, ...bestPossibleInParent];\n        if (!result || combineScores(combined) < combineScores(result))\n          result = combined;\n      }\n    };\n    checkWithText(textCandidates);\n    if (element === targetElement && textCandidates.length)\n      checkWithText([]);\n    return result;\n  };\n  const calculateCached = (element, allowText) => {\n    const cache = allowText ? cacheAllowText : cacheDisallowText;\n    let value = cache.get(element);\n    if (value === void 0) {\n      value = calculate(element, allowText);\n      cache.set(element, value);\n    }\n    return value;\n  };\n  return calculateCached(targetElement, true);\n}\nfunction buildCandidates(injectedScript, element, accessibleNameCache) {\n  var _a;\n  const candidates = [];\n  if (element.getAttribute("data-testid"))\n    candidates.push({ engine: "internal:attr", selector: `[data-testid=${escapeForAttributeSelector(element.getAttribute("data-testid"), true)}]`, score: 1 });\n  for (const attr of ["data-test-id", "data-test"]) {\n    if (element.getAttribute(attr))\n      candidates.push({ engine: "css", selector: `[${attr}=${quoteAttributeValue(element.getAttribute(attr))}]`, score: 2 });\n  }\n  if (element.nodeName === "INPUT" || element.nodeName === "TEXTAREA") {\n    const input = element;\n    if (input.placeholder)\n      candidates.push({ engine: "internal:attr", selector: `[placeholder=${escapeForAttributeSelector(input.placeholder, true)}]`, score: 3 });\n    const label = (_a = input.labels) == null ? void 0 : _a[0];\n    if (label) {\n      const labelText = elementText(injectedScript._evaluator._cacheText, label).full.trim();\n      candidates.push({ engine: "internal:label", selector: escapeForTextSelector(labelText, false, true), score: 3 });\n    }\n  }\n  const ariaRole = getAriaRole(element);\n  if (ariaRole) {\n    const ariaName = getElementAccessibleName(element, false, accessibleNameCache);\n    if (ariaName)\n      candidates.push({ engine: "role", selector: `${ariaRole}[name=${escapeForAttributeSelector(ariaName, true)}]`, score: 3 });\n    else\n      candidates.push({ engine: "role", selector: ariaRole, score: 150 });\n  }\n  if (element.getAttribute("alt") && ["APPLET", "AREA", "IMG", "INPUT"].includes(element.nodeName))\n    candidates.push({ engine: "internal:attr", selector: `[alt=${escapeForAttributeSelector(element.getAttribute("alt"), true)}]`, score: 10 });\n  if (element.getAttribute("name") && ["BUTTON", "FORM", "FIELDSET", "FRAME", "IFRAME", "INPUT", "KEYGEN", "OBJECT", "OUTPUT", "SELECT", "TEXTAREA", "MAP", "META", "PARAM"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[name=${quoteAttributeValue(element.getAttribute("name"))}]`, score: 50 });\n  if (["INPUT", "TEXTAREA"].includes(element.nodeName) && element.getAttribute("type") !== "hidden") {\n    if (element.getAttribute("type"))\n      candidates.push({ engine: "css", selector: `${cssEscape(element.nodeName.toLowerCase())}[type=${quoteAttributeValue(element.getAttribute("type"))}]`, score: 50 });\n  }\n  if (["INPUT", "TEXTAREA", "SELECT"].includes(element.nodeName))\n    candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 50 });\n  const idAttr = element.getAttribute("id");\n  if (idAttr && !isGuidLike(idAttr))\n    candidates.push({ engine: "css", selector: makeSelectorForId(idAttr), score: 100 });\n  candidates.push({ engine: "css", selector: cssEscape(element.nodeName.toLowerCase()), score: 200 });\n  return candidates;\n}\nfunction buildTextCandidates(injectedScript, element, isTargetNode) {\n  if (element.nodeName === "SELECT")\n    return [];\n  const text = elementText(injectedScript._evaluator._cacheText, element).full.trim().replace(/\\s+/g, " ").substring(0, 80);\n  if (!text)\n    return [];\n  const candidates = [];\n  const escaped = escapeForTextSelector(text, false, true);\n  if (isTargetNode)\n    candidates.push({ engine: "text", selector: escaped, score: 10 });\n  if (escaped === text) {\n    let prefix = element.nodeName.toLowerCase();\n    if (element.hasAttribute("role"))\n      prefix += `[role=${quoteAttributeValue(element.getAttribute("role"))}]`;\n    candidates.push({ engine: "css", selector: `${prefix}:has-text("${text}")`, score: 10 });\n  }\n  return candidates;\n}\nfunction parentElementOrShadowHost2(element) {\n  if (element.parentElement)\n    return element.parentElement;\n  if (!element.parentNode)\n    return null;\n  if (element.parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE && element.parentNode.host)\n    return element.parentNode.host;\n  return null;\n}\nfunction makeSelectorForId(id) {\n  return /^[a-zA-Z][a-zA-Z0-9\\-\\_]+$/.test(id) ? "#" + id : `[id="${cssEscape(id)}"]`;\n}\nfunction cssFallback(injectedScript, targetElement, strict) {\n  const kFallbackScore = 1e7;\n  const root = targetElement.ownerDocument;\n  const tokens = [];\n  function uniqueCSSSelector(prefix) {\n    const path = tokens.slice();\n    if (prefix)\n      path.unshift(prefix);\n    const selector = path.join(" > ");\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const node = injectedScript.querySelector(parsedSelector, targetElement.ownerDocument, false);\n    return node === targetElement ? selector : void 0;\n  }\n  function makeStrict(selector) {\n    const token = { engine: "css", selector, score: kFallbackScore };\n    if (!strict)\n      return [token];\n    const parsedSelector = injectedScript.parseSelector(selector);\n    const elements = injectedScript.querySelectorAll(parsedSelector, targetElement.ownerDocument);\n    if (elements.length === 1)\n      return [token];\n    const nth = { engine: "nth", selector: String(elements.indexOf(targetElement)), score: kNthScore };\n    return [token, nth];\n  }\n  for (let element = targetElement; element && element !== root; element = parentElementOrShadowHost2(element)) {\n    const nodeName = element.nodeName.toLowerCase();\n    let bestTokenForLevel = "";\n    if (element.id) {\n      const token = makeSelectorForId(element.id);\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      bestTokenForLevel = token;\n    }\n    const parent = element.parentNode;\n    const classes = [...element.classList];\n    for (let i = 0; i < classes.length; ++i) {\n      const token = "." + cssEscape(classes.slice(0, i + 1).join("."));\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel && parent) {\n        const sameClassSiblings = parent.querySelectorAll(token);\n        if (sameClassSiblings.length === 1)\n          bestTokenForLevel = token;\n      }\n    }\n    if (parent) {\n      const siblings = [...parent.children];\n      const sameTagSiblings = siblings.filter((sibling) => sibling.nodeName.toLowerCase() === nodeName);\n      const token = sameTagSiblings.indexOf(element) === 0 ? cssEscape(nodeName) : `${cssEscape(nodeName)}:nth-child(${1 + siblings.indexOf(element)})`;\n      const selector = uniqueCSSSelector(token);\n      if (selector)\n        return makeStrict(selector);\n      if (!bestTokenForLevel)\n        bestTokenForLevel = token;\n    } else if (!bestTokenForLevel) {\n      bestTokenForLevel = nodeName;\n    }\n    tokens.unshift(bestTokenForLevel);\n  }\n  return makeStrict(uniqueCSSSelector());\n}\nfunction quoteAttributeValue(text) {\n  return `"${cssEscape(text).replace(/\\\\ /g, " ")}"`;\n}\nfunction joinTokens(tokens) {\n  const parts = [];\n  let lastEngine = "";\n  for (const { engine, selector } of tokens) {\n    if (parts.length && (lastEngine !== "css" || engine !== "css" || selector.startsWith(":nth-match(")))\n      parts.push(">>");\n    lastEngine = engine;\n    if (engine === "css")\n      parts.push(selector);\n    else\n      parts.push(`${engine}=${selector}`);\n  }\n  return parts.join(" ");\n}\nfunction combineScores(tokens) {\n  let score = 0;\n  for (let i = 0; i < tokens.length; i++)\n    score += tokens[i].score * (tokens.length - i);\n  return score;\n}\nfunction chooseFirstSelector(injectedScript, scope, targetElement, selectors, allowNthMatch, strict) {\n  const joined = selectors.map((tokens) => ({ tokens, score: combineScores(tokens) }));\n  joined.sort((a, b) => a.score - b.score);\n  let bestWithIndex = null;\n  for (const { tokens } of joined) {\n    const parsedSelector = injectedScript.parseSelector(joinTokens(tokens));\n    const result = injectedScript.querySelectorAll(parsedSelector, scope);\n    const isStrictEnough = !strict || result.length === 1;\n    const index = result.indexOf(targetElement);\n    if (index === 0 && isStrictEnough) {\n      return tokens;\n    }\n    if (!allowNthMatch || bestWithIndex || index === -1 || result.length > 5)\n      continue;\n    const nth = { engine: "nth", selector: String(index), score: kNthScore };\n    bestWithIndex = [...tokens, nth];\n  }\n  return bestWithIndex;\n}\nfunction isGuidLike(id) {\n  let lastCharacterType;\n  let transitionCount = 0;\n  for (let i = 0; i < id.length; ++i) {\n    const c = id[i];\n    let characterType;\n    if (c === "-" || c === "_")\n      continue;\n    if (c >= "a" && c <= "z")\n      characterType = "lower";\n    else if (c >= "A" && c <= "Z")\n      characterType = "upper";\n    else if (c >= "0" && c <= "9")\n      characterType = "digit";\n    else\n      characterType = "other";\n    if (characterType === "lower" && lastCharacterType === "upper") {\n      lastCharacterType = characterType;\n      continue;\n    }\n    if (lastCharacterType && lastCharacterType !== characterType)\n      ++transitionCount;\n    lastCharacterType = characterType;\n  }\n  return transitionCount >= id.length / 4;\n}\n\n// packages/playwright-core/src/server/injected/consoleApi.ts\nfunction createLocator(injectedScript, initial, options) {\n  class Locator {\n    constructor(selector, options2) {\n      this.selector = selector;\n      if (options2 == null ? void 0 : options2.hasText) {\n        const textSelector = "text=" + escapeForTextSelector(options2.hasText, false);\n        this.selector += ` >> internal:has=${JSON.stringify(textSelector)}`;\n      }\n      if (options2 == null ? void 0 : options2.has)\n        this.selector += ` >> internal:has=` + JSON.stringify(options2.has.selector);\n      const parsed = injectedScript.parseSelector(this.selector);\n      this.element = injectedScript.querySelector(parsed, document, false);\n      this.elements = injectedScript.querySelectorAll(parsed, document);\n    }\n    locator(selector, options2) {\n      return new Locator(this.selector ? this.selector + " >> " + selector : selector, options2);\n    }\n  }\n  return new Locator(initial, options);\n}\nvar ConsoleAPI = class {\n  constructor(injectedScript) {\n    this._injectedScript = injectedScript;\n    if (window.playwright)\n      return;\n    window.playwright = {\n      $: (selector, strict) => this._querySelector(selector, !!strict),\n      $$: (selector) => this._querySelectorAll(selector),\n      locator: (selector, options) => createLocator(this._injectedScript, selector, options),\n      inspect: (selector) => this._inspect(selector),\n      selector: (element) => this._selector(element),\n      resume: () => this._resume()\n    };\n  }\n  _querySelector(selector, strict) {\n    if (typeof selector !== "string")\n      throw new Error(`Usage: playwright.query(\'Playwright >> selector\').`);\n    const parsed = this._injectedScript.parseSelector(selector);\n    return this._injectedScript.querySelector(parsed, document, strict);\n  }\n  _querySelectorAll(selector) {\n    if (typeof selector !== "string")\n      throw new Error(`Usage: playwright.$$(\'Playwright >> selector\').`);\n    const parsed = this._injectedScript.parseSelector(selector);\n    return this._injectedScript.querySelectorAll(parsed, document);\n  }\n  _inspect(selector) {\n    if (typeof selector !== "string")\n      throw new Error(`Usage: playwright.inspect(\'Playwright >> selector\').`);\n    window.inspect(this._querySelector(selector, false));\n  }\n  _selector(element) {\n    if (!(element instanceof Element))\n      throw new Error(`Usage: playwright.selector(element).`);\n    return generateSelector(this._injectedScript, element, true).selector;\n  }\n  _resume() {\n    window.__pw_resume().catch(() => {\n    });\n  }\n};\nmodule.exports = ConsoleAPI;\n';
     exports2.source = source;
   }
 });
@@ -33513,7 +33810,7 @@ var require_crNetworkManager = __commonJS({
         });
         const timingPayload = responsePayload.timing;
         let timing;
-        if (timingPayload) {
+        if (timingPayload && !this._responseExtraInfoTracker.servedFromCache(request._requestId)) {
           timing = {
             startTime: (timingPayload.requestTime - request._timestamp + request._wallTime) * 1e3,
             domainLookupStart: timingPayload.dnsStart,
@@ -33785,6 +34082,10 @@ var require_crNetworkManager = __commonJS({
       requestServedFromCache(event) {
         const info = this._getOrCreateEntry(event.requestId);
         info.servedFromCache = true;
+      }
+      servedFromCache(requestId) {
+        const info = this._requests.get(requestId);
+        return !!(info !== null && info !== void 0 && info.servedFromCache);
       }
       responseReceivedExtraInfo(event) {
         const info = this._getOrCreateEntry(event.requestId);
@@ -36641,14 +36942,26 @@ var require_transport2 = __commonJS({
               yield transport.closeAndWait().catch((e) => null);
           }));
           yield new Promise((fulfill, reject) => {
-            transport._ws.addEventListener("open", () => __async(this, null, function* () {
+            transport._ws.on("open", () => __async(this, null, function* () {
               progress2.log(`<ws connected> ${url}`);
               fulfill(transport);
             }));
-            transport._ws.addEventListener("error", (event) => {
+            transport._ws.on("error", (event) => {
               progress2.log(`<ws connect error> ${url} ${event.message}`);
               reject(new Error("WebSocket error: " + event.message));
               transport._ws.close();
+            });
+            transport._ws.on("unexpected-response", (request, response) => {
+              const chunks = [];
+              const errorPrefix = `${url} ${response.statusCode} ${response.statusMessage}`;
+              response.on("data", (chunk) => chunks.push(chunk));
+              response.on("close", () => {
+                const error = chunks.length ? `${errorPrefix}
+${Buffer.concat(chunks)}` : errorPrefix;
+                progress2.log(`<ws unexpected response> ${error}`);
+                reject(new Error("WebSocket error: " + error));
+                transport._ws.close();
+              });
             });
           });
           success = true;
@@ -40887,9 +41200,7 @@ var require_firefox = __commonJS({
       }
     };
     exports2.Firefox = Firefox;
-    var kBandaidFirefoxUserPrefs = {
-      "network.cookie.cookieBehavior": 4
-    };
+    var kBandaidFirefoxUserPrefs = {};
   }
 });
 
@@ -40909,7 +41220,7 @@ var require_selectors = __commonJS({
         this._builtinEnginesInMainWorld = void 0;
         this._engines = void 0;
         this.guid = `selectors@${(0, _utils.createGuid)()}`;
-        this._builtinEngines = /* @__PURE__ */ new Set(["css", "css:light", "xpath", "xpath:light", "_react", "_vue", "text", "text:light", "id", "id:light", "data-testid", "data-testid:light", "data-test-id", "data-test-id:light", "data-test", "data-test:light", "nth", "visible", "control", "has", "role"]);
+        this._builtinEngines = /* @__PURE__ */ new Set(["css", "css:light", "xpath", "xpath:light", "_react", "_vue", "text", "text:light", "id", "id:light", "data-testid", "data-testid:light", "data-test-id", "data-test-id:light", "data-test", "data-test:light", "nth", "visible", "internal:control", "internal:has", "role", "internal:attr", "internal:label"]);
         this._builtinEnginesInMainWorld = /* @__PURE__ */ new Set(["_react", "_vue"]);
         this._engines = /* @__PURE__ */ new Map();
       }
@@ -43922,6 +44233,231 @@ var require_webkit = __commonJS({
   }
 });
 
+// node_modules/playwright-core/lib/server/debugController.js
+var require_debugController = __commonJS({
+  "node_modules/playwright-core/lib/server/debugController.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", {
+      value: true
+    });
+    exports2.DebugController = void 0;
+    var _processLauncher = require_processLauncher();
+    var _instrumentation = require_instrumentation();
+    var _recorder = require_recorder();
+    var _recorderApp = require_recorderApp();
+    var _locatorGenerators = require_locatorGenerators();
+    var internalMetadata = (0, _instrumentation.serverSideCallMetadata)();
+    var DebugController = class extends _instrumentation.SdkObject {
+      constructor(playwright) {
+        super({
+          attribution: {
+            isInternalPlaywright: true
+          },
+          instrumentation: (0, _instrumentation.createInstrumentation)()
+        }, void 0, "DebugController");
+        this._autoCloseTimer = void 0;
+        this._autoCloseAllowed = false;
+        this._trackHierarchyListener = void 0;
+        this._playwright = void 0;
+        this._reuseBrowser = false;
+        this._playwright = playwright;
+      }
+      setAutoCloseAllowed(allowed) {
+        this._autoCloseAllowed = allowed;
+      }
+      dispose() {
+        this.setTrackHierarcy(false);
+        this.setAutoCloseAllowed(false);
+        this.setReuseBrowser(false);
+      }
+      setTrackHierarcy(enabled) {
+        if (enabled && !this._trackHierarchyListener) {
+          this._trackHierarchyListener = {
+            onPageOpen: () => this._emitSnapshot(),
+            onPageNavigated: () => this._emitSnapshot(),
+            onPageClose: () => this._emitSnapshot()
+          };
+          this._playwright.instrumentation.addListener(this._trackHierarchyListener, null);
+        } else if (!enabled && this._trackHierarchyListener) {
+          this._playwright.instrumentation.removeListener(this._trackHierarchyListener);
+          this._trackHierarchyListener = void 0;
+        }
+      }
+      reuseBrowser() {
+        return this._reuseBrowser;
+      }
+      setReuseBrowser(enabled) {
+        this._reuseBrowser = enabled;
+      }
+      resetForReuse() {
+        return __async(this, null, function* () {
+          const contexts = /* @__PURE__ */ new Set();
+          for (const page of this._playwright.allPages())
+            contexts.add(page.context());
+          for (const context of contexts)
+            yield context.resetForReuse(internalMetadata, null);
+        });
+      }
+      navigateAll(url) {
+        return __async(this, null, function* () {
+          for (const p of this._playwright.allPages())
+            yield p.mainFrame().goto(internalMetadata, url);
+        });
+      }
+      setRecorderMode(params) {
+        return __async(this, null, function* () {
+          yield this._closeBrowsersWithoutPages();
+          if (params.mode === "none") {
+            for (const recorder of yield this._allRecorders()) {
+              recorder.setHighlightedSelector("");
+              recorder.setMode("none");
+            }
+            this.setAutoCloseEnabled(true);
+            return;
+          }
+          if (!this._playwright.allBrowsers().length)
+            yield this._playwright.chromium.launch(internalMetadata, {
+              headless: false
+            });
+          const pages = this._playwright.allPages();
+          if (!pages.length) {
+            const [browser] = this._playwright.allBrowsers();
+            const {
+              context
+            } = yield browser.newContextForReuse({}, internalMetadata);
+            yield context.newPage(internalMetadata);
+          }
+          for (const recorder of yield this._allRecorders()) {
+            recorder.setHighlightedSelector("");
+            if (params.mode === "recording")
+              recorder.setOutput(params.language, params.file);
+            recorder.setMode(params.mode);
+          }
+          this.setAutoCloseEnabled(true);
+        });
+      }
+      setAutoCloseEnabled(enabled) {
+        return __async(this, null, function* () {
+          if (!this._autoCloseAllowed)
+            return;
+          if (this._autoCloseTimer)
+            clearTimeout(this._autoCloseTimer);
+          if (!enabled)
+            return;
+          const heartBeat = () => {
+            if (!this._playwright.allPages().length)
+              selfDestruct();
+            else
+              this._autoCloseTimer = setTimeout(heartBeat, 5e3);
+          };
+          this._autoCloseTimer = setTimeout(heartBeat, 3e4);
+        });
+      }
+      highlightAll(selector) {
+        return __async(this, null, function* () {
+          for (const recorder of yield this._allRecorders())
+            recorder.setHighlightedSelector(selector);
+        });
+      }
+      hideHighlightAll() {
+        return __async(this, null, function* () {
+          yield this._playwright.hideHighlight();
+        });
+      }
+      allBrowsers() {
+        return [...this._playwright.allBrowsers()];
+      }
+      kill() {
+        return __async(this, null, function* () {
+          selfDestruct();
+        });
+      }
+      closeAllBrowsers() {
+        return __async(this, null, function* () {
+          yield Promise.all(this.allBrowsers().map((browser) => browser.close()));
+        });
+      }
+      _emitSnapshot() {
+        const browsers = [];
+        for (const browser of this._playwright.allBrowsers()) {
+          const b = {
+            contexts: []
+          };
+          browsers.push(b);
+          for (const context of browser.contexts()) {
+            const c = {
+              pages: []
+            };
+            b.contexts.push(c);
+            for (const page of context.pages())
+              c.pages.push(page.mainFrame().url());
+          }
+        }
+        this.emit(DebugController.Events.BrowsersChanged, browsers);
+      }
+      _allRecorders() {
+        return __async(this, null, function* () {
+          const contexts = /* @__PURE__ */ new Set();
+          for (const page of this._playwright.allPages())
+            contexts.add(page.context());
+          const result = yield Promise.all([...contexts].map((c) => _recorder.Recorder.show(c, {
+            omitCallTracking: true
+          }, () => Promise.resolve(new InspectingRecorderApp(this)))));
+          return result.filter(Boolean);
+        });
+      }
+      _closeBrowsersWithoutPages() {
+        return __async(this, null, function* () {
+          for (const browser of this._playwright.allBrowsers()) {
+            for (const context of browser.contexts()) {
+              if (!context.pages().length)
+                yield context.close((0, _instrumentation.serverSideCallMetadata)());
+            }
+            if (!browser.contexts())
+              yield browser.close();
+          }
+        });
+      }
+    };
+    exports2.DebugController = DebugController;
+    DebugController.Events = {
+      BrowsersChanged: "browsersChanged",
+      InspectRequested: "inspectRequested",
+      SourcesChanged: "sourcesChanged"
+    };
+    function selfDestruct() {
+      setTimeout(() => process.exit(0), 3e4);
+      (0, _processLauncher.gracefullyCloseAll)().then(() => {
+        process.exit(0);
+      });
+    }
+    var InspectingRecorderApp = class extends _recorderApp.EmptyRecorderApp {
+      constructor(debugController) {
+        super();
+        this._debugController = void 0;
+        this._debugController = debugController;
+      }
+      setSelector(selector) {
+        return __async(this, null, function* () {
+          const locators = ["javascript", "python", "java", "csharp"].map((l) => ({
+            name: l,
+            value: (0, _locatorGenerators.asLocator)(l, selector)
+          }));
+          this._debugController.emit(DebugController.Events.InspectRequested, {
+            selector,
+            locators
+          });
+        });
+      }
+      setSources(sources) {
+        return __async(this, null, function* () {
+          this._debugController.emit(DebugController.Events.SourcesChanged, sources);
+        });
+      }
+    };
+  }
+});
+
 // node_modules/playwright-core/lib/server/playwright.js
 var require_playwright = __commonJS({
   "node_modules/playwright-core/lib/server/playwright.js"(exports2) {
@@ -43940,6 +44476,7 @@ var require_playwright = __commonJS({
     var _webkit = require_webkit();
     var _instrumentation = require_instrumentation();
     var _debugLogger = require_debugLogger();
+    var _debugController = require_debugController();
     var Playwright = class extends _instrumentation.SdkObject {
       constructor(sdkLanguage, isInternalPlaywright) {
         super({
@@ -43955,6 +44492,7 @@ var require_playwright = __commonJS({
         this.firefox = void 0;
         this.webkit = void 0;
         this.options = void 0;
+        this.debugController = void 0;
         this._allPages = /* @__PURE__ */ new Set();
         this._allBrowsers = /* @__PURE__ */ new Set();
         this.instrumentation.addListener({
@@ -43977,6 +44515,7 @@ var require_playwright = __commonJS({
         this.electron = new _electron.Electron(this.options);
         this.android = new _android.Android(new _backendAdb.AdbBackend(), this.options);
         this.selectors = this.options.selectors;
+        this.debugController = new _debugController.DebugController(this);
       }
       hideHighlight() {
         return __async(this, null, function* () {
@@ -44199,7 +44738,7 @@ var require_recorderUtils = __commonJS({
     });
     exports2.metadataToCallLog = metadataToCallLog;
     function metadataToCallLog(metadata, status) {
-      var _metadata$params, _metadata$params2;
+      var _metadata$params, _metadata$params2, _metadata$error, _metadata$error$error;
       let title = metadata.apiName || metadata.method;
       if (metadata.method === "waitForEventInfo")
         title += `(${metadata.params.info.event})`;
@@ -44220,7 +44759,7 @@ var require_recorderUtils = __commonJS({
         messages: metadata.log,
         title,
         status,
-        error: metadata.error,
+        error: (_metadata$error = metadata.error) === null || _metadata$error === void 0 ? void 0 : (_metadata$error$error = _metadata$error.error) === null || _metadata$error$error === void 0 ? void 0 : _metadata$error$error.message,
         params,
         duration
       };
@@ -44421,6 +44960,7 @@ var require_recorder = __commonJS({
         this._handleSIGINT = void 0;
         this._recorderAppFactory = void 0;
         this._omitCallTracking = false;
+        this._currentLanguage = void 0;
         this._mode = params.mode || "none";
         this._recorderAppFactory = recorderAppFactory;
         this._contextRecorder = new ContextRecorder(context, params);
@@ -44429,6 +44969,7 @@ var require_recorder = __commonJS({
         this._debugger = _debugger.Debugger.lookup(context);
         this._handleSIGINT = params.handleSIGINT;
         context.instrumentation.addListener(this, context);
+        this._currentLanguage = this._contextRecorder.languageName();
       }
       static defaultRecorderAppFactory(recorder) {
         return __async(this, null, function* () {
@@ -44456,6 +44997,11 @@ var require_recorder = __commonJS({
             }
             if (data.event === "step") {
               this._debugger.resume(true);
+              return;
+            }
+            if (data.event === "fileChanged") {
+              this._currentLanguage = this._contextRecorder.languageName(data.params.file);
+              this._refreshOverlay();
               return;
             }
             if (data.event === "resume") {
@@ -44496,7 +45042,8 @@ var require_recorder = __commonJS({
             const uiState = {
               mode: this._mode,
               actionPoint,
-              actionSelector
+              actionSelector,
+              language: this._currentLanguage
             };
             return uiState;
           });
@@ -44725,6 +45272,13 @@ Unsupported language: '${language}'
         this._orderedLanguages = [primaryLanguage, ...languages];
         this._throttledOutputFile = outputFile ? new ThrottledFile(outputFile) : null;
         (_this$_generator = this._generator) === null || _this$_generator === void 0 ? void 0 : _this$_generator.restart();
+      }
+      languageName(id) {
+        for (const lang of this._orderedLanguages) {
+          if (!id || lang.id === id)
+            return lang.highlighter;
+        }
+        return "javascript";
       }
       install() {
         return __async(this, null, function* () {
@@ -46437,6 +46991,19 @@ var require_fetch = __commonJS({
             break;
           case "httponly":
             cookie.httpOnly = true;
+            break;
+          case "samesite":
+            switch (value2.toLowerCase()) {
+              case "none":
+                cookie.sameSite = "None";
+                break;
+              case "lax":
+                cookie.sameSite = "Lax";
+                break;
+              case "strict":
+                cookie.sameSite = "Strict";
+                break;
+            }
             break;
         }
       }
@@ -49415,61 +49982,6 @@ var require_browserDispatcher = __commonJS({
   }
 });
 
-// node_modules/playwright-core/lib/server/dispatchers/jsonPipeDispatcher.js
-var require_jsonPipeDispatcher = __commonJS({
-  "node_modules/playwright-core/lib/server/dispatchers/jsonPipeDispatcher.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", {
-      value: true
-    });
-    exports2.JsonPipeDispatcher = void 0;
-    var _dispatcher = require_dispatcher();
-    var _utils = require_utils();
-    var _serializers = require_serializers();
-    var JsonPipeDispatcher = class extends _dispatcher.Dispatcher {
-      constructor(scope) {
-        super(scope, {
-          guid: "jsonPipe@" + (0, _utils.createGuid)()
-        }, "JsonPipe", {});
-        this._type_JsonPipe = true;
-      }
-      send(params) {
-        return __async(this, null, function* () {
-          this.emit("message", params.message);
-        });
-      }
-      close() {
-        return __async(this, null, function* () {
-          this.emit("close");
-          if (!this._disposed) {
-            this._dispatchEvent("closed", {});
-            this._dispose();
-          }
-        });
-      }
-      dispatch(message) {
-        if (!this._disposed)
-          this._dispatchEvent("message", {
-            message
-          });
-      }
-      wasClosed(error) {
-        if (!this._disposed) {
-          const params = error ? {
-            error: (0, _serializers.serializeError)(error)
-          } : {};
-          this._dispatchEvent("closed", params);
-          this._dispose();
-        }
-      }
-      dispose() {
-        this._dispose();
-      }
-    };
-    exports2.JsonPipeDispatcher = JsonPipeDispatcher;
-  }
-});
-
 // node_modules/playwright-core/lib/server/dispatchers/browserTypeDispatcher.js
 var require_browserTypeDispatcher = __commonJS({
   "node_modules/playwright-core/lib/server/dispatchers/browserTypeDispatcher.js"(exports2) {
@@ -49481,54 +49993,6 @@ var require_browserTypeDispatcher = __commonJS({
     var _browserDispatcher = require_browserDispatcher();
     var _dispatcher = require_dispatcher();
     var _browserContextDispatcher = require_browserContextDispatcher();
-    var _jsonPipeDispatcher = require_jsonPipeDispatcher();
-    var _userAgent = require_userAgent();
-    var socks = _interopRequireWildcard(require_socksProxy());
-    var _events = _interopRequireDefault(require("events"));
-    var _progress = require_progress();
-    var _transport = require_transport2();
-    var _validator = require_validator();
-    function _interopRequireDefault(obj) {
-      return obj && obj.__esModule ? obj : { default: obj };
-    }
-    function _getRequireWildcardCache(nodeInterop) {
-      if (typeof WeakMap !== "function")
-        return null;
-      var cacheBabelInterop = new WeakMap();
-      var cacheNodeInterop = new WeakMap();
-      return (_getRequireWildcardCache = function(nodeInterop2) {
-        return nodeInterop2 ? cacheNodeInterop : cacheBabelInterop;
-      })(nodeInterop);
-    }
-    function _interopRequireWildcard(obj, nodeInterop) {
-      if (!nodeInterop && obj && obj.__esModule) {
-        return obj;
-      }
-      if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
-        return { default: obj };
-      }
-      var cache = _getRequireWildcardCache(nodeInterop);
-      if (cache && cache.has(obj)) {
-        return cache.get(obj);
-      }
-      var newObj = {};
-      var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
-      for (var key in obj) {
-        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
-          var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
-          if (desc && (desc.get || desc.set)) {
-            Object.defineProperty(newObj, key, desc);
-          } else {
-            newObj[key] = obj[key];
-          }
-        }
-      }
-      newObj.default = obj;
-      if (cache) {
-        cache.set(obj, newObj);
-      }
-      return newObj;
-    }
     var BrowserTypeDispatcher = class extends _dispatcher.Dispatcher {
       constructor(scope, browserType) {
         super(scope, browserType, "BrowserType", {
@@ -49563,122 +50027,8 @@ var require_browserTypeDispatcher = __commonJS({
           };
         });
       }
-      connect(params, metadata) {
-        return __async(this, null, function* () {
-          const controller = new _progress.ProgressController(metadata, this._object);
-          controller.setLogName("browser");
-          return yield controller.run((progress2) => __async(this, null, function* () {
-            const paramsHeaders = Object.assign({
-              "User-Agent": (0, _userAgent.getUserAgent)()
-            }, params.headers || {});
-            const transport = yield _transport.WebSocketTransport.connect(progress2, params.wsEndpoint, paramsHeaders, true);
-            let socksInterceptor;
-            const pipe = new _jsonPipeDispatcher.JsonPipeDispatcher(this);
-            transport.onmessage = (json) => {
-              var _socksInterceptor;
-              if (json.method === "__create__" && json.params.type === "SocksSupport")
-                socksInterceptor = new SocksInterceptor(transport, params.socksProxyRedirectPortForTest, json.params.guid);
-              if ((_socksInterceptor = socksInterceptor) !== null && _socksInterceptor !== void 0 && _socksInterceptor.interceptMessage(json))
-                return;
-              const cb = () => {
-                try {
-                  pipe.dispatch(json);
-                } catch (e) {
-                  transport.close();
-                }
-              };
-              if (params.slowMo)
-                setTimeout(cb, params.slowMo);
-              else
-                cb();
-            };
-            pipe.on("message", (message) => {
-              transport.send(message);
-            });
-            transport.onclose = () => {
-              var _socksInterceptor2;
-              (_socksInterceptor2 = socksInterceptor) === null || _socksInterceptor2 === void 0 ? void 0 : _socksInterceptor2.cleanup();
-              pipe.wasClosed();
-            };
-            pipe.on("close", () => transport.close());
-            return {
-              pipe
-            };
-          }), params.timeout || 0);
-        });
-      }
     };
     exports2.BrowserTypeDispatcher = BrowserTypeDispatcher;
-    var SocksInterceptor = class {
-      constructor(transport, redirectPortForTest, socksSupportObjectGuid) {
-        this._handler = void 0;
-        this._channel = void 0;
-        this._socksSupportObjectGuid = void 0;
-        this._ids = /* @__PURE__ */ new Set();
-        this._handler = new socks.SocksProxyHandler(redirectPortForTest);
-        this._socksSupportObjectGuid = socksSupportObjectGuid;
-        let lastId = -1;
-        this._channel = new Proxy(new _events.default(), {
-          get: (obj, prop) => {
-            if (prop in obj || obj[prop] !== void 0 || typeof prop !== "string")
-              return obj[prop];
-            return (params) => {
-              try {
-                const id = --lastId;
-                this._ids.add(id);
-                const validator = (0, _validator.findValidator)("SocksSupport", prop, "Params");
-                params = validator(params, "", {
-                  tChannelImpl: tChannelForSocks,
-                  binary: "toBase64"
-                });
-                transport.send({
-                  id,
-                  guid: socksSupportObjectGuid,
-                  method: prop,
-                  params,
-                  metadata: {
-                    stack: [],
-                    apiName: "",
-                    internal: true
-                  }
-                });
-              } catch (e) {
-              }
-            };
-          }
-        });
-        this._handler.on(socks.SocksProxyHandler.Events.SocksConnected, (payload) => this._channel.socksConnected(payload));
-        this._handler.on(socks.SocksProxyHandler.Events.SocksData, (payload) => this._channel.socksData(payload));
-        this._handler.on(socks.SocksProxyHandler.Events.SocksError, (payload) => this._channel.socksError(payload));
-        this._handler.on(socks.SocksProxyHandler.Events.SocksFailed, (payload) => this._channel.socksFailed(payload));
-        this._handler.on(socks.SocksProxyHandler.Events.SocksEnd, (payload) => this._channel.socksEnd(payload));
-        this._channel.on("socksRequested", (payload) => this._handler.socketRequested(payload));
-        this._channel.on("socksClosed", (payload) => this._handler.socketClosed(payload));
-        this._channel.on("socksData", (payload) => this._handler.sendSocketData(payload));
-      }
-      cleanup() {
-        this._handler.cleanup();
-      }
-      interceptMessage(message) {
-        if (this._ids.has(message.id)) {
-          this._ids.delete(message.id);
-          return true;
-        }
-        if (message.guid === this._socksSupportObjectGuid) {
-          const validator = (0, _validator.findValidator)("SocksSupport", message.method, "Event");
-          const params = validator(message.params, "", {
-            tChannelImpl: tChannelForSocks,
-            binary: "fromBase64"
-          });
-          this._channel.emit(message.method, params);
-          return true;
-        }
-        return false;
-      }
-    };
-    function tChannelForSocks(names, arg, path, context) {
-      throw new _validator.ValidationError(`${path}: channels are not expected in SocksSupport`);
-    }
   }
 });
 
@@ -49828,6 +50178,61 @@ var require_zipFile = __commonJS({
   }
 });
 
+// node_modules/playwright-core/lib/server/dispatchers/jsonPipeDispatcher.js
+var require_jsonPipeDispatcher = __commonJS({
+  "node_modules/playwright-core/lib/server/dispatchers/jsonPipeDispatcher.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", {
+      value: true
+    });
+    exports2.JsonPipeDispatcher = void 0;
+    var _dispatcher = require_dispatcher();
+    var _utils = require_utils();
+    var _serializers = require_serializers();
+    var JsonPipeDispatcher = class extends _dispatcher.Dispatcher {
+      constructor(scope) {
+        super(scope, {
+          guid: "jsonPipe@" + (0, _utils.createGuid)()
+        }, "JsonPipe", {});
+        this._type_JsonPipe = true;
+      }
+      send(params) {
+        return __async(this, null, function* () {
+          this.emit("message", params.message);
+        });
+      }
+      close() {
+        return __async(this, null, function* () {
+          this.emit("close");
+          if (!this._disposed) {
+            this._dispatchEvent("closed", {});
+            this._dispose();
+          }
+        });
+      }
+      dispatch(message) {
+        if (!this._disposed)
+          this._dispatchEvent("message", {
+            message
+          });
+      }
+      wasClosed(error) {
+        if (!this._disposed) {
+          const params = error ? {
+            error: (0, _serializers.serializeError)(error)
+          } : {};
+          this._dispatchEvent("closed", params);
+          this._dispose();
+        }
+      }
+      dispose() {
+        this._dispose();
+      }
+    };
+    exports2.JsonPipeDispatcher = JsonPipeDispatcher;
+  }
+});
+
 // node_modules/playwright-core/lib/server/dispatchers/localUtilsDispatcher.js
 var require_localUtilsDispatcher = __commonJS({
   "node_modules/playwright-core/lib/server/dispatchers/localUtilsDispatcher.js"(exports2) {
@@ -49836,6 +50241,7 @@ var require_localUtilsDispatcher = __commonJS({
       value: true
     });
     exports2.LocalUtilsDispatcher = void 0;
+    var _events = _interopRequireDefault(require("events"));
     var _fs = _interopRequireDefault(require("fs"));
     var _path = _interopRequireDefault(require("path"));
     var _manualPromise = require_manualPromise();
@@ -49843,14 +50249,59 @@ var require_localUtilsDispatcher = __commonJS({
     var _dispatcher = require_dispatcher();
     var _zipBundle = require_zipBundle();
     var _zipFile = require_zipFile();
+    var _jsonPipeDispatcher = require_jsonPipeDispatcher();
+    var socks = _interopRequireWildcard(require_socksProxy());
+    var _transport = require_transport2();
+    var _userAgent = require_userAgent();
+    var _progress = require_progress();
+    var _validator = require_validator();
+    var _netUtils = require_netUtils();
+    var _instrumentation = require_instrumentation();
+    function _getRequireWildcardCache(nodeInterop) {
+      if (typeof WeakMap !== "function")
+        return null;
+      var cacheBabelInterop = new WeakMap();
+      var cacheNodeInterop = new WeakMap();
+      return (_getRequireWildcardCache = function(nodeInterop2) {
+        return nodeInterop2 ? cacheNodeInterop : cacheBabelInterop;
+      })(nodeInterop);
+    }
+    function _interopRequireWildcard(obj, nodeInterop) {
+      if (!nodeInterop && obj && obj.__esModule) {
+        return obj;
+      }
+      if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
+        return { default: obj };
+      }
+      var cache = _getRequireWildcardCache(nodeInterop);
+      if (cache && cache.has(obj)) {
+        return cache.get(obj);
+      }
+      var newObj = {};
+      var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+      for (var key in obj) {
+        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+          if (desc && (desc.get || desc.set)) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+      newObj.default = obj;
+      if (cache) {
+        cache.set(obj, newObj);
+      }
+      return newObj;
+    }
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
     var LocalUtilsDispatcher = class extends _dispatcher.Dispatcher {
-      constructor(scope) {
-        super(scope, {
-          guid: "localUtils@" + (0, _utils.createGuid)()
-        }, "LocalUtils", {});
+      constructor(scope, playwright) {
+        const localUtils = new _instrumentation.SdkObject(playwright, "localUtils", "localUtils");
+        super(scope, localUtils, "LocalUtils", {});
         this._type_LocalUtils = void 0;
         this._harBakends = /* @__PURE__ */ new Map();
         this._type_LocalUtils = true;
@@ -49964,6 +50415,51 @@ var require_localUtilsDispatcher = __commonJS({
           }
           zipFile.close();
           yield _fs.default.promises.unlink(params.zipFile);
+        });
+      }
+      connect(params, metadata) {
+        return __async(this, null, function* () {
+          const controller = new _progress.ProgressController(metadata, this._object);
+          controller.setLogName("browser");
+          return yield controller.run((progress2) => __async(this, null, function* () {
+            const paramsHeaders = Object.assign({
+              "User-Agent": (0, _userAgent.getUserAgent)()
+            }, params.headers || {});
+            const wsEndpoint = yield urlToWSEndpoint(progress2, params.wsEndpoint);
+            const transport = yield _transport.WebSocketTransport.connect(progress2, wsEndpoint, paramsHeaders, true);
+            let socksInterceptor;
+            const pipe = new _jsonPipeDispatcher.JsonPipeDispatcher(this);
+            transport.onmessage = (json) => {
+              var _socksInterceptor;
+              if (json.method === "__create__" && json.params.type === "SocksSupport")
+                socksInterceptor = new SocksInterceptor(transport, params.socksProxyRedirectPortForTest, json.params.guid);
+              if ((_socksInterceptor = socksInterceptor) !== null && _socksInterceptor !== void 0 && _socksInterceptor.interceptMessage(json))
+                return;
+              const cb = () => {
+                try {
+                  pipe.dispatch(json);
+                } catch (e) {
+                  transport.close();
+                }
+              };
+              if (params.slowMo)
+                setTimeout(cb, params.slowMo);
+              else
+                cb();
+            };
+            pipe.on("message", (message) => {
+              transport.send(message);
+            });
+            transport.onclose = () => {
+              var _socksInterceptor2;
+              (_socksInterceptor2 = socksInterceptor) === null || _socksInterceptor2 === void 0 ? void 0 : _socksInterceptor2.cleanup();
+              pipe.wasClosed();
+            };
+            pipe.on("close", () => transport.close());
+            return {
+              pipe
+            };
+          }), params.timeout || 0);
         });
       }
     };
@@ -50083,6 +50579,73 @@ var require_localUtilsDispatcher = __commonJS({
         (_this$_zipFile = this._zipFile) === null || _this$_zipFile === void 0 ? void 0 : _this$_zipFile.close();
       }
     };
+    var SocksInterceptor = class {
+      constructor(transport, redirectPortForTest, socksSupportObjectGuid) {
+        this._handler = void 0;
+        this._channel = void 0;
+        this._socksSupportObjectGuid = void 0;
+        this._ids = /* @__PURE__ */ new Set();
+        this._handler = new socks.SocksProxyHandler(redirectPortForTest);
+        this._socksSupportObjectGuid = socksSupportObjectGuid;
+        let lastId = -1;
+        this._channel = new Proxy(new _events.default(), {
+          get: (obj, prop) => {
+            if (prop in obj || obj[prop] !== void 0 || typeof prop !== "string")
+              return obj[prop];
+            return (params) => {
+              try {
+                const id = --lastId;
+                this._ids.add(id);
+                const validator = (0, _validator.findValidator)("SocksSupport", prop, "Params");
+                params = validator(params, "", {
+                  tChannelImpl: tChannelForSocks,
+                  binary: "toBase64"
+                });
+                transport.send({
+                  id,
+                  guid: socksSupportObjectGuid,
+                  method: prop,
+                  params,
+                  metadata: {
+                    stack: [],
+                    apiName: "",
+                    internal: true
+                  }
+                });
+              } catch (e) {
+              }
+            };
+          }
+        });
+        this._handler.on(socks.SocksProxyHandler.Events.SocksConnected, (payload) => this._channel.socksConnected(payload));
+        this._handler.on(socks.SocksProxyHandler.Events.SocksData, (payload) => this._channel.socksData(payload));
+        this._handler.on(socks.SocksProxyHandler.Events.SocksError, (payload) => this._channel.socksError(payload));
+        this._handler.on(socks.SocksProxyHandler.Events.SocksFailed, (payload) => this._channel.socksFailed(payload));
+        this._handler.on(socks.SocksProxyHandler.Events.SocksEnd, (payload) => this._channel.socksEnd(payload));
+        this._channel.on("socksRequested", (payload) => this._handler.socketRequested(payload));
+        this._channel.on("socksClosed", (payload) => this._handler.socketClosed(payload));
+        this._channel.on("socksData", (payload) => this._handler.sendSocketData(payload));
+      }
+      cleanup() {
+        this._handler.cleanup();
+      }
+      interceptMessage(message) {
+        if (this._ids.has(message.id)) {
+          this._ids.delete(message.id);
+          return true;
+        }
+        if (message.guid === this._socksSupportObjectGuid) {
+          const validator = (0, _validator.findValidator)("SocksSupport", message.method, "Event");
+          const params = validator(message.params, "", {
+            tChannelImpl: tChannelForSocks,
+            binary: "fromBase64"
+          });
+          this._channel.emit(message.method, params);
+          return true;
+        }
+        return false;
+      }
+    };
     function countMatchingHeaders(harHeaders, headers) {
       const set = new Set(headers.map((h) => h.name.toLowerCase() + ":" + h.value));
       let matches = 0;
@@ -50091,6 +50654,41 @@ var require_localUtilsDispatcher = __commonJS({
           ++matches;
       }
       return matches;
+    }
+    function tChannelForSocks(names, arg, path, context) {
+      throw new _validator.ValidationError(`${path}: channels are not expected in SocksSupport`);
+    }
+    function urlToWSEndpoint(progress2, endpointURL) {
+      return __async(this, null, function* () {
+        if (endpointURL.startsWith("ws"))
+          return endpointURL;
+        progress2.log(`<ws preparing> retrieving websocket url from ${endpointURL}`);
+        const fetchUrl = new URL(endpointURL);
+        if (!fetchUrl.pathname.endsWith("/"))
+          fetchUrl.pathname += "/";
+        fetchUrl.pathname += "json";
+        const json = yield (0, _netUtils.fetchData)({
+          url: fetchUrl.toString(),
+          method: "GET",
+          timeout: progress2.timeUntilDeadline(),
+          headers: {
+            "User-Agent": (0, _userAgent.getUserAgent)()
+          }
+        }, (params, response) => __async(this, null, function* () {
+          return new Error(`Unexpected status ${response.statusCode} when connecting to ${fetchUrl.toString()}.
+This does not look like a Playwright server, try connecting via ws://.`);
+        }));
+        progress2.throwIfAborted();
+        const wsUrl = new URL(endpointURL);
+        let wsEndpointPath = JSON.parse(json).wsEndpointPath;
+        if (wsEndpointPath.startsWith("/"))
+          wsEndpointPath = wsEndpointPath.substring(1);
+        if (!wsUrl.pathname.endsWith("/"))
+          wsUrl.pathname += "/";
+        wsUrl.pathname += wsEndpointPath;
+        wsUrl.protocol = wsUrl.protocol === "https:" ? "wss:" : "ws:";
+        return wsUrl.toString();
+      });
     }
   }
 });
@@ -50152,7 +50750,7 @@ var require_playwrightDispatcher = __commonJS({
           webkit: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.webkit),
           android: new _androidDispatcher.AndroidDispatcher(scope, playwright.android),
           electron: new _electronDispatcher.ElectronDispatcher(scope, playwright.electron),
-          utils: new _localUtilsDispatcher.LocalUtilsDispatcher(scope),
+          utils: new _localUtilsDispatcher.LocalUtilsDispatcher(scope, playwright),
           deviceDescriptors,
           selectors: new _selectorsDispatcher.SelectorsDispatcher(scope, (browserDispatcher === null || browserDispatcher === void 0 ? void 0 : browserDispatcher.selectors) || playwright.selectors),
           preLaunchedBrowser: browserDispatcher,
@@ -51128,6 +51726,14 @@ var require_locator = __commonJS({
       value: true
     });
     exports2.Locator = exports2.FrameLocator = void 0;
+    exports2.getByAltTextSelector = getByAltTextSelector;
+    exports2.getByLabelSelector = getByLabelSelector;
+    exports2.getByPlaceholderSelector = getByPlaceholderSelector;
+    exports2.getByRoleSelector = getByRoleSelector;
+    exports2.getByTestIdSelector = getByTestIdSelector;
+    exports2.getByTextSelector = getByTextSelector;
+    exports2.getByTitleSelector = getByTitleSelector;
+    exports2.setTestIdAttribute = setTestIdAttribute;
     var util = _interopRequireWildcard(require("util"));
     var _utils = require_utils();
     var _elementHandle = require_elementHandle();
@@ -51180,17 +51786,14 @@ var require_locator = __commonJS({
         this._frame = frame;
         this._selector = selector;
         if (options !== null && options !== void 0 && options.hasText) {
-          const text = options.hasText;
-          if ((0, _utils.isRegExp)(text))
-            this._selector += ` >> has=${JSON.stringify("text=" + text.toString())}`;
-          else
-            this._selector += ` >> :scope:has-text(${(0, _stringUtils.escapeWithQuotes)(text, '"')})`;
+          const textSelector = "text=" + (0, _stringUtils.escapeForTextSelector)(options.hasText, false);
+          this._selector += ` >> internal:has=${JSON.stringify(textSelector)}`;
         }
         if (options !== null && options !== void 0 && options.has) {
           const locator = options.has;
           if (locator._frame !== frame)
             throw new Error(`Inner "has" locator must belong to the same frame.`);
-          this._selector += ` >> has=` + JSON.stringify(locator._selector);
+          this._selector += ` >> internal:has=` + JSON.stringify(locator._selector);
         }
       }
       _withElement(task, timeout) {
@@ -51294,6 +51897,27 @@ var require_locator = __commonJS({
       }
       locator(selector, options) {
         return new Locator(this._frame, this._selector + " >> " + selector, options);
+      }
+      getByTestId(testId) {
+        return this.locator(getByTestIdSelector(testId));
+      }
+      getByAltText(text, options) {
+        return this.locator(getByAltTextSelector(text, options));
+      }
+      getByLabel(text, options) {
+        return this.locator(getByLabelSelector(text, options));
+      }
+      getByPlaceholder(text, options) {
+        return this.locator(getByPlaceholderSelector(text, options));
+      }
+      getByText(text, options) {
+        return this.locator(getByTextSelector(text, options));
+      }
+      getByTitle(text, options) {
+        return this.locator(getByTitleSelector(text, options));
+      }
+      getByRole(role, options = {}) {
+        return this.locator(getByRoleSelector(role, options));
       }
       frameLocator(selector) {
         return new FrameLocator(this._frame, this._selector + " >> " + selector);
@@ -51542,10 +52166,31 @@ var require_locator = __commonJS({
         this._frameSelector = selector;
       }
       locator(selector, options) {
-        return new Locator(this._frame, this._frameSelector + " >> control=enter-frame >> " + selector, options);
+        return new Locator(this._frame, this._frameSelector + " >> internal:control=enter-frame >> " + selector, options);
+      }
+      getByTestId(testId) {
+        return this.locator(getByTestIdSelector(testId));
+      }
+      getByAltText(text, options) {
+        return this.locator(getByAltTextSelector(text, options));
+      }
+      getByLabel(text, options) {
+        return this.locator(getByLabelSelector(text, options));
+      }
+      getByPlaceholder(text, options) {
+        return this.locator(getByPlaceholderSelector(text, options));
+      }
+      getByText(text, options) {
+        return this.locator(getByTextSelector(text, options));
+      }
+      getByTitle(text, options) {
+        return this.locator(getByTitleSelector(text, options));
+      }
+      getByRole(role, options = {}) {
+        return this.locator(getByRoleSelector(role, options));
       }
       frameLocator(selector) {
-        return new FrameLocator(this._frame, this._frameSelector + " >> control=enter-frame >> " + selector);
+        return new FrameLocator(this._frame, this._frameSelector + " >> internal:control=enter-frame >> " + selector);
       }
       first() {
         return new FrameLocator(this._frame, this._frameSelector + " >> nth=0");
@@ -51558,6 +52203,55 @@ var require_locator = __commonJS({
       }
     };
     exports2.FrameLocator = FrameLocator;
+    var testIdAttributeName = "data-testid";
+    function setTestIdAttribute(attributeName) {
+      testIdAttributeName = attributeName;
+    }
+    function getByAttributeTextSelector(attrName, text, options) {
+      if (!(0, _utils.isString)(text))
+        return `internal:attr=[${attrName}=${text}]`;
+      return `internal:attr=[${attrName}=${(0, _stringUtils.escapeForAttributeSelector)(text, (options === null || options === void 0 ? void 0 : options.exact) || false)}]`;
+    }
+    function getByTestIdSelector(testId) {
+      return getByAttributeTextSelector(testIdAttributeName, testId, {
+        exact: true
+      });
+    }
+    function getByLabelSelector(text, options) {
+      return "internal:label=" + (0, _stringUtils.escapeForTextSelector)(text, !!(options !== null && options !== void 0 && options.exact));
+    }
+    function getByAltTextSelector(text, options) {
+      return getByAttributeTextSelector("alt", text, options);
+    }
+    function getByTitleSelector(text, options) {
+      return getByAttributeTextSelector("title", text, options);
+    }
+    function getByPlaceholderSelector(text, options) {
+      return getByAttributeTextSelector("placeholder", text, options);
+    }
+    function getByTextSelector(text, options) {
+      return "text=" + (0, _stringUtils.escapeForTextSelector)(text, !!(options !== null && options !== void 0 && options.exact));
+    }
+    function getByRoleSelector(role, options = {}) {
+      const props = [];
+      if (options.checked !== void 0)
+        props.push(["checked", String(options.checked)]);
+      if (options.disabled !== void 0)
+        props.push(["disabled", String(options.disabled)]);
+      if (options.selected !== void 0)
+        props.push(["selected", String(options.selected)]);
+      if (options.expanded !== void 0)
+        props.push(["expanded", String(options.expanded)]);
+      if (options.includeHidden !== void 0)
+        props.push(["include-hidden", String(options.includeHidden)]);
+      if (options.level !== void 0)
+        props.push(["level", String(options.level)]);
+      if (options.name !== void 0)
+        props.push(["name", (0, _utils.isString)(options.name) ? (0, _stringUtils.escapeForAttributeSelector)(options.name, false) : String(options.name)]);
+      if (options.pressed !== void 0)
+        props.push(["pressed", String(options.pressed)]);
+      return `role=${role}${props.map(([n, v]) => `[${n}=${v}]`).join("")}`;
+    }
   }
 });
 
@@ -52508,6 +53202,11 @@ var require_network2 = __commonJS({
           return (yield response._channel.sizes()).sizes;
         });
       }
+      _setResponseEndTiming(responseEndTiming) {
+        this._timing.responseEnd = responseEndTiming;
+        if (this._timing.responseStart === -1)
+          this._timing.responseStart = responseEndTiming;
+      }
       _finalRequest() {
         return this._redirectedTo ? this._redirectedTo._finalRequest() : this;
       }
@@ -53293,6 +53992,27 @@ var require_frame = __commonJS({
       }
       locator(selector, options) {
         return new _locator.Locator(this, selector, options);
+      }
+      getByTestId(testId) {
+        return this.locator((0, _locator.getByTestIdSelector)(testId));
+      }
+      getByAltText(text, options) {
+        return this.locator((0, _locator.getByAltTextSelector)(text, options));
+      }
+      getByLabel(text, options) {
+        return this.locator((0, _locator.getByLabelSelector)(text, options));
+      }
+      getByPlaceholder(text, options) {
+        return this.locator((0, _locator.getByPlaceholderSelector)(text, options));
+      }
+      getByText(text, options) {
+        return this.locator((0, _locator.getByTextSelector)(text, options));
+      }
+      getByTitle(text, options) {
+        return this.locator((0, _locator.getByTitleSelector)(text, options));
+      }
+      getByRole(role, options = {}) {
+        return this.locator((0, _locator.getByRoleSelector)(role, options));
       }
       frameLocator(selector) {
         return new _locator.FrameLocator(this, selector);
@@ -54812,6 +55532,27 @@ var require_page2 = __commonJS({
       locator(selector, options) {
         return this.mainFrame().locator(selector, options);
       }
+      getByTestId(testId) {
+        return this.mainFrame().getByTestId(testId);
+      }
+      getByAltText(text, options) {
+        return this.mainFrame().getByAltText(text, options);
+      }
+      getByLabel(text, options) {
+        return this.mainFrame().getByLabel(text, options);
+      }
+      getByPlaceholder(text, options) {
+        return this.mainFrame().getByPlaceholder(text, options);
+      }
+      getByText(text, options) {
+        return this.mainFrame().getByText(text, options);
+      }
+      getByTitle(text, options) {
+        return this.mainFrame().getByTitle(text, options);
+      }
+      getByRole(role, options = {}) {
+        return this.mainFrame().getByRole(role, options);
+      }
       frameLocator(selector) {
         return this.mainFrame().frameLocator(selector);
       }
@@ -55265,8 +56006,7 @@ var require_browserContext2 = __commonJS({
       }
       _onRequestFailed(request, responseEndTiming, failureText, page) {
         request._failureText = failureText || null;
-        if (request._timing)
-          request._timing.responseEnd = responseEndTiming;
+        request._setResponseEndTiming(responseEndTiming);
         this.emit(_events.Events.BrowserContext.RequestFailed, request);
         if (page)
           page.emit(_events.Events.Page.RequestFailed, request);
@@ -55278,8 +56018,7 @@ var require_browserContext2 = __commonJS({
         const request = network.Request.from(params.request);
         const response = network.Response.fromNullable(params.response);
         const page = _page.Page.fromNullable(params.page);
-        if (request._timing)
-          request._timing.responseEnd = responseEndTiming;
+        request._setResponseEndTiming(responseEndTiming);
         this.emit(_events.Events.BrowserContext.RequestFinished, request);
         if (page)
           page.emit(_events.Events.Page.RequestFinished, request);
@@ -55880,6 +56619,7 @@ var require_browserType2 = __commonJS({
             const headers = __spreadValues({
               "x-playwright-browser": this.name()
             }, params.headers);
+            const localUtils = this._connection.localUtils();
             const connectParams = {
               wsEndpoint,
               headers,
@@ -55890,7 +56630,7 @@ var require_browserType2 = __commonJS({
               connectParams.socksProxyRedirectPortForTest = params.__testHookRedirectPortForwarding;
             const {
               pipe
-            } = yield this._channel.connect(connectParams);
+            } = yield localUtils._channel.connect(connectParams);
             const closePipe = () => pipe.close().catch(() => {
             });
             const connection = new _connection.Connection(this._connection.localUtils());
@@ -56553,6 +57293,7 @@ var require_selectors2 = __commonJS({
     exports2.SelectorsOwner = exports2.Selectors = void 0;
     var _clientHelper = require_clientHelper();
     var _channelOwner = require_channelOwner();
+    var _locator = require_locator();
     var Selectors = class {
       constructor() {
         this._channels = /* @__PURE__ */ new Set();
@@ -56569,6 +57310,9 @@ var require_selectors2 = __commonJS({
             yield channel._channel.register(params);
           this._registrations.push(params);
         });
+      }
+      setTestIdAttribute(attributeName) {
+        (0, _locator.setTestIdAttribute)(attributeName);
       }
       _addChannel(channel) {
         this._channels.add(channel);
@@ -56737,6 +57481,7 @@ var require_connection = __commonJS({
     var _debugLogger = require_debugLogger();
     var _selectors = require_selectors2();
     var _android = require_android2();
+    var _stackTrace = require_stackTrace();
     var _artifact = require_artifact2();
     var _events = require("events");
     var _jsonPipe = require_jsonPipe();
@@ -56885,6 +57630,9 @@ var require_connection = __commonJS({
         }));
       }
       close(errorMessage = "Connection closed") {
+        const stack = (0, _stackTrace.captureStackTrace)().frameTexts.join("\n");
+        if (stack)
+          errorMessage += "\n    ==== Closed by ====\n" + stack + "\n";
         this._closedErrorMessage = errorMessage;
         for (const callback of this._callbacks.values())
           callback.reject(new Error(errorMessage));
@@ -57018,6 +57766,95 @@ var require_connection = __commonJS({
   }
 });
 
+// node_modules/playwright-core/lib/server/dispatchers/debugControllerDispatcher.js
+var require_debugControllerDispatcher = __commonJS({
+  "node_modules/playwright-core/lib/server/dispatchers/debugControllerDispatcher.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", {
+      value: true
+    });
+    exports2.DebugControllerDispatcher = void 0;
+    var _debugController = require_debugController();
+    var _dispatcher = require_dispatcher();
+    var DebugControllerDispatcher = class extends _dispatcher.Dispatcher {
+      constructor(connection, debugController) {
+        super(connection, debugController, "DebugController", {});
+        this._type_DebugController = void 0;
+        this._type_DebugController = true;
+        this._object.on(_debugController.DebugController.Events.BrowsersChanged, (browsers) => {
+          this._dispatchEvent("browsersChanged", {
+            browsers
+          });
+        });
+        this._object.on(_debugController.DebugController.Events.InspectRequested, ({
+          selector,
+          locators
+        }) => {
+          this._dispatchEvent("inspectRequested", {
+            selector,
+            locators
+          });
+        });
+        this._object.on(_debugController.DebugController.Events.SourcesChanged, (sources) => {
+          this._dispatchEvent("sourcesChanged", {
+            sources
+          });
+        });
+      }
+      setTrackHierarchy(params) {
+        return __async(this, null, function* () {
+          this._object.setTrackHierarcy(params.enabled);
+        });
+      }
+      setReuseBrowser(params) {
+        return __async(this, null, function* () {
+          this._object.setReuseBrowser(params.enabled);
+        });
+      }
+      resetForReuse() {
+        return __async(this, null, function* () {
+          yield this._object.resetForReuse();
+        });
+      }
+      navigateAll(params) {
+        return __async(this, null, function* () {
+          yield this._object.navigateAll(params.url);
+        });
+      }
+      setRecorderMode(params) {
+        return __async(this, null, function* () {
+          yield this._object.setRecorderMode(params);
+        });
+      }
+      highlightAll(params) {
+        return __async(this, null, function* () {
+          yield this._object.highlightAll(params.selector);
+        });
+      }
+      hideHighlightAll() {
+        return __async(this, null, function* () {
+          yield this._object.hideHighlightAll();
+        });
+      }
+      kill() {
+        return __async(this, null, function* () {
+          yield this._object.kill();
+        });
+      }
+      closeAllBrowsers() {
+        return __async(this, null, function* () {
+          yield this._object.closeAllBrowsers();
+        });
+      }
+      _dispose() {
+        super._dispose();
+        this._object.dispose();
+      }
+    };
+    exports2.DebugControllerDispatcher = DebugControllerDispatcher;
+  }
+});
+
 // node_modules/playwright-core/lib/remote/playwrightConnection.js
 var require_playwrightConnection = __commonJS({
   "node_modules/playwright-core/lib/remote/playwrightConnection.js"(exports2) {
@@ -57032,8 +57869,9 @@ var require_playwrightConnection = __commonJS({
     var _processLauncher = require_processLauncher();
     var _socksProxy = require_socksProxy();
     var _utils = require_utils();
+    var _debugControllerDispatcher = require_debugControllerDispatcher();
     var PlaywrightConnection = class {
-      constructor(lock, mode, ws2, options, preLaunched, log, onClose) {
+      constructor(lock, mode, ws2, isDebugControllerClient, options, preLaunched, log, onClose) {
         this._ws = void 0;
         this._onClose = void 0;
         this._dispatcherConnection = void 0;
@@ -57064,6 +57902,10 @@ var require_playwrightConnection = __commonJS({
         }));
         ws2.on("close", () => this._onDisconnect());
         ws2.on("error", (error) => this._onDisconnect(error));
+        if (isDebugControllerClient) {
+          this._root = this._initDebugControllerMode();
+          return;
+        }
         this._root = new _server.RootDispatcher(this._dispatcherConnection, (scope) => __async(this, null, function* () {
           if (mode === "reuse-browser")
             return yield this._initReuseBrowsersMode(scope);
@@ -57122,6 +57964,12 @@ var require_playwrightConnection = __commonJS({
           return playwrightDispatcher;
         });
       }
+      _initDebugControllerMode() {
+        this._debugLog(`engaged reuse controller mode`);
+        const playwright = this._preLaunched.playwright;
+        this._cleanups.push(() => (0, _processLauncher.gracefullyCloseAll)());
+        return new _debugControllerDispatcher.DebugControllerDispatcher(this._dispatcherConnection, playwright.debugController);
+      }
       _initReuseBrowsersMode(scope) {
         return __async(this, null, function* () {
           this._debugLog(`engaged reuse browsers mode for ${this._options.browserName}`);
@@ -57140,7 +57988,7 @@ var require_playwrightConnection = __commonJS({
               yield b.close();
           }
           if (!browser) {
-            browser = yield playwright[this._options.browserName].launch((0, _instrumentation.serverSideCallMetadata)(), __spreadProps(__spreadValues({}, this._options.launchOptions), {
+            browser = yield playwright[this._options.browserName || "chromium"].launch((0, _instrumentation.serverSideCallMetadata)(), __spreadProps(__spreadValues({}, this._options.launchOptions), {
               headless: false
             }));
             browser.on(_browser.Browser.Events.Disconnected, () => {
@@ -57258,15 +58106,22 @@ var require_playwrightServer = __commonJS({
           (0, _utils.assert)(options.preLaunchedBrowser);
           this._preLaunchedPlaywright = options.preLaunchedBrowser.options.rootSdkObject;
         }
-        if (mode === "reuse-browser")
-          this._preLaunchedPlaywright = (0, _playwright.createPlaywright)("javascript");
       }
       preLaunchedPlaywright() {
+        if (!this._preLaunchedPlaywright)
+          this._preLaunchedPlaywright = (0, _playwright.createPlaywright)("javascript");
         return this._preLaunchedPlaywright;
       }
       listen(port = 0) {
         return __async(this, null, function* () {
           const server = _http.default.createServer((request, response) => {
+            if (request.method === "GET" && request.url === "/json") {
+              response.setHeader("Content-Type", "application/json");
+              response.end(JSON.stringify({
+                wsEndpointPath: this._options.path
+              }));
+              return;
+            }
             response.end("Running");
           });
           server.on("error", (error) => debugLog(error));
@@ -57286,9 +58141,11 @@ var require_playwrightServer = __commonJS({
             server,
             path: this._options.path
           });
-          const semaphore = new Semaphore(this._options.maxConcurrentConnections);
+          const browserSemaphore = new Semaphore(this._options.maxConcurrentConnections);
+          const controllerSemaphore = new Semaphore(1);
           this._wsServer.on("connection", (ws2, request) => {
-            if (semaphore.requested() >= this._options.maxIncomingConnections) {
+            var _this$_preLaunchedPla;
+            if (browserSemaphore.requested() >= this._options.maxIncomingConnections) {
               ws2.close(1013, "Playwright Server is busy");
               return;
             }
@@ -57306,7 +58163,18 @@ var require_playwrightServer = __commonJS({
             }
             const log = newLogger();
             log(`serving connection: ${request.url}`);
-            const connection = new _playwrightConnection.PlaywrightConnection(semaphore.aquire(), this._mode, ws2, {
+            const isDebugControllerClient = !!request.headers["x-playwright-debug-controller"];
+            const semaphore = isDebugControllerClient ? controllerSemaphore : browserSemaphore;
+            if (isDebugControllerClient || this._mode === "reuse-browser" && !this._preLaunchedPlaywright)
+              this.preLaunchedPlaywright();
+            let mode = this._mode;
+            if (mode === "auto" && (_this$_preLaunchedPla = this._preLaunchedPlaywright) !== null && _this$_preLaunchedPla !== void 0 && _this$_preLaunchedPla.debugController.reuseBrowser())
+              mode = "reuse-browser";
+            if (mode === "reuse-browser")
+              semaphore.setMax(1);
+            else
+              semaphore.setMax(this._options.maxConcurrentConnections);
+            const connection = new _playwrightConnection.PlaywrightConnection(semaphore.aquire(), mode, ws2, isDebugControllerClient, {
               enableSocksProxy,
               browserName,
               launchOptions
@@ -57349,6 +58217,9 @@ var require_playwrightServer = __commonJS({
         this._max = void 0;
         this._aquired = 0;
         this._queue = [];
+        this._max = max;
+      }
+      setMax(max) {
         this._max = max;
       }
       aquire() {
@@ -57524,9 +58395,7 @@ var require_driver = __commonJS({
     var _transport = require_transport();
     var _playwrightServer = require_playwrightServer();
     var _processLauncher = require_processLauncher();
-    var _recorder = require_recorder();
-    var _recorderApp = require_recorderApp();
-    var _instrumentation = require_instrumentation();
+    var _debugController = require_debugController();
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -57602,7 +58471,7 @@ var require_driver = __commonJS({
         process.on("exit", () => server.close().catch(console.error));
         console.log("Listening on " + wsEndpoint);
         process.stdin.on("close", () => selfDestruct());
-        if (process.send && server.preLaunchedPlaywright())
+        if (reuseBrowser && process.send)
           wireController(server.preLaunchedPlaywright(), wsEndpoint);
       });
     }
@@ -57622,130 +58491,72 @@ var require_driver = __commonJS({
         process.exit(0);
       });
     }
-    var internalMetadata = (0, _instrumentation.serverSideCallMetadata)();
     var ProtocolHandler = class {
       constructor(playwright2) {
-        this._playwright = void 0;
-        this._autoCloseTimer = void 0;
-        this._playwright = playwright2;
-        playwright2.instrumentation.addListener({
-          onPageOpen: () => this._sendSnapshot(),
-          onPageNavigated: () => this._sendSnapshot(),
-          onPageClose: () => this._sendSnapshot()
-        }, null);
-      }
-      _sendSnapshot() {
-        const browsers = [];
-        for (const browser of this._playwright.allBrowsers()) {
-          const b = {
-            name: browser.options.name,
-            guid: browser.guid,
-            contexts: []
-          };
-          browsers.push(b);
-          for (const context of browser.contexts()) {
-            const c = {
-              guid: context.guid,
-              pages: []
-            };
-            b.contexts.push(c);
-            for (const page of context.pages()) {
-              const p = {
-                guid: page.guid,
-                url: page.mainFrame().url()
-              };
-              c.pages.push(p);
+        this._controller = void 0;
+        this._controller = playwright2.debugController;
+        this._controller.setAutoCloseAllowed(true);
+        this._controller.setTrackHierarcy(true);
+        this._controller.setReuseBrowser(true);
+        this._controller.on(_debugController.DebugController.Events.BrowsersChanged, (browsers) => {
+          process.send({
+            method: "browsersChanged",
+            params: {
+              browsers
             }
-          }
-        }
-        process.send({
-          method: "browsersChanged",
-          params: {
-            browsers
-          }
+          });
+        });
+        this._controller.on(_debugController.DebugController.Events.InspectRequested, ({
+          selector,
+          locators
+        }) => {
+          process.send({
+            method: "inspectRequested",
+            params: {
+              selector,
+              locators
+            }
+          });
         });
       }
       resetForReuse() {
         return __async(this, null, function* () {
-          const contexts = /* @__PURE__ */ new Set();
-          for (const page of this._playwright.allPages())
-            contexts.add(page.context());
-          for (const context of contexts)
-            yield context.resetForReuse(internalMetadata, null);
+          yield this._controller.resetForReuse();
         });
       }
       navigate(params) {
         return __async(this, null, function* () {
-          for (const p of this._playwright.allPages())
-            yield p.mainFrame().goto(internalMetadata, params.url);
+          yield this._controller.navigateAll(params.url);
         });
       }
       setMode(params) {
         return __async(this, null, function* () {
-          yield gc(this._playwright);
-          if (params.mode === "none") {
-            for (const recorder of yield allRecorders(this._playwright)) {
-              recorder.setHighlightedSelector("");
-              recorder.setMode("none");
-            }
-            this.setAutoClose({
-              enabled: true
-            });
-            return;
-          }
-          const browsers = this._playwright.allBrowsers();
-          if (!browsers.length)
-            yield this._playwright.chromium.launch(internalMetadata, {
-              headless: false
-            });
-          const pages = this._playwright.allPages();
-          if (!pages.length) {
-            const [browser] = this._playwright.allBrowsers();
-            const {
-              context
-            } = yield browser.newContextForReuse({}, internalMetadata);
-            yield context.newPage(internalMetadata);
-          }
-          for (const recorder of yield allRecorders(this._playwright)) {
-            recorder.setHighlightedSelector("");
-            if (params.mode === "recording")
-              recorder.setOutput(params.language, params.file);
-            recorder.setMode(params.mode);
-          }
-          this.setAutoClose({
-            enabled: true
-          });
+          yield this._controller.setRecorderMode(params);
         });
       }
       setAutoClose(params) {
         return __async(this, null, function* () {
-          if (this._autoCloseTimer)
-            clearTimeout(this._autoCloseTimer);
-          if (!params.enabled)
-            return;
-          const heartBeat = () => {
-            if (!this._playwright.allPages().length)
-              selfDestruct();
-            else
-              this._autoCloseTimer = setTimeout(heartBeat, 5e3);
-          };
-          this._autoCloseTimer = setTimeout(heartBeat, 3e4);
+          yield this._controller.setAutoCloseEnabled(params.enabled);
         });
       }
       highlight(params) {
         return __async(this, null, function* () {
-          for (const recorder of yield allRecorders(this._playwright))
-            recorder.setHighlightedSelector(params.selector);
+          yield this._controller.highlightAll(params.selector);
         });
       }
       hideHighlight() {
         return __async(this, null, function* () {
-          yield this._playwright.hideHighlight();
+          yield this._controller.hideHighlightAll();
+        });
+      }
+      closeAllBrowsers() {
+        return __async(this, null, function* () {
+          yield this._controller.closeAllBrowsers();
         });
       }
       kill() {
         return __async(this, null, function* () {
-          selfDestruct();
+          yield this._controller.kill();
         });
       }
     };
@@ -57772,41 +58583,6 @@ var require_driver = __commonJS({
         }
       }));
     }
-    function gc(playwright2) {
-      return __async(this, null, function* () {
-        for (const browser of playwright2.allBrowsers()) {
-          for (const context of browser.contexts()) {
-            if (!context.pages().length)
-              yield context.close((0, _instrumentation.serverSideCallMetadata)());
-          }
-          if (!browser.contexts())
-            yield browser.close();
-        }
-      });
-    }
-    function allRecorders(playwright2) {
-      return __async(this, null, function* () {
-        const contexts = /* @__PURE__ */ new Set();
-        for (const page of playwright2.allPages())
-          contexts.add(page.context());
-        const result = yield Promise.all([...contexts].map((c) => _recorder.Recorder.show(c, {
-          omitCallTracking: true
-        }, () => Promise.resolve(new InspectingRecorderApp()))));
-        return result.filter(Boolean);
-      });
-    }
-    var InspectingRecorderApp = class extends _recorderApp.EmptyRecorderApp {
-      setSelector(selector) {
-        return __async(this, null, function* () {
-          process.send({
-            method: "inspectRequested",
-            params: {
-              selector
-            }
-          });
-        });
-      }
-    };
   }
 });
 
@@ -57823,6 +58599,7 @@ var require_httpServer = __commonJS({
     var _path = _interopRequireDefault(require("path"));
     var _utilsBundle = require_utilsBundle();
     var _ = require_utils();
+    var _manualPromise = require_manualPromise();
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
@@ -57895,16 +58672,39 @@ var require_httpServer = __commonJS({
       port() {
         return this._port;
       }
-      start(port) {
+      _tryStart(port, host) {
         return __async(this, null, function* () {
+          const errorPromise = new _manualPromise.ManualPromise();
+          const errorListener = (error) => errorPromise.reject(error);
+          this._server.on("error", errorListener);
+          try {
+            this._server.listen(port, host);
+            yield Promise.race([new Promise((cb) => this._server.once("listening", cb)), errorPromise]);
+          } finally {
+            this._server.removeListener("error", errorListener);
+          }
+        });
+      }
+      start() {
+        return __async(this, arguments, function* (options = {}) {
           (0, _.assert)(!this._started, "server already started");
           this._started = true;
           this._server.on("connection", (socket) => {
             this._activeSockets.add(socket);
             socket.once("close", () => this._activeSockets.delete(socket));
           });
-          this._server.listen(port, "localhost");
-          yield new Promise((cb) => this._server.once("listening", cb));
+          const host = options.host || "localhost";
+          if (options.preferredPort) {
+            try {
+              yield this._tryStart(options.preferredPort, host);
+            } catch (e) {
+              if (!e || !e.message || !e.message.includes("EADDRINUSE"))
+                throw e;
+              yield this._tryStart(void 0, host);
+            }
+          } else {
+            yield this._tryStart(options.port, host);
+          }
           const address = this._server.address();
           (0, _.assert)(address, "Could not bind server socket");
           if (!this._urlPrefix) {
@@ -57912,7 +58712,7 @@ var require_httpServer = __commonJS({
               this._urlPrefix = address;
             } else {
               this._port = address.port;
-              this._urlPrefix = `http://localhost:${address.port}`;
+              this._urlPrefix = `http://${host}:${address.port}`;
             }
           }
           return this._urlPrefix;
@@ -58081,7 +58881,7 @@ var require_traceViewer = __commonJS({
     function _interopRequireDefault(obj) {
       return obj && obj.__esModule ? obj : { default: obj };
     }
-    function showTraceViewer(traceUrls, browserName, headless = false, port) {
+    function showTraceViewer(traceUrls, browserName, headless = false, preferredPort) {
       return __async(this, null, function* () {
         for (const traceUrl of traceUrls) {
           if (!traceUrl.startsWith("http://") && !traceUrl.startsWith("https://") && !_fs.default.existsSync(traceUrl)) {
@@ -58103,7 +58903,9 @@ var require_traceViewer = __commonJS({
           const absolutePath = _path.default.join(__dirname, "..", "..", "..", "webpack", "traceViewer", ...relativePath.split("/"));
           return server.serveFile(request, response, absolutePath);
         });
-        const urlPrefix = yield server.start(port);
+        const urlPrefix = yield server.start({
+          preferredPort
+        });
         const traceViewerPlaywright = (0, _playwright.createPlaywright)("javascript", true);
         const traceViewerBrowser = (0, _utils.isUnderTest)() ? "chromium" : browserName;
         const args = traceViewerBrowser === "chromium" ? ["--app=data:text/html,", "--window-size=1280,800", "--test-type="] : [];
@@ -58564,7 +59366,9 @@ var require_gridServer = __commonJS({
       }
       start(port) {
         return __async(this, null, function* () {
-          yield this._server.start(port);
+          yield this._server.start({
+            port
+          });
         });
       }
       gridURL() {
@@ -58582,6 +59386,535 @@ var require_gridServer = __commonJS({
     exports2.GridServer = GridServer;
     function mangle(sessionId) {
       return sessionId.replace(/\w{28}/, "x".repeat(28));
+    }
+  }
+});
+
+// node_modules/playwright-core/lib/containers/dockerApi.js
+var require_dockerApi = __commonJS({
+  "node_modules/playwright-core/lib/containers/dockerApi.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", {
+      value: true
+    });
+    exports2.checkEngineRunning = checkEngineRunning;
+    exports2.commitContainer = commitContainer;
+    exports2.getContainerLogs = getContainerLogs;
+    exports2.launchContainer = launchContainer;
+    exports2.listContainers = listContainers;
+    exports2.listImages = listImages;
+    exports2.removeContainer = removeContainer;
+    exports2.removeImage = removeImage;
+    exports2.stopContainer = stopContainer;
+    var _http = _interopRequireDefault(require("http"));
+    function _interopRequireDefault(obj) {
+      return obj && obj.__esModule ? obj : { default: obj };
+    }
+    var DOCKER_API_VERSION = "1.41";
+    function listContainers() {
+      return __async(this, null, function* () {
+        var _await$getJSON;
+        const containers = (_await$getJSON = yield getJSON("/containers/json")) !== null && _await$getJSON !== void 0 ? _await$getJSON : [];
+        return containers.map((container) => {
+          var _container$Names, _container$Ports$map, _container$Ports, _container$Labels;
+          return {
+            containerId: container.Id,
+            imageId: container.ImageID,
+            state: container.State,
+            names: ((_container$Names = container.Names) !== null && _container$Names !== void 0 ? _container$Names : []).map((name) => name.startsWith("/") ? name.substring(1) : name),
+            portBindings: (_container$Ports$map = (_container$Ports = container.Ports) === null || _container$Ports === void 0 ? void 0 : _container$Ports.map((portInfo) => ({
+              ip: portInfo.IP,
+              hostPort: portInfo.PublicPort,
+              containerPort: portInfo.PrivatePort
+            }))) !== null && _container$Ports$map !== void 0 ? _container$Ports$map : [],
+            labels: (_container$Labels = container.Labels) !== null && _container$Labels !== void 0 ? _container$Labels : {}
+          };
+        });
+      });
+    }
+    function launchContainer(options) {
+      return __async(this, null, function* () {
+        var _options$labels;
+        const ExposedPorts = {};
+        const PortBindings = {};
+        for (const port of (_options$ports = options.ports) !== null && _options$ports !== void 0 ? _options$ports : []) {
+          var _options$ports;
+          ExposedPorts[`${port}/tcp`] = {};
+          PortBindings[`${port}/tcp`] = [{
+            HostPort: "0",
+            HostIp: "127.0.0.1"
+          }];
+        }
+        const container = yield postJSON(`/containers/create` + (options.name ? "?name=" + options.name : ""), {
+          Cmd: options.command,
+          WorkingDir: options.workingDir,
+          Labels: (_options$labels = options.labels) !== null && _options$labels !== void 0 ? _options$labels : {},
+          AttachStdout: true,
+          AttachStderr: true,
+          Image: options.imageId,
+          ExposedPorts,
+          HostConfig: {
+            Init: true,
+            AutoRemove: options.autoRemove,
+            ShmSize: 2 * 1024 * 1024 * 1024,
+            PortBindings
+          }
+        });
+        yield postJSON(`/containers/${container.Id}/start`);
+        if (options.waitUntil)
+          yield postJSON(`/containers/${container.Id}/wait?condition=${options.waitUntil}`);
+        return container.Id;
+      });
+    }
+    function stopContainer(options) {
+      return __async(this, null, function* () {
+        var _options$waitUntil;
+        yield Promise.all([
+          postJSON(`/containers/${options.containerId}/wait?condition=${(_options$waitUntil = options.waitUntil) !== null && _options$waitUntil !== void 0 ? _options$waitUntil : "not-running"}`),
+          postJSON(`/containers/${options.containerId}/kill`)
+        ]);
+      });
+    }
+    function removeContainer(containerId) {
+      return __async(this, null, function* () {
+        yield Promise.all([
+          postJSON(`/containers/${containerId}/wait?condition=removed`),
+          callDockerAPI("delete", `/containers/${containerId}`)
+        ]);
+      });
+    }
+    function getContainerLogs(containerId) {
+      return __async(this, null, function* () {
+        const rawLogs = yield callDockerAPI("get", `/containers/${containerId}/logs?stdout=true&stderr=true`).catch((e) => "");
+        if (!rawLogs)
+          return [];
+        return rawLogs.split("\n").map((line) => {
+          if ([0, 1, 2].includes(line.charCodeAt(0)))
+            return line.substring(8);
+          return line;
+        });
+      });
+    }
+    function commitContainer(options) {
+      return __async(this, null, function* () {
+        const Env = [];
+        for (const [key, value] of Object.entries((_options$env = options.env) !== null && _options$env !== void 0 ? _options$env : {})) {
+          var _options$env;
+          Env.push(`${key}=${value}`);
+        }
+        yield postJSON(`/commit?container=${options.containerId}&repo=${options.repo}&tag=${options.tag}`, {
+          Entrypoint: options.entrypoint,
+          WorkingDir: options.workingDir,
+          Env
+        });
+      });
+    }
+    function listImages() {
+      return __async(this, null, function* () {
+        var _await$getJSON2;
+        const rawImages = (_await$getJSON2 = yield getJSON("/images/json")) !== null && _await$getJSON2 !== void 0 ? _await$getJSON2 : [];
+        return rawImages.map((rawImage) => {
+          var _rawImage$RepoTags;
+          return {
+            imageId: rawImage.Id,
+            names: (_rawImage$RepoTags = rawImage.RepoTags) !== null && _rawImage$RepoTags !== void 0 ? _rawImage$RepoTags : []
+          };
+        });
+      });
+    }
+    function removeImage(imageId) {
+      return __async(this, null, function* () {
+        yield callDockerAPI("delete", `/images/${imageId}`);
+      });
+    }
+    function checkEngineRunning() {
+      return __async(this, null, function* () {
+        try {
+          yield callDockerAPI("get", "/info");
+          return true;
+        } catch (e) {
+          return false;
+        }
+      });
+    }
+    function getJSON(url) {
+      return __async(this, null, function* () {
+        const result = yield callDockerAPI("get", url);
+        if (!result)
+          return result;
+        return JSON.parse(result);
+      });
+    }
+    function postJSON(url, json = void 0) {
+      return __async(this, null, function* () {
+        const result = yield callDockerAPI("post", url, json ? JSON.stringify(json) : void 0);
+        if (!result)
+          return result;
+        return JSON.parse(result);
+      });
+    }
+    function callDockerAPI(method, url, body = void 0) {
+      const dockerSocket = process.platform === "win32" ? "\\\\.\\pipe\\docker_engine" : "/var/run/docker.sock";
+      return new Promise((resolve, reject) => {
+        const request = _http.default.request({
+          socketPath: dockerSocket,
+          path: `/v${DOCKER_API_VERSION}${url}`,
+          timeout: 3e4,
+          method
+        }, (response) => {
+          let body2 = "";
+          response.on("data", function(chunk) {
+            body2 += chunk;
+          });
+          response.on("end", function() {
+            if (!response.statusCode || response.statusCode < 200 || response.statusCode >= 300)
+              reject(new Error(`${method} ${url} FAILED with statusCode ${response.statusCode} and body
+${body2}`));
+            else
+              resolve(body2);
+          });
+        });
+        request.on("error", function(e) {
+          reject(e);
+        });
+        if (body) {
+          request.setHeader("Content-Type", "application/json");
+          request.setHeader("Content-Length", body.length);
+          request.write(body);
+        } else {
+          request.setHeader("Content-Type", "text/plain");
+        }
+        request.end();
+      });
+    }
+  }
+});
+
+// node_modules/playwright-core/lib/containers/docker.js
+var require_docker = __commonJS({
+  "node_modules/playwright-core/lib/containers/docker.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", {
+      value: true
+    });
+    exports2.addDockerCLI = addDockerCLI;
+    exports2.checkDockerEngineIsRunningOrDie = checkDockerEngineIsRunningOrDie;
+    exports2.containerInfo = containerInfo;
+    exports2.ensurePlaywrightContainerOrDie = ensurePlaywrightContainerOrDie;
+    var _path = _interopRequireDefault(require("path"));
+    var _spawnAsync = require_spawnAsync();
+    var utils = _interopRequireWildcard(require_utils());
+    var _userAgent = require_userAgent();
+    var dockerApi = _interopRequireWildcard(require_dockerApi());
+    function _getRequireWildcardCache(nodeInterop) {
+      if (typeof WeakMap !== "function")
+        return null;
+      var cacheBabelInterop = new WeakMap();
+      var cacheNodeInterop = new WeakMap();
+      return (_getRequireWildcardCache = function(nodeInterop2) {
+        return nodeInterop2 ? cacheNodeInterop : cacheBabelInterop;
+      })(nodeInterop);
+    }
+    function _interopRequireWildcard(obj, nodeInterop) {
+      if (!nodeInterop && obj && obj.__esModule) {
+        return obj;
+      }
+      if (obj === null || typeof obj !== "object" && typeof obj !== "function") {
+        return { default: obj };
+      }
+      var cache = _getRequireWildcardCache(nodeInterop);
+      if (cache && cache.has(obj)) {
+        return cache.get(obj);
+      }
+      var newObj = {};
+      var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor;
+      for (var key in obj) {
+        if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) {
+          var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null;
+          if (desc && (desc.get || desc.set)) {
+            Object.defineProperty(newObj, key, desc);
+          } else {
+            newObj[key] = obj[key];
+          }
+        }
+      }
+      newObj.default = obj;
+      if (cache) {
+        cache.set(obj, newObj);
+      }
+      return newObj;
+    }
+    function _interopRequireDefault(obj) {
+      return obj && obj.__esModule ? obj : { default: obj };
+    }
+    var VRT_IMAGE_DISTRO = "focal";
+    var VRT_IMAGE_NAME = `playwright:local-${(0, _userAgent.getPlaywrightVersion)()}-${VRT_IMAGE_DISTRO}`;
+    var VRT_CONTAINER_NAME = `playwright-${(0, _userAgent.getPlaywrightVersion)()}-${VRT_IMAGE_DISTRO}`;
+    var VRT_CONTAINER_LABEL_NAME = "dev.playwright.vrt-service.version";
+    var VRT_CONTAINER_LABEL_VALUE = "1";
+    function startPlaywrightContainer() {
+      return __async(this, null, function* () {
+        yield checkDockerEngineIsRunningOrDie();
+        let info = yield containerInfo();
+        if (!info) {
+          process.stdout.write(`Starting docker container... `);
+          const time = Date.now();
+          info = yield ensurePlaywrightContainerOrDie();
+          const deltaMs = Date.now() - time;
+          console.log("Done in " + (deltaMs / 1e3).toFixed(1) + "s");
+        }
+        console.log([`- View screen:`, `      ${info.vncSession}`, `- Run tests with browsers inside container:`, `      npx playwright docker test`, `- Stop background container *manually* when you are done working with tests:`, `      npx playwright docker stop`].join("\n"));
+      });
+    }
+    function stopAllPlaywrightContainers() {
+      return __async(this, null, function* () {
+        yield checkDockerEngineIsRunningOrDie();
+        const allContainers = yield dockerApi.listContainers();
+        const vrtContainers = allContainers.filter((container) => container.labels[VRT_CONTAINER_LABEL_NAME] === VRT_CONTAINER_LABEL_VALUE);
+        yield Promise.all(vrtContainers.map((container) => dockerApi.stopContainer({
+          containerId: container.containerId,
+          waitUntil: "removed"
+        })));
+      });
+    }
+    function deletePlaywrightImage() {
+      return __async(this, null, function* () {
+        yield checkDockerEngineIsRunningOrDie();
+        const dockerImage = yield findDockerImage(VRT_IMAGE_NAME);
+        if (!dockerImage)
+          return;
+        if (yield containerInfo())
+          yield stopAllPlaywrightContainers();
+        yield dockerApi.removeImage(dockerImage.imageId);
+      });
+    }
+    function buildPlaywrightImage() {
+      return __async(this, null, function* () {
+        yield checkDockerEngineIsRunningOrDie();
+        let baseImageName = process.env.PWTEST_DOCKER_BASE_IMAGE || "";
+        if (!baseImageName) {
+          const isDevelopmentMode = (0, _userAgent.getPlaywrightVersion)().includes("next");
+          if (isDevelopmentMode) {
+            const arch = process.arch === "arm64" ? "--arm64" : "--amd64";
+            throw createStacklessError(utils.wrapInASCIIBox([`You are in DEVELOPMENT mode!`, ``, `1. Build local base image`, `     ./utils/docker/build.sh ${arch} ${VRT_IMAGE_DISTRO} playwright:localbuild`, `2. Use the local base to build VRT image:`, `     PWTEST_DOCKER_BASE_IMAGE=playwright:localbuild npx playwright docker build`].join("\n"), 1));
+          }
+          baseImageName = `mcr.microsoft.com/playwright:v${(0, _userAgent.getPlaywrightVersion)()}-${VRT_IMAGE_DISTRO}`;
+          const {
+            code
+          } = yield (0, _spawnAsync.spawnAsync)("docker", ["pull", baseImageName], {
+            stdio: "inherit"
+          });
+          if (code !== 0)
+            throw new Error("Failed to pull docker image!");
+        }
+        const dockerImage = yield findDockerImage(baseImageName);
+        if (!dockerImage)
+          throw new Error(`Failed to pull ${baseImageName}`);
+        yield deletePlaywrightImage();
+        console.log(`Building ${VRT_IMAGE_NAME}...`);
+        const containerId = yield dockerApi.launchContainer({
+          imageId: dockerImage.imageId,
+          autoRemove: false,
+          workingDir: "/ms-playwright-agent",
+          command: ["npx", "playwright", "docker", "install-server-deps"],
+          waitUntil: "not-running"
+        });
+        const [vrtRepo, vrtTag] = VRT_IMAGE_NAME.split(":");
+        yield dockerApi.commitContainer({
+          containerId,
+          repo: vrtRepo,
+          tag: vrtTag,
+          workingDir: "/ms-playwright-agent",
+          entrypoint: ["npx", "playwright", "docker", "run-server"],
+          env: {
+            "DISPLAY_NUM": "99",
+            "DISPLAY": ":99"
+          }
+        });
+        yield dockerApi.removeContainer(containerId);
+        console.log(`Done!`);
+      });
+    }
+    function printDockerStatus() {
+      return __async(this, null, function* () {
+        var _info$wsEndpoint, _info$vncSession;
+        const isDockerEngine = yield dockerApi.checkEngineRunning();
+        const imageIsPulled = isDockerEngine && !!(yield findDockerImage(VRT_IMAGE_NAME));
+        const info = isDockerEngine ? yield containerInfo() : void 0;
+        console.log(JSON.stringify({
+          dockerEngineRunning: isDockerEngine,
+          imageName: VRT_IMAGE_NAME,
+          imageIsPulled,
+          containerWSEndpoint: (_info$wsEndpoint = info === null || info === void 0 ? void 0 : info.wsEndpoint) !== null && _info$wsEndpoint !== void 0 ? _info$wsEndpoint : "",
+          containerVNCEndpoint: (_info$vncSession = info === null || info === void 0 ? void 0 : info.vncSession) !== null && _info$vncSession !== void 0 ? _info$vncSession : ""
+        }, null, 2));
+      });
+    }
+    function containerInfo() {
+      return __async(this, null, function* () {
+        const allContainers = yield dockerApi.listContainers();
+        const pwDockerImage = yield findDockerImage(VRT_IMAGE_NAME);
+        const container = allContainers.find((container2) => container2.imageId === (pwDockerImage === null || pwDockerImage === void 0 ? void 0 : pwDockerImage.imageId) && container2.state === "running");
+        if (!container)
+          return void 0;
+        const logLines = yield dockerApi.getContainerLogs(container.containerId);
+        const containerUrlToHostUrl = (address) => {
+          const url = new URL(address);
+          const portBinding = container.portBindings.find((binding) => binding.containerPort === +url.port);
+          if (!portBinding)
+            return void 0;
+          url.host = portBinding.ip;
+          url.port = portBinding.hostPort + "";
+          return url.toString();
+        };
+        const WS_LINE_PREFIX = "Listening on ws://";
+        const webSocketLine = logLines.find((line) => line.startsWith(WS_LINE_PREFIX));
+        const NOVNC_LINE_PREFIX = "novnc is listening on ";
+        const novncLine = logLines.find((line) => line.startsWith(NOVNC_LINE_PREFIX));
+        if (!novncLine || !webSocketLine)
+          return void 0;
+        const wsEndpoint = containerUrlToHostUrl("ws://" + webSocketLine.substring(WS_LINE_PREFIX.length));
+        const vncSession = containerUrlToHostUrl(novncLine.substring(NOVNC_LINE_PREFIX.length));
+        return wsEndpoint && vncSession ? {
+          wsEndpoint,
+          vncSession
+        } : void 0;
+      });
+    }
+    function ensurePlaywrightContainerOrDie() {
+      return __async(this, null, function* () {
+        const pwImage = yield findDockerImage(VRT_IMAGE_NAME);
+        if (!pwImage) {
+          throw createStacklessError("\n" + utils.wrapInASCIIBox([`Failed to find local docker image.`, `Please build local docker image with the following command:`, ``, `    npx playwright docker build`, ``, `<3 Playwright Team`].join("\n"), 1));
+        }
+        let info = yield containerInfo();
+        if (info)
+          return info;
+        const hasSameNamedContainer = () => __async(this, null, function* () {
+          return (yield dockerApi.listContainers()).some((container) => container.names.includes(VRT_CONTAINER_NAME));
+        });
+        if (yield hasSameNamedContainer()) {
+          yield stopAllPlaywrightContainers();
+          if (yield hasSameNamedContainer()) {
+            throw createStacklessError("\n" + utils.wrapInASCIIBox([`There is already a container with name ${VRT_CONTAINER_NAME}`, `Please stop this container manually and rerun tests:`, ``, `    docker kill ${VRT_CONTAINER_NAME}`, ``, `<3 Playwright Team`].join("\n"), 1));
+          }
+        }
+        yield dockerApi.launchContainer({
+          imageId: pwImage.imageId,
+          name: VRT_CONTAINER_NAME,
+          autoRemove: true,
+          ports: [5400, 7900],
+          labels: {
+            [VRT_CONTAINER_LABEL_NAME]: VRT_CONTAINER_LABEL_VALUE
+          }
+        });
+        const startTime = Date.now();
+        const timeouts = [0, 100, 100, 200, 500, 1e3];
+        do {
+          yield new Promise((x) => {
+            var _timeouts$shift;
+            return setTimeout(x, (_timeouts$shift = timeouts.shift()) !== null && _timeouts$shift !== void 0 ? _timeouts$shift : 1e3);
+          });
+          info = yield containerInfo();
+        } while (!info && Date.now() < startTime + 6e4);
+        if (!info)
+          throw new Error("Failed to launch docker container!");
+        return info;
+      });
+    }
+    function checkDockerEngineIsRunningOrDie() {
+      return __async(this, null, function* () {
+        if (yield dockerApi.checkEngineRunning())
+          return;
+        throw createStacklessError(utils.wrapInASCIIBox([`Docker is not running!`, `Please install and launch docker:`, ``, `    https://docs.docker.com/get-docker`, ``].join("\n"), 1));
+      });
+    }
+    function findDockerImage(imageName) {
+      return __async(this, null, function* () {
+        const images = yield dockerApi.listImages();
+        return images.find((image) => image.names.includes(imageName));
+      });
+    }
+    function createStacklessError(message) {
+      const error = new Error(message);
+      error.stack = "";
+      return error;
+    }
+    function addDockerCLI(program2) {
+      const dockerCommand = program2.command("docker", {
+        hidden: true
+      }).description(`Manage Docker integration (EXPERIMENTAL)`);
+      dockerCommand.command("build").description("build local docker image").action(function(options) {
+        return __async(this, null, function* () {
+          try {
+            yield buildPlaywrightImage();
+          } catch (e) {
+            console.error(e.stack ? e : e.message);
+            process.exit(1);
+          }
+        });
+      });
+      dockerCommand.command("start").description("start docker container").action(function(options) {
+        return __async(this, null, function* () {
+          try {
+            yield startPlaywrightContainer();
+          } catch (e) {
+            console.error(e.stack ? e : e.message);
+            process.exit(1);
+          }
+        });
+      });
+      dockerCommand.command("stop").description("stop docker container").action(function(options) {
+        return __async(this, null, function* () {
+          try {
+            yield stopAllPlaywrightContainers();
+          } catch (e) {
+            console.error(e.stack ? e : e.message);
+            process.exit(1);
+          }
+        });
+      });
+      dockerCommand.command("delete-image", {
+        hidden: true
+      }).description("delete docker image, if any").action(function(options) {
+        return __async(this, null, function* () {
+          try {
+            yield deletePlaywrightImage();
+          } catch (e) {
+            console.error(e.stack ? e : e.message);
+            process.exit(1);
+          }
+        });
+      });
+      dockerCommand.command("install-server-deps", {
+        hidden: true
+      }).description("install run-server dependencies").action(function() {
+        return __async(this, null, function* () {
+          const {
+            code
+          } = yield (0, _spawnAsync.spawnAsync)("bash", [_path.default.join(__dirname, "..", "..", "bin", "container_install_deps.sh")], {
+            stdio: "inherit"
+          });
+          if (code !== 0)
+            throw new Error("Failed to install server dependencies!");
+        });
+      });
+      dockerCommand.command("run-server", {
+        hidden: true
+      }).description("run playwright server").action(function() {
+        return __async(this, null, function* () {
+          yield (0, _spawnAsync.spawnAsync)("bash", [_path.default.join(__dirname, "..", "..", "bin", "container_run_server.sh")], {
+            stdio: "inherit"
+          });
+        });
+      });
+      dockerCommand.command("print-status-json", {
+        hidden: true
+      }).description("print docker status").action(function(options) {
+        return __async(this, null, function* () {
+          yield printDockerStatus();
+        });
+      });
     }
   }
 });
@@ -58609,6 +59942,7 @@ var require_cli = __commonJS({
     var _gridAgent = require_gridAgent();
     var _gridServer = require_gridServer();
     var _server = require_server();
+    var _docker = require_docker();
     function _getRequireWildcardCache(nodeInterop) {
       if (typeof WeakMap !== "function")
         return null;
@@ -58837,7 +60171,7 @@ Examples:
     }).requiredOption("--browser <browserName>", 'Browser name, one of "chromium", "firefox" or "webkit"').option("--config <path-to-config-file>", "JSON file with launchServer options").action(function(options) {
       (0, _driver.launchBrowserServer)(options.browser, options.config);
     });
-    _utilsBundle.program.command("show-trace [trace...]").option("-b, --browser <browserType>", "browser to use, one of cr, chromium, ff, firefox, wk, webkit", "chromium").description("Show trace viewer").action(function(traces, options) {
+    _utilsBundle.program.command("show-trace [trace...]").option("-b, --browser <browserType>", "browser to use, one of cr, chromium, ff, firefox, wk, webkit", "chromium").description("show trace viewer").action(function(traces, options) {
       if (options.browser === "cr")
         options.browser = "chromium";
       if (options.browser === "ff")
@@ -58849,6 +60183,7 @@ Examples:
 Examples:
 
   $ show-trace https://example.com/trace.zip`);
+    (0, _docker.addDockerCLI)(_utilsBundle.program);
     if (!process.env.PW_LANG_NAME) {
       let playwrightTestPackagePath = null;
       const resolvePwTestPaths = [__dirname, process.cwd()];
