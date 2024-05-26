@@ -615,10 +615,16 @@ defmodule Playwright.BrowserContext do
   #         break
   #
   # ...hoping for a test to drive that out.
-  defp on_route(context, %{params: %{request: request} = params} = _event) do
+
+  # NOTE(20240525):
+  # Do not love this; See Page.on_route/2 (which is an exact copy of this) for why.
+  defp on_route(context, %{params: %{route: %{request: request} = route} = _params} = _event) do
     Enum.reduce_while(context.routes, [], fn handler, acc ->
+      catalog = Playwright.Channel.Session.catalog(context.session)
+      request = Playwright.Channel.Catalog.get(catalog, request.guid)
+
       if Helpers.RouteHandler.matches(handler, request.url) do
-        Helpers.RouteHandler.handle(handler, params)
+        Helpers.RouteHandler.handle(handler, %{request: request, route: route})
         # break
         {:halt, acc}
       else

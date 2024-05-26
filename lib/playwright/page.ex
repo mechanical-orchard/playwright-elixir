@@ -677,26 +677,21 @@ defmodule Playwright.Page do
   # private
   # ---------------------------------------------------------------------------
 
-  defp on_route(page, %{params: %{request: request} = params} = _event) do
+  # Do not love this.
+  # It's good enough for now (to deal with v1.26.0 changes). However, it feels
+  # dirty for API resource implementations to be reaching into Catalog.
+  defp on_route(page, %{params: %{route: %{request: request} = route} = _params} = _event) do
     Enum.reduce_while(page.routes, [], fn handler, acc ->
+      catalog = Playwright.Channel.Session.catalog(page.session)
+      request = Playwright.Channel.Catalog.get(catalog, request.guid)
+
       if Helpers.RouteHandler.matches(handler, request.url) do
-        Helpers.RouteHandler.handle(handler, params)
+        Helpers.RouteHandler.handle(handler, %{request: request, route: route})
         # break
         {:halt, acc}
       else
         {:cont, [handler | acc]}
       end
     end)
-
-    # task =
-    #   Task.async(fn ->
-    #     IO.puts("fetching context for page...")
-
-    #     context(page)
-    #     |> IO.inspect(label: "task context")
-    #     |> BrowserContext.on_route(event)
-    #   end)
-
-    # Task.await(task)
   end
 end
