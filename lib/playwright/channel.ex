@@ -31,6 +31,8 @@ defmodule Playwright.Channel do
     connection = Session.connection(session)
     message = Message.new(guid, message, params)
 
+    # IO.inspect(message, label: "---> Channel.post/4")
+
     with_timeout(params, fn timeout ->
       case Connection.post(connection, message, timeout) do
         {:ok, %{id: _} = result} ->
@@ -46,10 +48,13 @@ defmodule Playwright.Channel do
   end
 
   def recv(session, {nil, message}) when is_map(message) do
+    # IO.inspect(message, label: "<--- Channel.recv/2 A")
     Response.recv(session, message)
   end
 
   def recv(session, {from, message}) when is_map(message) do
+    # IO.inspect(message, label: "<--- Channel.recv/2 B")
+
     Response.recv(session, message)
     |> reply(from)
   end
