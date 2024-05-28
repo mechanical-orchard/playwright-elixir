@@ -115,7 +115,7 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.route/4" do
-    test "intercepts requests", %{assets: assets, page: page} do
+    test "intercepts requests w/ a glob-style matcher", %{assets: assets, page: page} do
       pid = self()
       context = Page.context(page)
 
@@ -137,6 +137,22 @@ defmodule Playwright.BrowserContextTest do
       end
 
       BrowserContext.route(context, "**/empty.html", handler)
+      response = Page.goto(page, assets.empty)
+
+      assert Response.ok(response)
+      assert_received(:intercepted)
+    end
+
+    test "intercepts requests w/ a regex pattern passed as a Regex", %{assets: assets, page: page} do
+      pid = self()
+      context = Page.context(page)
+
+      handler = fn route, _request ->
+        send(pid, :intercepted)
+        Route.continue(route)
+      end
+
+      BrowserContext.route(context, ~r/.*\/empty.*/, handler)
       response = Page.goto(page, assets.empty)
 
       assert Response.ok(response)

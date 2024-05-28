@@ -116,7 +116,7 @@ defmodule Playwright.Page do
       # preload.js
       Math.random = () => 42;
 
-      Page.add_init_script(context, %{path: "preload.js"})
+      Page.add_init_script(page, %{path: "preload.js"})
 
   ## Notes
 
@@ -519,21 +519,19 @@ defmodule Playwright.Page do
     with_latest(page, fn page ->
       matcher = Helpers.URLMatcher.new(pattern)
       handler = Helpers.RouteHandler.new(matcher, handler)
-      routes = page.routes
 
-      if Enum.empty?(routes) do
-        Channel.post(session, {:guid, page.guid}, :set_network_interception_enabled, %{enabled: true})
-      end
+      routes = [handler | page.routes]
+      patterns = Helpers.RouteHandler.prepare(routes)
 
-      Channel.patch(session, {:guid, page.guid}, %{routes: [handler | routes]})
-      :ok
+      Channel.patch(session, {:guid, page.guid}, %{routes: routes})
+      Channel.post(session, {:guid, page.guid}, :set_network_interception_patterns, %{patterns: patterns})
     end)
   end
 
   # ---
 
   # @spec route_from_har(t(), binary(), map()) :: :ok
-  # def route(page, har, options \\ %{})
+  # def route_from_har(page, har, options \\ %{})
 
   # ---
 
@@ -606,7 +604,7 @@ defmodule Playwright.Page do
   # def unroute(owner, handler \\ nil)
 
   # @spec unroute_all(t(), map()) :: :ok
-  # def unroute_all(context, options \\ %{})
+  # def unroute_all(page, options \\ %{})
 
   # ---
 
@@ -624,7 +622,7 @@ defmodule Playwright.Page do
   # def viewport_size(owner)
 
   # @spec wait_for_event(t(), binary(), map()) :: map()
-  # def wait_for_event(context, event, options \\ %{})
+  # def wait_for_event(page, event, options \\ %{})
 
   # @spec wait_for_function(Page.t(), expression(), any(), options()) :: JSHandle.t()
   # def wait_for_function(page, expression, arg \\ nil, options \\ %{})

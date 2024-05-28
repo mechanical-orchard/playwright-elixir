@@ -523,14 +523,12 @@ defmodule Playwright.BrowserContext do
     with_latest(context, fn context ->
       matcher = Helpers.URLMatcher.new(pattern)
       handler = Helpers.RouteHandler.new(matcher, handler)
-      routes = context.routes
 
-      if Enum.empty?(routes) do
-        Channel.post(session, {:guid, context.guid}, :set_network_interception_enabled, %{enabled: true})
-      end
+      routes = [handler | context.routes]
+      patterns = Helpers.RouteHandler.prepare(routes)
 
-      Channel.patch(session, {:guid, context.guid}, %{routes: [handler | routes]})
-      :ok
+      Channel.patch(session, {:guid, context.guid}, %{routes: routes})
+      Channel.post(session, {:guid, context.guid}, :set_network_interception_patterns, %{patterns: patterns})
     end)
   end
 
