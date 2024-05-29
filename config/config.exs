@@ -15,25 +15,3 @@ if config_env() == :test do
   config :playwright_assets,
     port: 4002
 end
-
-if config_env() == :dev do
-  config :esbuild,
-    version: "0.21.3",
-    cli: [
-      args: ~w(
-          driver=./node_modules/playwright/cli.js
-          --bundle
-          --platform=node
-          --format=cjs
-          --target=es2016
-          --outdir=../priv/static
-          --external:*.png
-          --external:*/loader
-          --external:@playwright/test/*
-        ),
-      cd: Path.expand("../assets", __DIR__)
-    ]
-
-  # NOTE that the following are not actually copied and made available:
-  #   - playwright-core/lib/server/electron/loader.js
-end
