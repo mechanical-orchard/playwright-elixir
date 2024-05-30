@@ -1,19 +1,35 @@
-defmodule Playwright.Keyboard do
+defmodule Playwright.Page.Keyboard do
   @moduledoc false
 
-  # @spec down(t(), binary()) :: :ok
-  # def down(keyboard, key)
+  alias Playwright.Page
+  alias Playwright.SDK.Channel
 
-  # @spec insert_text(t(), binary()) :: :ok
-  # def insert_text(keyboard, text)
+  @spec type(Page.t(), binary()) :: :ok
+  def type(page, text) do
+    channel_post(page, :keyboard_type, %{text: text})
+  end
 
-  # @spec press(t(), binary(), options()) :: :ok
-  # def press(keyboard, key, options \\ %{})
+  @spec insert_text(Page.t(), binary()) :: :ok
+  def insert_text(page, text) do
+    channel_post(page, :keyboard_type, %{text: text})
+  end
 
-  # @spec type(t(), binary(), options()) :: :ok
-  # def type(keyboard, text, options \\ %{})
+  @spec up(Page.t(), binary()) :: :ok
+  def up(page, key) do
+    channel_post(page, :keyboard_up, %{key: key})
+  end
 
-  # @spec up(t(), binary()) :: :ok
-  # def up(keyboard, key)
+  @spec down(Page.t(), binary()) :: :ok
+  def down(page, key) do
+    channel_post(page, :keyboard_down, %{key: key})
+  end
 
+  @spec press(Page.t(), binary()) :: :ok
+  def press(page, key) do
+    channel_post(page, :keyboard_press, %{key: key})
+  end
+
+  defp channel_post(%Page{} = page, action, data) do
+    Channel.post(page.session, {:guid, page.guid}, action, data)
+  end
 end
