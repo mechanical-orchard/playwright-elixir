@@ -15,11 +15,13 @@ def deps do
 end
 ```
 
-To ensure Playwright's runtime dependencies (e.g., browsers) are available, execute the following (from within your `mix` project):
+To ensure Playwright's runtime dependencies (e.g., browsers) are available, execute the following:
 
 ```bash
-$ mix playwright.install
+$ npx playwright@1.38.0 install
 ```
+
+Note that you'll need to run that from a Node-enabled environment, and will get a big warning message about not "first installing your project's dependencies". We aim to improve this experience soon.
 
 ## Usage
 
