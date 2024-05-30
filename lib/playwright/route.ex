@@ -21,8 +21,8 @@ defmodule Playwright.Route do
 
   def continue(%Route{session: session} = route, options) do
     # HACK to deal with changes in v1.33.0
-    catalog = Playwright.Channel.Session.catalog(session)
-    request = Playwright.Channel.Catalog.get(catalog, route.request.guid)
+    catalog = Channel.Session.catalog(session)
+    request = Channel.Catalog.get(catalog, route.request.guid)
     params = Map.merge(options, %{request_url: request.url})
     Channel.post(session, {:guid, route.guid}, :continue, params)
   end
@@ -44,8 +44,8 @@ defmodule Playwright.Route do
     length = String.length(body)
 
     # HACK to deal with changes in v1.33.0
-    catalog = Playwright.Channel.Session.catalog(session)
-    request = Playwright.Channel.Catalog.get(catalog, route.request.guid)
+    catalog = Channel.Session.catalog(session)
+    request = Channel.Catalog.get(catalog, route.request.guid)
 
     params = %{
       body: body,

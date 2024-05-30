@@ -49,6 +49,7 @@ defmodule Playwright.MixProject do
       {:cowlib, "~> 2.7.0"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
+      {:esbuild, "~> 0.8.1", runtime: Mix.env() == :dev},
       {:ex_doc, "~> 0.25", only: :dev, runtime: false},
       {:gun, "~> 1.3.3"},
       {:jason, "~> 1.2"},
@@ -156,14 +157,20 @@ defmodule Playwright.MixProject do
     ]
   end
 
+  # NOTES:
+  # - the `api.json` file is created to satisfy a `require('../../api.json')`
+  #   call found in Playwright's `driver.js` file. We don't actually have any
+  #   use for the "print-api-json" command, so an empty `api.json` works.
   defp aliases do
     [
       "assets.build": [
-        "cmd rm   -rf priv/static",
-        "cmd mkdir -p priv/static/node_modules",
-        "cmd cp -r assets/node_modules/playwright-core priv/static/node_modules",
-        "cmd cp -r assets/driver.js priv/static"
-      ]
+        "cmd rm -rf assets/node_modules",
+        "cmd rm -rf priv/static",
+        "cmd npm install --prefix assets",
+        "cmd echo '{}' > assets/node_modules/playwright-core/api.json",
+        "esbuild cli"
+      ],
+      "assets.watch": ["esbuild module --watch"]
     ]
   end
 end

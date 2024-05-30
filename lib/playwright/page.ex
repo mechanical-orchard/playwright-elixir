@@ -679,8 +679,8 @@ defmodule Playwright.Page do
   # dirty for API resource implementations to be reaching into Catalog.
   defp on_route(page, %{params: %{route: %{request: request} = route} = _params} = _event) do
     Enum.reduce_while(page.routes, [], fn handler, acc ->
-      catalog = Playwright.Channel.Session.catalog(page.session)
-      request = Playwright.Channel.Catalog.get(catalog, request.guid)
+      catalog = Channel.Session.catalog(page.session)
+      request = Channel.Catalog.get(catalog, request.guid)
 
       if Helpers.RouteHandler.matches(handler, request.url) do
         Helpers.RouteHandler.handle(handler, %{request: request, route: route})

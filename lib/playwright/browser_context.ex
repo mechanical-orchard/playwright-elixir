@@ -352,9 +352,6 @@ defmodule Playwright.BrowserContext do
       {:ok, _} ->
         :ok
 
-      {:ok, _} ->
-        :ok
-
       {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
         :ok
     end
@@ -615,8 +612,8 @@ defmodule Playwright.BrowserContext do
   # Do not love this; See Page.on_route/2 (which is an exact copy of this) for why.
   defp on_route(context, %{params: %{route: %{request: request} = route} = _params} = _event) do
     Enum.reduce_while(context.routes, [], fn handler, acc ->
-      catalog = Playwright.Channel.Session.catalog(context.session)
-      request = Playwright.Channel.Catalog.get(catalog, request.guid)
+      catalog = Channel.Session.catalog(context.session)
+      request = Channel.Catalog.get(catalog, request.guid)
 
       if Helpers.RouteHandler.matches(handler, request.url) do
         Helpers.RouteHandler.handle(handler, %{request: request, route: route})
