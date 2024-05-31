@@ -1,86 +1,78 @@
 defmodule Playwright.PlaywrightTest do
-  use ExUnit.Case
-  use Playwright.UnitTest
-  alias Playwright.API.{Browser, Page}
+  use ExUnit.Case, async: true
+  use PlaywrightTest.Case
+  alias Playwright.{Browser, Page, Response}
 
   describe "Playwright.connect/2" do
     @tag :ws
     test "with :chromium" do
-      with {:ok, br} <- Playwright.connect(:chromium),
-           {:ok, pg} <- Browser.new_page(br),
-           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
-        assert Playwright.Response.ok(rs)
-        assert Playwright.Page.text_content(pg, "h2.header") =~ "Chrome"
+      with {:ok, browser} <- Playwright.connect(:chromium) do
+        page = Browser.new_page(browser)
+
+        assert page
+               |> Page.goto("https://www.whatsmybrowser.org")
+               |> Response.ok()
+
+        assert Playwright.Page.text_content(page, "h2.header") =~ "Chrome"
       end
-      |> pass()
     end
 
     @tag :ws
     test "with :firefox" do
-      with {:ok, br} <- Playwright.connect(:firefox),
-           {:ok, pg} <- Browser.new_page(br),
-           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
-        assert Playwright.Response.ok(rs)
-        assert Playwright.Page.text_content(pg, "h2.header") =~ "Firefox"
+      with {:ok, browser} <- Playwright.connect(:firefox) do
+        page = Browser.new_page(browser)
+
+        assert page
+               |> Page.goto("https://www.whatsmybrowser.org")
+               |> Response.ok()
+
+        assert Playwright.Page.text_content(page, "h2.header") =~ "Firefox"
       end
-      |> pass()
     end
 
     @tag :ws
     test "with :webkit" do
-      with {:ok, br} <- Playwright.connect(:webkit),
-           {:ok, pg} <- Browser.new_page(br),
-           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
-        assert Playwright.Response.ok(rs)
-        assert Playwright.Page.text_content(pg, "h2.header") =~ "Safari"
+      with {:ok, browser} <- Playwright.connect(:webkit) do
+        page = Browser.new_page(browser)
+
+        assert page
+               |> Page.goto("https://www.whatsmybrowser.org")
+               |> Response.ok()
+
+        assert Playwright.Page.text_content(page, "h2.header") =~ "Safari"
       end
-      |> pass()
     end
   end
 
-  describe "Playwright.launch/2" do
-    test "with :chromium" do
-      with {:ok, br} <- Playwright.launch(:chromium),
-           {:ok, pg} <- Browser.new_page(br),
-           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
-        assert Playwright.Response.ok(rs)
-        assert Playwright.Page.text_content(pg, "h2.header") =~ "Chrome"
-      end
-      |> pass()
+  describe "Playwright.launch/1" do
+    test "launches and returns an instance of the requested Browser" do
+      {:ok, browser} = Playwright.launch(:chromium)
+
+      assert browser
+             |> Browser.new_page()
+             |> Page.goto("http://example.com")
+             |> Response.ok()
+    end
+  end
+
+  describe "PlaywrightTest.Case context" do
+    test "using `:browser`", %{browser: browser} do
+      assert browser
+             |> Browser.new_page()
+             |> Page.goto("http://example.com")
+             |> Response.ok()
     end
 
-    test "with :firefox" do
-      with {:ok, br} <- Playwright.launch(:firefox),
-           {:ok, pg} <- Browser.new_page(br),
-           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
-        assert Playwright.Response.ok(rs)
-        assert Playwright.Page.text_content(pg, "h2.header") =~ "Firefox"
-      end
-      |> pass()
+    test "using `:page`", %{page: page} do
+      assert page
+             |> Page.goto("http://example.com")
+             |> Response.ok()
     end
 
-    # skipped and will revisit: frequently getting the following:
-    # `{:error, %Playwright.Channel.Error{message: "Target closed"}}`
-    @tag :skip
-    test "with :webkit" do
-      with {:ok, br} <- Playwright.launch(:webkit),
-           {:ok, pg} <- Browser.new_page(br),
-           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
-        assert Playwright.Response.ok(rs)
-        assert Playwright.Page.text_content(pg, "h2.header") =~ "Safari"
-      end
-      |> pass()
-    end
-
-    @tag :headed
-    test "with options: `%{headless: false}`" do
-      with {:ok, br} <- Playwright.launch(:chromium, %{headless: false}),
-           {:ok, pg} <- Browser.new_page(br),
-           {:ok, rs} <- Page.goto(pg, "https://www.whatsmybrowser.org") do
-        assert Playwright.Response.ok(rs)
-        assert Playwright.Page.text_content(pg, "h2.header") =~ "Chrome"
-      end
-      |> pass()
+    @tag exclude: [:page]
+    test "excluding `:page` via `@tag`", context do
+      assert Map.has_key?(context, :browser)
+      refute Map.has_key?(context, :page)
     end
   end
 end
