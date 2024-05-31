@@ -1,4 +1,4 @@
-# On Integration Tests
+# On API Tests
 
 These generally follow the structure and definitions as found in the playwright-python package.
 
