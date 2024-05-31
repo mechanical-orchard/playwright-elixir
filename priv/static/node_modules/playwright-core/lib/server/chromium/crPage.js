@@ -64,6 +64,7 @@ class CRPage {
     this.rawTouchscreen = void 0;
     this._targetId = void 0;
     this._opener = void 0;
+    this._networkManager = void 0;
     this._pdf = void 0;
     this._coverage = void 0;
     this._browserContext = void 0;
@@ -87,6 +88,13 @@ class CRPage {
     this._coverage = new _crCoverage.CRCoverage(client);
     this._browserContext = browserContext;
     this._page = new _page.Page(this, browserContext);
+    this._networkManager = new _crNetworkManager.CRNetworkManager(this._page, null);
+    // Sync any browser context state to the network manager. This does not talk over CDP because
+    // we have not connected any sessions to the network manager yet.
+    this.updateOffline();
+    this.updateExtraHTTPHeaders();
+    this.updateHttpCredentials();
+    this.updateRequestInterception();
     this._mainFrameSession = new FrameSession(this, client, targetId, null);
     this._sessions.set(targetId, this._mainFrameSession);
     if (opener && !browserContext._options.noDefaultViewport) {
@@ -165,16 +173,17 @@ class CRPage {
     await this._forAllFrameSessions(frame => frame._removeExposedBindings());
   }
   async updateExtraHTTPHeaders() {
-    await this._forAllFrameSessions(frame => frame._updateExtraHTTPHeaders(false));
+    const headers = network.mergeHeaders([this._browserContext._options.extraHTTPHeaders, this._page.extraHTTPHeaders()]);
+    await this._networkManager.setExtraHTTPHeaders(headers);
   }
   async updateGeolocation() {
     await this._forAllFrameSessions(frame => frame._updateGeolocation(false));
   }
   async updateOffline() {
-    await this._forAllFrameSessions(frame => frame._updateOffline(false));
+    await this._networkManager.setOffline(!!this._browserContext._options.offline);
   }
   async updateHttpCredentials() {
-    await this._forAllFrameSessions(frame => frame._updateHttpCredentials(false));
+    await this._networkManager.authenticate(this._browserContext._options.httpCredentials || null);
   }
   async updateEmulatedViewportSize(preserveWindowBoundaries) {
     await this._mainFrameSession._updateViewport(preserveWindowBoundaries);
@@ -189,7 +198,7 @@ class CRPage {
     await this._forAllFrameSessions(frame => frame._updateUserAgent());
   }
   async updateRequestInterception() {
-    await this._forAllFrameSessions(frame => frame._updateRequestInterception());
+    await this._networkManager.setRequestInterception(this._page.needsRequestInterception());
   }
   async updateFileChooserInterception() {
     await this._forAllFrameSessions(frame => frame._updateFileChooserInterception(false));
@@ -295,7 +304,7 @@ class CRPage {
   async setInputFiles(handle, files) {
     await handle.evaluateInUtility(([injected, node, files]) => injected.setInputFiles(node, files), files);
   }
-  async setInputFilePaths(progress, handle, files) {
+  async setInputFilePaths(handle, files) {
     const frame = await handle.ownerFrame();
     if (!frame) throw new Error('Cannot set input files to detached input element');
     const parentSession = this._sessionForFrame(frame);
@@ -346,7 +355,6 @@ class FrameSession {
     this._client = void 0;
     this._crPage = void 0;
     this._page = void 0;
-    this._networkManager = void 0;
     this._parentSession = void 0;
     this._childSessions = new Set();
     this._contextIdToContext = new Map();
@@ -370,7 +378,6 @@ class FrameSession {
     this._crPage = crPage;
     this._page = crPage._page;
     this._targetId = targetId;
-    this._networkManager = new _crNetworkManager.CRNetworkManager(client, this._page, null, parentSession ? parentSession._networkManager : null);
     this._parentSession = parentSession;
     if (parentSession) parentSession._childSessions.add(this);
     this._firstNonInitialNavigationCommittedPromise = new Promise((f, r) => {
@@ -450,7 +457,7 @@ class FrameSession {
     }), this._client.send('Runtime.enable', {}), this._client.send('Page.addScriptToEvaluateOnNewDocument', {
       source: '',
       worldName: UTILITY_WORLD_NAME
-    }), this._networkManager.initialize(), this._client.send('Target.setAutoAttach', {
+    }), this._crPage._networkManager.addSession(this._client, undefined, this._isMainFrame()), this._client.send('Target.setAutoAttach', {
       autoAttach: true,
       waitForDebuggerOnStart: true,
       flatten: true
@@ -478,10 +485,6 @@ class FrameSession {
       if (options.timezoneId) promises.push(emulateTimezone(this._client, options.timezoneId));
       if (!this._crPage._browserContext._browser.options.headful) promises.push(this._setDefaultFontFamilies(this._client));
       promises.push(this._updateGeolocation(true));
-      promises.push(this._updateExtraHTTPHeaders(true));
-      promises.push(this._updateRequestInterception());
-      promises.push(this._updateOffline(true));
-      promises.push(this._updateHttpCredentials(true));
       promises.push(this._updateEmulateMedia());
       promises.push(this._updateFileChooserInterception(true));
       for (const binding of this._crPage._page.allBindings()) promises.push(this._initBinding(binding));
@@ -498,7 +501,7 @@ class FrameSession {
     for (const childSession of this._childSessions) childSession.dispose();
     if (this._parentSession) this._parentSession._childSessions.delete(this);
     _eventsHelper.eventsHelper.removeEventListeners(this._eventListeners);
-    this._networkManager.dispose();
+    this._crPage._networkManager.removeSession(this._client);
     this._crPage._sessions.delete(this._targetId);
     this._client.dispose();
   }
@@ -632,7 +635,8 @@ class FrameSession {
     });
     // This might fail if the target is closed before we initialize.
     session._sendMayFail('Runtime.enable');
-    session._sendMayFail('Network.enable');
+    // TODO: attribute workers to the right frame.
+    this._crPage._networkManager.addSession(session, (_this$_page$_frameMan = this._page._frameManager.frame(this._targetId)) !== null && _this$_page$_frameMan !== void 0 ? _this$_page$_frameMan : undefined).catch(() => {});
     session._sendMayFail('Runtime.runIfWaitingForDebugger');
     session._sendMayFail('Target.setAutoAttach', {
       autoAttach: true,
@@ -646,11 +650,6 @@ class FrameSession {
       this._page._addConsoleMessage(event.type, args, (0, _crProtocolHelper.toConsoleMessageLocation)(event.stackTrace));
     });
     session.on('Runtime.exceptionThrown', exception => this._page.emitOnContextOnceInitialized(_browserContext.BrowserContext.Events.PageError, (0, _crProtocolHelper.exceptionToError)(exception.exceptionDetails), this._page));
-    // TODO: attribute workers to the right frame.
-    this._networkManager.instrumentNetworkEvents({
-      session,
-      workerFrame: (_this$_page$_frameMan = this._page._frameManager.frame(this._targetId)) !== null && _this$_page$_frameMan !== void 0 ? _this$_page$_frameMan : undefined
-    });
   }
   _onDetachedFromTarget(event) {
     // This might be a worker...
@@ -846,23 +845,9 @@ class FrameSession {
     this._screencastClients.delete(client);
     if (!this._screencastClients.size) await this._client._sendMayFail('Page.stopScreencast');
   }
-  async _updateExtraHTTPHeaders(initial) {
-    const headers = network.mergeHeaders([this._crPage._browserContext._options.extraHTTPHeaders, this._page.extraHTTPHeaders()]);
-    if (!initial || headers.length) await this._client.send('Network.setExtraHTTPHeaders', {
-      headers: (0, _utils.headersArrayToObject)(headers, false /* lowerCase */)
-    });
-  }
   async _updateGeolocation(initial) {
     const geolocation = this._crPage._browserContext._options.geolocation;
     if (!initial || geolocation) await this._client.send('Emulation.setGeolocationOverride', geolocation || {});
-  }
-  async _updateOffline(initial) {
-    const offline = !!this._crPage._browserContext._options.offline;
-    if (!initial || offline) await this._networkManager.setOffline(offline);
-  }
-  async _updateHttpCredentials(initial) {
-    const credentials = this._crPage._browserContext._options.httpCredentials || null;
-    if (!initial || credentials) await this._networkManager.authenticate(credentials);
   }
   async _updateViewport(preserveWindowBoundaries) {
     if (this._crPage._browserContext._browser.isClank()) return;
@@ -977,9 +962,6 @@ class FrameSession {
   async _setDefaultFontFamilies(session) {
     const fontFamilies = _defaultFontFamilies.platformToFontFamilies[this._crPage._browserContext._browser._platform()];
     await session.send('Page.setFontFamilies', fontFamilies);
-  }
-  async _updateRequestInterception() {
-    await this._networkManager.setRequestInterception(this._page.needsRequestInterception());
   }
   async _updateFileChooserInterception(initial) {
     const enabled = this._page.fileChooserIntercepted();

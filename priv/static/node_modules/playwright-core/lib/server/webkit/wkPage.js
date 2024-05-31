@@ -944,7 +944,7 @@ class WKPage {
       files: protocolFiles
     });
   }
-  async setInputFilePaths(progress, handle, paths) {
+  async setInputFilePaths(handle, paths) {
     const pageProxyId = this._pageProxySession.sessionId;
     const objectId = handle._objectId;
     await Promise.all([this._pageProxySession.connection.browserSession.send('Playwright.grantFileReadAccess', {

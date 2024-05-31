@@ -365,7 +365,7 @@ class CRBrowserContext extends _browserContext.BrowserContext {
       browserContextId: this._browserContextId
     });
   }
-  async clearCookies() {
+  async doClearCookies() {
     await this._browser._session.send('Storage.clearCookies', {
       browserContextId: this._browserContextId
     });
@@ -478,7 +478,7 @@ class CRBrowserContext extends _browserContext.BrowserContext {
     }
   }
   async clearCache() {
-    for (const page of this._crPages()) await page._mainFrameSession._networkManager.clearCache();
+    for (const page of this._crPages()) await page._networkManager.clearCache();
   }
   async cancelDownload(guid) {
     // The upstream CDP method is implemented in a way that no explicit error would be given

@@ -73,7 +73,7 @@ class Dispatcher extends _events.EventEmitter {
       (0, _utils.assert)(!this._parent._dispatchers.has(guid));
       this._parent._dispatchers.set(guid, this);
     }
-    if (this._parent) this._connection.sendCreate(this._parent, type, guid, initializer, this._parent._object);
+    if (this._parent) this._connection.sendCreate(this._parent, type, guid, initializer);
     this._connection.maybeDisposeStaleDispatchers(this._gcBucket);
   }
   parentScope() {
@@ -105,8 +105,7 @@ class Dispatcher extends _events.EventEmitter {
       // Just ignore this event outside of tests.
       return;
     }
-    const sdkObject = this._object instanceof _instrumentation.SdkObject ? this._object : undefined;
-    this._connection.sendEvent(this, method, params, sdkObject);
+    this._connection.sendEvent(this, method, params);
   }
   _dispose(reason) {
     this._disposeRecursively(new _errors.TargetClosedError());
@@ -170,53 +169,50 @@ class DispatcherConnection {
     this._isLocal = void 0;
     this._isLocal = !!isLocal;
   }
-  sendEvent(dispatcher, event, params, sdkObject) {
+  sendEvent(dispatcher, event, params) {
     const validator = (0, _validator.findValidator)(dispatcher._type, event, 'Event');
     params = validator(params, '', {
       tChannelImpl: this._tChannelImplToWire.bind(this),
       binary: this._isLocal ? 'buffer' : 'toBase64'
     });
-    this._sendMessageToClient(dispatcher._guid, dispatcher._type, event, params, sdkObject);
+    this.onmessage({
+      guid: dispatcher._guid,
+      method: event,
+      params
+    });
   }
-  sendCreate(parent, type, guid, initializer, sdkObject) {
+  sendCreate(parent, type, guid, initializer) {
     const validator = (0, _validator.findValidator)(type, '', 'Initializer');
     initializer = validator(initializer, '', {
       tChannelImpl: this._tChannelImplToWire.bind(this),
       binary: this._isLocal ? 'buffer' : 'toBase64'
     });
-    this._sendMessageToClient(parent._guid, type, '__create__', {
-      type,
-      initializer,
-      guid
-    }, sdkObject);
+    this.onmessage({
+      guid: parent._guid,
+      method: '__create__',
+      params: {
+        type,
+        initializer,
+        guid
+      }
+    });
   }
   sendAdopt(parent, dispatcher) {
-    this._sendMessageToClient(parent._guid, dispatcher._type, '__adopt__', {
-      guid: dispatcher._guid
+    this.onmessage({
+      guid: parent._guid,
+      method: '__adopt__',
+      params: {
+        guid: dispatcher._guid
+      }
     });
   }
   sendDispose(dispatcher, reason) {
-    this._sendMessageToClient(dispatcher._guid, dispatcher._type, '__dispose__', {
-      reason
-    });
-  }
-  _sendMessageToClient(guid, type, method, params, sdkObject) {
-    if (sdkObject) {
-      var _sdkObject$attributio, _sdkObject$instrument;
-      const event = {
-        type: 'event',
-        class: type,
-        method,
-        params: params || {},
-        time: (0, _utils.monotonicTime)(),
-        pageId: sdkObject === null || sdkObject === void 0 || (_sdkObject$attributio = sdkObject.attribution) === null || _sdkObject$attributio === void 0 || (_sdkObject$attributio = _sdkObject$attributio.page) === null || _sdkObject$attributio === void 0 ? void 0 : _sdkObject$attributio.guid
-      };
-      (_sdkObject$instrument = sdkObject.instrumentation) === null || _sdkObject$instrument === void 0 || _sdkObject$instrument.onEvent(sdkObject, event);
-    }
     this.onmessage({
-      guid,
-      method,
-      params
+      guid: dispatcher._guid,
+      method: '__dispose__',
+      params: {
+        reason
+      }
     });
   }
   _tChannelImplFromWire(names, arg, path, context) {
@@ -262,7 +258,7 @@ class DispatcherConnection {
     }
   }
   async dispatch(message) {
-    var _sdkObject$attributio2, _sdkObject$attributio3, _params$info;
+    var _sdkObject$attributio, _sdkObject$attributio2, _params$info;
     const {
       id,
       guid,
@@ -306,8 +302,8 @@ class DispatcherConnection {
       apiName: validMetadata.apiName,
       internal: validMetadata.internal,
       objectId: sdkObject === null || sdkObject === void 0 ? void 0 : sdkObject.guid,
-      pageId: sdkObject === null || sdkObject === void 0 || (_sdkObject$attributio2 = sdkObject.attribution) === null || _sdkObject$attributio2 === void 0 || (_sdkObject$attributio2 = _sdkObject$attributio2.page) === null || _sdkObject$attributio2 === void 0 ? void 0 : _sdkObject$attributio2.guid,
-      frameId: sdkObject === null || sdkObject === void 0 || (_sdkObject$attributio3 = sdkObject.attribution) === null || _sdkObject$attributio3 === void 0 || (_sdkObject$attributio3 = _sdkObject$attributio3.frame) === null || _sdkObject$attributio3 === void 0 ? void 0 : _sdkObject$attributio3.guid,
+      pageId: sdkObject === null || sdkObject === void 0 || (_sdkObject$attributio = sdkObject.attribution) === null || _sdkObject$attributio === void 0 || (_sdkObject$attributio = _sdkObject$attributio.page) === null || _sdkObject$attributio === void 0 ? void 0 : _sdkObject$attributio.guid,
+      frameId: sdkObject === null || sdkObject === void 0 || (_sdkObject$attributio2 = sdkObject.attribution) === null || _sdkObject$attributio2 === void 0 || (_sdkObject$attributio2 = _sdkObject$attributio2.frame) === null || _sdkObject$attributio2 === void 0 ? void 0 : _sdkObject$attributio2.guid,
       startTime: (0, _utils.monotonicTime)(),
       endTime: 0,
       type: dispatcher._type,
@@ -394,6 +390,6 @@ class DispatcherConnection {
 }
 exports.DispatcherConnection = DispatcherConnection;
 function closeReason(sdkObject) {
-  var _sdkObject$attributio4, _sdkObject$attributio5, _sdkObject$attributio6;
-  return ((_sdkObject$attributio4 = sdkObject.attribution.page) === null || _sdkObject$attributio4 === void 0 ? void 0 : _sdkObject$attributio4._closeReason) || ((_sdkObject$attributio5 = sdkObject.attribution.context) === null || _sdkObject$attributio5 === void 0 ? void 0 : _sdkObject$attributio5._closeReason) || ((_sdkObject$attributio6 = sdkObject.attribution.browser) === null || _sdkObject$attributio6 === void 0 ? void 0 : _sdkObject$attributio6._closeReason);
+  var _sdkObject$attributio3, _sdkObject$attributio4, _sdkObject$attributio5;
+  return ((_sdkObject$attributio3 = sdkObject.attribution.page) === null || _sdkObject$attributio3 === void 0 ? void 0 : _sdkObject$attributio3._closeReason) || ((_sdkObject$attributio4 = sdkObject.attribution.context) === null || _sdkObject$attributio4 === void 0 ? void 0 : _sdkObject$attributio4._closeReason) || ((_sdkObject$attributio5 = sdkObject.attribution.browser) === null || _sdkObject$attributio5 === void 0 ? void 0 : _sdkObject$attributio5._closeReason);
 }

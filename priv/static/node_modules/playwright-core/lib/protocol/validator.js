@@ -852,7 +852,17 @@ _validatorPrimitives.scheme.BrowserContextAddInitScriptParams = (0, _validatorPr
   source: _validatorPrimitives.tString
 });
 _validatorPrimitives.scheme.BrowserContextAddInitScriptResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
-_validatorPrimitives.scheme.BrowserContextClearCookiesParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
+_validatorPrimitives.scheme.BrowserContextClearCookiesParams = (0, _validatorPrimitives.tObject)({
+  name: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  nameRegexSource: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  nameRegexFlags: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  domain: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  domainRegexSource: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  domainRegexFlags: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  path: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  pathRegexSource: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString),
+  pathRegexFlags: (0, _validatorPrimitives.tOptional)(_validatorPrimitives.tString)
+});
 _validatorPrimitives.scheme.BrowserContextClearCookiesResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
 _validatorPrimitives.scheme.BrowserContextClearPermissionsParams = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));
 _validatorPrimitives.scheme.BrowserContextClearPermissionsResult = (0, _validatorPrimitives.tOptional)((0, _validatorPrimitives.tObject)({}));

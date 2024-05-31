@@ -174,6 +174,9 @@ class Locator {
   async elementHandles() {
     return await this._frame.$$(this._selector);
   }
+  contentFrame() {
+    return new FrameLocator(this._frame, this._selector);
+  }
   first() {
     return new Locator(this._frame, this._selector + ' >> nth=0');
   }
@@ -408,6 +411,9 @@ class FrameLocator {
   }
   getByRole(role, options = {}) {
     return this.locator((0, _locatorUtils.getByRoleSelector)(role, options));
+  }
+  owner() {
+    return new Locator(this._frame, this._frameSelector);
   }
   frameLocator(selector) {
     return new FrameLocator(this._frame, this._frameSelector + ' >> internal:control=enter-frame >> ' + selector);

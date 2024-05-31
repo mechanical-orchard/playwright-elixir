@@ -787,6 +787,11 @@ class Frame extends _instrumentation.SdkObject {
   url() {
     return this._url;
   }
+  origin() {
+    var _network$parsedURL;
+    if (!this._url.startsWith('http')) return;
+    return (_network$parsedURL = network.parsedURL(this._url)) === null || _network$parsedURL === void 0 ? void 0 : _network$parsedURL.origin;
+  }
   parentFrame() {
     return this._parentFrame;
   }
@@ -812,7 +817,7 @@ class Frame extends _instrumentation.SdkObject {
       })).asElement();
       // Another round trip to the browser to ensure that we receive CSP error messages
       // (if any) logged asynchronously in a separate task on the content main thread.
-      if (this._page._delegate.cspErrorsAsynchronousForInlineScipts) await context.evaluate(() => true);
+      if (this._page._delegate.cspErrorsAsynchronousForInlineScripts) await context.evaluate(() => true);
       return result;
     });
     async function addScriptUrl(params) {
@@ -1540,6 +1545,19 @@ class Frame extends _instrumentation.SdkObject {
         var _indexedDB$databases, _indexedDB;
         // Do not wait for the callback - it is called on timer in Chromium (slow).
         if (db.name) indexedDB.deleteDatabase(db.name);
+      }
+
+      // Clean StorageManager
+      const root = await navigator.storage.getDirectory();
+      const entries = await root.entries();
+      // Manual loop instead of for await because in Firefox's utility context instanceof AsyncIterable is not working.
+      let entry = await entries.next();
+      while (!entry.done) {
+        const [name] = entry.value;
+        await root.removeEntry(name, {
+          recursive: true
+        });
+        entry = await entries.next();
       }
     }, {
       ls: newStorage === null || newStorage === void 0 ? void 0 : newStorage.localStorage

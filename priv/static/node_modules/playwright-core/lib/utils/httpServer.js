@@ -10,6 +10,7 @@ var _utilsBundle = require("../utilsBundle");
 var _debug = require("./debug");
 var _network = require("./network");
 var _manualPromise = require("./manualPromise");
+var _crypto = require("./crypto");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
@@ -34,6 +35,7 @@ class HttpServer {
     this._port = 0;
     this._started = false;
     this._routes = [];
+    this._wsGuid = void 0;
     this._urlPrefix = address;
     this._server = (0, _network.createHttpServer)(this._onRequest.bind(this));
   }
@@ -65,6 +67,45 @@ class HttpServer {
     } finally {
       this._server.removeListener('error', errorListener);
     }
+  }
+  createWebSocket(transport, guid) {
+    (0, _debug.assert)(!this._wsGuid, 'can only create one main websocket transport per server');
+    this._wsGuid = guid || (0, _crypto.createGuid)();
+    const wss = new _utilsBundle.wsServer({
+      server: this._server,
+      path: '/' + this._wsGuid
+    });
+    wss.on('connection', ws => {
+      transport.sendEvent = (method, params) => ws.send(JSON.stringify({
+        method,
+        params
+      }));
+      transport.close = () => ws.close();
+      ws.on('message', async message => {
+        const {
+          id,
+          method,
+          params
+        } = JSON.parse(String(message));
+        try {
+          const result = await transport.dispatch(method, params);
+          ws.send(JSON.stringify({
+            id,
+            result
+          }));
+        } catch (e) {
+          ws.send(JSON.stringify({
+            id,
+            error: String(e)
+          }));
+        }
+      });
+      ws.on('close', () => transport.onclose());
+      ws.on('error', () => transport.onclose());
+    });
+  }
+  wsGuid() {
+    return this._wsGuid;
   }
   async start(options = {}) {
     (0, _debug.assert)(!this._started, 'server already started');

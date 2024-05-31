@@ -29,48 +29,67 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
  */
 
 class CRNetworkManager {
-  constructor(session, page, serviceWorker, parentManager) {
-    this._session = void 0;
+  constructor(page, serviceWorker) {
     this._page = void 0;
     this._serviceWorker = void 0;
-    this._parentManager = void 0;
     this._requestIdToRequest = new Map();
     this._requestIdToRequestWillBeSentEvent = new Map();
     this._credentials = null;
     this._attemptedAuthentications = new Set();
     this._userRequestInterceptionEnabled = false;
     this._protocolRequestInterceptionEnabled = false;
+    this._offline = false;
+    this._extraHTTPHeaders = [];
     this._requestIdToRequestPausedEvent = new Map();
-    this._eventListeners = void 0;
     this._responseExtraInfoTracker = new ResponseExtraInfoTracker();
-    this._session = session;
+    this._sessions = new Map();
     this._page = page;
     this._serviceWorker = serviceWorker;
-    this._parentManager = parentManager;
-    this._eventListeners = this.instrumentNetworkEvents({
-      session
-    });
   }
-  instrumentNetworkEvents(sessionInfo) {
-    const listeners = [_eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Fetch.requestPaused', this._onRequestPaused.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Fetch.authRequired', this._onAuthRequired.bind(this)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.requestWillBeSent', this._onRequestWillBeSent.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.requestWillBeSentExtraInfo', this._onRequestWillBeSentExtraInfo.bind(this)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.requestServedFromCache', this._onRequestServedFromCache.bind(this)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.responseReceived', this._onResponseReceived.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.responseReceivedExtraInfo', this._onResponseReceivedExtraInfo.bind(this)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.loadingFinished', this._onLoadingFinished.bind(this)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.loadingFailed', this._onLoadingFailed.bind(this, sessionInfo))];
+  async addSession(session, workerFrame, isMain) {
+    const sessionInfo = {
+      session,
+      isMain,
+      workerFrame,
+      eventListeners: []
+    };
+    sessionInfo.eventListeners = [_eventsHelper.eventsHelper.addEventListener(session, 'Fetch.requestPaused', this._onRequestPaused.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(session, 'Fetch.authRequired', this._onAuthRequired.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.requestWillBeSent', this._onRequestWillBeSent.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.requestWillBeSentExtraInfo', this._onRequestWillBeSentExtraInfo.bind(this)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.requestServedFromCache', this._onRequestServedFromCache.bind(this)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.responseReceived', this._onResponseReceived.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.responseReceivedExtraInfo', this._onResponseReceivedExtraInfo.bind(this)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.loadingFinished', this._onLoadingFinished.bind(this, sessionInfo)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.loadingFailed', this._onLoadingFailed.bind(this, sessionInfo))];
     if (this._page) {
-      listeners.push(...[_eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.webSocketCreated', e => this._page._frameManager.onWebSocketCreated(e.requestId, e.url)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.webSocketWillSendHandshakeRequest', e => this._page._frameManager.onWebSocketRequest(e.requestId)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.webSocketHandshakeResponseReceived', e => this._page._frameManager.onWebSocketResponse(e.requestId, e.response.status, e.response.statusText)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.webSocketFrameSent', e => e.response.payloadData && this._page._frameManager.onWebSocketFrameSent(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.webSocketFrameReceived', e => e.response.payloadData && this._page._frameManager.webSocketFrameReceived(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.webSocketClosed', e => this._page._frameManager.webSocketClosed(e.requestId)), _eventsHelper.eventsHelper.addEventListener(sessionInfo.session, 'Network.webSocketFrameError', e => this._page._frameManager.webSocketError(e.requestId, e.errorMessage))]);
+      sessionInfo.eventListeners.push(...[_eventsHelper.eventsHelper.addEventListener(session, 'Network.webSocketCreated', e => this._page._frameManager.onWebSocketCreated(e.requestId, e.url)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.webSocketWillSendHandshakeRequest', e => this._page._frameManager.onWebSocketRequest(e.requestId)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.webSocketHandshakeResponseReceived', e => this._page._frameManager.onWebSocketResponse(e.requestId, e.response.status, e.response.statusText)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.webSocketFrameSent', e => e.response.payloadData && this._page._frameManager.onWebSocketFrameSent(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.webSocketFrameReceived', e => e.response.payloadData && this._page._frameManager.webSocketFrameReceived(e.requestId, e.response.opcode, e.response.payloadData)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.webSocketClosed', e => this._page._frameManager.webSocketClosed(e.requestId)), _eventsHelper.eventsHelper.addEventListener(session, 'Network.webSocketFrameError', e => this._page._frameManager.webSocketError(e.requestId, e.errorMessage))]);
     }
-    return listeners;
+    this._sessions.set(session, sessionInfo);
+    await Promise.all([session.send('Network.enable'), this._updateProtocolRequestInterceptionForSession(sessionInfo, true /* initial */), this._setOfflineForSession(sessionInfo, true /* initial */), this._setExtraHTTPHeadersForSession(sessionInfo, true /* initial */)]);
   }
-  async initialize() {
-    await this._session.send('Network.enable');
+  removeSession(session) {
+    const info = this._sessions.get(session);
+    if (info) _eventsHelper.eventsHelper.removeEventListeners(info.eventListeners);
+    this._sessions.delete(session);
   }
-  dispose() {
-    _eventsHelper.eventsHelper.removeEventListeners(this._eventListeners);
+  async _forEachSession(cb) {
+    await Promise.all([...this._sessions.values()].map(info => {
+      if (info.isMain) return cb(info);
+      return cb(info).catch(e => {
+        // Broadcasting a message to the closed target should be a noop.
+        if ((0, _protocolError.isSessionClosedError)(e)) return;
+        throw e;
+      });
+    }));
   }
   async authenticate(credentials) {
     this._credentials = credentials;
     await this._updateProtocolRequestInterception();
   }
   async setOffline(offline) {
-    await this._session.send('Network.emulateNetworkConditions', {
-      offline,
+    if (offline === this._offline) return;
+    this._offline = offline;
+    await this._forEachSession(info => this._setOfflineForSession(info));
+  }
+  async _setOfflineForSession(info, initial) {
+    if (initial && !this._offline) return;
+    // Workers are affected by the owner frame's Network.emulateNetworkConditions.
+    if (info.workerFrame) return;
+    await info.session.send('Network.emulateNetworkConditions', {
+      offline: this._offline,
       // values of 0 remove any active throttling. crbug.com/456324#c9
       latency: 0,
       downloadThroughput: -1,
@@ -85,31 +104,48 @@ class CRNetworkManager {
     const enabled = this._userRequestInterceptionEnabled || !!this._credentials;
     if (enabled === this._protocolRequestInterceptionEnabled) return;
     this._protocolRequestInterceptionEnabled = enabled;
-    if (enabled) {
-      await Promise.all([this._session.send('Network.setCacheDisabled', {
-        cacheDisabled: true
-      }), this._session.send('Fetch.enable', {
+    await this._forEachSession(info => this._updateProtocolRequestInterceptionForSession(info));
+  }
+  async _updateProtocolRequestInterceptionForSession(info, initial) {
+    const enabled = this._protocolRequestInterceptionEnabled;
+    if (initial && !enabled) return;
+    const cachePromise = info.session.send('Network.setCacheDisabled', {
+      cacheDisabled: enabled
+    });
+    let fetchPromise = Promise.resolve(undefined);
+    if (!info.workerFrame) {
+      if (enabled) fetchPromise = info.session.send('Fetch.enable', {
         handleAuthRequests: true,
         patterns: [{
           urlPattern: '*',
           requestStage: 'Request'
         }]
-      })]);
-    } else {
-      await Promise.all([this._session.send('Network.setCacheDisabled', {
-        cacheDisabled: false
-      }), this._session.send('Fetch.disable')]);
+      });else fetchPromise = info.session.send('Fetch.disable');
     }
+    await Promise.all([cachePromise, fetchPromise]);
+  }
+  async setExtraHTTPHeaders(extraHTTPHeaders) {
+    if (!this._extraHTTPHeaders.length && !extraHTTPHeaders.length) return;
+    this._extraHTTPHeaders = extraHTTPHeaders;
+    await this._forEachSession(info => this._setExtraHTTPHeadersForSession(info));
+  }
+  async _setExtraHTTPHeadersForSession(info, initial) {
+    if (initial && !this._extraHTTPHeaders.length) return;
+    await info.session.send('Network.setExtraHTTPHeaders', {
+      headers: (0, _utils.headersArrayToObject)(this._extraHTTPHeaders, false /* lowerCase */)
+    });
   }
   async clearCache() {
-    // Sending 'Network.setCacheDisabled' with 'cacheDisabled = true' will clear the MemoryCache.
-    await this._session.send('Network.setCacheDisabled', {
-      cacheDisabled: true
+    await this._forEachSession(async info => {
+      // Sending 'Network.setCacheDisabled' with 'cacheDisabled = true' will clear the MemoryCache.
+      await info.session.send('Network.setCacheDisabled', {
+        cacheDisabled: true
+      });
+      if (!this._protocolRequestInterceptionEnabled) await info.session.send('Network.setCacheDisabled', {
+        cacheDisabled: false
+      });
+      if (!info.workerFrame) await info.session.send('Network.clearBrowserCache');
     });
-    if (!this._protocolRequestInterceptionEnabled) await this._session.send('Network.setCacheDisabled', {
-      cacheDisabled: false
-    });
-    await this._session.send('Network.clearBrowserCache');
   }
   _onRequestWillBeSent(sessionInfo, event) {
     // Request interception doesn't happen for data URLs with Network Service.
@@ -117,13 +153,16 @@ class CRNetworkManager {
       const requestId = event.requestId;
       const requestPausedEvent = this._requestIdToRequestPausedEvent.get(requestId);
       if (requestPausedEvent) {
-        this._onRequest(sessionInfo, event, requestPausedEvent);
+        this._onRequest(sessionInfo, event, requestPausedEvent.sessionInfo, requestPausedEvent.event);
         this._requestIdToRequestPausedEvent.delete(requestId);
       } else {
-        this._requestIdToRequestWillBeSentEvent.set(event.requestId, event);
+        this._requestIdToRequestWillBeSentEvent.set(event.requestId, {
+          sessionInfo,
+          event
+        });
       }
     } else {
-      this._onRequest(sessionInfo, event, null);
+      this._onRequest(sessionInfo, event, undefined, undefined);
     }
   }
   _onRequestServedFromCache(event) {
@@ -132,7 +171,7 @@ class CRNetworkManager {
   _onRequestWillBeSentExtraInfo(event) {
     this._responseExtraInfoTracker.requestWillBeSentExtraInfo(event);
   }
-  _onAuthRequired(event) {
+  _onAuthRequired(sessionInfo, event) {
     let response = 'Default';
     const shouldProvideCredentials = this._shouldProvideCredentials(event.request.url);
     if (this._attemptedAuthentications.has(event.requestId)) {
@@ -148,7 +187,7 @@ class CRNetworkManager {
       username: undefined,
       password: undefined
     };
-    this._session._sendMayFail('Fetch.continueWithAuth', {
+    sessionInfo.session._sendMayFail('Fetch.continueWithAuth', {
       requestId: event.requestId,
       authChallengeResponse: {
         response,
@@ -165,7 +204,7 @@ class CRNetworkManager {
     if (!event.networkId) {
       // Fetch without networkId means that request was not recognized by inspector, and
       // it will never receive Network.requestWillBeSent. Continue the request to not affect it.
-      this._session._sendMayFail('Fetch.continueRequest', {
+      sessionInfo.session._sendMayFail('Fetch.continueRequest', {
         requestId: event.requestId
       });
       return;
@@ -174,7 +213,7 @@ class CRNetworkManager {
     const requestId = event.networkId;
     const requestWillBeSentEvent = this._requestIdToRequestWillBeSentEvent.get(requestId);
     if (requestWillBeSentEvent) {
-      this._onRequest(sessionInfo, requestWillBeSentEvent, event);
+      this._onRequest(requestWillBeSentEvent.sessionInfo, requestWillBeSentEvent.event, sessionInfo, event);
       this._requestIdToRequestWillBeSentEvent.delete(requestId);
     } else {
       var _existingRequest$_rou;
@@ -190,16 +229,19 @@ class CRNetworkManager {
         //
         // Note: make sure not to prematurely continue the redirect, which shares the
         // `networkId` between the original request and the redirect.
-        this._session._sendMayFail('Fetch.continueRequest', {
+        sessionInfo.session._sendMayFail('Fetch.continueRequest', {
           ...alreadyContinuedParams,
           requestId: event.requestId
         });
         return;
       }
-      this._requestIdToRequestPausedEvent.set(requestId, event);
+      this._requestIdToRequestPausedEvent.set(requestId, {
+        sessionInfo,
+        event
+      });
     }
   }
-  _onRequest(sessionInfo, requestWillBeSentEvent, requestPausedEvent) {
+  _onRequest(requestWillBeSentSessionInfo, requestWillBeSentEvent, requestPausedSessionInfo, requestPausedEvent) {
     var _this$_page, _this$_page2, _this$_page3;
     if (requestWillBeSentEvent.request.url.startsWith('data:')) return;
     let redirectedFrom = null;
@@ -211,7 +253,7 @@ class CRNetworkManager {
         redirectedFrom = request;
       }
     }
-    let frame = requestWillBeSentEvent.frameId ? (_this$_page = this._page) === null || _this$_page === void 0 ? void 0 : _this$_page._frameManager.frame(requestWillBeSentEvent.frameId) : sessionInfo.workerFrame;
+    let frame = requestWillBeSentEvent.frameId ? (_this$_page = this._page) === null || _this$_page === void 0 ? void 0 : _this$_page._frameManager.frame(requestWillBeSentEvent.frameId) : requestWillBeSentSessionInfo.workerFrame;
     // Requests from workers lack frameId, because we receive Network.requestWillBeSent
     // on the worker target. However, we receive Fetch.requestPaused on the page target,
     // and lack workerFrame there. Luckily, Fetch.requestPaused provides a frameId.
@@ -246,7 +288,7 @@ class CRNetworkManager {
         name: 'Access-Control-Allow-Headers',
         value: requestHeaders['Access-Control-Request-Headers']
       });
-      this._session._sendMayFail('Fetch.fulfillRequest', {
+      requestPausedSessionInfo.session._sendMayFail('Fetch.fulfillRequest', {
         requestId: requestPausedEvent.requestId,
         responseCode: 204,
         responsePhrase: network.STATUS_TEXTS['204'],
@@ -258,7 +300,7 @@ class CRNetworkManager {
 
     // Non-service-worker requests MUST have a frame—if they don't, we pretend there was no request
     if (!frame && !this._serviceWorker) {
-      if (requestPausedEvent) this._session._sendMayFail('Fetch.continueRequest', {
+      if (requestPausedEvent) requestPausedSessionInfo.session._sendMayFail('Fetch.continueRequest', {
         requestId: requestPausedEvent.requestId
       });
       return;
@@ -270,18 +312,18 @@ class CRNetworkManager {
         var _redirectedFrom;
         // Chromium does not preserve header overrides between redirects, so we have to do it ourselves.
         const headers = (_redirectedFrom = redirectedFrom) === null || _redirectedFrom === void 0 || (_redirectedFrom = _redirectedFrom._originalRequestRoute) === null || _redirectedFrom === void 0 || (_redirectedFrom = _redirectedFrom._alreadyContinuedParams) === null || _redirectedFrom === void 0 ? void 0 : _redirectedFrom.headers;
-        this._session._sendMayFail('Fetch.continueRequest', {
+        requestPausedSessionInfo.session._sendMayFail('Fetch.continueRequest', {
           requestId: requestPausedEvent.requestId,
           headers
         });
       } else {
-        route = new RouteImpl(this._session, requestPausedEvent.requestId);
+        route = new RouteImpl(requestPausedSessionInfo.session, requestPausedEvent.requestId);
       }
     }
     const isNavigationRequest = requestWillBeSentEvent.requestId === requestWillBeSentEvent.loaderId && requestWillBeSentEvent.type === 'Document';
     const documentId = isNavigationRequest ? requestWillBeSentEvent.loaderId : undefined;
     const request = new InterceptableRequest({
-      session: sessionInfo.session,
+      session: requestWillBeSentSessionInfo.session,
       context: (this._page || this._serviceWorker)._browserContext,
       frame: frame || null,
       serviceWorker: this._serviceWorker || null,
@@ -406,7 +448,7 @@ class CRNetworkManager {
       const requestWillBeSentEvent = this._requestIdToRequestWillBeSentEvent.get(event.requestId);
       if (requestWillBeSentEvent) {
         this._requestIdToRequestWillBeSentEvent.delete(event.requestId);
-        this._onRequest(sessionInfo, requestWillBeSentEvent, null /* requestPausedPayload */);
+        this._onRequest(sessionInfo, requestWillBeSentEvent.event, undefined, undefined);
         request = this._requestIdToRequest.get(event.requestId);
       }
     }
@@ -415,14 +457,14 @@ class CRNetworkManager {
     const response = this._createResponse(request, event.response, event.hasExtraInfo);
     (((_this$_page6 = this._page) === null || _this$_page6 === void 0 ? void 0 : _this$_page6._frameManager) || this._serviceWorker).requestReceivedResponse(response);
   }
-  _onLoadingFinished(event) {
+  _onLoadingFinished(sessionInfo, event) {
     var _this$_page7;
     this._responseExtraInfoTracker.loadingFinished(event);
-    let request = this._requestIdToRequest.get(event.requestId);
-    if (!request) request = this._maybeAdoptMainRequest(event.requestId);
+    const request = this._requestIdToRequest.get(event.requestId);
     // For certain requestIds we never receive requestWillBeSent event.
     // @see https://crbug.com/750469
     if (!request) return;
+    this._maybeUpdateOOPIFMainRequest(sessionInfo, request);
 
     // Under certain conditions we never get the Network.responseReceived
     // event from protocol. @see https://crbug.com/883475
@@ -439,7 +481,6 @@ class CRNetworkManager {
     var _this$_page8;
     this._responseExtraInfoTracker.loadingFailed(event);
     let request = this._requestIdToRequest.get(event.requestId);
-    if (!request) request = this._maybeAdoptMainRequest(event.requestId);
     if (!request) {
       const requestWillBeSentEvent = this._requestIdToRequestWillBeSentEvent.get(event.requestId);
       if (requestWillBeSentEvent) {
@@ -447,7 +488,7 @@ class CRNetworkManager {
         // We stop waiting for Fetch.requestPaused (it might never come), and dispatch request event
         // right away, followed by requestfailed event.
         this._requestIdToRequestWillBeSentEvent.delete(event.requestId);
-        this._onRequest(sessionInfo, requestWillBeSentEvent, null);
+        this._onRequest(sessionInfo, requestWillBeSentEvent.event, undefined, undefined);
         request = this._requestIdToRequest.get(event.requestId);
       }
     }
@@ -455,30 +496,25 @@ class CRNetworkManager {
     // For certain requestIds we never receive requestWillBeSent event.
     // @see https://crbug.com/750469
     if (!request) return;
+    this._maybeUpdateOOPIFMainRequest(sessionInfo, request);
     const response = request.request._existingResponse();
     if (response) {
       response.setTransferSize(null);
       response.setEncodedBodySize(null);
       response._requestFinished(_helper.helper.secondsToRoundishMillis(event.timestamp - request._timestamp));
+    } else {
+      // Loading failed before response has arrived - there will be no extra info events.
+      request.request.setRawRequestHeaders(null);
     }
     this._deleteRequest(request);
-    request.request._setFailureText(event.errorText);
+    request.request._setFailureText(event.errorText || event.blockedReason || '');
     (((_this$_page8 = this._page) === null || _this$_page8 === void 0 ? void 0 : _this$_page8._frameManager) || this._serviceWorker).requestFailed(request.request, !!event.canceled);
   }
-  _maybeAdoptMainRequest(requestId) {
+  _maybeUpdateOOPIFMainRequest(sessionInfo, request) {
     // OOPIF has a main request that starts in the parent session but finishes in the child session.
-    if (!this._parentManager) return;
-    const request = this._parentManager._requestIdToRequest.get(requestId);
-    // Main requests have matching loaderId and requestId.
-    if (!request || request._documentId !== requestId) return;
-    this._requestIdToRequest.set(requestId, request);
-    request.session = this._session;
-    this._parentManager._requestIdToRequest.delete(requestId);
-    if (request._interceptionId && this._parentManager._attemptedAuthentications.has(request._interceptionId)) {
-      this._parentManager._attemptedAuthentications.delete(request._interceptionId);
-      this._attemptedAuthentications.add(request._interceptionId);
-    }
-    return request;
+    // We check for the main request by matching loaderId and requestId, and if it now belongs to
+    // a child session, migrate it there.
+    if (request.session !== sessionInfo.session && !sessionInfo.isMain && request._documentId === request._requestId) request.session = sessionInfo.session;
   }
 }
 exports.CRNetworkManager = CRNetworkManager;

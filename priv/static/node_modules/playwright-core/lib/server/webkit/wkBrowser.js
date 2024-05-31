@@ -240,7 +240,7 @@ class WKBrowserContext extends _browserContext.BrowserContext {
       browserContextId: this._browserContextId
     });
   }
-  async clearCookies() {
+  async doClearCookies() {
     await this._browser._browserSession.send('Playwright.deleteAllCookies', {
       browserContextId: this._browserContextId
     });

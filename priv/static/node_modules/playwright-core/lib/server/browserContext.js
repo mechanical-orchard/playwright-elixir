@@ -200,6 +200,22 @@ class BrowserContext extends _instrumentation.SdkObject {
     if (urls && !Array.isArray(urls)) urls = [urls];
     return await this.doGetCookies(urls);
   }
+  async clearCookies(options) {
+    const currentCookies = await this.cookies();
+    await this.doClearCookies();
+    const matches = (cookie, prop, value) => {
+      if (!value) return true;
+      if (value instanceof RegExp) {
+        value.lastIndex = 0;
+        return value.test(cookie[prop]);
+      }
+      return cookie[prop] === value;
+    };
+    const cookiesToReadd = currentCookies.filter(cookie => {
+      return !matches(cookie, 'name', options.name) || !matches(cookie, 'domain', options.domain) || !matches(cookie, 'path', options.path);
+    });
+    await this.addCookies(cookiesToReadd);
+  }
   setHTTPCredentials(httpCredentials) {
     return this.doSetHTTPCredentials(httpCredentials);
   }
@@ -371,7 +387,28 @@ class BrowserContext extends _instrumentation.SdkObject {
       cookies: await this.cookies(),
       origins: []
     };
-    if (this._origins.size) {
+    const originsToSave = new Set(this._origins);
+
+    // First try collecting storage stage from existing pages.
+    for (const page of this.pages()) {
+      const origin = page.mainFrame().origin();
+      if (!origin || !originsToSave.has(origin)) continue;
+      try {
+        const storage = await page.mainFrame().nonStallingEvaluateInExistingContext(`({
+          localStorage: Object.keys(localStorage).map(name => ({ name, value: localStorage.getItem(name) })),
+        })`, false, 'utility');
+        if (storage.localStorage.length) result.origins.push({
+          origin,
+          localStorage: storage.localStorage
+        });
+        originsToSave.delete(origin);
+      } catch {
+        // When failed on the live page, we'll retry on the blank page below.
+      }
+    }
+
+    // If there are still origins to save, create a blank page to iterate over origins.
+    if (originsToSave.size) {
       const internalMetadata = (0, _instrumentation.serverSideCallMetadata)();
       const page = await this.newPage(internalMetadata);
       await page._setServerRequestInterceptor(handler => {
@@ -381,7 +418,7 @@ class BrowserContext extends _instrumentation.SdkObject {
         }).catch(() => {});
         return true;
       });
-      for (const origin of this._origins) {
+      for (const origin of originsToSave) {
         const originStorage = {
           origin,
           localStorage: []
@@ -431,7 +468,7 @@ class BrowserContext extends _instrumentation.SdkObject {
   }
   async _resetCookies() {
     var _this$_options$storag2, _this$_options$storag3;
-    await this.clearCookies();
+    await this.doClearCookies();
     if ((_this$_options$storag2 = this._options.storageState) !== null && _this$_options$storag2 !== void 0 && _this$_options$storag2.cookies) await this.addCookies((_this$_options$storag3 = this._options.storageState) === null || _this$_options$storag3 === void 0 ? void 0 : _this$_options$storag3.cookies);
   }
   isSettingStorageState() {

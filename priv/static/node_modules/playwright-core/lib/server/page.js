@@ -7,7 +7,6 @@ exports.Worker = exports.PageBinding = exports.Page = void 0;
 var frames = _interopRequireWildcard(require("./frames"));
 var input = _interopRequireWildcard(require("./input"));
 var js = _interopRequireWildcard(require("./javascript"));
-var network = _interopRequireWildcard(require("./network"));
 var _screenshotter = require("./screenshotter");
 var _timeoutSettings = require("../common/timeoutSettings");
 var _browserContext = require("./browserContext");
@@ -525,10 +524,8 @@ class Page extends _instrumentation.SdkObject {
   }
   frameNavigatedToNewDocument(frame) {
     this.emit(Page.Events.InternalFrameNavigatedToNewDocument, frame);
-    const url = frame.url();
-    if (!url.startsWith('http')) return;
-    const purl = network.parsedURL(url);
-    if (purl) this._browserContext.addVisitedOrigin(purl.origin);
+    const origin = frame.origin();
+    if (origin) this._browserContext.addVisitedOrigin(origin);
   }
   allBindings() {
     return [...this._browserContext._pageBindings.values(), ...this._pageBindings.values()];

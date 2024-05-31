@@ -37,12 +37,12 @@ class CRServiceWorker extends _page.Worker {
     this._extraHTTPHeaders = null;
     this._session = session;
     this._browserContext = browserContext;
-    if (!!process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS) this._networkManager = new _crNetworkManager.CRNetworkManager(session, null, this, null);
+    if (!!process.env.PW_EXPERIMENTAL_SERVICE_WORKER_NETWORK_EVENTS) this._networkManager = new _crNetworkManager.CRNetworkManager(null, this);
     session.once('Runtime.executionContextCreated', event => {
       this._createExecutionContext(new _crExecutionContext.CRExecutionContext(session, event.context));
     });
     if (this._networkManager && this._isNetworkInspectionEnabled()) {
-      this._networkManager.initialize().catch(() => {});
+      this._networkManager.addSession(session, undefined, true /* isMain */).catch(() => {});
       this.updateRequestInterception();
       this.updateExtraHTTPHeaders(true);
       this.updateHttpCredentials(true);
@@ -56,20 +56,22 @@ class CRServiceWorker extends _page.Worker {
     });
   }
   didClose() {
+    var _this$_networkManager;
+    (_this$_networkManager = this._networkManager) === null || _this$_networkManager === void 0 || _this$_networkManager.removeSession(this._session);
     this._session.dispose();
     super.didClose();
   }
   async updateOffline(initial) {
-    var _this$_networkManager;
-    if (!this._isNetworkInspectionEnabled()) return;
-    const offline = !!this._browserContext._options.offline;
-    if (!initial || offline) await ((_this$_networkManager = this._networkManager) === null || _this$_networkManager === void 0 ? void 0 : _this$_networkManager.setOffline(offline));
-  }
-  async updateHttpCredentials(initial) {
     var _this$_networkManager2;
     if (!this._isNetworkInspectionEnabled()) return;
+    const offline = !!this._browserContext._options.offline;
+    if (!initial || offline) await ((_this$_networkManager2 = this._networkManager) === null || _this$_networkManager2 === void 0 ? void 0 : _this$_networkManager2.setOffline(offline));
+  }
+  async updateHttpCredentials(initial) {
+    var _this$_networkManager3;
+    if (!this._isNetworkInspectionEnabled()) return;
     const credentials = this._browserContext._options.httpCredentials || null;
-    if (!initial || credentials) await ((_this$_networkManager2 = this._networkManager) === null || _this$_networkManager2 === void 0 ? void 0 : _this$_networkManager2.authenticate(credentials));
+    if (!initial || credentials) await ((_this$_networkManager3 = this._networkManager) === null || _this$_networkManager3 === void 0 ? void 0 : _this$_networkManager3.authenticate(credentials));
   }
   async updateExtraHTTPHeaders(initial) {
     if (!this._isNetworkInspectionEnabled()) return;

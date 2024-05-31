@@ -40,7 +40,7 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 const UTILITY_WORLD_NAME = exports.UTILITY_WORLD_NAME = '__playwright_utility_world__';
 class FFPage {
   constructor(session, browserContext, opener) {
-    this.cspErrorsAsynchronousForInlineScipts = true;
+    this.cspErrorsAsynchronousForInlineScripts = true;
     this.rawMouse = void 0;
     this.rawKeyboard = void 0;
     this.rawTouchscreen = void 0;
@@ -509,12 +509,12 @@ class FFPage {
   async setInputFiles(handle, files) {
     await handle.evaluateInUtility(([injected, node, files]) => injected.setInputFiles(node, files), files);
   }
-  async setInputFilePaths(progress, handle, files) {
-    await Promise.all([this._session.send('Page.setFileInputFiles', {
+  async setInputFilePaths(handle, files) {
+    await this._session.send('Page.setFileInputFiles', {
       frameId: handle._context.frame._id,
       objectId: handle._objectId,
       files
-    }), handle.dispatchEvent(progress.metadata, 'input'), handle.dispatchEvent(progress.metadata, 'change')]);
+    });
   }
   async adoptElementHandle(handle, to) {
     const result = await this._session.send('Page.adoptNode', {

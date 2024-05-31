@@ -257,8 +257,18 @@ class BrowserContext extends _channelOwner.ChannelOwner {
       cookies
     });
   }
-  async clearCookies() {
-    await this._channel.clearCookies();
+  async clearCookies(options = {}) {
+    await this._channel.clearCookies({
+      name: (0, _utils.isString)(options.name) ? options.name : undefined,
+      nameRegexSource: (0, _utils.isRegExp)(options.name) ? options.name.source : undefined,
+      nameRegexFlags: (0, _utils.isRegExp)(options.name) ? options.name.flags : undefined,
+      domain: (0, _utils.isString)(options.domain) ? options.domain : undefined,
+      domainRegexSource: (0, _utils.isRegExp)(options.domain) ? options.domain.source : undefined,
+      domainRegexFlags: (0, _utils.isRegExp)(options.domain) ? options.domain.flags : undefined,
+      path: (0, _utils.isString)(options.path) ? options.path : undefined,
+      pathRegexSource: (0, _utils.isRegExp)(options.path) ? options.path.source : undefined,
+      pathRegexFlags: (0, _utils.isRegExp)(options.path) ? options.path.flags : undefined
+    });
   }
   async grantPermissions(permissions, options) {
     await this._channel.grantPermissions({

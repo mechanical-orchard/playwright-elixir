@@ -21,6 +21,7 @@ var _harTracer = require("../../har/harTracer");
 var _snapshotter = require("./snapshotter");
 var _zipBundle = require("../../../zipBundle");
 var _dispatcher = require("../../dispatchers/dispatcher");
+var _errors = require("../../errors");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
@@ -148,7 +149,7 @@ class Tracing extends _instrumentation.SdkObject {
     };
     this._fs.appendFile(this._state.traceFile, JSON.stringify(event) + '\n');
     this._context.instrumentation.addListener(this, this._context);
-    this._eventListeners.push(_eventsHelper.eventsHelper.addEventListener(this._context, _browserContext.BrowserContext.Events.Console, this._onConsoleMessage.bind(this)));
+    this._eventListeners.push(_eventsHelper.eventsHelper.addEventListener(this._context, _browserContext.BrowserContext.Events.Console, this._onConsoleMessage.bind(this)), _eventsHelper.eventsHelper.addEventListener(this._context, _browserContext.BrowserContext.Events.PageError, this._onPageError.bind(this)));
     if (this._state.options.screenshots) this._startScreencast();
     if (this._state.options.snapshots) await ((_this$_snapshotter2 = this._snapshotter) === null || _this$_snapshotter2 === void 0 ? void 0 : _this$_snapshotter2.start());
     return {
@@ -321,14 +322,6 @@ class Tracing extends _instrumentation.SdkObject {
     this._appendTraceEvent(event);
     return this._captureSnapshot(event.afterSnapshot, sdkObject, metadata);
   }
-  onEvent(sdkObject, event) {
-    if (!sdkObject.attribution.context) return;
-    if (event.method === 'console' || event.method === '__create__' && event.class === 'ConsoleMessage' || event.method === '__create__' && event.class === 'JSHandle') {
-      // Console messages are handled separately.
-      return;
-    }
-    this._appendTraceEvent(event);
-  }
   onEntryStarted(entry) {
     this._pendingHarEntries.add(entry);
   }
@@ -379,6 +372,19 @@ class Tracing extends _instrumentation.SdkObject {
       location: message.location(),
       time: (0, _utils.monotonicTime)(),
       pageId: (_message$page = message.page()) === null || _message$page === void 0 ? void 0 : _message$page.guid
+    };
+    this._appendTraceEvent(event);
+  }
+  _onPageError(error, page) {
+    const event = {
+      type: 'event',
+      time: (0, _utils.monotonicTime)(),
+      class: 'BrowserContext',
+      method: 'pageError',
+      params: {
+        error: (0, _errors.serializeError)(error)
+      },
+      pageId: page.guid
     };
     this._appendTraceEvent(event);
   }

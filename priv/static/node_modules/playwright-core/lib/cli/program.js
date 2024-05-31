@@ -229,18 +229,11 @@ _utilsBundle.program.command('show-trace [trace...]').option('-b, --browser <bro
   if (options.browser === 'ff') options.browser = 'firefox';
   if (options.browser === 'wk') options.browser = 'webkit';
   const openOptions = {
-    headless: false,
     host: options.host,
     port: +options.port,
     isServer: !!options.stdin
   };
-  if (options.port !== undefined || options.host !== undefined) {
-    (0, _traceViewer.openTraceInBrowser)(traces, openOptions).catch(logErrorAndExit);
-  } else {
-    (0, _traceViewer.openTraceViewerApp)(traces, options.browser, openOptions).then(page => {
-      page.on('close', () => (0, _utils.gracefullyProcessExitDoNotHang)(0));
-    }).catch(logErrorAndExit);
-  }
+  if (options.port !== undefined || options.host !== undefined) (0, _traceViewer.runTraceInBrowser)(traces, openOptions).catch(logErrorAndExit);else (0, _traceViewer.runTraceViewerApp)(traces, options.browser, openOptions, true).catch(logErrorAndExit);
 }).addHelpText('afterAll', `
 Examples:
 

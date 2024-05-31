@@ -128,29 +128,6 @@ const DOWNLOAD_PATHS = {
     'mac13-arm64': 'builds/chromium-tip-of-tree/%s/chromium-tip-of-tree-mac-arm64.zip',
     'win64': 'builds/chromium-tip-of-tree/%s/chromium-tip-of-tree-win64.zip'
   },
-  'chromium-with-symbols': {
-    '<unknown>': undefined,
-    'ubuntu18.04-x64': undefined,
-    'ubuntu20.04-x64': 'builds/chromium/%s/chromium-with-symbols-linux.zip',
-    'ubuntu22.04-x64': 'builds/chromium/%s/chromium-with-symbols-linux.zip',
-    'ubuntu18.04-arm64': undefined,
-    'ubuntu20.04-arm64': 'builds/chromium/%s/chromium-with-symbols-linux-arm64.zip',
-    'ubuntu22.04-arm64': 'builds/chromium/%s/chromium-with-symbols-linux-arm64.zip',
-    'debian11-x64': 'builds/chromium/%s/chromium-with-symbols-linux.zip',
-    'debian11-arm64': 'builds/chromium/%s/chromium-with-symbols-linux-arm64.zip',
-    'debian12-x64': 'builds/chromium/%s/chromium-with-symbols-linux.zip',
-    'debian12-arm64': 'builds/chromium/%s/chromium-with-symbols-linux-arm64.zip',
-    'mac10.13': 'builds/chromium/%s/chromium-with-symbols-mac.zip',
-    'mac10.14': 'builds/chromium/%s/chromium-with-symbols-mac.zip',
-    'mac10.15': 'builds/chromium/%s/chromium-with-symbols-mac.zip',
-    'mac11': 'builds/chromium/%s/chromium-with-symbols-mac.zip',
-    'mac11-arm64': 'builds/chromium/%s/chromium-with-symbols-mac-arm64.zip',
-    'mac12': 'builds/chromium/%s/chromium-with-symbols-mac.zip',
-    'mac12-arm64': 'builds/chromium/%s/chromium-with-symbols-mac-arm64.zip',
-    'mac13': 'builds/chromium/%s/chromium-with-symbols-mac.zip',
-    'mac13-arm64': 'builds/chromium/%s/chromium-with-symbols-mac-arm64.zip',
-    'win64': 'builds/chromium/%s/chromium-with-symbols-win64.zip'
-  },
   'firefox': {
     '<unknown>': undefined,
     'ubuntu18.04-x64': undefined,
@@ -341,7 +318,7 @@ function readDescriptors(browsersJSON) {
     return descriptor;
   });
 }
-const allDownloadable = ['chromium', 'firefox', 'webkit', 'ffmpeg', 'firefox-beta', 'chromium-with-symbols', 'chromium-tip-of-tree'];
+const allDownloadable = ['chromium', 'firefox', 'webkit', 'ffmpeg', 'firefox-beta', 'chromium-tip-of-tree'];
 class Registry {
   constructor(browsersJSON) {
     this._executables = void 0;
@@ -378,23 +355,6 @@ class Registry {
       downloadURLs: this._downloadURLs(chromium),
       browserVersion: chromium.browserVersion,
       _install: () => this._downloadExecutable(chromium, chromiumExecutable),
-      _dependencyGroup: 'chromium',
-      _isHermeticInstallation: true
-    });
-    const chromiumWithSymbols = descriptors.find(d => d.name === 'chromium-with-symbols');
-    const chromiumWithSymbolsExecutable = findExecutablePath(chromiumWithSymbols.dir, 'chromium');
-    this._executables.push({
-      type: 'tool',
-      name: 'chromium-with-symbols',
-      browserName: 'chromium',
-      directory: chromiumWithSymbols.dir,
-      executablePath: () => chromiumWithSymbolsExecutable,
-      executablePathOrDie: sdkLanguage => executablePathOrDie('chromium-with-symbols', chromiumWithSymbolsExecutable, chromiumWithSymbols.installByDefault, sdkLanguage),
-      installType: chromiumWithSymbols.installByDefault ? 'download-by-default' : 'download-on-demand',
-      _validateHostRequirements: sdkLanguage => this._validateHostRequirements(sdkLanguage, 'chromium', chromiumWithSymbols.dir, ['chrome-linux'], [], ['chrome-win']),
-      downloadURLs: this._downloadURLs(chromiumWithSymbols),
-      browserVersion: chromiumWithSymbols.browserVersion,
-      _install: () => this._downloadExecutable(chromiumWithSymbols, chromiumWithSymbolsExecutable),
       _dependencyGroup: 'chromium',
       _isHermeticInstallation: true
     });

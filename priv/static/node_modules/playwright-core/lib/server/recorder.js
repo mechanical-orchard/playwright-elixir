@@ -551,13 +551,8 @@ class ContextRecorder extends _events.EventEmitter {
       }
       callMetadata.endTime = (0, _utils2.monotonicTime)();
       await frame.instrumentation.onAfterCall(frame, callMetadata);
-      const timer = setTimeout(() => {
-        // Commit the action after 5 seconds so that no further signals are added to it.
-        actionInContext.committed = true;
-        this._timers.delete(timer);
-      }, 5000);
+      this._setCommittedAfterTimeout(actionInContext);
       this._generator.didPerformAction(actionInContext);
-      this._timers.add(timer);
     };
     const kActionTimeout = 5000;
     if (action.name === 'click') {
@@ -616,7 +611,16 @@ class ContextRecorder extends _events.EventEmitter {
       frame: frameDescription,
       action
     };
+    this._setCommittedAfterTimeout(actionInContext);
     this._generator.addAction(actionInContext);
+  }
+  _setCommittedAfterTimeout(actionInContext) {
+    const timer = setTimeout(() => {
+      // Commit the action after 5 seconds so that no further signals are added to it.
+      actionInContext.committed = true;
+      this._timers.delete(timer);
+    }, (0, _utils2.isUnderTest)() ? 500 : 5000);
+    this._timers.add(timer);
   }
   _onFrameNavigated(frame, page) {
     const pageAlias = this._pageAliases.get(page);

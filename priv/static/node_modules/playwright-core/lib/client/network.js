@@ -87,7 +87,7 @@ class Request extends _channelOwner.ChannelOwner {
     const postData = this.postData();
     if (!postData) return null;
     const contentType = this.headers()['content-type'];
-    if (contentType === 'application/x-www-form-urlencoded') {
+    if (contentType !== null && contentType !== void 0 && contentType.includes('application/x-www-form-urlencoded')) {
       const entries = {};
       const parsed = new _url.URLSearchParams(postData);
       for (const [k, v] of parsed.entries()) entries[k] = v;

@@ -8,6 +8,7 @@ exports.assertDone = assertDone;
 exports.isNonRecoverableDOMError = isNonRecoverableDOMError;
 exports.kUnableToAdoptErrorMessage = void 0;
 exports.throwRetargetableDOMError = throwRetargetableDOMError;
+var _fs = _interopRequireDefault(require("fs"));
 var injectedScriptSource = _interopRequireWildcard(require("../generated/injectedScriptSource"));
 var _protocolError = require("./protocolError");
 var js = _interopRequireWildcard(require("./javascript"));
@@ -16,6 +17,7 @@ var _utils = require("../utils");
 var _fileUploadUtils = require("./fileUploadUtils");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -585,7 +587,12 @@ class ElementHandle extends js.JSHandle {
     await progress.beforeInputAction(this);
     await this._page._frameManager.waitForSignalsCreatedBy(progress, options.noWaitAfter, async () => {
       progress.throwIfAborted(); // Avoid action that has side-effects.
-      if (localPaths) await this._page._delegate.setInputFilePaths(progress, retargeted, localPaths);else await this._page._delegate.setInputFiles(retargeted, filePayloads);
+      if (localPaths) {
+        await Promise.all(localPaths.map(localPath => _fs.default.promises.access(localPath, _fs.default.constants.F_OK)));
+        await this._page._delegate.setInputFilePaths(retargeted, localPaths);
+      } else {
+        await this._page._delegate.setInputFiles(retargeted, filePayloads);
+      }
     });
     return 'done';
   }
