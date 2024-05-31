@@ -109,7 +109,7 @@ defmodule Playwright.MixProject do
         Guides: Path.wildcard("man/guides/*.md")
       ],
       groups_for_modules: [
-        "Capabilities (API)": [
+        API: [
           Playwright,
           Playwright.APIRequestContext,
           Playwright.Browser,
@@ -131,14 +131,12 @@ defmodule Playwright.MixProject do
           Playwright.WebSocket,
           Playwright.Worker
         ],
-        Runner: [
+        SDK: [
           Playwright.SDK.Channel.Catalog,
+          Playwright.SDK.CLI,
           Playwright.SDK.Config
         ],
-        Utilities: [
-          Playwright.SDK.CLI
-        ],
-        "Test Helpers": [
+        Test: [
           PlaywrightTest.Case,
           PlaywrightTest.Page
         ]
