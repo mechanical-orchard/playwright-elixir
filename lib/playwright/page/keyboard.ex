@@ -1,8 +1,8 @@
 defmodule Playwright.Page.Keyboard do
   @moduledoc false
 
+  use Playwright.SDK.ChannelOwner
   alias Playwright.Page
-  alias Playwright.SDK.Channel
 
   @spec type(Page.t(), binary()) :: :ok
   def type(page, text) do
