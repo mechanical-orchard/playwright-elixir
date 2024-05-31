@@ -22,6 +22,8 @@ jobs:
         otp-version: '26.2.5'
     - name: Install Elixir dependencies
       run: mix deps.get
+    - name: Install Playwright dependencies (e.g., browsers)
+      run: mix playwright.install
     # NOTE: not needed for now, while assets are
     #       directly installed to `priv/static`.
     # - name: Install Node dependencies
