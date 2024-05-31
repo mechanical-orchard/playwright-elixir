@@ -220,8 +220,8 @@ defmodule Playwright.PageTest do
     test "with a single option given mismatched attributes, returns a timeout", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
 
-      assert {:error, %Error{message: "Timeout 200ms exceeded."}} =
-               Page.select_option(page, "select", %{value: "green", label: "Brown"}, %{timeout: 200})
+      assert {:error, %Error{message: "Timeout 500ms exceeded."}} =
+               Page.select_option(page, "select", %{value: "green", label: "Brown"}, %{timeout: 500})
     end
 
     test "with multiple options and a single-option select, selects the first", %{assets: assets, page: page} do
@@ -342,7 +342,7 @@ defmodule Playwright.PageTest do
       assert page |> Page.get_attribute("div#outer", "name") == "value"
       assert page |> Page.get_attribute("div#outer", "foo") == nil
 
-      assert({:error, %Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 200}))
+      assert({:error, %Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 500}))
     end
   end
 

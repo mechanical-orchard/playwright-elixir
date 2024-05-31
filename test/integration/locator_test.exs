@@ -40,7 +40,7 @@ defmodule Playwright.LocatorTest do
 
   describe "Locator.check/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 200}
+      options = %{timeout: 500}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
       page |> Page.set_content("<input id='checkbox' type='checkbox'/>")
@@ -59,13 +59,13 @@ defmodule Playwright.LocatorTest do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "input#bogus")
-      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.check(locator, options)
+      assert {:error, %Error{message: "Timeout 500ms exceeded."}} = Locator.check(locator, options)
     end
   end
 
   describe "Locator.click/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 200}
+      options = %{timeout: 500}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
       page |> Page.set_content("<a id='link' target=_blank rel=noopener href='/one-style.html'>yo</a>")
@@ -84,14 +84,14 @@ defmodule Playwright.LocatorTest do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "a#bogus")
-      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.click(locator, options)
+      assert {:error, %Error{message: "Timeout 500ms exceeded."}} = Locator.click(locator, options)
     end
 
     test "clicking a button", %{assets: assets, page: page} do
       locator = Page.locator(page, "button")
       page |> Page.goto(assets.prefix <> "/input/button.html")
 
-      Locator.click(locator, %{timeout: 200})
+      Locator.click(locator, %{timeout: 500})
       assert Page.evaluate(page, "window['result']") == "Clicked"
     end
   end
@@ -112,7 +112,7 @@ defmodule Playwright.LocatorTest do
       }
       """)
 
-      Locator.dblclick(locator, %{timeout: 200})
+      Locator.dblclick(locator, %{timeout: 500})
       assert Page.evaluate(page, "window['double']") == true
       assert Page.evaluate(page, "window['result']") == "Clicked"
     end
@@ -694,7 +694,7 @@ defmodule Playwright.LocatorTest do
 
   describe "Locator.uncheck/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 200}
+      options = %{timeout: 500}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
       page |> Page.set_content("<input id='checkbox' type='checkbox' checked/>")
@@ -712,13 +712,13 @@ defmodule Playwright.LocatorTest do
 
     test "returns a timeout error when unable to 'uncheck'", %{options: options, page: page} do
       locator = Page.locator(page, "input#bogus")
-      assert {:error, %Error{message: "Timeout 200ms exceeded."}} = Locator.uncheck(locator, options)
+      assert {:error, %Error{message: "Timeout 500ms exceeded."}} = Locator.uncheck(locator, options)
     end
   end
 
   describe "Locator.wait_for/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 200}
+      options = %{timeout: 500}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
 

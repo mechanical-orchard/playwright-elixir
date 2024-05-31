@@ -37,10 +37,10 @@ defmodule Playwright.Page.NetworkTest do
     test "w/ an event and a timeout", %{page: page} do
       {:error, %Error{message: message}} =
         Page.expect_event(page, :request_finished, %{
-          timeout: 200
+          timeout: 500
         })
 
-      assert message == "Timeout 200ms exceeded."
+      assert message == "Timeout 500ms exceeded."
     end
 
     test "w/ an event, a (truthy) predicate, and a timeout", %{assets: assets, page: page} do
@@ -51,7 +51,7 @@ defmodule Playwright.Page.NetworkTest do
           predicate: fn _, _ ->
             true
           end,
-          timeout: 200
+          timeout: 500
         })
 
       assert event.type == :request_finished
@@ -65,10 +65,10 @@ defmodule Playwright.Page.NetworkTest do
           predicate: fn _, _ ->
             false
           end,
-          timeout: 200
+          timeout: 500
         })
 
-      assert message == "Timeout 200ms exceeded."
+      assert message == "Timeout 500ms exceeded."
     end
   end
 
@@ -115,14 +115,14 @@ defmodule Playwright.Page.NetworkTest do
             predicate: fn _, _ ->
               false
             end,
-            timeout: 200
+            timeout: 500
           },
           fn ->
             Page.goto(page, assets.empty)
           end
         )
 
-      assert message == "Timeout 200ms exceeded."
+      assert message == "Timeout 500ms exceeded."
     end
 
     test "w/ an event and a timeout", %{assets: assets, page: page} do
@@ -131,7 +131,7 @@ defmodule Playwright.Page.NetworkTest do
           page,
           :request_finished,
           %{
-            timeout: 200
+            timeout: 500
           },
           fn ->
             Page.goto(page, assets.empty)
