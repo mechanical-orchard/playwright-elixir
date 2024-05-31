@@ -18,10 +18,8 @@ end
 To ensure Playwright's runtime dependencies (e.g., browsers) are available, execute the following:
 
 ```bash
-$ npx playwright@1.41.0 install
+$ mix playwright.install
 ```
-
-Note that you'll need to run that from a Node-enabled environment, and will get a big warning message about not "first installing your project's dependencies". We aim to improve this experience soon.
 
 ## Usage
 

@@ -160,20 +160,7 @@ defmodule Playwright.MixProject do
   defp aliases do
     [
       "assets.build": [
-        "cmd rm -rf priv/static",
-        "cmd rm -rf tmp/playwright",
-        "cmd mkdir -p tmp/playwright",
-        "cmd cd tmp/playwright ; wget https://playwright.azureedge.net/builds/driver/playwright-#{System.get_env("PLAYWRIGHT_CORE")}-mac.zip",
-        "cmd cd tmp/playwright ; unzip playwright-#{System.get_env("PLAYWRIGHT_CORE")}-mac.zip",
-        "cmd cd tmp/playwright ; esbuild driver=./package/cli.js \
-          --bundle \
-          --platform=node \
-          --format=cjs \
-          --target=es2016 \
-          --outdir=../../priv/static \
-          --external:*.png \
-          --external:*/loader",
-        "cmd rm -rf tmp/playwright"
+        "cmd echo 'NOT IMPLEMENTED'"
       ]
     ]
   end
