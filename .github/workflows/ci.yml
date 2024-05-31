@@ -22,7 +22,9 @@ jobs:
         otp-version: '26.2.5'
     - name: Install Elixir dependencies
       run: mix deps.get
-    - name: Install Node dependencies
-      run: npm install --prefix assets
+    # NOTE: not needed for now, while assets are
+    #       directly installed to `priv/static`.
+    # - name: Install Node dependencies
+    #   run: npm install --prefix assets
     - name: Run tests
       run: mix test
