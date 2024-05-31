@@ -63,8 +63,6 @@ defmodule Playwright.Page do
   @type selector :: binary()
   @type serializable :: any()
 
-  require Logger
-
   # callbacks
   # ---------------------------------------------------------------------------
 

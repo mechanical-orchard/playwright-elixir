@@ -50,7 +50,7 @@ defmodule Playwright.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
       {:esbuild, "~> 0.8.1", runtime: Mix.env() == :dev},
-      {:ex_doc, "~> 0.33", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:gun, "~> 1.3.3"},
       {:jason, "~> 1.4"},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},

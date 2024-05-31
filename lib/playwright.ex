@@ -37,7 +37,7 @@ defmodule Playwright do
   Initiates an instance of `Playwright.Browser` use the WebSocket transport.
 
   Note that this approach assumes the a Playwright Server is running and
-  handling WebSocket requests at the configured `ws_endpoint.
+  handling WebSocket requests at the configured `ws_endpoint`.
 
   ## Returns
 
