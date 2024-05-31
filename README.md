@@ -20,7 +20,7 @@ end
 
 ## Usage
 
-- [README](https://hexdocs.pm/playwright/README.html)
+- [README](https://hexdocs.pm/playwright/readme.html)
 - [Getting started](https://hexdocs.pm/playwright/basics-getting-started.html)
 - [API Reference](https://hexdocs.pm/playwright/api-reference.html)
 
