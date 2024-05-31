@@ -97,9 +97,16 @@ defmodule Playwright.SDK.ChannelOwner do
         {:ok, event.target}
       end
 
-      # def find(session, {:guid, guid}) when is_binary(guid) do
-      defp with_latest(%{session: session} = owner, task) do
-        Channel.find(session, {:guid, owner.guid}) |> task.()
+      defp post!(owner, action, data) do
+        case Channel.post(owner.session, {:guid, owner.guid}, action, data) do
+          # simple "succes": send "self"
+          {:ok, %{id: _}} ->
+            Channel.find(owner.session, {:guid, owner.guid})
+        end
+      end
+
+      defp with_latest(owner, task) do
+        Channel.find(owner.session, {:guid, owner.guid}) |> task.()
       end
     end
   end

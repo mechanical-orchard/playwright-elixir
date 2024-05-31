@@ -5,6 +5,10 @@ defmodule Playwright.Page.KeyboardTest do
   alias Playwright.Page.Keyboard
 
   describe "type" do
+    test "returns the `:page`", %{page: page} do
+      assert %Page{} = Keyboard.type(page, "text")
+    end
+
     test "keyboard type into a textbox", %{page: page} do
       Page.evaluate(page, """
         const textarea = document.createElement('textarea');
@@ -21,6 +25,10 @@ defmodule Playwright.Page.KeyboardTest do
   end
 
   describe "insert_text" do
+    test "returns the `:page`", %{page: page} do
+      assert %Page{} = Keyboard.insert_text(page, "text")
+    end
+
     test "should send characters inserted", %{page: page} do
       Page.evaluate(page, """
         const textarea = document.createElement('textarea');
@@ -37,6 +45,10 @@ defmodule Playwright.Page.KeyboardTest do
   end
 
   describe "up" do
+    test "returns the `:page`", %{page: page} do
+      assert %Page{} = Keyboard.up(page, "A")
+    end
+
     test "sends proper code", %{page: page, assets: assets} do
       Page.goto(page, assets.prefix <> "/input/keyboard.html")
 
@@ -48,6 +60,10 @@ defmodule Playwright.Page.KeyboardTest do
   end
 
   describe "down" do
+    test "returns the `:page`", %{page: page} do
+      assert %Page{} = Keyboard.down(page, "A")
+    end
+
     test "sends proper code", %{page: page, assets: assets} do
       Page.goto(page, assets.prefix <> "/input/keyboard.html")
 
@@ -59,6 +75,10 @@ defmodule Playwright.Page.KeyboardTest do
   end
 
   describe "press" do
+    test "returns the `:page`", %{page: page} do
+      assert %Page{} = Keyboard.press(page, "A")
+    end
+
     test "test should press plus", %{page: page, assets: assets} do
       Page.goto(page, assets.prefix <> "/input/keyboard.html")
 
