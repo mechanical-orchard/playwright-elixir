@@ -6,19 +6,11 @@ defmodule Playwright.SDK.CLI do
   require Logger
 
   def install do
-    Logger.info("Installing playwright browsers")
+    Logger.info("Installing playwright browsers and dependencies")
     cli_path = config_cli() || default_cli()
-    {result, exit_status} = System.cmd(cli_path, ["install"])
+    {result, exit_status} = System.cmd(cli_path, ["install", "--with-deps"])
     Logger.info(result)
     if exit_status != 0, do: raise("Failed to install playwright browsers")
-  end
-
-  def install_deps do
-    Logger.info("Installing playwright deps")
-    cli_path = config_cli() || default_cli()
-    {result, exit_status} = System.cmd(cli_path, ["installdeps"])
-    Logger.info(result)
-    if exit_status != 0, do: raise("Failed to install playwright deps")
   end
 
   # private
