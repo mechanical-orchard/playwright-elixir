@@ -67,7 +67,7 @@ defmodule Playwright.BrowserType do
   def connect(ws_endpoint, options \\ %{})
 
   def connect(ws_endpoint, _options) do
-    with {:ok, session} <- new_session(Transport.WebSocket, [ws_endpoint]),
+    with {:ok, session} <- new_session(Transport.WebSocket, %{ws_endpoint: ws_endpoint}),
          %{guid: guid} <- launched_browser(session),
          browser <- Channel.find(session, {:guid, guid}) do
       {session, browser}
