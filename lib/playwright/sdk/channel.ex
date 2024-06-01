@@ -54,9 +54,7 @@ defmodule Playwright.SDK.Channel do
 
   def recv(session, {from, message}) when is_map(message) do
     # IO.inspect(message, label: "<--- Channel.recv/2 B")
-
-    Response.recv(session, message)
-    |> reply(from)
+    Response.recv(session, message) |> reply(from)
   end
 
   # or, "expect"?

@@ -315,6 +315,7 @@ defmodule Playwright.Frame do
     parse_result(fn ->
       Channel.post(session, {:guid, frame.guid}, :evaluate_expression, %{
         expression: expression,
+        is_function: Helpers.Expression.function?(expression),
         arg: serialize(arg)
       })
     end)

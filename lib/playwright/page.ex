@@ -427,15 +427,23 @@ defmodule Playwright.Page do
   #   - websocket
   #   - worker
 
-  # NOTE: these events will be recv'd from Playwright server with
-  # the parent BrowserContext as the context/bound :guid. So, we need to
-  # add our handlers there, on that (BrowserContext) parent.
+  def on(%Page{} = page, event, callback) when is_binary(event) do
+    on(page, String.to_atom(event), callback)
+  end
+
+  # NOTE: These events will be recv'd from Playwright server with the parent
+  # BrowserContext as the context/bound :guid. So, we need to add our handlers
+  # there, on that (BrowserContext) parent.
+  #
+  # For :update_subscription, :event is one of:
+  # (console|dialog|fileChooser|request|response|requestFinished|requestFailed)
   def on(%Page{session: session} = page, event, callback)
-      when event in [:request, :response, :request_finished, "request", "response", "requestFinished"] do
+      when event in [:console, :dialog, :file_chooser, :request, :response, :request_finished, :request_failed] do
+    Channel.post(session, {:guid, page.guid}, :update_subscription, %{event: event, enabled: true})
     Channel.bind(session, {:guid, context(page).guid}, event, callback)
   end
 
-  def on(%Page{session: session} = page, event, callback) do
+  def on(%Page{session: session} = page, event, callback) when is_atom(event) do
     Channel.bind(session, {:guid, page.guid}, event, callback)
   end
 

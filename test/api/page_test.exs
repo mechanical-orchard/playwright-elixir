@@ -62,8 +62,6 @@ defmodule Playwright.PageTest do
       refute_received(^guid_two)
     end
 
-    # TODO: resolve changes in v1.34.0 that mean we're not receiving the console message resources.
-    @tag :skip
     test "on 'console'", %{page: page} do
       test_pid = self()
 
@@ -71,11 +69,11 @@ defmodule Playwright.PageTest do
         send(test_pid, event)
       end)
 
-      Page.evaluate(page, "function () { console.info('lala!'); }")
-      Page.evaluate(page, "console.error('lulu!')")
+      Page.evaluate(page, "function () { console.info('info!'); }")
+      Page.evaluate(page, "console.error('error!')")
 
-      assert_received(%Event{params: %{message: %{message_text: "lala!", message_type: "info"}}, type: :console})
-      assert_received(%Event{params: %{message: %{message_text: "lulu!", message_type: "error"}}, type: :console})
+      assert_received(%Event{params: %{text: "info!", type: "info"}, type: :console})
+      assert_received(%Event{params: %{text: "error!", type: "error"}, type: :console})
     end
   end
 
