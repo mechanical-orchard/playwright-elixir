@@ -439,7 +439,10 @@ defmodule Playwright.Page do
   # (console|dialog|fileChooser|request|response|requestFinished|requestFailed)
   def on(%Page{session: session} = page, event, callback)
       when event in [:console, :dialog, :file_chooser, :request, :response, :request_finished, :request_failed] do
-    Channel.post(session, {:guid, page.guid}, :update_subscription, %{event: event, enabled: true})
+    # HACK!
+    e = Recase.to_camel(event)
+
+    Channel.post(session, {:guid, page.guid}, :update_subscription, %{event: e, enabled: true})
     Channel.bind(session, {:guid, context(page).guid}, event, callback)
   end
 

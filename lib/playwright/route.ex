@@ -19,11 +19,12 @@ defmodule Playwright.Route do
   @spec continue(t(), options()) :: :ok
   def continue(route, options \\ %{})
 
+  # TODO: figure out what's up with `is_fallback`.
   def continue(%Route{session: session} = route, options) do
     # HACK to deal with changes in v1.33.0
     catalog = Channel.Session.catalog(session)
     request = Channel.Catalog.get(catalog, route.request.guid)
-    params = Map.merge(options, %{request_url: request.url})
+    params = Map.merge(options, %{is_fallback: false, request_url: request.url})
     Channel.post(session, {:guid, route.guid}, :continue, params)
   end
 

@@ -115,8 +115,6 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.route/4" do
-    # TODO: resolve changes in v1.35.0 that makes `route` hang.
-    @tag :skip
     test "intercepts requests w/ a glob-style matcher", %{assets: assets, page: page} do
       pid = self()
       context = Page.context(page)
@@ -145,8 +143,6 @@ defmodule Playwright.BrowserContextTest do
       assert_received(:intercepted)
     end
 
-    # TODO: resolve changes in v1.35.0 that makes `route` hang.
-    @tag :skip
     test "intercepts requests w/ a regex pattern passed as a Regex", %{assets: assets, page: page} do
       pid = self()
       context = Page.context(page)
@@ -163,8 +159,6 @@ defmodule Playwright.BrowserContextTest do
       assert_received(:intercepted)
     end
 
-    # TODO: resolve changes in v1.35.0 that makes `route` hang.
-    @tag :skip
     test "with multiple, rolled-up handlers and `.unroute/1`", %{assets: assets, page: page} do
       pid = self()
       context = Page.context(page)

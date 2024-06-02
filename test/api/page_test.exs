@@ -137,8 +137,6 @@ defmodule Playwright.PageTest do
   end
 
   describe "Page.route/3" do
-    # TODO: resolve changes in v1.35.0 that makes `route` hang.
-    @tag :skip
     test "intercepts requests", %{assets: assets, page: page} do
       pid = self()
 
