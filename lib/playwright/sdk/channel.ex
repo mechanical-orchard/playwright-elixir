@@ -54,7 +54,44 @@ defmodule Playwright.SDK.Channel do
 
   def recv(session, {from, message}) when is_map(message) do
     # IO.inspect(message, label: "<--- Channel.recv/2 B")
-    Response.recv(session, message) |> reply(from)
+
+    case Response.recv(session, message) do
+      # NOTE: The following errors are known and expected (from tests).
+      # TODO: Translated these to various, distinct `API.Errors.<ErrorType>`
+
+      # require Logger
+
+      %Error{message: "Target page, context or browser has been closed"} = error ->
+        # Logger.warning(message)
+        reply(error, from)
+
+      %Error{message: "net::ERR_INTERNET_DISCONNECTED at http://localhost:4002/assets/empty.html"} = error ->
+        # Logger.warning(message)
+        reply(error, from)
+
+      %Error{message: "Unknown permission: foo"} = error ->
+        # Logger.warning(message)
+        reply(error, from)
+
+      %Error{message: "Protocol error (Page.navigate): Cannot navigate to invalid URL"} = error ->
+        # Logger.warning(message)
+        reply(error, from)
+
+      %Error{message: "Timeout 500ms exceeded."} = error ->
+        # Logger.warning(message)
+        reply(error, from)
+
+      # NOTE: Any other errors are not yet exected, so we raise:
+
+      %Error{} = error ->
+        raise RuntimeError, message: "#{inspect(error)}"
+
+      %Event{} = event ->
+        reply(event, from)
+
+      %Response{} = response ->
+        reply(response, from)
+    end
   end
 
   # or, "expect"?

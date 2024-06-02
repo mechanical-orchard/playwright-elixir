@@ -335,7 +335,7 @@ defmodule Playwright.PageTest do
       assert page |> Page.get_attribute("div#outer", "name") == "value"
       assert page |> Page.get_attribute("div#outer", "foo") == nil
 
-      assert({:error, %Error{}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 500}))
+      assert({:error, %Error{message: "Timeout 500ms exceeded."}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 500}))
     end
   end
 
