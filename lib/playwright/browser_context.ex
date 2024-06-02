@@ -348,11 +348,14 @@ defmodule Playwright.BrowserContext do
   """
   @spec close(t()) :: :ok
   def close(%BrowserContext{session: session} = context) do
-    case Channel.post(session, {:guid, context.guid}, :close) do
-      {:ok, _} ->
+    # A call to `close` will remove the item from the catalog. `Catalog.find`
+    # here ensures that we do not `post` a 2nd `close`.
+    case Channel.find(session, {:guid, context.guid}, %{timeout: 10}) do
+      %BrowserContext{} ->
+        Channel.post(session, {:guid, context.guid}, :close)
         :ok
 
-      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
+      {:error, _} ->
         :ok
     end
   end
