@@ -193,15 +193,23 @@ defmodule Playwright.Page do
   """
   @spec close(t(), options()) :: :ok
   def close(%Page{session: session} = page, options \\ %{}) do
-    Channel.post(session, {:guid, page.guid}, :close, options)
+    # A call to `close` will remove the item from the catalog. `Catalog.find`
+    # here ensures that we do not `post` a 2nd `close`.
+    case Channel.find(session, {:guid, page.guid}, %{timeout: 10}) do
+      %Page{} ->
+        Channel.post(session, {:guid, page.guid}, :close, options)
 
-    # NOTE: this *might* prefer to be done on `__dispose__`
-    # ...OR, `.on(_, "close", _)`
-    if page.owned_context do
-      context(page) |> BrowserContext.close()
+        # NOTE: this *might* prefer to be done on `__dispose__`
+        # ...OR, `.on(_, "close", _)`
+        if page.owned_context do
+          context(page) |> BrowserContext.close()
+        end
+
+        :ok
+
+      {:error, _} ->
+        :ok
     end
-
-    :ok
   end
 
   # ---

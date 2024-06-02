@@ -118,9 +118,6 @@ defmodule Playwright.PageTest do
     assert_next_receive({:request, ^url})
   end
 
-  # skipped: as of v1.28.0, the 2nd `assert_next_receive` is not succeeding.
-  # need to investigate.
-  @tag :skip
   test "on 'request' fires for fetches", %{assets: assets, page: page} do
     pid = self()
     url = assets.empty
