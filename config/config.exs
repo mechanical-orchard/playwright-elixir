@@ -1,6 +1,6 @@
 import Config
 
-config :playwright, ConnectOptions, ws_endpoint: System.get_env("PLAYWRIGHT_ENDPOINT", "ws://localhost:3000/chromium")
+config :playwright, ConnectOptions, ws_endpoint: System.get_env("PLAYWRIGHT_ENDPOINT", "ws://localhost:3000/")
 
 config :playwright, LaunchOptions,
   channel: System.get_env("PLAYWRIGHT_CHANNEL", nil),
