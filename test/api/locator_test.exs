@@ -646,8 +646,6 @@ defmodule Playwright.LocatorTest do
   end
 
   describe "Locator.set_input_files/3" do
-    # TODO: resolve changes in v1.40.0 to :set_input_files API.
-    @tag :skip
     test "file upload", %{assets: assets, page: page} do
       fixture = "test/support/fixtures/file-to-upload.txt"
       locator = Page.locator(page, "input[type=file]")

@@ -774,25 +774,19 @@ defmodule Playwright.Frame do
     end
   end
 
+  # **NOTE:**
+  # Of `payloads`, `local_paths`, and `streams` playwright-core capabilities,
+  # only `local_paths` is currently supported by playwright-elixir.
   @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
   def set_input_files(%Frame{session: session} = frame, selector, files, options \\ %{}) do
     params =
       Map.merge(options, %{
         selector: selector,
-        files: normalize_file_payloads(files)
+        local_paths: normalize_file_payloads(files)
       })
 
     Channel.post(session, {:guid, frame.guid}, :set_input_files, params)
   end
-
-  # when it's a `FilePayload`...
-  # defp normalize_file_payload(file) do
-  #   %{
-  #     name: file.name,
-  #     mime_type: file.mime_type,
-  #     buffer: Base.encode64(file.buffer)
-  #   }
-  # end
 
   @spec tap(Frame.t(), binary(), options()) :: :ok
   def tap(%Frame{session: session} = frame, selector, options \\ %{}) do
@@ -933,13 +927,26 @@ defmodule Playwright.Frame do
   end
 
   defp normalize_file_payload(file) when is_binary(file) do
-    {:ok, data} = File.read(file)
+    Path.expand(file)
 
-    %{
-      name: Path.basename(file),
-      buffer: Base.encode64(data)
-    }
+    # NOTE: will need to re-introduce something similar to what follows when
+    # we add support for the `payloads` and `streams` approaches.
+    # {:ok, data} = File.read(file)
+
+    # %{
+    #   name: Path.basename(file),
+    #   buffer: Base.encode64(data)
+    # }
   end
+
+  # when it's a `FilePayload`...
+  # defp normalize_file_payload(file) do
+  #   %{
+  #     name: file.name,
+  #     mime_type: file.mime_type,
+  #     buffer: Base.encode64(file.buffer)
+  #   }
+  # end
 
   defp parse_result(task) when is_function(task) do
     task.() |> Helpers.Serialization.deserialize()

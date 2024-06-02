@@ -1098,6 +1098,10 @@ defmodule Playwright.Locator do
 
   Expects element (i.e., `locator.selector`) to point to an input element.
 
+  # **NOTE:**
+  # Of `payloads`, `local_paths`, and `streams` playwright-core capabilities,
+  # only `local_paths` is currently supported by playwright-elixir.
+
   ## Arguments
 
   | key/name       | type   |                 | description |
