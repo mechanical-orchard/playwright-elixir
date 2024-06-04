@@ -1,5 +1,17 @@
 defmodule Playwright.Page.Keyboard do
-  @moduledoc false
+  @moduledoc """
+  `Keyboard` provides an API for managing a virtual keyboard. The high level API
+  is `keyboard.type()`, which takes raw characters and generates proper
+  `keydown`, `keypress`/`input`, and `keyup` events on your page.
+
+  For finer control, you can use `keyboard.down()`, `keyboard.up()`, and
+  `keyboard.insertText()` to manually fire events as if they were generated
+  from a real keyboard.
+
+  ## Examples
+
+  ###
+  """
 
   use Playwright.SDK.ChannelOwner
   alias Playwright.Page
