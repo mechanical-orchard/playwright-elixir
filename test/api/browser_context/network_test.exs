@@ -3,7 +3,7 @@ defmodule Playwright.BrowserContext.NetworkTest do
   alias Playwright.{Browser, BrowserContext, Page}
 
   describe "BrowserContext.on/3" do
-    test "returns 'self'", %{browser: browser} do
+    test "returns 'subject'", %{browser: browser} do
       context = Browser.new_context(browser)
       assert %BrowserContext{} = BrowserContext.on(context, :foo, fn -> nil end)
     end

@@ -33,6 +33,12 @@ defmodule Playwright.Chromium.CDPSessionTest do
   end
 
   describe "CDPSession.on/3" do
+    test "returns 'subject'", %{page: page} do
+      context = Page.owned_context(page)
+      session = BrowserContext.new_cdp_session(context, page)
+      assert %CDPSession{} = CDPSession.on(session, "event", fn -> nil end)
+    end
+
     test "handling Runtime console events`", %{page: page} do
       pid = self()
       context = Page.context(page)
@@ -71,6 +77,12 @@ defmodule Playwright.Chromium.CDPSessionTest do
   end
 
   describe "CDPSession.detach/1" do
+    test "returns 'subject'", %{page: page} do
+      context = Page.owned_context(page)
+      session = BrowserContext.new_cdp_session(context, page)
+      assert %CDPSession{} = CDPSession.detach(session)
+    end
+
     test "detaches the session", %{page: page} do
       context = Page.context(page)
       session = BrowserContext.new_cdp_session(context, page)

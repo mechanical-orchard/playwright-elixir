@@ -14,6 +14,11 @@ defmodule Playwright.ClickTest do
   end
 
   describe "Page.click/3" do
+    test "returns 'subject'", %{assets: assets, page: page} do
+      Page.goto(page, assets.prefix <> "/input/button.html")
+      assert %Page{} = Page.click(page, "button")
+    end
+
     test "with a button", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/input/button.html")
       Page.click(page, "button")
@@ -22,6 +27,11 @@ defmodule Playwright.ClickTest do
   end
 
   describe "Page.dblclick/2, mimicking Python tests" do
+    test "returns 'subject'", %{assets: assets, page: page} do
+      Page.goto(page, assets.prefix <> "/input/button.html")
+      assert %Page{} = Page.dblclick(page, "button")
+    end
+
     test "test_locators.py: `test_double_click_the_button`", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/input/button.html")
 
