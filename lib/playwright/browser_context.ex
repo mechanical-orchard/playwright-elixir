@@ -528,7 +528,7 @@ defmodule Playwright.BrowserContext do
     Channel.list(context.session, {:guid, context.guid}, "Page")
   end
 
-  @spec route(t(), binary(), function(), map()) :: :ok
+  @spec route(t(), binary(), function(), map()) :: subject()
   def route(context, pattern, handler, options \\ %{})
 
   def route(%BrowserContext{session: session} = context, pattern, handler, _options) do
@@ -540,7 +540,7 @@ defmodule Playwright.BrowserContext do
       patterns = Helpers.RouteHandler.prepare(routes)
 
       Channel.patch(session, {:guid, context.guid}, %{routes: routes})
-      Channel.post(session, {:guid, context.guid}, :set_network_interception_patterns, %{patterns: patterns})
+      post!(context, :set_network_interception_patterns, %{patterns: patterns})
     end)
   end
 
@@ -576,9 +576,9 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  @spec set_offline(t(), boolean()) :: :ok
-  def set_offline(%BrowserContext{session: session} = context, offline) do
-    Channel.post(session, {:guid, context.guid}, :set_offline, %{offline: offline})
+  @spec set_offline(t(), boolean()) :: subject()
+  def set_offline(%BrowserContext{} = context, offline) do
+    post!(context, :set_offline, %{offline: offline})
   end
 
   # ---

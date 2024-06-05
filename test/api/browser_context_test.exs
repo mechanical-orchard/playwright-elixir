@@ -125,6 +125,11 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.route/4" do
+    test "returns 'subject'", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.route(context, "**/*", fn -> nil end)
+    end
+
     test "intercepts requests w/ a glob-style matcher", %{assets: assets, page: page} do
       pid = self()
       context = Page.context(page)
@@ -245,6 +250,12 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.set_offline/2" do
+    test "returns 'subject'", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_offline(context, false)
+      assert %BrowserContext{} = BrowserContext.set_offline(context, true)
+    end
+
     @tag without: [:page]
     test "using initial option", %{assets: assets, browser: browser} do
       context = Browser.new_context(browser, %{offline: true})
