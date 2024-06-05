@@ -80,11 +80,11 @@ defmodule Playwright.PageTest do
     @tag exclude: [:page]
     test "on :close (atom)", %{browser: browser} do
       page = Browser.new_page(browser)
-      this = self()
+      test_pid = self()
       guid = page.guid
 
       Page.on(page, :close, fn event ->
-        send(this, event)
+        send(test_pid, event)
       end)
 
       Page.close(page)
@@ -94,12 +94,12 @@ defmodule Playwright.PageTest do
     @tag exclude: [:page]
     test "on 'close' (string)", %{browser: browser} do
       page = Browser.new_page(browser)
-      this = self()
+      test_pid = self()
       guid = page.guid
 
       Page.on(page, "close", fn event ->
         assert Page.is_closed(event.target)
-        send(this, event)
+        send(test_pid, event)
       end)
 
       Page.close(page)
@@ -109,13 +109,13 @@ defmodule Playwright.PageTest do
     # NOTE: this is really about *any* `on` event handling
     @tag exclude: [:page]
     test "on 'close' of one Page does not affect another", %{browser: browser} do
-      this = self()
+      test_pid = self()
 
       %{guid: guid_one} = page_one = Browser.new_page(browser)
       %{guid: guid_two} = page_two = Browser.new_page(browser)
 
       Page.on(page_one, "close", fn %{target: target} ->
-        send(this, target.guid)
+        send(test_pid, target.guid)
       end)
 
       Page.close(page_one)

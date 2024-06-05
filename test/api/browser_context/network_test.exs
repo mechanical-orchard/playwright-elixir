@@ -2,16 +2,23 @@ defmodule Playwright.BrowserContext.NetworkTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, Page}
 
+  describe "BrowserContext.on/3" do
+    test "returns 'self'", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.on(context, :foo, fn -> nil end)
+    end
+  end
+
   describe "BrowserContext network events" do
     @tag without: [:page]
     test "on :request", %{assets: assets, browser: browser} do
-      this = self()
+      test_pid = self()
 
       context = Browser.new_context(browser)
       page = BrowserContext.new_page(context)
 
       BrowserContext.on(context, "request", fn %{params: %{request: request}} ->
-        send(this, request.url)
+        send(test_pid, request.url)
       end)
 
       page |> Page.goto(assets.prefix <> "/empty.html")

@@ -169,7 +169,7 @@ defmodule Playwright.BrowserContext do
   @property :routes
 
   @typedoc "An explicit shorthand for the BrowserContext.t() subject."
-  @type self :: t()
+  @type subject :: t()
 
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
@@ -232,7 +232,7 @@ defmodule Playwright.BrowserContext do
 
   ## Returns
 
-    - `self()`
+    - `subject()`
 
   ## Example
 
@@ -252,7 +252,7 @@ defmodule Playwright.BrowserContext do
   | `:secure`   | `boolean()` | *(optional)* |
   | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
   """
-  @spec add_cookies(t(), [cookie]) :: self()
+  @spec add_cookies(t(), [cookie]) :: subject()
   def add_cookies(context, cookies)
 
   def add_cookies(%BrowserContext{} = context, cookies) do
@@ -332,7 +332,7 @@ defmodule Playwright.BrowserContext do
   @doc """
   Clears `Playwright.BrowserContext` cookies.
   """
-  @spec clear_cookies(t()) :: self()
+  @spec clear_cookies(t()) :: subject()
   def clear_cookies(%BrowserContext{} = context) do
     post!(context, :clear_cookies)
   end
@@ -519,9 +519,9 @@ defmodule Playwright.BrowserContext do
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(t(), event(), function()) :: :ok
-  def on(%BrowserContext{session: session} = context, event, callback) do
-    Channel.bind(session, {:guid, context.guid}, event, callback)
+  @spec on(t(), event(), function()) :: subject()
+  def on(%BrowserContext{} = context, event, callback) do
+    bind!(context, event, callback)
   end
 
   @doc """
