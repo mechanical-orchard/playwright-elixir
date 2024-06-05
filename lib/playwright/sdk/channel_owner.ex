@@ -108,7 +108,16 @@ defmodule Playwright.SDK.ChannelOwner do
           # simple "success": send "self"
           {:ok, %{id: _}} ->
             Channel.find(owner.session, {:guid, owner.guid})
+
+          # acceptable (API call) errors
+          {:error, %Channel.Error{} = error} ->
+            {:error, error}
         end
+      end
+
+      defp returning(owner, task) do
+        task.()
+        Channel.find(owner.session, {:guid, owner.guid})
       end
 
       defp returning(%{session: session} = subject, task) do

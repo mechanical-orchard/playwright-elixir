@@ -479,10 +479,10 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
-  @spec grant_permissions(t(), [String.t()], options()) :: :ok | {:error, Channel.Error.t()}
-  def grant_permissions(%BrowserContext{session: session} = context, permissions, options \\ %{}) do
+  @spec grant_permissions(t(), [String.t()], options()) :: subject() | {:error, Channel.Error.t()}
+  def grant_permissions(%BrowserContext{} = context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
-    Channel.post(session, {:guid, context.guid}, :grant_permissions, params)
+    post!(context, :grant_permissions, params)
   end
 
   @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
