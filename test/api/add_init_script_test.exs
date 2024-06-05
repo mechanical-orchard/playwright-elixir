@@ -3,8 +3,12 @@ defmodule Playwright.AddInitScriptTest do
   alias Playwright.{Browser, BrowserContext, Page}
 
   describe "Page.add_init_script/2" do
+    test "returns 'subject'", %{page: page} do
+      assert %Page{} = Page.add_init_script(page, "window.injected = 123")
+    end
+
     test "evaluates before anything else on the page", %{page: page} do
-      :ok = Page.add_init_script(page, "window.injected = 123")
+      page = Page.add_init_script(page, "window.injected = 123")
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
       assert Page.evaluate(page, "window.result") == 123
@@ -12,15 +16,15 @@ defmodule Playwright.AddInitScriptTest do
 
     test "providing `param: script` as a file path", %{page: page} do
       fixture = "test/support/fixtures/injectedfile.js"
-      :ok = Page.add_init_script(page, %{path: fixture})
+      page = Page.add_init_script(page, %{path: fixture})
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
       assert Page.evaluate(page, "window.result") == 123
     end
 
     test "support for multiple scripts", %{page: page} do
-      :ok = Page.add_init_script(page, "window.script1 = 'one'")
-      :ok = Page.add_init_script(page, "window.script2 = 'two'")
+      page = Page.add_init_script(page, "window.script1 = 'one'")
+      page = Page.add_init_script(page, "window.script2 = 'two'")
       nil = Page.goto(page, "data:text/html,<p>some content</p>")
 
       assert Page.evaluate(page, "window.script1") == "one"
@@ -35,7 +39,7 @@ defmodule Playwright.AddInitScriptTest do
       page = BrowserContext.new_page(context)
 
       :ok = BrowserContext.add_init_script(context, "window.temp = 123")
-      :ok = Page.add_init_script(page, "window.injected = window.temp")
+      page = Page.add_init_script(page, "window.injected = window.temp")
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
       assert Page.evaluate(page, "window.result") == 123
@@ -57,7 +61,7 @@ defmodule Playwright.AddInitScriptTest do
       context = Page.owned_context(page)
 
       :ok = BrowserContext.add_init_script(context, "window.temp = 123")
-      :ok = Page.add_init_script(page, "window.injected = window.temp")
+      page = Page.add_init_script(page, "window.injected = window.temp")
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
       assert Page.evaluate(page, "window.result") == 123
