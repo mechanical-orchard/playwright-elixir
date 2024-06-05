@@ -337,9 +337,9 @@ defmodule Playwright.BrowserContext do
     post!(context, :clear_cookies)
   end
 
-  @spec clear_permissions(t()) :: :ok
-  def clear_permissions(%BrowserContext{session: session} = context) do
-    Channel.post(session, {:guid, context.guid}, :clear_permissions)
+  @spec clear_permissions(t()) :: subject()
+  def clear_permissions(%BrowserContext{} = context) do
+    post!(context, :clear_permissions)
   end
 
   @doc """

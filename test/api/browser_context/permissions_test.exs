@@ -89,6 +89,11 @@ defmodule Playwright.BrowserContext.PermissionsTest do
   end
 
   describe "BrowserContext.clear_permissions/1" do
+    test "returns 'self'", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.clear_permissions(context)
+    end
+
     test "clears previously granted permissions", %{assets: assets, page: page} do
       context = Page.context(page)
       page |> Page.goto(assets.empty)
