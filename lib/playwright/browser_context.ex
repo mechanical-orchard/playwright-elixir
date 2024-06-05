@@ -447,7 +447,7 @@ defmodule Playwright.BrowserContext do
         page:    %Playwright.Page{}
       }
 
-  See `Playwright.Page.expose_binding/4` for a similar, page-scoped version.
+  See `Playwright.Page.expose_binding/4` for a similar, Page-scoped version.
   """
   @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: BrowserContext.t()
   def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
