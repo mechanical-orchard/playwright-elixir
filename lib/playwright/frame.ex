@@ -21,6 +21,9 @@ defmodule Playwright.Frame do
   @property :load_states
   @property :url
 
+  @typedoc "An explicit shorthand for the Frame.t() subject."
+  @type subject :: t()
+
   @type evaluation_argument :: any()
   @type expression :: binary()
   @type options :: map()
@@ -102,10 +105,10 @@ defmodule Playwright.Frame do
   `option: timeout`, `/click/3` raises a `TimeoutError`. Passing zero for
   `option: timeout` disables this.
   """
-  @spec click(t(), binary(), options()) :: :ok
-  def click(owner, selector, options \\ %{})
+  @spec click(t(), binary(), options()) :: subject()
+  def click(frame, selector, options \\ %{})
 
-  def click(%Frame{session: session} = frame, selector, options) do
+  def click(%Frame{} = frame, selector, options) do
     params =
       Map.merge(
         %{
@@ -116,13 +119,7 @@ defmodule Playwright.Frame do
         options
       )
 
-    case Channel.post(session, {:guid, frame.guid}, :click, params) do
-      {:ok, _} ->
-        :ok
-
-      {:error, error} ->
-        {:error, error}
-    end
+    post!(frame, :click, params)
   end
 
   # ---
@@ -167,7 +164,7 @@ defmodule Playwright.Frame do
 
   ## Returns
 
-    - `:ok`
+    - `subject()`
 
   ## Arguments
 
@@ -184,7 +181,7 @@ defmodule Playwright.Frame do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  @spec dblclick(Frame.t(), binary(), options()) :: :ok
+  @spec dblclick(Frame.t(), binary(), options()) :: subject()
   def dblclick(%Frame{session: session} = frame, selector, options \\ %{}) do
     params =
       Map.merge(

@@ -6,9 +6,10 @@ defmodule Playwright.ClickTest do
     test "with a button inside an iframe", %{assets: assets, page: page} do
       :ok = Page.set_content(page, "<div style='width:100px; height:100px'>spacer</div>")
       frame = attach_frame(page, "button-test", assets.prefix <> "/input/button.html")
-      %ElementHandle{} = button = Frame.query_selector(frame, "button")
 
-      assert ElementHandle.click(button) == :ok
+      Frame.query_selector(frame, "button")
+      |> ElementHandle.click()
+
       assert Frame.evaluate(frame, "window.result") == "Clicked"
     end
   end
@@ -45,7 +46,7 @@ defmodule Playwright.ClickTest do
         }
       """)
 
-      assert Page.dblclick(page, "button") == :ok
+      page = Page.dblclick(page, "button")
       assert Page.evaluate(page, "window['double']") == true
       assert Page.evaluate(page, "window['result']") == "Clicked"
     end

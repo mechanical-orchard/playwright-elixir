@@ -159,9 +159,11 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec click(t(), binary(), options()) :: :ok
+  @spec click(t(), binary(), options()) :: subject()
   def click(%Page{} = page, selector, options \\ %{}) do
-    main_frame(page) |> Frame.click(selector, options)
+    returning(page, fn ->
+      main_frame(page) |> Frame.click(selector, options)
+    end)
   end
 
   @doc """
@@ -246,11 +248,13 @@ defmodule Playwright.Page do
   @doc """
   A shortcut for the main frame's `Playwright.Frame.dblclick/3`.
   """
-  @spec dblclick(t(), binary(), options()) :: :ok
+  @spec dblclick(t(), binary(), options()) :: subject()
   def dblclick(page, selector, options \\ %{})
 
   def dblclick(%Page{} = page, selector, options) do
-    main_frame(page) |> Frame.dblclick(selector, options)
+    returning(page, fn ->
+      main_frame(page) |> Frame.dblclick(selector, options)
+    end)
   end
 
   @doc """

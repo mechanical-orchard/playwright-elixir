@@ -58,6 +58,9 @@ defmodule Playwright.ElementHandle do
 
   @property :preview
 
+  @typedoc "An explicit shorthand for the ElementHandle.t() subject."
+  @type subject :: t()
+
   @typedoc "A map/struct providing call options"
   @type options :: map()
 
@@ -139,15 +142,9 @@ defmodule Playwright.ElementHandle do
   this function raises a `TimeoutError`. Passing zero (`0`) for timeout
   disables this.
   """
-  @spec click(t(), options()) :: :ok
-  def click(%ElementHandle{session: session} = handle, options \\ %{}) do
-    case Channel.post(session, {:guid, handle.guid}, :click, options) do
-      {:ok, _} ->
-        :ok
-
-      {:error, error} ->
-        {:error, error}
-    end
+  @spec click(t(), options()) :: subject()
+  def click(%ElementHandle{} = handle, options \\ %{}) do
+    post!(handle, :click, options)
   end
 
   # ---
