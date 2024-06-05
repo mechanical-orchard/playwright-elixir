@@ -3,6 +3,12 @@ defmodule Playwright.BrowserContext.AddCookiesTest do
   alias Playwright.{BrowserContext, Page}
 
   describe "BrowserContext.add_cookies/2" do
+    test "returns 'self'", %{assets: assets, page: page} do
+      context = Page.owned_context(page)
+      cookies = [%{url: assets.empty, name: "password", value: "123456"}]
+      assert %BrowserContext{} = BrowserContext.add_cookies(context, cookies)
+    end
+
     test "adds cookies, readable by Page", %{assets: assets, page: page} do
       context = Page.owned_context(page)
       page |> Page.goto(assets.empty)

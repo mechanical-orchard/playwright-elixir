@@ -3,6 +3,11 @@ defmodule Playwright.BrowserContext.ClearCookiesTest do
   alias Playwright.{BrowserContext, Page}
 
   describe "BrowserContext.clear_cookies/1" do
+    test "returns 'self'", %{page: page} do
+      context = Page.owned_context(page)
+      assert %BrowserContext{} = BrowserContext.clear_cookies(context)
+    end
+
     test "clears cookies for the context", %{assets: assets, page: page} do
       context = Page.owned_context(page)
       page |> Page.goto(assets.empty)

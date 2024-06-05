@@ -168,6 +168,9 @@ defmodule Playwright.BrowserContext do
   @property :owner_page
   @property :routes
 
+  @typedoc "An explicit shorthand for the BrowserContext.t() subject."
+  @type self :: t()
+
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
           name: String.t(),
@@ -229,11 +232,11 @@ defmodule Playwright.BrowserContext do
 
   ## Returns
 
-    - `:ok`
+    - `self()`
 
   ## Example
 
-      :ok = BrowserContext.add_cookies(context, [cookie_1, cookie_2])
+      context = BrowserContext.add_cookies(context, [cookie_1, cookie_2])
 
   ## Cookie fields
 
@@ -249,11 +252,11 @@ defmodule Playwright.BrowserContext do
   | `:secure`   | `boolean()` | *(optional)* |
   | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
   """
-  @spec add_cookies(t(), [cookie]) :: :ok
+  @spec add_cookies(t(), [cookie]) :: self()
   def add_cookies(context, cookies)
 
-  def add_cookies(%BrowserContext{session: session} = context, cookies) do
-    Channel.post(session, {:guid, context.guid}, :add_cookies, %{cookies: cookies})
+  def add_cookies(%BrowserContext{} = context, cookies) do
+    post!(context, :add_cookies, %{cookies: cookies})
   end
 
   @doc """
@@ -329,9 +332,9 @@ defmodule Playwright.BrowserContext do
   @doc """
   Clears `Playwright.BrowserContext` cookies.
   """
-  @spec clear_cookies(t()) :: :ok
-  def clear_cookies(%BrowserContext{session: session} = context) do
-    Channel.post(session, {:guid, context.guid}, :clear_cookies)
+  @spec clear_cookies(t()) :: self()
+  def clear_cookies(%BrowserContext{} = context) do
+    post!(context, :clear_cookies)
   end
 
   @spec clear_permissions(t()) :: :ok
