@@ -168,6 +168,9 @@ defmodule Playwright.BrowserContext do
   @property :owner_page
   @property :routes
 
+  @typedoc "An explicit shorthand for the BrowserContext.t() subject."
+  @type self :: t()
+
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
           name: String.t(),
