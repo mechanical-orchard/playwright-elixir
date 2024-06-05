@@ -33,12 +33,17 @@ defmodule Playwright.AddInitScriptTest do
   end
 
   describe "BrowserContext.add_init_script/2" do
+    test "returns 'subject'", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.add_init_script(context, "window.injected = 123")
+    end
+
     @tag exclude: [:page]
     test "combined with `Page.add_init_script/2`", %{browser: browser} do
       context = Browser.new_context(browser)
       page = BrowserContext.new_page(context)
 
-      :ok = BrowserContext.add_init_script(context, "window.temp = 123")
+      BrowserContext.add_init_script(context, "window.temp = 123")
       page = Page.add_init_script(page, "window.injected = window.temp")
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
@@ -51,7 +56,7 @@ defmodule Playwright.AddInitScriptTest do
       fixture = "test/support/fixtures/injectedfile.js"
       page = BrowserContext.new_page(context)
 
-      :ok = BrowserContext.add_init_script(context, %{path: fixture})
+      BrowserContext.add_init_script(context, %{path: fixture})
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
       assert Page.evaluate(page, "window.result") == 123
@@ -60,7 +65,7 @@ defmodule Playwright.AddInitScriptTest do
     test "adding to the BrowserContext for an already created Page", %{page: page} do
       context = Page.owned_context(page)
 
-      :ok = BrowserContext.add_init_script(context, "window.temp = 123")
+      BrowserContext.add_init_script(context, "window.temp = 123")
       page = Page.add_init_script(page, "window.injected = window.temp")
       nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 

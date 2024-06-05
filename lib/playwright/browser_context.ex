@@ -302,17 +302,9 @@ defmodule Playwright.BrowserContext do
   > `Playwright.BrowserContext.add_init_script/2` and
   > `Playwright.Page.add_init_script/2` is not defined.
   """
-  @spec add_init_script(t(), binary() | map()) :: :ok
-  def add_init_script(%BrowserContext{session: session} = context, script) when is_binary(script) do
-    params = %{source: script}
-
-    case Channel.post(session, {:guid, context.guid}, :add_init_script, params) do
-      {:ok, _} ->
-        :ok
-
-      {:error, error} ->
-        {:error, error}
-    end
+  @spec add_init_script(t(), binary() | map()) :: subject()
+  def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
+    post!(context, :add_init_script, %{source: script})
   end
 
   def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
