@@ -4,7 +4,7 @@
 
 ## Overview
 
-[Playwright](https://github.com/geometerio/playwright-elixir) is an Elixir library to automate Chromium, Firefox and WebKit with a single API. Playwright is built to enable cross-browser web automation that is **ever-green**, **capable**, **reliable** and **fast**. [See how Playwright is better](https://playwright.dev/docs/why-playwright).
+[Playwright](https://github.com/mechanical-orchard/playwright-elixir) is an Elixir library to automate Chromium, Firefox and WebKit with a single API. Playwright is built to enable cross-browser web automation that is **ever-green**, **capable**, **reliable** and **fast**. [See how Playwright is better](https://playwright.dev/docs/why-playwright).
 
 ## Installation
 
