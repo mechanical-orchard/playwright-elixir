@@ -56,6 +56,9 @@ defmodule Playwright.Page do
   # @property :touchscreen
   # ---
 
+  @typedoc "An explicit shorthand for the Page.t() subject."
+  @type subject :: t()
+
   @type dimensions :: map()
   @type expression :: binary()
   @type function_or_options :: fun() | options() | nil
@@ -125,17 +128,9 @@ defmodule Playwright.Page do
   > `Playwright.BrowserContext.add_init_script/2` and
   > `Playwright.Page.add_init_script/2` is not defined.
   """
-  @spec add_init_script(t(), binary() | map()) :: :ok
-  def add_init_script(%Page{session: session} = page, script) when is_binary(script) do
-    params = %{source: script}
-
-    case Channel.post(session, {:guid, page.guid}, :add_init_script, params) do
-      {:ok, _} ->
-        :ok
-
-      {:error, error} ->
-        {:error, error}
-    end
+  @spec add_init_script(t(), binary() | map()) :: subject()
+  def add_init_script(%Page{} = page, script) when is_binary(script) do
+    post!(page, :add_init_script, %{source: script})
   end
 
   def add_init_script(%Page{} = page, %{path: path} = script) when is_map(script) do
@@ -158,9 +153,11 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec click(t(), binary(), options()) :: :ok
+  @spec click(t(), binary(), options()) :: subject()
   def click(%Page{} = page, selector, options \\ %{}) do
-    main_frame(page) |> Frame.click(selector, options)
+    returning(page, fn ->
+      main_frame(page) |> Frame.click(selector, options)
+    end)
   end
 
   @doc """
@@ -240,11 +237,13 @@ defmodule Playwright.Page do
   @doc """
   A shortcut for the main frame's `Playwright.Frame.dblclick/3`.
   """
-  @spec dblclick(t(), binary(), options()) :: :ok
+  @spec dblclick(t(), binary(), options()) :: subject()
   def dblclick(page, selector, options \\ %{})
 
   def dblclick(%Page{} = page, selector, options) do
-    main_frame(page) |> Frame.dblclick(selector, options)
+    returning(page, fn ->
+      main_frame(page) |> Frame.dblclick(selector, options)
+    end)
   end
 
   @doc """

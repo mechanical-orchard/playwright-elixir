@@ -97,12 +97,31 @@ defmodule Playwright.SDK.ChannelOwner do
         {:ok, event.target}
       end
 
-      defp post!(owner, action, data) do
+      defp bind!(owner, event, callback) do
+        returning(owner, fn ->
+          Channel.bind(owner.session, {:guid, owner.guid}, event, callback)
+        end)
+      end
+
+      # NOTE: the `Channel.find` herein is causing some slowdowns.
+      # e.g., for `CDPSession.detach/1` (which change is currently reverted).
+      # it *could* be that switching come calls to some sort of :cast, instead
+      # of :call, would solve problems.
+      defp post!(owner, action, data \\ %{}) do
         case Channel.post(owner.session, {:guid, owner.guid}, action, data) do
-          # simple "succes": send "self"
+          # simple "success": send "self"
           {:ok, %{id: _}} ->
             Channel.find(owner.session, {:guid, owner.guid})
+
+          # acceptable (API call) errors
+          {:error, %Channel.Error{} = error} ->
+            {:error, error}
         end
+      end
+
+      defp returning(owner, task) do
+        task.()
+        Channel.find(owner.session, {:guid, owner.guid})
       end
 
       defp with_latest(owner, task) do

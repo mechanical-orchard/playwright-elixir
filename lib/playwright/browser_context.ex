@@ -168,6 +168,9 @@ defmodule Playwright.BrowserContext do
   @property :owner_page
   @property :routes
 
+  @typedoc "An explicit shorthand for the BrowserContext.t() subject."
+  @type subject :: t()
+
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
           name: String.t(),
@@ -229,11 +232,11 @@ defmodule Playwright.BrowserContext do
 
   ## Returns
 
-    - `:ok`
+    - `subject()`
 
   ## Example
 
-      :ok = BrowserContext.add_cookies(context, [cookie_1, cookie_2])
+      context = BrowserContext.add_cookies(context, [cookie_1, cookie_2])
 
   ## Cookie fields
 
@@ -249,11 +252,11 @@ defmodule Playwright.BrowserContext do
   | `:secure`   | `boolean()` | *(optional)* |
   | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
   """
-  @spec add_cookies(t(), [cookie]) :: :ok
+  @spec add_cookies(t(), [cookie]) :: subject()
   def add_cookies(context, cookies)
 
-  def add_cookies(%BrowserContext{session: session} = context, cookies) do
-    Channel.post(session, {:guid, context.guid}, :add_cookies, %{cookies: cookies})
+  def add_cookies(%BrowserContext{} = context, cookies) do
+    post!(context, :add_cookies, %{cookies: cookies})
   end
 
   @doc """
@@ -299,17 +302,9 @@ defmodule Playwright.BrowserContext do
   > `Playwright.BrowserContext.add_init_script/2` and
   > `Playwright.Page.add_init_script/2` is not defined.
   """
-  @spec add_init_script(t(), binary() | map()) :: :ok
-  def add_init_script(%BrowserContext{session: session} = context, script) when is_binary(script) do
-    params = %{source: script}
-
-    case Channel.post(session, {:guid, context.guid}, :add_init_script, params) do
-      {:ok, _} ->
-        :ok
-
-      {:error, error} ->
-        {:error, error}
-    end
+  @spec add_init_script(t(), binary() | map()) :: subject()
+  def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
+    post!(context, :add_init_script, %{source: script})
   end
 
   def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
@@ -329,14 +324,14 @@ defmodule Playwright.BrowserContext do
   @doc """
   Clears `Playwright.BrowserContext` cookies.
   """
-  @spec clear_cookies(t()) :: :ok
-  def clear_cookies(%BrowserContext{session: session} = context) do
-    Channel.post(session, {:guid, context.guid}, :clear_cookies)
+  @spec clear_cookies(t()) :: subject()
+  def clear_cookies(%BrowserContext{} = context) do
+    post!(context, :clear_cookies)
   end
 
-  @spec clear_permissions(t()) :: :ok
-  def clear_permissions(%BrowserContext{session: session} = context) do
-    Channel.post(session, {:guid, context.guid}, :clear_permissions)
+  @spec clear_permissions(t()) :: subject()
+  def clear_permissions(%BrowserContext{} = context) do
+    post!(context, :clear_permissions)
   end
 
   @doc """
@@ -440,26 +435,26 @@ defmodule Playwright.BrowserContext do
   Adds a function called `param: name` on the `window` object of every
   frame in every page in the context.
   """
-  @spec expose_binding(t(), String.t(), function(), options()) :: :ok
+  @spec expose_binding(t(), String.t(), function(), options()) :: subject()
   def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
     bindings = context.bindings
     Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(bindings, %{name => callback})})
 
     params = Map.merge(%{name: name, needs_handle: false}, options)
-    Channel.post(session, {:guid, context.guid}, :expose_binding, params)
+    post!(context, :expose_binding, params)
   end
 
-  @spec expose_function(t(), String.t(), function()) :: :ok
+  @spec expose_function(t(), String.t(), function()) :: subject()
   def expose_function(context, name, callback) do
     expose_binding(context, name, fn _, args ->
       callback.(args)
     end)
   end
 
-  @spec grant_permissions(t(), [String.t()], options()) :: :ok | {:error, Channel.Error.t()}
-  def grant_permissions(%BrowserContext{session: session} = context, permissions, options \\ %{}) do
+  @spec grant_permissions(t(), [String.t()], options()) :: subject() | {:error, Channel.Error.t()}
+  def grant_permissions(%BrowserContext{} = context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
-    Channel.post(session, {:guid, context.guid}, :grant_permissions, params)
+    post!(context, :grant_permissions, params)
   end
 
   @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
@@ -496,9 +491,9 @@ defmodule Playwright.BrowserContext do
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(t(), event(), function()) :: :ok
-  def on(%BrowserContext{session: session} = context, event, callback) do
-    Channel.bind(session, {:guid, context.guid}, event, callback)
+  @spec on(t(), event(), function()) :: subject()
+  def on(%BrowserContext{} = context, event, callback) do
+    bind!(context, event, callback)
   end
 
   @doc """
@@ -513,7 +508,7 @@ defmodule Playwright.BrowserContext do
     Channel.list(context.session, {:guid, context.guid}, "Page")
   end
 
-  @spec route(t(), binary(), function(), map()) :: :ok
+  @spec route(t(), binary(), function(), map()) :: subject()
   def route(context, pattern, handler, options \\ %{})
 
   def route(%BrowserContext{session: session} = context, pattern, handler, _options) do
@@ -525,7 +520,7 @@ defmodule Playwright.BrowserContext do
       patterns = Helpers.RouteHandler.prepare(routes)
 
       Channel.patch(session, {:guid, context.guid}, %{routes: routes})
-      Channel.post(session, {:guid, context.guid}, :set_network_interception_patterns, %{patterns: patterns})
+      post!(context, :set_network_interception_patterns, %{patterns: patterns})
     end)
   end
 
@@ -561,9 +556,9 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  @spec set_offline(t(), boolean()) :: :ok
-  def set_offline(%BrowserContext{session: session} = context, offline) do
-    Channel.post(session, {:guid, context.guid}, :set_offline, %{offline: offline})
+  @spec set_offline(t(), boolean()) :: subject()
+  def set_offline(%BrowserContext{} = context, offline) do
+    post!(context, :set_offline, %{offline: offline})
   end
 
   # ---

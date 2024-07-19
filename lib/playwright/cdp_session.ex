@@ -6,6 +6,9 @@ defmodule Playwright.CDPSession do
 
   @property :bindings
 
+  @typedoc "An explicit shorthand for the CDPSession.t() subject."
+  @type subject :: t()
+
   @typedoc "Supported events"
   @type event :: binary()
 
@@ -27,15 +30,21 @@ defmodule Playwright.CDPSession do
   # API
   # ---------------------------------------------------------------------------
 
-  @spec detach(t()) :: :ok | {:error, term()}
+  @spec detach(t()) :: subject() | {:error, term()}
   def detach(%CDPSession{session: session} = cdp_session) do
-    Channel.post(session, {:guid, cdp_session.guid}, :detach)
+    case Channel.post(session, {:guid, cdp_session.guid}, :detach) do
+      {:ok, _} ->
+        cdp_session
+
+      {:error, %Channel.Error{} = error} ->
+        {:error, error}
+    end
   end
 
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(t(), event(), function()) :: CDPSession.t()
+  @spec on(t(), event(), function()) :: subject()
   def on(%CDPSession{bindings: bindings, session: session} = cdp_session, event, callback) do
     scoped = Map.get(bindings, event, [])
     bindings = Map.put(bindings, event, [callback | scoped])

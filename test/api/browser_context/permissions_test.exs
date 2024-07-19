@@ -10,6 +10,11 @@ defmodule Playwright.BrowserContext.PermissionsTest do
   end
 
   describe "BrowserContext.grant_permissions/3" do
+    test "returns 'subject'", %{assets: assets, browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.grant_permissions(context, [], %{origin: assets.empty})
+    end
+
     test "denies permission when not listed", %{assets: assets, page: page} do
       context = Page.context(page)
       page |> Page.goto(assets.empty)
@@ -84,6 +89,11 @@ defmodule Playwright.BrowserContext.PermissionsTest do
   end
 
   describe "BrowserContext.clear_permissions/1" do
+    test "returns 'subject'", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.clear_permissions(context)
+    end
+
     test "clears previously granted permissions", %{assets: assets, page: page} do
       context = Page.context(page)
       page |> Page.goto(assets.empty)
