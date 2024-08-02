@@ -44,7 +44,7 @@ defmodule Playwright.PlaywrightTest do
     end
   end
 
-  describe "Playwright.launch/1" do
+  describe "Playwright.launch/2" do
     test "launches and returns an instance of the requested Browser" do
       {:ok, browser} = Playwright.launch(:chromium)
 

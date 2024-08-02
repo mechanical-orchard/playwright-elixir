@@ -9,7 +9,7 @@ defmodule Playwright.Browser do
 
       alias Playwright.{Browser, Page}
 
-      browser = Playwright.launch(:chromium)
+      {:ok, browser} = Playwright.launch(:chromium)
       page = Browser.new_page(browser)
 
       Page.goto(page, "https://example.com")

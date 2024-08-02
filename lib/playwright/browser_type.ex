@@ -94,7 +94,7 @@ defmodule Playwright.BrowserType do
 
       # Use `:ignore_default_args` option to filter out `--mute-audio` from
       # default arguments:
-      browser =
+      {:ok, browser} =
         Playwright.launch(:chromium, %{ignore_default_args = ["--mute-audio"]})
 
   ## Returns
