@@ -256,7 +256,7 @@ defmodule Playwright.LocatorTest do
     test "accepts `option: timeout` for expression evaluation", %{page: page} do
       locator = Page.locator(page, ".missing")
       options = %{timeout: 500}
-      errored = {:error, %Error{message: "Timeout 500ms exceeded."}}
+      errored = {:error, %Error{type: "TimeoutError", message: "Timeout 500ms exceeded."}}
 
       page
       |> Page.set_content("""
@@ -273,7 +273,7 @@ defmodule Playwright.LocatorTest do
     test "accepts `option: timeout` without a `param: arg`", %{page: page} do
       locator = Page.locator(page, ".missing")
       options = %{timeout: 500}
-      errored = {:error, %Error{message: "Timeout 500ms exceeded."}}
+      errored = {:error, %Error{type: "TimeoutError", message: "Timeout 500ms exceeded."}}
 
       page
       |> Page.set_content("""
@@ -723,19 +723,53 @@ defmodule Playwright.LocatorTest do
       [options: options]
     end
 
-    test "waiting for 'attached'", %{options: options, page: page} do
-      frame = Page.main_frame(page)
+    test "on success (i.e., a match is found in time) returns the `Locator` instance", %{page: page} do
+      locator = Locator.new(page, "div > span")
 
-      locator = Locator.new(frame, "a#link")
-
-      task =
+      setup =
         Task.async(fn ->
-          assert :ok = Locator.wait_for(locator, Map.put(options, :state, "attached"))
+          Page.set_content(page, "<div><span>target</span></div>")
         end)
 
-      page |> Page.set_content("<a id='link' target=_blank rel=noopener href='/one-style.html'>yo</a>")
+      check =
+        Task.async(fn ->
+          Locator.wait_for(locator, %{timeout: 100})
+        end)
 
-      Task.await(task)
+      assert [:ok, %Locator{}] = Task.await_many([setup, check])
+    end
+
+    test "on failure (i.e., the timeout is reached) returns an `{:error, error}` tuple", %{page: page} do
+      locator = Locator.new(page, "div > span")
+
+      setup =
+        Task.async(fn ->
+          :timer.sleep(200)
+          Page.set_content(page, "<div><span>target</span></div>")
+        end)
+
+      check =
+        Task.async(fn ->
+          Locator.wait_for(locator, %{timeout: 100})
+        end)
+
+      assert [:ok, {:error, %Error{type: "TimeoutError"}}] = Task.await_many([setup, check])
+    end
+
+    test "waiting for 'attached'", %{options: options, page: page} do
+      locator = Locator.new(page, "a#link")
+
+      setup =
+        Task.async(fn ->
+          Page.set_content(page, "<a id='link' target=_blank rel=noopener href='/one-style.html'>link</a>")
+        end)
+
+      check =
+        Task.async(fn ->
+          Locator.wait_for(locator, Map.put(options, :state, "attached"))
+        end)
+
+      assert [:ok, %Locator{}] = Task.await_many([setup, check])
     end
   end
 end
