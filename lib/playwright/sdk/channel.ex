@@ -27,9 +27,9 @@ defmodule Playwright.SDK.Channel do
     Catalog.put(catalog, Map.merge(owner, data))
   end
 
-  def post(session, {:guid, guid}, message, params \\ %{}) when is_binary(guid) when is_pid(session) do
+  def post(session, {:guid, guid}, action, params \\ %{}) when is_binary(guid) when is_pid(session) do
     connection = Session.connection(session)
-    message = Message.new(guid, message, params)
+    message = Message.new(guid, action, params)
 
     # IO.inspect(message, label: "---> Channel.post/4")
 
@@ -54,44 +54,8 @@ defmodule Playwright.SDK.Channel do
 
   def recv(session, {from, message}) when is_map(message) do
     # IO.inspect(message, label: "<--- Channel.recv/2 B")
-
-    case Response.recv(session, message) do
-      # NOTE: The following errors are known and expected (from tests).
-      # TODO: Translated these to various, distinct `API.Errors.<ErrorType>`
-
-      # require Logger
-
-      %Error{message: "Target page, context or browser has been closed"} = error ->
-        # Logger.warning(message)
-        reply(error, from)
-
-      %Error{message: "net::ERR_INTERNET_DISCONNECTED at http://localhost:4002/assets/empty.html"} = error ->
-        # Logger.warning(message)
-        reply(error, from)
-
-      %Error{message: "Unknown permission: foo"} = error ->
-        # Logger.warning(message)
-        reply(error, from)
-
-      %Error{message: "Protocol error (Page.navigate): Cannot navigate to invalid URL"} = error ->
-        # Logger.warning(message)
-        reply(error, from)
-
-      %Error{message: "Timeout 500ms exceeded."} = error ->
-        # Logger.warning(message)
-        reply(error, from)
-
-      # NOTE: Any other errors are not yet exected, so we raise:
-
-      %Error{} = error ->
-        raise RuntimeError, message: "#{inspect(error)}"
-
-      %Event{} = event ->
-        reply(event, from)
-
-      %Response{} = response ->
-        reply(response, from)
-    end
+    Response.recv(session, message)
+    |> reply(from)
   end
 
   # or, "expect"?

@@ -181,7 +181,7 @@ defmodule Playwright.Page do
 
   ## Arguments
 
-  | key/name          | type   |             | description |
+  | key/name            | type   |             | description |
   | ------------------- | ------ | ----------- | ----------- |
   | `run_before_unload` | option | `boolean()` | Whether to run the before unload page handlers. `(default: false)` |
 

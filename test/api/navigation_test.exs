@@ -53,10 +53,11 @@ defmodule Playwright.NavigationTest do
 
     test "fails when navigating to bad URL", %{page: page} do
       error = %Error{
+        type: "Error",
         message: "Protocol error (Page.navigate): Cannot navigate to invalid URL"
       }
 
-      assert Page.goto(page, "asdfasdf") == {:error, error}
+      assert {:error, ^error} = Page.goto(page, "asdfasdf")
     end
 
     test "works when navigating to valid URL", %{assets: assets, page: page} do

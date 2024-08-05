@@ -986,6 +986,7 @@ defmodule Playwright.Locator do
   Triggers a change and input event once all the provided options have been selected.
 
   ## Example
+
       alias Playwright.Locator
       locator = Locator.new(page, "select#colors")
 
@@ -1245,26 +1246,44 @@ defmodule Playwright.Locator do
   immediately. Otherwise, waits for up to `option: timeout` milliseconds until
   the condition is met.
 
-  ## Options
+  ## Returns
+
+    - `Locator.t()`
+
+  ## Arguments
 
   | key/name   | type   |              | description |
   | ---------- | ------ | ------------ | ----------- |
-  | `:state`   | option | state option | Defaults to `visible`. See "state options" below" |
+  | `:state`   | option | state option | Defaults to `visible`. See "Options for `:state`" below". |
   | `:timeout` | option | float        | Maximum time in milliseconds, defaults to 30 seconds, pass 0 to disable timeout. The default value can be changed by using the browser_context.set_default_timeout(timeout) or page.set_default_timeout(timeout) methods. |
 
-  ## State options
+  ## Options for `:state`
 
   | value      | description |
   | ---------- | ----------- |
-  | 'attached' | wait for element to be present in DOM. |
+  | 'attached' | wait for element to be present in DOM. (default) |
   | 'detached' | wait for element to not be present in DOM. |
   | 'visible'  | wait for element to have non-empty bounding box and no visibility:hidden. Note that element without any content or with display:none has an empty bounding box and is not considered visible. |
   | 'hidden'   | wait for element to be either detached from DOM, or have an empty bounding box or visibility:hidden. This is opposite to the 'visible' option. |
+
+  ## Example
+
+
+
   """
-  @spec wait_for(t(), options()) :: :ok
+
+  # const orderSent = page.locator('#order-sent');
+  # await orderSent.waitFor();
+
+  @spec wait_for(t(), options()) :: t() | {:error, Channel.Error.t()}
   def wait_for(%Locator{} = locator, options \\ %{}) do
-    Frame.wait_for_selector(locator.frame, locator.selector, options)
-    :ok
+    case Frame.wait_for_selector(locator.frame, locator.selector, options) do
+      %ElementHandle{} ->
+        locator
+
+      {:error, _} = error ->
+        error
+    end
   end
 
   # private

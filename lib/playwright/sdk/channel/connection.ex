@@ -96,14 +96,16 @@ defmodule Playwright.SDK.Channel.Connection do
     update =
       case response do
         %{id: message_id} ->
-          key = {:message, message_id}
-          {from, callbacks} = Map.pop!(callbacks, key)
+          source = {:message, message_id}
+          # must have a match
+          {from, callbacks} = Map.pop!(callbacks, source)
           Channel.recv(session, {from, response})
           %{state | callbacks: callbacks}
 
         %{guid: guid, method: method} ->
-          key = {as_atom(method), guid}
-          {from, callbacks} = Map.pop(callbacks, key)
+          source = {as_atom(method), guid}
+          # might have a match
+          {from, callbacks} = Map.pop(callbacks, source)
           Channel.recv(session, {from, response})
           %{state | callbacks: callbacks}
 

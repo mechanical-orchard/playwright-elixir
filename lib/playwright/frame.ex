@@ -896,9 +896,9 @@ defmodule Playwright.Frame do
   @doc """
   Returns when element specified by selector satisfies state option.
 
-  Returns `nil` if waiting for a hidden or detached element.
+  FIXME: the following is NOT TRUE... Returns `nil` if waiting for a hidden or detached element.
   """
-  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | nil
+  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | {:error, Channel.Error.t()}
   def wait_for_selector(%Frame{session: session} = frame, selector, options \\ %{}) do
     Channel.post(session, {:guid, frame.guid}, :wait_for_selector, Map.merge(%{selector: selector}, options))
   end
