@@ -20,7 +20,7 @@ defmodule Playwright.MixProject do
       preferred_cli_env: [credo: :test, dialyzer: :test, docs: :docs],
       source_url: @source_url,
       start_permanent: Mix.env() == :prod,
-      version: "1.44.0-alpha.2"
+      version: "1.44.0-alpha.3"
     ]
   end
 
@@ -66,7 +66,7 @@ defmodule Playwright.MixProject do
       name: "Playwright",
       source_url: @source_url,
       homepage_url: @source_url,
-      main: "README",
+      main: "readme",
       extras: [
         "README.md": [title: "Read Me"],
         # basics...
