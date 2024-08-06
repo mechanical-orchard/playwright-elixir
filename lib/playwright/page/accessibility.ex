@@ -116,10 +116,8 @@ defmodule Playwright.Page.Accessibility do
         |> (&(Enum.find(&1.children, fn e -> e.readonly end))).()
       %{name: "pick me", readonly: true, role: "textbox"}
   """
-  @deprecated "This method is deprecated. Please use other libraries such as
-  [Axe](https://www.deque.com/axe/) if you need to test page accessibility.
-  See the Playwright.dev Node.js [guide](https://playwright.dev/docs/accessibility-testing)
-  for integration with Axe."
+  @doc deprecated: "Please use other libraries such as [Axe](https://www.deque.com/axe/) if you need to test page accessibility.
+  See the Playwright.dev Node.js [guide](https://playwright.dev/docs/accessibility-testing) for integration with Axe."
   def snapshot(page, options \\ %{})
 
   def snapshot(%Page{session: session} = page, options) do
