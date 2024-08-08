@@ -18,26 +18,26 @@ defmodule Playwright.LocatorTest do
   end
 
   describe "Locator.all_inner_texts/1" do
-    test "...", %{page: page} do
+    test "returns an list of `node.innerText` values for all matching nodes", %{page: page} do
       Page.set_content(page, "<div>A</div><div>B</div><div>C</div>")
 
-      texts =
+      result =
         Page.locator(page, "div")
         |> Locator.all_inner_texts()
 
-      assert texts == ["A", "B", "C"]
+      assert ["A", "B", "C"] = result
     end
   end
 
   describe "Locator.all_text_contents/1" do
-    test "...", %{page: page} do
+    test "returns an list of `node.textContent` values for all matching nodes", %{page: page} do
       Page.set_content(page, "<div>A</div><div>B</div><div>C</div>")
 
-      texts =
+      result =
         Page.locator(page, "div")
         |> Locator.all_text_contents()
 
-      assert texts == ["A", "B", "C"]
+      assert ["A", "B", "C"] = result
     end
   end
 

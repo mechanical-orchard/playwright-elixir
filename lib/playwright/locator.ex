@@ -56,14 +56,18 @@ defmodule Playwright.Locator do
   @type serializable :: any()
 
   @doc """
-  Returns a `Playwright.Locator`.
+  Creates a `Playwright.Locator`.
+
+  ## Returns
+
+    - `Playwright.Locator`
 
   ## Arguments
 
-  | key/name   | type   |                        | description |
-  | ---------- | ------ | ---------------------- | ----------- |
-  | `frame`    | param  | `Frame.t() | Page.t()` |  |
-  | `selector` | param  | `binary()`             | A Playwright selector. |
+  | key/name          | type   |                        | description |
+  | ----------------- | ------ | ---------------------- | ----------- |
+  | `frame` or `page` | param  | `Frame.t() | Page.t()` |  |
+  | `selector`        | param  | `binary()`             | A Playwright selector. |
   """
   @spec new(Frame.t() | Page.t(), selector()) :: Locator.t()
   def new(frame, selector)
@@ -95,9 +99,17 @@ defmodule Playwright.Locator do
   > stable, but loaded dynamically, wait for the full list to finish loading
   > before calling `Playwright.Locator.all/1``.
 
+  ## Returns
+
+    - `[Playwright.Locator]`
+
   ## Example
 
-      ...
+  Retrieve the text for all `<p>` elements currently on the page:
+
+      Playwright.Page.locator(page, "p")
+      |> Playwright.Locator.all()
+      |> Enum.map(fn locator -> Playwright.Locator.text_content(locator) end)
   """
   @spec all(Locator.t()) :: [Locator.t()]
   def all(locator) do
@@ -112,6 +124,13 @@ defmodule Playwright.Locator do
   ## Returns
 
     - `[binary()]`
+
+  ## Example
+
+  Retrieve the text for all `<p>` elements currently on the page:
+
+      Playwright.Page.locator(page, "p")
+      |> Playwright.Locator.all_inner_texts()
   """
   @spec all_inner_texts(t()) :: [binary()]
   def all_inner_texts(%Locator{} = locator) do
@@ -124,6 +143,13 @@ defmodule Playwright.Locator do
   ## Returns
 
     - `[binary()]`
+
+  ## Example
+
+  Retrieve the text for all `<p>` elements currently on the page:
+
+      Playwright.Page.locator(page, "p")
+      |> Playwright.Locator.all_text_contents()
   """
   @spec all_text_contents(t()) :: [binary()]
   def all_text_contents(%Locator{} = locator) do
@@ -162,7 +188,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   """
