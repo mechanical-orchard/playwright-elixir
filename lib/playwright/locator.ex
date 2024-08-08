@@ -1,58 +1,16 @@
 defmodule Playwright.Locator do
   @moduledoc """
-  `Playwright.Locator` represents a view to the element(s) on the page.
-  It captures the logic sufficient to retrieve the element at any given moment.
-  `Locator` can be created with the `Playwright.Locator.new/2` function.
+  Locators are the central piece of Playwright's auto-waiting and retry-ability.
+  In a nutshell, locators represent a way to find element(s) on the page at any
+  moment. A locator may be created with the `Page.locator/2` function.
 
-  See also `Playwright.Page.locator/2`.
+  Instances of `Playwright.Locator` may be created via the following means:
 
-  ## Example
+  - `Playwright.Locator.new/2`
+  - `Playwright.Frame.locator/2`
+  - `Playwright.Page.locator/2`
 
-      locator = Playwright.Locator.new(page, "a#exists")
-      Playwright.Locator.click(locator)
-
-  The difference between the `Playwright.Locator` and `Playwright.ElementHandle`
-  is that the latter points to a particular element, while `Playwright.Locator` captures
-  the logic of how to retrieve that element.
-
-  ## ElementHandle Example
-
-  In the example below, `handle` points to a particular DOM element on page. If
-  that element changes text or is used by React to render an entirely different
-  component, `handle` is still pointing to that very DOM element. This can lead
-  to unexpected behaviors.
-
-      handle = Page.query_selector(page, "text=Submit")
-      ElementHandle.hover(handle)
-      ElementHandle.click(handle)
-
-  ## Locator Example
-
-  With the locator, every time the element is used, up-to-date DOM element is
-  located in the page using the selector. So in the snippet below, underlying
-  DOM element is going to be located twice.
-
-      locator = Playwright.Locator.new(page, "a#exists")
-      :ok = Playwright.Locator.hover(locator)
-      :ok = Playwright.Locator.click(locator)
-
-  ## Strictness
-
-  Locators are strict. This means that all operations on locators that imply
-  some target DOM element will throw if more than one element matches given
-  selector.
-
-      alias Playwright.Locator
-      locator = Locator.new(page, "button")
-
-      # Throws if there are several buttons in DOM:
-      Locator.click(locator)
-
-      # Works because we explicitly tell locator to pick the first element:
-      Locator.first(locator) |> Locator.click()
-
-      # Works because count knows what to do with multiple matches:
-      Locator.count(locator)
+  [Learn more about locators](guides-locators.html).
   """
 
   alias Playwright.{ElementHandle, Frame, Locator, Page}
@@ -98,11 +56,11 @@ defmodule Playwright.Locator do
   @type serializable :: any()
 
   @doc """
-  Returns a `%Playwright.Locator{}`.
+  Returns a `Playwright.Locator`.
 
   ## Arguments
 
-  | key/name | type   |                        | description |
+  | key/name   | type   |                        | description |
   | ---------- | ------ | ---------------------- | ----------- |
   | `frame`    | param  | `Frame.t() | Page.t()` |  |
   | `selector` | param  | `binary()`             | A Playwright selector. |
@@ -124,8 +82,29 @@ defmodule Playwright.Locator do
     }
   end
 
-  # @spec all(Locator.t()) :: [Locator.t()]
-  # def all(locator)
+  @doc """
+  When the locator points to a list of elements, returns a list of locators,
+  each addressing their respective elements.
+
+  > ### NOTE {: .warning}
+  >
+  > `Playwright.Locator.all/1` does not wait for elements to match the locator,
+  > and instead immediately returns whatever is present in the page. When the
+  > list of elements changes dynamically, `Playwright.Locator.all/1` will
+  > produce unpredictable and flaky results. When the list of elements is
+  > stable, but loaded dynamically, wait for the full list to finish loading
+  > before calling `Playwright.Locator.all/1``.
+
+  ## Example
+
+      ...
+  """
+  @spec all(Locator.t()) :: [Locator.t()]
+  def all(locator) do
+    Enum.map(1..count(locator), fn n ->
+      Locator.nth(locator, n - 1)
+    end)
+  end
 
   @doc """
   Returns an list of `node.innerText` values for all matching nodes.
@@ -284,9 +263,9 @@ defmodule Playwright.Locator do
 
     - `number()`
   """
-  @spec count(t()) :: number()
+  @spec count(Locator.t()) :: number()
   def count(%Locator{} = locator) do
-    evaluate_all(locator, "ee => ee.length")
+    Frame.query_count(locator.frame, locator.selector)
   end
 
   @doc """
@@ -629,7 +608,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `name`     | param  | `binary()` | Name of the attribute to retrieve. |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |

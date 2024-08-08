@@ -4,6 +4,19 @@ defmodule Playwright.LocatorTest do
   alias Playwright.{ElementHandle, Locator, Page}
   alias Playwright.SDK.Channel.Error
 
+  describe "Locator.all/1" do
+    test "returns a list of Locators, addressing each respective element", %{page: page} do
+      Page.set_content(page, "<div><p>A</p><p>B</p><p>C</p></div>")
+
+      result =
+        Page.locator(page, "p")
+        |> Locator.all()
+        |> Enum.map(fn locator -> Locator.text_content(locator) end)
+
+      assert ["A", "B", "C"] = result
+    end
+  end
+
   describe "Locator.all_inner_texts/1" do
     test "...", %{page: page} do
       Page.set_content(page, "<div>A</div><div>B</div><div>C</div>")

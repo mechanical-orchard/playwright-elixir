@@ -625,6 +625,16 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :press, Map.merge(%{selector: selector, key: key}, options))
   end
 
+  # 20240807: Official implementations define (something similar to) this as
+  # a pseudo-private function/method. As such, our implementation is hidden
+  # from documentation for the time being. Only called from `Locator.count/1`.
+  # ---
+  @doc false
+  @spec query_count(t(), binary()) :: number()
+  def query_count(%Frame{session: session} = frame, selector) do
+    Channel.post(session, {:guid, frame.guid}, :query_count, %{selector: selector})
+  end
+
   @doc """
   Returns the `Playwright.ElementHandle` pointing to the frame element.
 
