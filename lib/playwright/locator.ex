@@ -241,8 +241,13 @@ defmodule Playwright.Locator do
     Frame.check(locator.frame, locator.selector, options)
   end
 
-  # @spec clear(Locator.t(), options()) :: :ok
-  # def clear(locator, options \\ %{})
+  @doc """
+  Clears the contents of a form input/textarea field.
+  """
+  @spec clear(Locator.t(), options()) :: :ok
+  def clear(locator, options \\ %{}) do
+    fill(locator, "", options)
+  end
 
   @doc """
   Clicks the element by performing the following steps:

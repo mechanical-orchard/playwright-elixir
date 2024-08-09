@@ -64,6 +64,19 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.clear/2" do
+    test "clears the contents of a form input/textarea field.", %{assets: assets, page: page} do
+      Page.goto(page, assets.prefix <> "/input/textarea.html")
+      field = Page.locator(page, "input")
+
+      Locator.fill(field, "some value")
+      assert "some value" = Page.evaluate(page, "result")
+
+      Locator.clear(field)
+      assert "" = Page.evaluate(page, "result")
+    end
+  end
+
   describe "Locator.check/2" do
     setup(%{assets: assets, page: page}) do
       options = %{timeout: 500}
