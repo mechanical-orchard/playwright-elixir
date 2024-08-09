@@ -265,8 +265,11 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec drag_and_drop(Frame.t(), binary(), binary(), options()) :: :ok
-  # def drag_and_drop(frame, source, target, options \\ %{})
+  @spec drag_and_drop(Frame.t(), binary(), binary(), options()) :: Frame.t()
+  def drag_and_drop(frame, source, target, options \\ %{}) do
+    params = Map.merge(%{source: source, target: target}, options)
+    post!(frame, :drag_and_drop, params)
+  end
 
   # @spec eval_on_selector(Frame.t(), binary(), expression(), any(), options()) :: :ok
   # def eval_on_selector(frame, selector, expression, arg \\ nil, options \\ %{})

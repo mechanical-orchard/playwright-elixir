@@ -403,8 +403,13 @@ defmodule Playwright.Locator do
     Frame.dispatch_event(locator.frame, locator.selector, type, event_init, options)
   end
 
-  # @spec drag_to(Locator.t(), binary(), options()) :: :ok
-  # def drag_to(locator, target, options \\ %{})
+  @spec drag_to(Locator.t(), Locator.t(), options()) :: Locator.t()
+  def drag_to(source, target, options \\ %{}) do
+    returning(source, fn ->
+      options = Map.merge(options, %{strict: true})
+      Frame.drag_and_drop(source.frame, source.selector, target.selector, options)
+    end)
+  end
 
   @doc """
   Resolves the given `Playwright.Locator` to the first matching DOM element.
@@ -1302,6 +1307,11 @@ defmodule Playwright.Locator do
 
   # private
   # ---------------------------------------------------------------------------
+
+  defp returning(subject, task) do
+    task.()
+    subject
+  end
 
   defp with_element(%Locator{frame: frame} = locator, options, task) do
     params = Map.merge(options, %{selector: locator.selector})

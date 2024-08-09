@@ -48,13 +48,13 @@ defmodule Playwright.SDK.Channel do
   end
 
   def recv(session, {nil, message}) when is_map(message) do
-    # IO.inspect(message, label: "<--- Channel.recv/2 A")
     Response.recv(session, message)
+    # |> IO.inspect(label: "<--- Channel.recv/2 A")
   end
 
   def recv(session, {from, message}) when is_map(message) do
-    # IO.inspect(message, label: "<--- Channel.recv/2 B")
     Response.recv(session, message)
+    # |> IO.inspect(label: "<--- Channel.recv/2 B")
     |> reply(from)
   end
 

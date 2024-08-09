@@ -135,7 +135,14 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  describe "Locator.dblclick" do
+  # test_locator_content_frame_should_work
+
+  # describe "Locator.count/1" do
+  #   test "returns the number of elements matching the given selector" do
+  #   end
+  # end
+
+  describe "Locator.dblclick/2" do
     test "with a button", %{assets: assets, page: page} do
       locator = Page.locator(page, "button")
       page |> Page.goto(assets.prefix <> "/input/button.html")
@@ -164,6 +171,26 @@ defmodule Playwright.LocatorTest do
 
       Locator.dispatch_event(locator, :click)
       assert Page.evaluate(page, "result") == "Clicked"
+    end
+  end
+
+  describe "Locator.drag_to/3" do
+    test "returns 'subject", %{assets: assets, page: page} do
+      source = Page.locator(page, "#source")
+      target = Page.locator(page, "#target")
+
+      page |> Page.goto(assets.prefix <> "/drag-n-drop.html")
+      assert source == Locator.drag_to(source, target)
+    end
+
+    test "enables dragging of a source element toward a target element", %{assets: assets, page: page} do
+      source = Page.locator(page, "#source")
+      target = Page.locator(page, "#target")
+
+      page |> Page.goto(assets.prefix <> "/drag-n-drop.html")
+      Locator.drag_to(source, target)
+
+      Page.eval_on_selector(page, "#target", "target => target.contains(document.querySelector('#source'))")
     end
   end
 

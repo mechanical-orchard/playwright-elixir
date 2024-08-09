@@ -237,10 +237,10 @@ defmodule Playwright.Page do
   Get the `Playwright.BrowserContext` that the page belongs to.
   """
   @spec context(t()) :: BrowserContext.t()
-  def context(owner)
+  def context(page)
 
-  def context(%Page{session: session} = owner) do
-    Channel.find(session, {:guid, owner.parent.guid})
+  def context(%Page{session: session} = page) do
+    Channel.find(session, {:guid, page.parent.guid})
   end
 
   @doc """
@@ -261,10 +261,14 @@ defmodule Playwright.Page do
     main_frame(page) |> Frame.dispatch_event(selector, type, event_init, options)
   end
 
-  # ---
+  @spec drag_and_drop(Page.t(), binary(), binary(), options()) :: Page.t()
+  def drag_and_drop(page, source, target, options \\ %{}) do
+    with_latest(page, fn page ->
+      main_frame(page) |> Frame.drag_and_drop(source, target, options)
+    end)
+  end
 
-  # @spec drag_and_drop(Page.t(), binary(), binary(), options()) :: :ok
-  # def drag_and_drop(page, source, target, options \\ %{})
+  # ---
 
   # @spec emulate_media(t(), options()) :: :ok
   # def emulate_media(page, options \\ %{})
@@ -272,8 +276,8 @@ defmodule Playwright.Page do
   # ---
 
   @spec eval_on_selector(t(), binary(), binary(), term(), map()) :: term()
-  def eval_on_selector(%Page{} = owner, selector, expression, arg \\ nil, options \\ %{}) do
-    main_frame(owner)
+  def eval_on_selector(%Page{} = page, selector, expression, arg \\ nil, options \\ %{}) do
+    main_frame(page)
     |> Frame.eval_on_selector(selector, expression, arg, options)
   end
 
@@ -659,7 +663,7 @@ defmodule Playwright.Page do
   # ---
 
   # @spec unroute(t(), function()) :: :ok
-  # def unroute(owner, handler \\ nil)
+  # def unroute(page, handler \\ nil)
 
   # @spec unroute_all(t(), map()) :: :ok
   # def unroute_all(page, options \\ %{})
@@ -674,10 +678,10 @@ defmodule Playwright.Page do
   # ---
 
   # @spec video(t()) :: Video.t() | nil
-  # def video(owner, handler \\ nil)
+  # def video(page, handler \\ nil)
 
   # @spec viewport_size(t()) :: dimensions() | nil
-  # def viewport_size(owner)
+  # def viewport_size(page)
 
   # @spec wait_for_event(t(), binary(), map()) :: map()
   # def wait_for_event(page, event, options \\ %{})
@@ -716,7 +720,7 @@ defmodule Playwright.Page do
   # def wait_for_url(page, url, options \\ %{})
 
   # @spec workers(t()) :: [Worker.t()]
-  # def workers(owner)
+  # def workers(page)
 
   # ---
 

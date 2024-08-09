@@ -105,8 +105,14 @@ defmodule Playwright.SDK.ChannelOwner do
         end
       end
 
-      defp with_latest(owner, task) do
-        Channel.find(owner.session, {:guid, owner.guid}) |> task.()
+      defp returning(%{session: session} = subject, task) do
+        task.()
+        Channel.find(session, {:guid, subject.guid})
+      end
+
+      defp with_latest(subject, task) do
+        Channel.find(subject.session, {:guid, subject.guid}) |> task.()
+        Channel.find(subject.session, {:guid, subject.guid})
       end
     end
   end

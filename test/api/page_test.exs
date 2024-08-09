@@ -4,6 +4,20 @@ defmodule Playwright.PageTest do
   alias Playwright.SDK.Channel
   alias Playwright.SDK.Channel.{Error, Event}
 
+  describe "Page.drag_and_drop/4" do
+    test "returns 'subject'", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/drag-n-drop.html")
+      assert %Page{} = Page.drag_and_drop(page, "#source", "#target")
+    end
+
+    test "drags the source element to the target element", %{assets: assets, page: page} do
+      page |> Page.goto(assets.prefix <> "/drag-n-drop.html")
+      page |> Page.drag_and_drop("#source", "#target")
+
+      assert Page.eval_on_selector(page, "#target", "target => target.contains(document.querySelector('#source'))")
+    end
+  end
+
   describe "Page.expose_binding/4" do
     test "returns 'subject'", %{page: page} do
       assert %Page{} = Page.expose_binding(page, "fn", fn -> nil end)
@@ -46,6 +60,12 @@ defmodule Playwright.PageTest do
   # test_expose_function_should_work_on_frames_before_navigation
   # test_expose_function_should_work_after_cross_origin_navigation
   # test_expose_function_should_work_with_complex_objects
+
+  describe "Page.goto/3" do
+    test "on success, returns a Response", %{assets: assets, page: page} do
+      assert %Response{} = Page.goto(page, assets.prefix <> "/empty.html")
+    end
+  end
 
   describe "Page.hover/2" do
     test "triggers hover state", %{assets: assets, page: page} do
