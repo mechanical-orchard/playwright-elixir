@@ -160,7 +160,11 @@ defmodule Playwright.Locator do
   # def and(locator, other)
 
   # @spec blur(Locator.t(), options()) :: :ok
-  # def blur(locator, options \\ %{})
+  def blur(locator, options \\ %{}) do
+    frame = locator.frame
+    options = Map.merge(%{selector: locator.selector, strict: true}, options)
+    Channel.post(frame.session, {:guid, frame.guid}, :blur, options)
+  end
 
   @doc """
   Returns the bounding box of the element, or `nil` if the element is not visible.
@@ -223,7 +227,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |

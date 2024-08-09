@@ -41,6 +41,19 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.blur/2 AND Locator.focus/2" do
+    test "deactivates/activates an element", %{assets: assets, page: page} do
+      button = Page.locator(page, "button")
+      page |> Page.goto(assets.prefix <> "/input/button.html")
+
+      refute Locator.evaluate(button, "(button) => document.activeElement === button")
+      Locator.focus(button)
+      assert Locator.evaluate(button, "(button) => document.activeElement === button")
+      Locator.blur(button)
+      refute Locator.evaluate(button, "(button) => document.activeElement === button")
+    end
+  end
+
   describe "Locator.bounding_box/2" do
     test "returns position and dimension", %{assets: assets, page: page} do
       locator = Page.locator(page, ".box:nth-of-type(13)")
@@ -397,17 +410,6 @@ defmodule Playwright.LocatorTest do
              |> Locator.last()
              |> Locator.locator("p")
              |> Locator.count() == 3
-    end
-  end
-
-  describe "Locator.focus/2" do
-    test "focuses/activates an element", %{assets: assets, page: page} do
-      button = Page.locator(page, "button")
-      page |> Page.goto(assets.prefix <> "/input/button.html")
-
-      assert Locator.evaluate(button, "(button) => document.activeElement === button") === false
-      Locator.focus(button)
-      assert Locator.evaluate(button, "(button) => document.activeElement === button") === true
     end
   end
 
