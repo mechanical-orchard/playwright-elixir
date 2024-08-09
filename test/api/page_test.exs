@@ -1,8 +1,51 @@
 defmodule Playwright.PageTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, ElementHandle, Frame, Page, Request, Response, Route}
-  alias Playwright.SDK.Channel.{Error, Event}
   alias Playwright.SDK.Channel
+  alias Playwright.SDK.Channel.{Error, Event}
+
+  describe "Page.expose_binding/4" do
+    test "returns 'subject'", %{page: page} do
+      assert %Page{} = Page.expose_binding(page, "fn", fn -> nil end)
+    end
+
+    test "binds a local function", %{page: page} do
+      pid = self()
+
+      handler = fn source, [a, b] ->
+        send(pid, source)
+        a + b
+      end
+
+      Page.expose_binding(page, "add", handler)
+      assert Page.evaluate(page, "add(5, 6)") == 11
+      assert_received(%{context: "TBD", frame: %Frame{}, page: "TBD"})
+    end
+  end
+
+  describe "Page.expose_function/3" do
+    test "returns 'subject'", %{page: page} do
+      assert %Page{} = Page.expose_function(page, "fn", fn -> nil end)
+    end
+
+    test "binds a local function", %{page: page} do
+      handler = fn [a, b] ->
+        a * b
+      end
+
+      Page.expose_function(page, "compute", handler)
+      assert Page.evaluate(page, "compute(9, 4)") == 36
+    end
+  end
+
+  # test_expose_function_should_throw_exception_in_page_context
+  # test_expose_function_should_be_callable_from_inside_add_init_script
+  # test_expose_function_should_survive_navigation
+  # test_expose_function_should_await_returned_promise
+  # test_expose_function_should_work_on_frames
+  # test_expose_function_should_work_on_frames_before_navigation
+  # test_expose_function_should_work_after_cross_origin_navigation
+  # test_expose_function_should_work_with_complex_objects
 
   describe "Page.hover/2" do
     test "triggers hover state", %{assets: assets, page: page} do

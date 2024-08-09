@@ -40,9 +40,11 @@ defmodule Playwright.Page do
   """
   use Playwright.SDK.ChannelOwner
 
+  alias Playwright.SDK.Channel
   alias Playwright.{BrowserContext, ElementHandle, Frame, Page, Response}
   alias Playwright.SDK.{ChannelOwner, Helpers}
 
+  @property :bindings
   @property :is_closed
   @property :main_frame
   @property :owned_context
@@ -72,12 +74,16 @@ defmodule Playwright.Page do
       {:patch, %{event.target | is_closed: true}}
     end)
 
+    Channel.bind(session, {:guid, page.guid}, :binding_call, fn %{params: %{binding: binding}, target: target} ->
+      on_binding(target, binding)
+    end)
+
     Channel.bind(session, {:guid, page.guid}, :route, fn %{target: target} = e ->
       on_route(target, e)
       # NOTE: will patch here
     end)
 
-    {:ok, %{page | routes: []}}
+    {:ok, %{page | bindings: %{}, routes: []}}
   end
 
   # API
@@ -306,11 +312,47 @@ defmodule Playwright.Page do
   # def expect_response(page, url_or_predicate, options \\ %{})
   # ...defdelegate wait_for_response
 
-  # @spec expose_binding(t(), binary(), function(), options()) :: :ok
-  # def expose_binding(page, name, callback, options \\ %{})
+  @doc """
+  Adds a function called `param:name` on the `window` object of every frame in
+  this page.
 
-  # @spec expose_function(t(), binary(), function()) :: :ok
-  # def expose_function(page, name, callback)
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  The first argument to the `callback` function includes the following details
+  about the caller:
+
+      %{
+        context: %Playwright.BrowserContext{},
+        frame:   %Playwright.Frame{},
+        page:    %Playwright.Page{}
+      }
+
+  See `Playwright.BrowserContext.expose_binding/4` for a similar,
+  context-scoped version.
+  """
+  @spec expose_binding(t(), binary(), function(), options()) :: Page.t()
+  def expose_binding(%Page{session: session} = page, name, callback, options \\ %{}) do
+    Channel.patch(session, {:guid, page.guid}, %{bindings: Map.merge(page.bindings, %{name => callback})})
+    post!(page, :expose_binding, Map.merge(%{name: name, needs_handle: false}, options))
+  end
+
+  @doc """
+  Adds a function called `param:name` on the `window` object of every frame in
+  the page.
+
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  See `Playwright.BrowserContext.expose_function/3` for a similar,
+  context-scoped version.
+  """
+  @spec expose_function(Page.t(), String.t(), function()) :: Page.t()
+  def expose_function(page, name, callback) do
+    expose_binding(page, name, fn _, args ->
+      callback.(args)
+    end)
+  end
 
   # ---
 
@@ -448,7 +490,7 @@ defmodule Playwright.Page do
   def on(%Page{session: session} = page, event, callback)
       when event in [:console, :dialog, :file_chooser, :request, :response, :request_finished, :request_failed] do
     # HACK!
-    e = Recase.to_camel(event)
+    e = Atom.to_string(event) |> Recase.to_camel()
 
     Channel.post(session, {:guid, page.guid}, :update_subscription, %{event: e, enabled: true})
     Channel.bind(session, {:guid, context(page).guid}, event, callback)
@@ -690,6 +732,10 @@ defmodule Playwright.Page do
 
   # private
   # ---------------------------------------------------------------------------
+
+  defp on_binding(page, binding) do
+    Playwright.BindingCall.call(binding, Map.get(page.bindings, binding.name))
+  end
 
   # Do not love this.
   # It's good enough for now (to deal with v1.26.0 changes). However, it feels

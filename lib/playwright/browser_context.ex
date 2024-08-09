@@ -437,19 +437,39 @@ defmodule Playwright.BrowserContext do
   end
 
   @doc """
-  Adds a function called `param: name` on the `window` object of every
-  frame in every page in the context.
-  """
-  @spec expose_binding(t(), String.t(), function(), options()) :: :ok
-  def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
-    bindings = context.bindings
-    Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(bindings, %{name => callback})})
+  Adds a function called `param:name` on the `window` object of every frame in
+  every page in the context.
 
-    params = Map.merge(%{name: name, needs_handle: false}, options)
-    Channel.post(session, {:guid, context.guid}, :expose_binding, params)
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  The first argument to the `callback` function includes the following details
+  about the caller:
+
+      %{
+        context: %Playwright.BrowserContext{},
+        frame:   %Playwright.Frame{},
+        page:    %Playwright.Page{}
+      }
+
+  See `Playwright.Page.expose_binding/4` for a similar, page-scoped version.
+  """
+  @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: BrowserContext.t()
+  def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
+    Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(context.bindings, %{name => callback})})
+    post!(context, :expose_binding, Map.merge(%{name: name, needs_handle: false}, options))
   end
 
-  @spec expose_function(t(), String.t(), function()) :: :ok
+  @doc """
+  Adds a function called `param:name` on the `window` object of every frame in
+  every page in the context.
+
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  See `Playwright.Page.expose_function/3` for a similar, Page-scoped version.
+  """
+  @spec expose_function(BrowserContext.t(), String.t(), function()) :: BrowserContext.t()
   def expose_function(context, name, callback) do
     expose_binding(context, name, fn _, args ->
       callback.(args)

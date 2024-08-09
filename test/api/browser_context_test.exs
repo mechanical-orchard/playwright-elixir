@@ -74,6 +74,11 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.expose_binding/4" do
+    test "returns 'subject'", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.expose_binding(context, "fn", fn -> nil end)
+    end
+
     test "binds a local function", %{page: page} do
       context = Page.context(page)
 
@@ -88,6 +93,11 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.expose_function/3" do
+    test "returns 'subject'", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.expose_function(context, "fn", fn -> nil end)
+    end
+
     test "binds a local function", %{page: page} do
       context = Page.context(page)
 
