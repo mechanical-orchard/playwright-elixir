@@ -270,7 +270,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
   | `:click_count`   | option | `number()`                        | See [MDN: `UIEvent.detail`](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail) `(default: 1)` |
@@ -334,7 +334,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
   | `:delay`         | option | `number() `                       | Time to wait between keydown and keyup in milliseconds. `(default: 0)` |
@@ -391,7 +391,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                         | description |
+  | key/name         | type   |                         | description |
   | ---------------- | ------ | ----------------------- | ----------- |
   | `type`           | param  | `atom()` or `binary()`  | DOM event type: `:click`, `:dragstart`, etc. |
   | `event_init`     | param  | `evaluation_argument()` | Optional event-specific initialization properties. |
@@ -424,10 +424,11 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
+  @doc deprecated: "Discouraged: Prefer using Locators and web assertions over ElementHandles because latter are inherently racy."
   @spec element_handle(t(), options()) :: ElementHandle.t() | {:error, Channel.Error.t()}
   def element_handle(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(%{strict: true, state: "attached"}, options)
@@ -444,6 +445,7 @@ defmodule Playwright.Locator do
 
     - `[Playwright.ElementHandle.t()]`
   """
+  @doc deprecated: "Discouraged: Prefer using Locators and web assertions over ElementHandles because latter are inherently racy."
   @spec element_handles(t()) :: [ElementHandle.t()]
   def element_handles(locator) do
     Frame.query_selector_all(locator.frame, locator.selector)
@@ -460,7 +462,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name   | type   |            | description |
+  | key/name     | type   |            | description |
   | ------------ | ------ | ---------- | ----------- |
   | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
@@ -469,10 +471,6 @@ defmodule Playwright.Locator do
   @spec evaluate(t(), binary(), any(), options()) :: serializable()
   def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
-  require Logger
-
-  # NOTE: need to do all of the map-like things before a plain `map()`,
-  # then do `map()`, then do anything else.
   def evaluate(%Locator{} = locator, expression, arg, options)
       when is_struct(arg, ElementHandle) do
     with_element(locator, options, fn handle ->
@@ -533,7 +531,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name   | type   |            | description |
+  | key/name     | type   |            | description |
   | ------------ | ------ | ---------- | ----------- |
   | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
@@ -593,7 +591,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |             | description |
+  | key/name         | type   |             | description |
   | ---------------- | ------ | ----------- | ----------- |
   | `value`          | param  | `binary()`  | Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element |
   | `:force`         | option | `boolean()` | Whether to bypass the actionability checks. `(default: false)` |
@@ -626,7 +624,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -703,7 +701,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
@@ -723,7 +721,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -737,7 +735,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -754,7 +752,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -770,7 +768,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -784,7 +782,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -798,7 +796,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -812,7 +810,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -826,7 +824,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -840,7 +838,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -928,7 +926,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `key`            | param  | `binary()`      | Name of the key to press or a character to generate, such as `ArrowLeft` or `a`. |
   | `:delay`         | option | `number()`      | Time to wait between `mousedown` and `mouseup` in milliseconds. `(default: 0)` |
@@ -952,7 +950,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name         | type   |                   | description |
+  | key/name           | type   |                   | description |
   | ------------------ | ------ | ----------------- | ----------- |
   | `:omit_background` | option | `boolean()`       | Hides default white background and allows capturing screenshots with transparency. Not applicable to jpeg images. `(default: false)` |
   | `:path`            | option | `binary()`        | The file path to which to save the image. The screenshot type will be inferred from file extension. If path is a relative path, then it is resolved relative to the current working directory. If no path is provided, the image won't be saved to the disk. |
@@ -974,7 +972,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -1024,7 +1022,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `values`         | param  | `any()`         | Options to select. |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
@@ -1057,7 +1055,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
@@ -1092,7 +1090,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `checked`        | param  | `boolean()`     | Whether to check or uncheck the checkbox. |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
@@ -1124,7 +1122,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `files`          | param  | `any()`         | ... |
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
@@ -1170,7 +1168,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
   | `:modifiers`     | option | `[:alt, :control, :meta, :shift]` | Modifier keys to press. Ensures that only these modifiers are pressed during the operation, and then restores current modifiers back. If not specified, currently pressed modifiers are used. |
@@ -1190,7 +1188,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -1208,7 +1206,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |             | description |
+  | key/name         | type   |             | description |
   | ---------------- | ------ | ----------- | ----------- |
   | `text`           | param  | `binary()`  | Text to type into a focused element. |
   | `:delay`         | option | `number()`  | Time to wait between `mousedown` and `mouseup` in milliseconds. `(default: 0)` |
@@ -1245,7 +1243,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
@@ -1287,8 +1285,7 @@ defmodule Playwright.Locator do
 
   ## Example
 
-
-
+  ...
   """
 
   # const orderSent = page.locator('#order-sent');
