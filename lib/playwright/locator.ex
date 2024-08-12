@@ -669,8 +669,24 @@ defmodule Playwright.Locator do
   # @spec get_by_test_id(Locator.t(), binary(), options()) :: Locator.t()
   # def get_by_test_id(locator, text, options \\ %{})
 
-  # @spec get_by_text(Locator.t(), binary(), options()) :: Locator.t()
-  # def get_by_text(locator, text, options \\ %{})
+  @spec get_by_text(Locator.t(), binary(), options()) :: Locator.t()
+  def get_by_text(locator, text, options \\ %{}) when is_binary(text) do
+    locator
+    |> Locator.locator(get_by_text_selector(text, options))
+  end
+
+  def get_by_text_selector(text, options \\ %{}) do
+    exact = Map.get(options, :exact, false)
+
+    selector_suffix =
+      if exact do
+        "s"
+      else
+        "i"
+      end
+
+    "internal:text=\"#{text}\"" <> selector_suffix
+  end
 
   # @spec get_by_title(Locator.t(), binary(), options()) :: Locator.t()
   # def get_by_title(locator, text, options \\ %{})

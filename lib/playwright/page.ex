@@ -414,8 +414,10 @@ defmodule Playwright.Page do
   # @spec get_by_test_id(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
   # def get_by_test_id(page, text, options \\ %{})
 
-  # @spec get_by_text(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_text(page, text, options \\ %{})
+  @spec get_by_text(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  def get_by_text(page, text, options \\ %{}) do
+    main_frame(page) |> Frame.get_by_text(text, options)
+  end
 
   # @spec get_by_title(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
   # def get_by_title(page, text, options \\ %{})
