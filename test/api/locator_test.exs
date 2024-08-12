@@ -464,6 +464,28 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  # TODO: Frame
+  describe "Locator.get_by_text/3" do
+    test "returns a locator that contains the given text", %{page: page} do
+      Page.set_content(page, "<div><div>first</div><div>second</div><div>\nthird  </div></div>")
+      locator = Page.locator(page, "div")
+      assert locator |> Locator.get_by_text("first") |> Locator.count() == 1
+
+      assert locator |> Locator.get_by_text("third") |> Locator.evaluate("e => e.outerHTML") == "<div>\nthird  </div>"
+      Page.set_content(page, "<div><div> first </div><div>first</div></div>")
+      locator = Page.locator(page, "div")
+
+      assert locator |> Locator.get_by_text("first", %{exact: true}) |> Locator.first() |> Locator.evaluate("e => e.outerHTML") ==
+               "<div> first </div>"
+
+      Page.set_content(page, "<div><div> first and more </div><div>first</div></div>")
+      locator = Page.locator(page, "div")
+
+      assert locator |> Locator.get_by_text("first", %{exact: true}) |> Locator.first() |> Locator.evaluate("e => e.outerHTML") ==
+               "<div>first</div>"
+    end
+  end
+
   describe "Locator.hover/2" do
     test "puts the matching element into :hover state", %{assets: assets, page: page} do
       locator = Page.locator(page, "#button-6")

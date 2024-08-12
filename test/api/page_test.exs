@@ -1,6 +1,6 @@
 defmodule Playwright.PageTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Browser, ElementHandle, Frame, Page, Request, Response, Route}
+  alias Playwright.{Browser, ElementHandle, Frame, Locator, Page, Request, Response, Route}
   alias Playwright.SDK.Channel
   alias Playwright.SDK.Channel.{Error, Event}
 
@@ -399,6 +399,24 @@ defmodule Playwright.PageTest do
       assert page |> Page.get_attribute("div#outer", "foo") == nil
 
       assert({:error, %Error{message: "Timeout 500ms exceeded."}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 500}))
+    end
+  end
+
+  describe "Page.get_by_text/3" do
+    test "returns a locator that contains the given text", %{page: page} do
+      Page.set_content(page, "<div><div>first</div><div>second</div><div>\nthird  </div></div>")
+      assert page |> Page.get_by_text("first") |> Locator.count() == 1
+
+      assert page |> Page.get_by_text("third") |> Locator.evaluate("e => e.outerHTML") == "<div>\nthird  </div>"
+      Page.set_content(page, "<div><div> first </div><div>first</div></div>")
+
+      assert page |> Page.get_by_text("first", %{exact: true}) |> Locator.first() |> Locator.evaluate("e => e.outerHTML") ==
+               "<div> first </div>"
+
+      Page.set_content(page, "<div><div> first and more </div><div>first</div></div>")
+
+      assert page |> Page.get_by_text("first", %{exact: true}) |> Locator.first() |> Locator.evaluate("e => e.outerHTML") ==
+               "<div>first</div>"
     end
   end
 

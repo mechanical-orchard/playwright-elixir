@@ -15,7 +15,7 @@ defmodule Playwright.Frame do
       the page.  A Frame can be detached from the page only once.
   """
   use Playwright.SDK.ChannelOwner
-  alias Playwright.{ElementHandle, Frame, Response}
+  alias Playwright.{ElementHandle, Frame, Locator, Response}
   alias Playwright.SDK.{ChannelOwner, Helpers}
 
   @property :load_states
@@ -445,8 +445,10 @@ defmodule Playwright.Frame do
   # @spec get_by_test_id(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
   # def get_by_test_id(frame, text, options \\ %{})
 
-  # @spec get_by_text(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_text(frame, text, options \\ %{})
+  @spec get_by_text(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  def get_by_text(frame, text, options \\ %{}) do
+    locator(frame, Locator.get_by_text_selector(text, options))
+  end
 
   # @spec get_by_title(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
   # def get_by_title(frame, text, options \\ %{})
@@ -563,8 +565,10 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec locator(Frame.t(), binary()) :: Playwright.Locator.t()
-  # def locator(frame, selector)
+  @spec locator(Frame.t(), binary()) :: Playwright.Locator.t()
+  def locator(frame, selector) do
+    Playwright.Locator.new(frame, selector)
+  end
 
   # @spec name(Frame.t()) :: binary()
   # def name(frame)
