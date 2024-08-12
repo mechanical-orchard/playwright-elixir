@@ -168,9 +168,6 @@ defmodule Playwright.BrowserContext do
   @property :owner_page
   @property :routes
 
-  @typedoc "An explicit shorthand for the BrowserContext.t() subject."
-  @type subject :: t()
-
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
           name: String.t(),
@@ -232,7 +229,7 @@ defmodule Playwright.BrowserContext do
 
   ## Returns
 
-    - `subject()`
+    - `t()`
 
   ## Example
 
@@ -252,7 +249,7 @@ defmodule Playwright.BrowserContext do
   | `:secure`   | `boolean()` | *(optional)* |
   | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
   """
-  @spec add_cookies(t(), [cookie]) :: subject()
+  @spec add_cookies(t(), [cookie]) :: t()
   def add_cookies(context, cookies)
 
   def add_cookies(%BrowserContext{} = context, cookies) do
@@ -302,7 +299,7 @@ defmodule Playwright.BrowserContext do
   > `Playwright.BrowserContext.add_init_script/2` and
   > `Playwright.Page.add_init_script/2` is not defined.
   """
-  @spec add_init_script(t(), binary() | map()) :: subject()
+  @spec add_init_script(t(), binary() | map()) :: t()
   def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
     post!(context, :add_init_script, %{source: script})
   end
@@ -324,12 +321,12 @@ defmodule Playwright.BrowserContext do
   @doc """
   Clears `Playwright.BrowserContext` cookies.
   """
-  @spec clear_cookies(t()) :: subject()
+  @spec clear_cookies(t()) :: t()
   def clear_cookies(%BrowserContext{} = context) do
     post!(context, :clear_cookies)
   end
 
-  @spec clear_permissions(t()) :: subject()
+  @spec clear_permissions(t()) :: t()
   def clear_permissions(%BrowserContext{} = context) do
     post!(context, :clear_permissions)
   end
@@ -471,7 +468,7 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
-  @spec grant_permissions(t(), [String.t()], options()) :: subject() | {:error, Channel.Error.t()}
+  @spec grant_permissions(t(), [String.t()], options()) :: t() | {:error, Channel.Error.t()}
   def grant_permissions(%BrowserContext{} = context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
     post!(context, :grant_permissions, params)
@@ -511,7 +508,7 @@ defmodule Playwright.BrowserContext do
   @doc """
   Register a (non-blocking) callback/handler for various types of events.
   """
-  @spec on(t(), event(), function()) :: subject()
+  @spec on(t(), event(), function()) :: t()
   def on(%BrowserContext{} = context, event, callback) do
     bind!(context, event, callback)
   end
@@ -528,7 +525,7 @@ defmodule Playwright.BrowserContext do
     Channel.list(context.session, {:guid, context.guid}, "Page")
   end
 
-  @spec route(t(), binary(), function(), map()) :: subject()
+  @spec route(t(), binary(), function(), map()) :: t()
   def route(context, pattern, handler, options \\ %{})
 
   def route(%BrowserContext{session: session} = context, pattern, handler, _options) do
@@ -576,7 +573,7 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  @spec set_offline(t(), boolean()) :: subject()
+  @spec set_offline(t(), boolean()) :: t()
   def set_offline(%BrowserContext{} = context, offline) do
     post!(context, :set_offline, %{offline: offline})
   end

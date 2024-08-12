@@ -21,9 +21,6 @@ defmodule Playwright.Frame do
   @property :load_states
   @property :url
 
-  @typedoc "An explicit shorthand for the Frame.t() subject."
-  @type subject :: t()
-
   @type evaluation_argument :: any()
   @type expression :: binary()
   @type options :: map()
@@ -105,7 +102,7 @@ defmodule Playwright.Frame do
   `option: timeout`, `/click/3` raises a `TimeoutError`. Passing zero for
   `option: timeout` disables this.
   """
-  @spec click(t(), binary(), options()) :: subject()
+  @spec click(t(), binary(), options()) :: t()
   def click(frame, selector, options \\ %{})
 
   def click(%Frame{} = frame, selector, options) do
@@ -164,7 +161,7 @@ defmodule Playwright.Frame do
 
   ## Returns
 
-    - `subject()`
+    - `t()`
 
   ## Arguments
 
@@ -181,7 +178,7 @@ defmodule Playwright.Frame do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  @spec dblclick(Frame.t(), binary(), options()) :: subject()
+  @spec dblclick(Frame.t(), binary(), options()) :: t()
   def dblclick(%Frame{session: session} = frame, selector, options \\ %{}) do
     params =
       Map.merge(

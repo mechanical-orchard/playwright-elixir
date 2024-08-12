@@ -11,9 +11,6 @@ defmodule Playwright.APIRequestContext do
   use Playwright.SDK.ChannelOwner
   alias Playwright.APIRequestContext
 
-  @typedoc "An explicit shorthand for the APIRequestContext.t() subject."
-  @type subject :: t()
-
   @type fetch_options() :: %{
           optional(:params) => any(),
           optional(:method) => binary(),
@@ -30,7 +27,7 @@ defmodule Playwright.APIRequestContext do
   # @spec delete(t(), binary(), options()) :: APIResponse.t()
   # def delete(context, url, options \\ %{})
 
-  # @spec dispose(t()) :: subject()
+  # @spec dispose(t()) :: t()
   # def dispose(api_request_context)
 
   # @spec fetch(t(), binary() | Request.t(), options()) :: APIResponse.t()
