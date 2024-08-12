@@ -114,7 +114,7 @@ defmodule Playwright.SDK.ChannelOwner do
             Channel.find(owner.session, {:guid, owner.guid})
 
           # acceptable (API call) errors
-          {:error, %Channel.Error{} = error} ->
+          {:error, %Playwright.API.Error{} = error} ->
             {:error, error}
         end
       end

@@ -38,7 +38,7 @@ defmodule Playwright.SDK.Channel.Response do
   end
 
   def recv(_session, %{error: error, id: _}) do
-    Channel.Error.new(error, nil)
+    Playwright.API.Error.new(error, nil)
   end
 
   def recv(session, %{id: _} = message) do

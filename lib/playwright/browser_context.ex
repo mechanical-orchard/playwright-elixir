@@ -468,7 +468,7 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
-  @spec grant_permissions(t(), [String.t()], options()) :: t() | {:error, Channel.Error.t()}
+  @spec grant_permissions(t(), [String.t()], options()) :: t() | {:error, Playwright.API.Error.t()}
   def grant_permissions(%BrowserContext{} = context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
     post!(context, :grant_permissions, params)

@@ -1,7 +1,7 @@
 defmodule Playwright.Page.NetworkTest do
   use Playwright.TestCase, async: true
   alias Playwright.{BrowserContext, Page, Response}
-  alias Playwright.SDK.Channel.{Error, Event}
+  alias Playwright.SDK.Channel.Event
 
   describe "Page.expect_event/3 without a 'trigger" do
     test "w/ an event", %{assets: assets, page: page} do
@@ -35,12 +35,12 @@ defmodule Playwright.Page.NetworkTest do
     end
 
     test "w/ an event and a timeout", %{page: page} do
-      {:error, %Error{message: message}} =
+      {:error, %Playwright.SDK.Error{message: message}} =
         Page.expect_event(page, :request_finished, %{
           timeout: 500
         })
 
-      assert message == "Timeout 500ms exceeded."
+      assert "Timeout 500ms exceeded" <> _ = message
     end
 
     test "w/ an event, a (truthy) predicate, and a timeout", %{assets: assets, page: page} do
@@ -60,7 +60,7 @@ defmodule Playwright.Page.NetworkTest do
     test "w/ an event, a (falsy) predicate, and (incidentally) a timeout", %{assets: assets, page: page} do
       Task.start(fn -> Page.goto(page, assets.empty) end)
 
-      {:error, %Error{message: message}} =
+      {:error, %Playwright.SDK.Error{message: message}} =
         Page.expect_event(page, :request_finished, %{
           predicate: fn _, _ ->
             false
@@ -68,7 +68,7 @@ defmodule Playwright.Page.NetworkTest do
           timeout: 500
         })
 
-      assert message == "Timeout 500ms exceeded."
+      assert "Timeout 500ms exceeded" <> _ = message
     end
   end
 
@@ -107,7 +107,7 @@ defmodule Playwright.Page.NetworkTest do
     end
 
     test "w/ an event and a (falsy) predicate", %{assets: assets, page: page} do
-      {:error, %Error{message: message}} =
+      {:error, %Playwright.SDK.Error{message: message}} =
         Page.expect_event(
           page,
           :request_finished,
@@ -122,7 +122,7 @@ defmodule Playwright.Page.NetworkTest do
           end
         )
 
-      assert message == "Timeout 500ms exceeded."
+      assert "Timeout 500ms exceeded" <> _ = message
     end
 
     test "w/ an event and a timeout", %{assets: assets, page: page} do

@@ -2,7 +2,7 @@ defmodule Playwright.PageTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, ElementHandle, Frame, Locator, Page, Request, Response, Route}
   alias Playwright.SDK.Channel
-  alias Playwright.SDK.Channel.{Error, Event}
+  alias Playwright.SDK.Channel.Event
 
   describe "Page.drag_and_drop/4" do
     test "returns 'subject'", %{assets: assets, page: page} do
@@ -276,7 +276,7 @@ defmodule Playwright.PageTest do
     test "with a single option given mismatched attributes, returns a timeout", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/input/select.html")
 
-      assert {:error, %Error{message: "Timeout 500ms exceeded."}} =
+      assert {:error, %Playwright.API.Error{message: "Timeout 500ms exceeded."}} =
                Page.select_option(page, "select", %{value: "green", label: "Brown"}, %{timeout: 500})
     end
 
@@ -356,7 +356,7 @@ defmodule Playwright.PageTest do
 
       page |> Page.close()
 
-      assert {:error, %Error{message: "Timeout 100ms exceeded."}} =
+      assert {:error, %Playwright.SDK.Error{message: "Timeout 100ms exceeded" <> _}} =
                Channel.find(page.session, {:guid, page.guid}, %{timeout: 100})
     end
   end
@@ -398,7 +398,7 @@ defmodule Playwright.PageTest do
       assert page |> Page.get_attribute("div#outer", "name") == "value"
       assert page |> Page.get_attribute("div#outer", "foo") == nil
 
-      assert({:error, %Error{message: "Timeout 500ms exceeded."}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 500}))
+      assert({:error, %Playwright.API.Error{message: "Timeout 500ms exceeded."}} = Page.get_attribute(page, "glorp", "foo", %{timeout: 500}))
     end
   end
 

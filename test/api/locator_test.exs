@@ -2,7 +2,7 @@ defmodule Playwright.LocatorTest do
   use Playwright.TestCase, async: true
 
   alias Playwright.{ElementHandle, Locator, Page}
-  alias Playwright.SDK.Channel.Error
+  alias Playwright.API.Error
 
   describe "Locator.all/1" do
     test "returns a list of Locators, addressing each respective element", %{page: page} do
@@ -112,11 +112,11 @@ defmodule Playwright.LocatorTest do
       [options: options]
     end
 
-    test "returns :ok on a successful click", %{options: options, page: page} do
+    test "returns 'subject' on a successful click", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "a#link")
-      assert :ok = Locator.click(locator, options)
+      assert ^locator = Locator.click(locator, options)
     end
 
     test "returns a timeout error when unable to click", %{options: options, page: page} do

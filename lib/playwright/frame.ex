@@ -927,7 +927,7 @@ defmodule Playwright.Frame do
 
   FIXME: the following is NOT TRUE... Returns `nil` if waiting for a hidden or detached element.
   """
-  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | {:error, Channel.Error.t()}
+  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | {:error, Playwright.API.Error.t()}
   def wait_for_selector(%Frame{session: session} = frame, selector, options \\ %{}) do
     Channel.post(session, {:guid, frame.guid}, :wait_for_selector, Map.merge(%{selector: selector}, options))
   end

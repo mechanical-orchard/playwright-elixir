@@ -262,7 +262,7 @@ defmodule Playwright.Locator do
   If the element is detached from the DOM at any moment during the action, this method throws.
 
   When all steps combined have not finished during the specified timeout, this method throws a
-  `Playwright.SDK.Channel.Error.t()`. Passing `0` timeout disables this.
+  `Playwright.API.Error.t()`. Passing `0` timeout disables this.
 
   ## Returns
 
@@ -282,10 +282,10 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  @spec click(t(), options_click()) :: :ok
+  @spec click(t(), options_click()) :: t()
   def click(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
-    Frame.click(locator.frame, locator.selector, options)
+    returning(locator, fn -> Frame.click(locator.frame, locator.selector, options) end)
   end
 
   # @spec content_frame(Locator.t()) :: FrameLocator.t()
@@ -420,7 +420,7 @@ defmodule Playwright.Locator do
   ## Returns
 
   - `Playwright.ElementHandle.t()`
-  - `{:error, Playwright.SDK.Channel.Error.t()}`
+  - `{:error, Playwright.API.Error.t()}`
 
   ## Arguments
 
@@ -429,7 +429,7 @@ defmodule Playwright.Locator do
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
   @doc deprecated: "Discouraged: Prefer using Locators and web assertions over ElementHandles because latter are inherently racy."
-  @spec element_handle(t(), options()) :: ElementHandle.t() | {:error, Channel.Error.t()}
+  @spec element_handle(t(), options()) :: ElementHandle.t() | {:error, Playwright.API.Error.t()}
   def element_handle(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(%{strict: true, state: "attached"}, options)
 
@@ -527,7 +527,7 @@ defmodule Playwright.Locator do
   ## Returns
 
     - `Playwright.ElementHandle.t()`
-    - `{:error, Playwright.SDK.Channel.Error.t()}`
+    - `{:error, Playwright.API.Error.t()}`
 
   ## Arguments
 
@@ -537,7 +537,7 @@ defmodule Playwright.Locator do
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
   | `:timeout`   | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
-  @spec evaluate_handle(t(), binary(), any(), options()) :: ElementHandle.t() | {:error, Channel.Error.t()}
+  @spec evaluate_handle(t(), binary(), any(), options()) :: ElementHandle.t() | {:error, Playwright.API.Error.t()}
   def evaluate_handle(locator, expression, arg \\ nil, options \\ %{})
 
   # NOTE: need to do all of the map-like things before a plain `map()`,
@@ -1322,7 +1322,7 @@ defmodule Playwright.Locator do
   # const orderSent = page.locator('#order-sent');
   # await orderSent.waitFor();
 
-  @spec wait_for(t(), options()) :: t() | {:error, Channel.Error.t()}
+  @spec wait_for(t(), options()) :: t() | {:error, Playwright.API.Error.t()}
   def wait_for(%Locator{} = locator, options \\ %{}) do
     case Frame.wait_for_selector(locator.frame, locator.selector, options) do
       {:error, _} = error ->
@@ -1337,8 +1337,13 @@ defmodule Playwright.Locator do
   # ---------------------------------------------------------------------------
 
   defp returning(subject, task) do
-    task.()
-    subject
+    case task.() do
+      {:error, _} = error ->
+        error
+
+      _ ->
+        subject
+    end
   end
 
   defp with_element(%Locator{frame: frame} = locator, options, task) do

@@ -33,7 +33,7 @@ defmodule Playwright.CDPSession do
       {:ok, _} ->
         cdp_session
 
-      {:error, %Channel.Error{} = error} ->
+      {:error, %Playwright.API.Error{} = error} ->
         {:error, error}
     end
   end

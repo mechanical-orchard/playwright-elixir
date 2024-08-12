@@ -1,7 +1,7 @@
 defmodule Playwright.SDK.Channel do
   @moduledoc false
   import Playwright.SDK.Helpers.ErrorHandling
-  alias Playwright.SDK.Channel.{Catalog, Connection, Error, Event, Message, Response, Session}
+  alias Playwright.SDK.Channel.{Catalog, Connection, Event, Message, Response, Session}
 
   # API
   # ---------------------------------------------------------------------------
@@ -135,7 +135,7 @@ defmodule Playwright.SDK.Channel do
     item
   end
 
-  defp reply(%Error{} = error, from) do
+  defp reply(%Playwright.API.Error{} = error, from) do
     Task.start_link(fn ->
       GenServer.reply(from, {:error, error})
     end)
