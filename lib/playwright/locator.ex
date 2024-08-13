@@ -675,19 +675,6 @@ defmodule Playwright.Locator do
     |> Locator.locator(get_by_text_selector(text, options))
   end
 
-  def get_by_text_selector(text, options \\ %{}) do
-    exact = Map.get(options, :exact, false)
-
-    selector_suffix =
-      if exact do
-        "s"
-      else
-        "i"
-      end
-
-    "internal:text=\"#{text}\"" <> selector_suffix
-  end
-
   # @spec get_by_title(Locator.t(), binary(), options()) :: Locator.t()
   # def get_by_title(locator, text, options \\ %{})
 
@@ -1320,6 +1307,19 @@ defmodule Playwright.Locator do
 
   # private
   # ---------------------------------------------------------------------------
+
+  defp get_by_text_selector(text, options) do
+    exact = Map.get(options, :exact, false)
+
+    selector_suffix =
+      if exact do
+        "s"
+      else
+        "i"
+      end
+
+    "internal:text=\"#{text}\"" <> selector_suffix
+  end
 
   defp returning(subject, task) do
     task.()

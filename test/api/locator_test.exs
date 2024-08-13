@@ -464,7 +464,6 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  # TODO: Frame
   describe "Locator.get_by_text/3" do
     test "returns a locator that contains the given text", %{page: page} do
       Page.set_content(page, "<div><div>first</div><div>second</div><div>\nthird  </div></div>")
