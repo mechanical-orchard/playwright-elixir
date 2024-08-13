@@ -60,6 +60,10 @@ end
 - Start server: `bin/dev/start`
 - Run tests and push: `bin/dev/shipit`
 
-### Building assets for a release
+### Releasing
 
-`mix assets.build`
+1. Update the version in `mix.exs`
+   a. Search for and update the version anywhere it appears in the repo, such as this README
+2. `git tag -a v${version_number}` such that the tag look like `v1.44.0-alpha.3` or `v1.44.0`
+3. `git push --tags`
+4. `mix hex.publish`
