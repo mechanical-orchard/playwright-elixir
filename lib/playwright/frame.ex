@@ -445,7 +445,17 @@ defmodule Playwright.Frame do
   # @spec get_by_test_id(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
   # def get_by_test_id(frame, text, options \\ %{})
 
-  @spec get_by_text(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  @doc """
+  Allows locating elements that contain given text.
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Text to locate the element for. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match: case-sensitive and whole-string. Default to false. Ignored when locating by a regular expression. Note that exact match still trims whitespace. |
+  """
+  @spec get_by_text(Frame.t(), binary(), %{optional(:exact) => boolean()}) :: Playwright.Locator.t() | nil
   def get_by_text(frame, text, options \\ %{}) do
     locator(frame, Locator.get_by_text_selector(text, options))
   end

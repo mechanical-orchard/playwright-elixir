@@ -669,13 +669,27 @@ defmodule Playwright.Locator do
   # @spec get_by_test_id(Locator.t(), binary(), options()) :: Locator.t()
   # def get_by_test_id(locator, text, options \\ %{})
 
-  @spec get_by_text(Locator.t(), binary(), options()) :: Locator.t()
+  @doc """
+  Allows locating elements that contain given text.
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Text to locate the element for. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match: case-sensitive and whole-string. Default to false. Ignored when locating by a regular expression. Note that exact match still trims whitespace. |
+  """
+  @spec get_by_text(Locator.t(), binary(), %{optional(:exact) => boolean()}) :: Locator.t()
   def get_by_text(locator, text, options \\ %{}) when is_binary(text) do
     locator
     |> Locator.locator(get_by_text_selector(text, options))
   end
 
+  # @spec get_by_text(Locator.t(), Regex.t(), %{optional(:exact) => boolean()}) :: Locator.t()
+  # def get_by_text(locator, text, options \\ %{}) when is_regex(text)
+
   # NOTE: this is a kind of helper; not ideally part of the API.
+  @doc false
   def get_by_text_selector(text, options) do
     exact = Map.get(options, :exact, false)
 
