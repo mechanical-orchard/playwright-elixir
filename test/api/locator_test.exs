@@ -815,6 +815,22 @@ defmodule Playwright.LocatorTest do
       assert [:ok, %Locator{}] = Task.await_many([setup, check])
     end
 
+    test "on success with nil return (i.e., a match is found in time) returns the `Locator` instance", %{page: page} do
+      locator = Locator.new(page, "div > span")
+
+      setup =
+        Task.async(fn ->
+          Page.set_content(page, "<div><span style='visibility: hidden;'>target</span></div>")
+        end)
+
+      check =
+        Task.async(fn ->
+          Locator.wait_for(locator, %{timeout: 100, state: "hidden"})
+        end)
+
+      assert [:ok, %Locator{}] = Task.await_many([setup, check])
+    end
+
     test "on failure (i.e., the timeout is reached) returns an `{:error, error}` tuple", %{page: page} do
       locator = Locator.new(page, "div > span")
 

@@ -1325,11 +1325,11 @@ defmodule Playwright.Locator do
   @spec wait_for(t(), options()) :: t() | {:error, Channel.Error.t()}
   def wait_for(%Locator{} = locator, options \\ %{}) do
     case Frame.wait_for_selector(locator.frame, locator.selector, options) do
-      %ElementHandle{} ->
-        locator
-
       {:error, _} = error ->
         error
+
+      _ ->
+        locator
     end
   end
 
