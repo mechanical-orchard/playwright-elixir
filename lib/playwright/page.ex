@@ -243,6 +243,11 @@ defmodule Playwright.Page do
     Channel.find(session, {:guid, page.parent.guid})
   end
 
+  @spec content(t()) :: binary()
+  def content(%Page{} = page) do
+    main_frame(page) |> Frame.content()
+  end
+
   @doc """
   A shortcut for the main frame's `Playwright.Frame.dblclick/3`.
   """
