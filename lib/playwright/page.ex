@@ -243,7 +243,7 @@ defmodule Playwright.Page do
     Channel.find(session, {:guid, page.parent.guid})
   end
 
-  @spec content(t()) :: binary()
+  @spec content(t()) :: binary() | {:error, term()}
   def content(%Page{} = page) do
     main_frame(page) |> Frame.content()
   end
