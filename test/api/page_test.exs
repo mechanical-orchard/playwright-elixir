@@ -450,6 +450,16 @@ defmodule Playwright.PageTest do
     end
   end
 
+  describe "Page.content/0" do
+    test "retrieves the page content", %{assets: assets, page: page} do
+      page
+      |> Page.goto(assets.prefix <> "/dom.html")
+
+      assert Page.content(page) =~
+               ~r/<html>/
+    end
+  end
+
   describe "Page.title/1" do
     test "retrieves the title text", %{assets: assets, page: page} do
       page
