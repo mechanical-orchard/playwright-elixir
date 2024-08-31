@@ -273,11 +273,21 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "User Agent" do
-    test "should work", %{browser: browser} do
+    test "can be set via new_context", %{browser: browser} do
       context = Browser.new_context(browser, %{"userAgent" => "Mozzies"})
       page = BrowserContext.new_page(context)
 
       assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
+
+      BrowserContext.close(context)
+    end
+
+    test "can be set via new_page", %{browser: browser} do
+      page = Browser.new_page(browser, %{"userAgent" => "Mozzies"})
+
+      assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
+
+      Page.close(page)
     end
   end
 end
