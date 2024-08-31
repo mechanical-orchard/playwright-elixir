@@ -271,6 +271,15 @@ defmodule Playwright.BrowserContextTest do
       assert Page.evaluate(page, "window.navigator.onLine")
     end
   end
+
+  describe "User Agent" do
+    test "should work", %{browser: browser} do
+      context = Browser.new_context(browser, %{"userAgent" => "Mozzies"})
+      page = BrowserContext.new_page(context)
+
+      assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
+    end
+  end
 end
 
 # test_expose_function_should_throw_for_duplicate_registrations
