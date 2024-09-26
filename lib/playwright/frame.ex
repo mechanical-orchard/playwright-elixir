@@ -127,8 +127,16 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec content(Frame.t()) :: binary()
-  # def content(frame)
+  @spec content(Frame.t()) :: binary() | {:error, term()}
+  def content(%Frame{session: session} = frame) do
+    case Channel.post(session, {:guid, frame.guid}, :content) do
+      {:error, error} ->
+        {:error, error}
+
+      content ->
+        content
+    end
+  end
 
   # ---
 
