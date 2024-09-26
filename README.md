@@ -1,6 +1,6 @@
 # Playwright for Elixir
 
-**NOTE:** This package is currently in "preview". The features are not yet at parity with other Playwright implementations. Once `playwright-elixir` is at or near parity with [`playwright`](https://github.com/microsoft/playwright), the version number will be updated to mirror the supported version of `playwright`.
+**NOTE:** This package is currently in "preview" (or "alpha"). The features are not yet at parity with other Playwright implementations. Once `playwright-elixir` is at or near parity with [`playwright`](https://github.com/microsoft/playwright), the version number will be updated to mirror the supported version of `playwright`.
 
 ## Overview
 
@@ -44,6 +44,10 @@ defmodule Test.ExampleTest do
   end
 end
 ```
+
+## Releases
+
+This project aims to track the release versioning found in [Playwright proper](https://github.com/microsoft/playwright).
 
 ## Contributing
 
