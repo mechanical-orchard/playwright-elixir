@@ -58,9 +58,6 @@ defmodule Playwright.Page do
   # @property :touchscreen
   # ---
 
-  @typedoc "An explicit shorthand for the Page.t() subject."
-  @type subject :: t()
-
   @type dimensions :: map()
   @type expression :: binary()
   @type function_or_options :: fun() | options() | nil

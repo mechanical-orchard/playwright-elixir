@@ -6,9 +6,6 @@ defmodule Playwright.CDPSession do
 
   @property :bindings
 
-  @typedoc "An explicit shorthand for the CDPSession.t() subject."
-  @type subject :: t()
-
   @typedoc "Supported events"
   @type event :: binary()
 
