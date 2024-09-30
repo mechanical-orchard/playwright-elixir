@@ -2,31 +2,98 @@ defmodule Playwright.BrowserContextTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, Frame, Page, Request, Response, Route}
 
-  describe "Browser.new_context/1" do
-    @tag exclude: [:page]
-    test "creates and binds a new context", %{browser: browser} do
-      assert Browser.contexts(browser) == []
+  describe "BrowserContext.add_cookies/2" do
+    test "returns 'subject'", %{assets: assets, page: page} do
+      context = Page.owned_context(page)
+      cookies = [%{url: assets.empty, name: "password", value: "123456"}]
+      assert %BrowserContext{} = BrowserContext.add_cookies(context, cookies)
+    end
 
-      Browser.new_context(browser)
-      assert [%BrowserContext{} = context] = Browser.contexts(browser)
-      assert context.browser == browser
+    test "adds cookies, readable by Page", %{assets: assets, page: page} do
+      context = Page.owned_context(page)
+      page |> Page.goto(assets.empty)
 
-      BrowserContext.close(context)
-      assert Browser.contexts(browser) == []
+      context
+      |> BrowserContext.add_cookies([
+        %{url: assets.empty, name: "password", value: "123456"}
+      ])
+
+      assert Page.evaluate(page, "() => document.cookie") == "password=123456"
+    end
+
+    # test_should_roundtrip_cookie
+    # test_should_send_cookie_header
+    # test_should_isolate_cookies_in_browser_contexts
+    # test_should_isolate_session_cookies
+    # test_should_isolate_persistent_cookies
+    # test_should_isolate_send_cookie_header
+    # test_should_isolate_cookies_between_launches
+    # test_should_set_multiple_cookies
+    # test_should_have_expires_set_to_neg_1_for_session_cookies
+    # test_should_set_cookie_with_reasonable_defaults
+    # test_should_set_a_cookie_with_a_path
+    # test_should_not_set_a_cookie_with_blank_page_url
+    # test_should_not_set_a_cookie_on_a_data_url_page
+    # test_should_default_to_setting_secure_cookie_for_https_websites
+    # test_should_be_able_to_set_unsecure_cookie_for_http_website
+    # test_should_set_a_cookie_on_a_different_domain
+    # test_should_set_cookies_for_a_frame
+    # test_should_not_block_third_party_cookies
+  end
+
+  describe "BrowserContext.add_cookies!/2" do
+    test "on success, returns 'subject", %{assets: assets, page: page} do
+      context = Page.owned_context(page)
+      cookies = [%{url: assets.empty, name: "password", value: "123456"}]
+      assert %BrowserContext{} = BrowserContext.add_cookies(context, cookies)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "cookies[0].name: expected string, got undefined", fn ->
+        context = Page.owned_context(page)
+        BrowserContext.add_cookies!(context, [%{bogus: "cookie"}])
+      end
     end
   end
 
-  describe "Browser.new_page/1" do
+  describe "BrowserContext.add_init_script/2" do
+    test "returns 'subject'", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.add_init_script(context, "window.injected = 123")
+    end
+
     @tag exclude: [:page]
-    test "creates and binds a new context", %{browser: browser} do
-      assert Browser.contexts(browser) == []
+    test "combined with `Page.add_init_script/2`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      page = BrowserContext.new_page(context)
 
-      page = Browser.new_page(browser)
-      assert [%BrowserContext{} = context] = Browser.contexts(browser)
-      assert context.browser == browser
+      BrowserContext.add_init_script(context, "window.temp = 123")
+      page = Page.add_init_script(page, "window.injected = window.temp")
+      nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
 
-      Page.close(page)
-      assert Browser.contexts(browser) == []
+      assert Page.evaluate(page, "window.result") == 123
+    end
+
+    @tag exclude: [:page]
+    test "providing `param: script` as a file path", %{browser: browser} do
+      context = Browser.new_context(browser)
+      fixture = "test/support/fixtures/injectedfile.js"
+      page = BrowserContext.new_page(context)
+
+      BrowserContext.add_init_script(context, %{path: fixture})
+      nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
+
+      assert Page.evaluate(page, "window.result") == 123
+    end
+
+    test "adding to the BrowserContext for an already created Page", %{page: page} do
+      context = Page.owned_context(page)
+
+      BrowserContext.add_init_script(context, "window.temp = 123")
+      page = Page.add_init_script(page, "window.injected = window.temp")
+      nil = Page.goto(page, "data:text/html,<script>window.result = window.injected</script>")
+
+      assert Page.evaluate(page, "window.result") == 123
     end
   end
 
@@ -34,6 +101,57 @@ defmodule Playwright.BrowserContextTest do
     test "returns the Browser", %{browser: browser, page: page} do
       context = Page.context(page)
       assert BrowserContext.browser(context) == browser
+    end
+  end
+
+  describe "BrowserContext.clear_cookies/1" do
+    test "returns 'subject'", %{page: page} do
+      context = Page.owned_context(page)
+      assert %BrowserContext{} = BrowserContext.clear_cookies(context)
+    end
+
+    test "clears cookies for the context", %{assets: assets, page: page} do
+      context = Page.owned_context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.add_cookies(context, [%{url: assets.empty, name: "cookie1", value: "one"}])
+      assert Page.evaluate(page, "document.cookie") == "cookie1=one"
+
+      BrowserContext.clear_cookies(context)
+      assert BrowserContext.cookies(context) == []
+
+      Page.reload(page)
+      assert Page.evaluate(page, "document.cookie") == ""
+    end
+
+    # test_should_isolate_cookies_when_clearing
+  end
+
+  describe "BrowserContext.clear_permissions/1" do
+    test "returns 'subject'", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.clear_permissions(context)
+    end
+
+    test "clears previously granted permissions", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.grant_permissions(context, ["geolocation"])
+      BrowserContext.clear_permissions(context)
+      BrowserContext.grant_permissions(context, ["notifications"])
+
+      assert get_permission(page, "geolocation") == "denied"
+      assert get_permission(page, "notifications") == "granted"
+    end
+
+    test "resets permissions", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.grant_permissions(context, ["geolocation"])
+      BrowserContext.clear_permissions(context)
+      assert get_permission(page, "geolocation") == "prompt"
     end
   end
 
@@ -73,6 +191,66 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.cookies/1" do
+    test "retrieves no cookies from a pristine context", %{page: page} do
+      cookies = BrowserContext.cookies(page.owned_context)
+      assert cookies == []
+    end
+
+    test "retrieves cookies for the context", %{assets: assets, page: page} do
+      context = Page.owned_context(page)
+      page |> Page.goto(assets.empty)
+
+      cookie =
+        page
+        |> Page.evaluate("""
+          () => {
+            document.cookie = "username=Jane";
+            return document.cookie;
+          }
+        """)
+
+      assert cookie == "username=Jane"
+
+      assert BrowserContext.cookies(context) == [
+               %{
+                 domain: "localhost",
+                 expires: -1,
+                 httpOnly: false,
+                 name: "username",
+                 path: "/assets",
+                 sameSite: "Lax",
+                 secure: false,
+                 value: "Jane"
+               }
+             ]
+    end
+
+    # test_should_get_a_non_session_cookie
+    # test_should_properly_report_httpOnly_cookie
+    # test_should_properly_report_strict_sameSite_cookie
+    # test_should_properly_report_lax_sameSite_cookie
+    # test_should_get_multiple_cookies
+    # test_should_get_cookies_from_multiple_urls
+  end
+
+  describe "BrowserContext.expect_*/*" do
+    # NOTE: skipping while everything is in transition
+    @tag exclude: [:page]
+    @tag :skip
+    test ".expect_page/3", %{assets: assets, browser: browser} do
+      context = Browser.new_context(browser)
+      page = BrowserContext.new_page(context)
+
+      %{params: params} =
+        BrowserContext.expect_page(context, fn ->
+          Page.evaluate(page, "url => window.open(url)", assets.empty)
+        end)
+
+      assert Page.url(params.page) == assets.empty
+    end
+  end
+
   describe "BrowserContext.expose_binding/4" do
     test "returns 'subject'", %{page: page} do
       context = Page.context(page)
@@ -107,6 +285,128 @@ defmodule Playwright.BrowserContextTest do
 
       BrowserContext.expose_function(context, "add", handler)
       assert Page.evaluate(page, "add(9, 4)") == 13
+    end
+  end
+
+  describe "BrowserContext.get_permission/2" do
+    test "default to 'prompt'", %{assets: assets, page: page} do
+      page |> Page.goto(assets.empty)
+      assert get_permission(page, "geolocation") == "prompt"
+    end
+  end
+
+  describe "BrowserContext.grant_permissions/3" do
+    test "returns 'subject'", %{assets: assets, browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.grant_permissions(context, [], %{origin: assets.empty})
+    end
+
+    test "denies permission when not listed", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.grant_permissions(context, [], %{origin: assets.empty})
+      assert get_permission(page, "geolocation") == "denied"
+    end
+
+    test "errors when a bad permission is given", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      assert {:error, %{message: "Unknown permission: foo"}} =
+               BrowserContext.grant_permissions(context, ["foo"], %{origin: assets.empty})
+    end
+
+    test "grants geolocation permission when origin is listed", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.grant_permissions(context, ["geolocation"], %{origin: assets.empty})
+      assert get_permission(page, "geolocation") == "granted"
+    end
+
+    test "prompts for geolocation permission when origin is not listed", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+      BrowserContext.grant_permissions(context, ["geolocation"], %{origin: assets.empty})
+
+      page |> Page.goto(String.replace(assets.empty, "localhost", "127.0.0.1"))
+      assert get_permission(page, "geolocation") == "prompt"
+    end
+
+    test "grants notification permission when listed", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.grant_permissions(context, ["notifications"], %{origin: assets.empty})
+      assert get_permission(page, "notifications") == "granted"
+    end
+
+    test "grants permissions when listed for all domains", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.grant_permissions(context, ["geolocation"])
+      assert get_permission(page, "geolocation") == "granted"
+    end
+
+    test "accumulates permissions", %{assets: assets, page: page} do
+      context = Page.context(page)
+      page |> Page.goto(assets.empty)
+
+      BrowserContext.grant_permissions(context, ["geolocation"])
+      BrowserContext.grant_permissions(context, ["notifications"])
+
+      assert get_permission(page, "geolocation") == "granted"
+      assert get_permission(page, "notifications") == "granted"
+    end
+
+    @tag exclude: [:page]
+    test "grants permissions on `Browser.new_context/1`", %{assets: assets, browser: browser} do
+      context = Browser.new_context(browser, %{permissions: ["geolocation"]})
+      page = BrowserContext.new_page(context)
+
+      page |> Page.goto(assets.empty)
+      assert get_permission(page, "geolocation") == "granted"
+
+      BrowserContext.close(context)
+      Page.close(page)
+    end
+  end
+
+  describe "BrowserContext.on/3" do
+    test "returns 'subject'", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.on(context, :foo, fn -> nil end)
+    end
+
+    @tag without: [:page]
+    test "on :request", %{assets: assets, browser: browser} do
+      test_pid = self()
+
+      context = Browser.new_context(browser)
+      page = BrowserContext.new_page(context)
+
+      BrowserContext.on(context, "request", fn %{params: %{request: request}} ->
+        send(test_pid, request.url)
+      end)
+
+      page |> Page.goto(assets.prefix <> "/empty.html")
+      page |> Page.set_content("<a target=_blank rel=noopener href='/assets/one-style.html'>yo</a>")
+
+      BrowserContext.expect_event(context, "page", fn ->
+        page |> Page.click("a")
+      end)
+
+      assert %Page{} = Page.wait_for_load_state(page)
+
+      recv_1 = assets.empty
+      recv_2 = assets.prefix <> "/one-style.html"
+      # recv_3 = assets.prefix <> "/one-style.css"
+
+      assert_received(^recv_1)
+      assert_received(^recv_2)
+      # assert_received(^recv_3)
     end
   end
 
@@ -283,26 +583,20 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
-  describe "User Agent" do
-    test "can be set via new_context", %{browser: browser} do
-      context = Browser.new_context(browser, %{"userAgent" => "Mozzies"})
-      page = BrowserContext.new_page(context)
+  # private helpers
+  # ----------------------------------------------------------------------------
 
-      assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
-
-      BrowserContext.close(context)
-    end
-
-    test "can be set via new_page", %{browser: browser} do
-      page = Browser.new_page(browser, %{"userAgent" => "Mozzies"})
-
-      assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
-
-      Page.close(page)
-    end
+  defp get_permission(page, name) do
+    Page.evaluate(page, "(name) => navigator.permissions.query({name: name}).then(result => result.state)", name)
   end
 end
 
+# BrowserContext.storage_state/2
+# - test_should_capture_local_storage
+# - test_should_set_local_storage
+# - test_should_round_trip_through_the_file
+
+# ...
 # test_expose_function_should_throw_for_duplicate_registrations
 # test_expose_function_should_be_callable_from_inside_add_init_script
 # test_expose_bindinghandle_should_work

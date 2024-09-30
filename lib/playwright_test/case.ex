@@ -64,6 +64,13 @@ defmodule PlaywrightTest.Case do
 
         case Enum.member?(tagged_exclude, :page) do
           true ->
+            on_exit(:ok, fn ->
+              Playwright.Browser.contexts(context.browser)
+              |> Enum.map(fn ctx ->
+                Playwright.BrowserContext.close(ctx)
+              end)
+            end)
+
             context
 
           false ->
@@ -71,6 +78,11 @@ defmodule PlaywrightTest.Case do
 
             on_exit(:ok, fn ->
               Playwright.Page.close(page)
+
+              Playwright.Browser.contexts(context.browser)
+              |> Enum.map(fn ctx ->
+                Playwright.BrowserContext.close(ctx)
+              end)
             end)
 
             Map.put(context, :page, page)
