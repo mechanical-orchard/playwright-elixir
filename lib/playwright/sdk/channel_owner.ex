@@ -152,7 +152,8 @@ defmodule Playwright.SDK.ChannelOwner do
     defmacro __using__(_args) do
       Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
 
-      quote do
+      quote(location: :keep) do
+        use Playwright.SDK.Pipeline
         import Kernel, except: [@: 1]
         import unquote(__MODULE__), only: [@: 1]
       end
@@ -162,7 +163,7 @@ defmodule Playwright.SDK.ChannelOwner do
       Module.put_attribute(module, :properties, arg)
       doc = Keyword.get(options, :doc, false)
 
-      quote do
+      quote(location: :keep) do
         @doc unquote(doc)
         @spec unquote(arg)(t()) :: term()
         def unquote(arg)(owner) do
@@ -194,7 +195,7 @@ defmodule Playwright.SDK.ChannelOwner do
     end
 
     defmacro @expr do
-      quote do
+      quote(location: :keep) do
         Kernel.@(unquote(expr))
       end
     end

@@ -40,4 +40,19 @@ defmodule Playwright.BrowserContext.AddCookiesTest do
     # test_should_set_cookies_for_a_frame
     # test_should_not_block_third_party_cookies
   end
+
+  describe "BrowserContext.add_cookies!/2" do
+    test "on success, returns 'subject", %{assets: assets, page: page} do
+      context = Page.owned_context(page)
+      cookies = [%{url: assets.empty, name: "password", value: "123456"}]
+      assert %BrowserContext{} = BrowserContext.add_cookies(context, cookies)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "cookies[0].name: expected string, got undefined", fn ->
+        context = Page.owned_context(page)
+        BrowserContext.add_cookies!(context, [%{bogus: "cookie"}])
+      end
+    end
+  end
 end

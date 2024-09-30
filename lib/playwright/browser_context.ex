@@ -249,6 +249,7 @@ defmodule Playwright.BrowserContext do
   | `:secure`   | `boolean()` | *(optional)* |
   | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
   """
+  @pipe {:add_cookies, [:context, :cookies]}
   @spec add_cookies(t(), [cookie]) :: t()
   def add_cookies(context, cookies)
 
