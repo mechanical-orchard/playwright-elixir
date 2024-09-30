@@ -14,6 +14,7 @@ defmodule Playwright.Locator do
   """
 
   alias Playwright.{ElementHandle, Frame, Locator, Page}
+  alias Playwright.API.Error
   alias Playwright.SDK.Channel
 
   @enforce_keys [:frame, :selector]
@@ -160,10 +161,8 @@ defmodule Playwright.Locator do
   # def and(locator, other)
 
   # @spec blur(Locator.t(), options()) :: :ok
-  def blur(locator, options \\ %{}) do
-    frame = locator.frame
-    options = Map.merge(%{selector: locator.selector, strict: true}, options)
-    Channel.post(frame.session, {:guid, frame.guid}, :blur, options)
+  def blur(%Locator{frame: frame, selector: selector}, options \\ %{}) do
+    Channel.post({frame, :blur}, %{selector: selector, strict: true}, options)
   end
 
   @doc """
@@ -238,7 +237,10 @@ defmodule Playwright.Locator do
   @spec check(t(), options()) :: :ok
   def check(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
-    Frame.check(locator.frame, locator.selector, options)
+
+    returning(locator, fn ->
+      Frame.check(locator.frame, locator.selector, options)
+    end)
   end
 
   @doc """
@@ -285,7 +287,10 @@ defmodule Playwright.Locator do
   @spec click(t(), options_click()) :: t()
   def click(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
-    returning(locator, fn -> Frame.click(locator.frame, locator.selector, options) end)
+
+    returning(locator, fn ->
+      Frame.click(locator.frame, locator.selector, options)
+    end)
   end
 
   # @spec content_frame(Locator.t()) :: FrameLocator.t()
@@ -1244,10 +1249,12 @@ defmodule Playwright.Locator do
   | `:no_wait_after` | option | `boolean()` | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:timeout`       | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   """
-  @spec type(t(), binary(), options_keyboard()) :: :ok
+  @spec type(t(), binary(), options_keyboard()) :: t() | {:error, Error.t()}
   def type(%Locator{} = locator, text, options \\ %{}) do
-    options = Map.merge(options, %{strict: true})
-    Frame.type(locator.frame, locator.selector, text, options)
+    returning(locator, fn ->
+      options = Map.merge(options, %{strict: true})
+      Frame.type(locator.frame, locator.selector, text, options)
+    end)
   end
 
   @doc """
@@ -1282,9 +1289,11 @@ defmodule Playwright.Locator do
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`     | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
-  @spec uncheck(t(), options()) :: :ok
+  @spec uncheck(t(), options()) :: t() | Error.t()
   def uncheck(%Locator{} = locator, options \\ %{}) do
-    Frame.uncheck(locator.frame, locator.selector, options)
+    returning(locator, fn ->
+      Frame.uncheck(locator.frame, locator.selector, options)
+    end)
   end
 
   @doc """
@@ -1347,9 +1356,7 @@ defmodule Playwright.Locator do
   end
 
   defp with_element(%Locator{frame: frame} = locator, options, task) do
-    params = Map.merge(options, %{selector: locator.selector})
-
-    case Channel.post(frame.session, {:guid, frame.guid}, :wait_for_selector, params) do
+    case Channel.post({frame, :wait_for_selector}, %{selector: locator.selector}, options) do
       %ElementHandle{} = handle ->
         task.(handle)
 

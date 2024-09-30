@@ -253,7 +253,7 @@ defmodule Playwright.BrowserContext do
   def add_cookies(context, cookies)
 
   def add_cookies(%BrowserContext{} = context, cookies) do
-    post!(context, :add_cookies, %{cookies: cookies})
+    Channel.post({context, :add_cookies}, %{cookies: cookies})
   end
 
   @doc """
@@ -301,7 +301,7 @@ defmodule Playwright.BrowserContext do
   """
   @spec add_init_script(t(), binary() | map()) :: t()
   def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
-    post!(context, :add_init_script, %{source: script})
+    Channel.post({context, :add_init_script}, %{source: script})
   end
 
   def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
@@ -323,12 +323,12 @@ defmodule Playwright.BrowserContext do
   """
   @spec clear_cookies(t()) :: t()
   def clear_cookies(%BrowserContext{} = context) do
-    post!(context, :clear_cookies)
+    Channel.post({context, :clear_cookies})
   end
 
   @spec clear_permissions(t()) :: t()
   def clear_permissions(%BrowserContext{} = context) do
-    post!(context, :clear_permissions)
+    Channel.post({context, :clear_permissions})
   end
 
   @doc """
@@ -339,13 +339,12 @@ defmodule Playwright.BrowserContext do
   > - The default browser context cannot be closed.
   """
   @spec close(t()) :: :ok
-  def close(%BrowserContext{session: session} = context) do
+  def close(%BrowserContext{} = context) do
     # A call to `close` will remove the item from the catalog. `Catalog.find`
     # here ensures that we do not `post` a 2nd `close`.
-    case Channel.find(session, {:guid, context.guid}, %{timeout: 10}) do
+    case Channel.find(context.session, {:guid, context.guid}, %{timeout: 10}) do
       %BrowserContext{} ->
-        Channel.post(session, {:guid, context.guid}, :close)
-        :ok
+        Channel.close(context)
 
       {:error, _} ->
         :ok
@@ -364,13 +363,13 @@ defmodule Playwright.BrowserContext do
 
   ## Arguments
 
-  | key/name | type  |                            | description |
+  | key/name   | type  |                            | description |
   | ---------- | ----- | -------------------------- | ----------- |
   | `urls`     | param | `binary()` or `[binary()]` | List of URLs. `(optional)` |
   """
   @spec cookies(t(), url | [url]) :: [cookie]
-  def cookies(%BrowserContext{session: session} = context, urls \\ []) do
-    Channel.post(session, {:guid, context.guid}, :cookies, %{urls: urls})
+  def cookies(%BrowserContext{} = context, urls \\ []) do
+    Channel.post({context, :cookies}, %{urls: urls})
   end
 
   @doc """
@@ -449,7 +448,7 @@ defmodule Playwright.BrowserContext do
   @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: BrowserContext.t()
   def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
     Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(context.bindings, %{name => callback})})
-    post!(context, :expose_binding, Map.merge(%{name: name, needs_handle: false}, options))
+    Channel.post({context, :expose_binding}, Map.merge(%{name: name, needs_handle: false}, options))
   end
 
   @doc """
@@ -471,18 +470,18 @@ defmodule Playwright.BrowserContext do
   @spec grant_permissions(t(), [String.t()], options()) :: t() | {:error, Playwright.API.Error.t()}
   def grant_permissions(%BrowserContext{} = context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
-    post!(context, :grant_permissions, params)
+    Channel.post({context, :grant_permissions}, params)
   end
 
   @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
   def new_cdp_session(context, owner)
 
-  def new_cdp_session(%BrowserContext{session: session} = context, %Frame{} = frame) do
-    Channel.post(session, {:guid, context.guid}, "newCDPSession", %{frame: %{guid: frame.guid}})
+  def new_cdp_session(%BrowserContext{} = context, %Frame{} = frame) do
+    Channel.post({context, "newCDPSession"}, %{frame: %{guid: frame.guid}})
   end
 
-  def new_cdp_session(%BrowserContext{session: session} = context, %Page{} = page) do
-    Channel.post(session, {:guid, context.guid}, "newCDPSession", %{page: %{guid: page.guid}})
+  def new_cdp_session(%BrowserContext{} = context, %Page{} = page) do
+    Channel.post({context, "newCDPSession"}, %{page: %{guid: page.guid}})
   end
 
   @doc """
@@ -495,10 +494,10 @@ defmodule Playwright.BrowserContext do
   @spec new_page(t()) :: Page.t()
   def new_page(context)
 
-  def new_page(%BrowserContext{session: session} = context) do
+  def new_page(%BrowserContext{} = context) do
     case context.owner_page do
       nil ->
-        Channel.post(session, {:guid, context.guid}, :new_page)
+        Channel.post({context, :new_page})
 
       %Playwright.Page{} ->
         raise(RuntimeError, message: "Please use Playwright.Browser.new_context/1")
@@ -537,7 +536,7 @@ defmodule Playwright.BrowserContext do
       patterns = Helpers.RouteHandler.prepare(routes)
 
       Channel.patch(session, {:guid, context.guid}, %{routes: routes})
-      post!(context, :set_network_interception_patterns, %{patterns: patterns})
+      Channel.post({context, :set_network_interception_patterns}, %{patterns: patterns})
     end)
   end
 
@@ -575,7 +574,7 @@ defmodule Playwright.BrowserContext do
 
   @spec set_offline(t(), boolean()) :: t()
   def set_offline(%BrowserContext{} = context, offline) do
-    post!(context, :set_offline, %{offline: offline})
+    Channel.post({context, :set_offline}, %{offline: offline})
   end
 
   # ---
@@ -585,7 +584,7 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  @spec unroute(t(), binary(), function() | nil) :: :ok
+  @spec unroute(t(), binary(), function() | nil) :: t()
   def unroute(%BrowserContext{session: session} = context, pattern, callback \\ nil) do
     with_latest(context, fn context ->
       remaining =
@@ -594,7 +593,6 @@ defmodule Playwright.BrowserContext do
         end)
 
       Channel.patch(session, {:guid, context.guid}, %{routes: remaining})
-      :ok
     end)
   end
 

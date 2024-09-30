@@ -49,7 +49,7 @@ defmodule Playwright.ElementHandleTest do
 
   describe "ElementHandle.is_visible/1" do
     test "...", %{page: page} do
-      :ok = Page.set_content(page, "<div>Hi</div><span></span>")
+      %Page{} = Page.set_content(page, "<div>Hi</div><span></span>")
 
       div = Page.q(page, "div")
       span = Page.q(page, "span")

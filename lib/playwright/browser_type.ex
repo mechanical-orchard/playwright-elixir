@@ -163,7 +163,7 @@ defmodule Playwright.BrowserType do
   # ----------------------------------------------------------------------------
 
   defp browser(%BrowserType{} = browser_type) do
-    Channel.post(browser_type.session, {:guid, browser_type.guid}, :launch, Config.launch_options())
+    Channel.post({browser_type, :launch}, Config.launch_options())
   end
 
   defp chromium(session) do

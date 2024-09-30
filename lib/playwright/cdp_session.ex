@@ -27,15 +27,9 @@ defmodule Playwright.CDPSession do
   # API
   # ---------------------------------------------------------------------------
 
-  @spec detach(t()) :: t() | {:error, term()}
-  def detach(%CDPSession{session: session} = cdp_session) do
-    case Channel.post(session, {:guid, cdp_session.guid}, :detach) do
-      {:ok, _} ->
-        cdp_session
-
-      {:error, %Playwright.API.Error{} = error} ->
-        {:error, error}
-    end
+  @spec detach(t()) :: t() | {:error, Playwright.API.Error.t()}
+  def detach(%CDPSession{} = cdp_session) do
+    Channel.post({cdp_session, :detach}, %{refresh: false})
   end
 
   @doc """
@@ -49,8 +43,8 @@ defmodule Playwright.CDPSession do
   end
 
   @spec send(t(), binary(), options()) :: map()
-  def send(%CDPSession{session: session} = cdp_session, method, params \\ %{}) do
-    Channel.post(session, {:guid, cdp_session.guid}, :send, %{method: method, params: params})
+  def send(%CDPSession{} = cdp_session, method, params \\ %{}) do
+    Channel.post({cdp_session, :send}, %{method: method, params: params})
   end
 
   # private

@@ -18,6 +18,8 @@ defmodule Playwright do
   """
 
   use Playwright.SDK.ChannelOwner
+  alias Playwright
+  alias Playwright.SDK.Channel
   alias Playwright.SDK.Config
 
   @property :chromium
@@ -85,16 +87,21 @@ defmodule Playwright do
 
   defp new_browser(session, client, options)
        when is_atom(client) and client in [:chromium, :firefox, :webkit] do
-    with play <- Playwright.SDK.Channel.find(session, {:guid, "Playwright"}),
+    with play <- Channel.find(session, {:guid, "Playwright"}),
          guid <- Map.get(play, client)[:guid] do
-      {:ok, Playwright.SDK.Channel.post(session, {:guid, guid}, :launch, options)}
+      playwright = %Playwright{
+        guid: guid,
+        session: session
+      }
+
+      {:ok, Channel.post({playwright, :launch}, options)}
     end
   end
 
   defp new_session(transport, args) do
     DynamicSupervisor.start_child(
-      Playwright.SDK.Channel.Session.Supervisor,
-      {Playwright.SDK.Channel.Session, {transport, args}}
+      Channel.Session.Supervisor,
+      {Channel.Session, {transport, args}}
     )
   end
 end

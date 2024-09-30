@@ -1,6 +1,7 @@
 defmodule Playwright.Chromium.CDPSessionTest do
   use Playwright.TestCase, async: true
   alias Playwright.{Browser, BrowserContext, CDPSession, Page}
+  alias Playwright.SDK.Channel.{Catalog, Session}
 
   describe "BrowserContext.new_cdp_session/1" do
     test "a page-attached CDP session", %{page: page} do
@@ -77,10 +78,15 @@ defmodule Playwright.Chromium.CDPSessionTest do
   end
 
   describe "CDPSession.detach/1" do
-    test "returns 'subject'", %{page: page} do
+    test "removes 'subject' from the `Catalog`", %{page: page} do
       context = Page.owned_context(page)
       session = BrowserContext.new_cdp_session(context, page)
       assert %CDPSession{} = CDPSession.detach(session)
+
+      assert Catalog.list(
+               Session.catalog(page.session),
+               %{type: "CDPSession"}
+             ) == []
     end
 
     test "detaches the session", %{page: page} do

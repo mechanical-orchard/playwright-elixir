@@ -67,8 +67,7 @@ defmodule Playwright.Browser do
   def close(%Browser{session: session} = browser) do
     case Channel.find(session, {:guid, browser.guid}, %{timeout: 10}) do
       %Browser{} ->
-        Channel.post(session, {:guid, browser.guid}, :close)
-        :ok
+        Channel.close(browser)
 
       {:error, _} ->
         :ok
@@ -124,14 +123,14 @@ defmodule Playwright.Browser do
 
   ## Arguments
 
-  | key/name         | type   |             | description |
+  | key/name           | type   |             | description |
   | ------------------ | ------ | ----------- | ----------- |
   | `accept_downloads` | option | `boolean()` | Whether to automatically download all the attachments. If false, all the downloads are canceled. `(default: false)` |
   | `...`              | option | `...`       | ... |
   """
   @spec new_context(t(), options()) :: BrowserContext.t()
-  def new_context(%Browser{guid: guid} = browser, options \\ %{}) do
-    Channel.post(browser.session, {:guid, guid}, :new_context, prepare(options))
+  def new_context(%Browser{} = browser, options \\ %{}) do
+    Channel.post({browser, :new_context}, prepare(options))
   end
 
   @doc """

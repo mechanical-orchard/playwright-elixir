@@ -9,7 +9,11 @@ defmodule Playwright.APIRequestContext do
   """
 
   use Playwright.SDK.ChannelOwner
+  alias Playwright.SDK.Channel
   alias Playwright.APIRequestContext
+
+  # types
+  # ----------------------------------------------------------------------------
 
   @type fetch_options() :: %{
           optional(:params) => any(),
@@ -23,6 +27,9 @@ defmodule Playwright.APIRequestContext do
           optional(:fail_on_status_code) => boolean(),
           optional(:ignore_HTTPS_errors) => boolean()
         }
+
+  # API
+  # ----------------------------------------------------------------------------
 
   # @spec delete(t(), binary(), options()) :: APIResponse.t()
   # def delete(context, url, options \\ %{})
@@ -43,19 +50,8 @@ defmodule Playwright.APIRequestContext do
   # def patch(context, url, options \\ %{})
 
   @spec post(t(), binary(), fetch_options()) :: Playwright.APIResponse.t()
-  def post(%APIRequestContext{session: session} = context, url, options \\ %{}) do
-    Channel.post(
-      session,
-      {:guid, context.guid},
-      :fetch,
-      Map.merge(
-        %{
-          url: url,
-          method: "POST"
-        },
-        options
-      )
-    )
+  def post(%APIRequestContext{} = context, url, options \\ %{}) do
+    Channel.post({context, :fetch}, %{url: url, method: "POST"}, options)
   end
 
   # @spec put(t(), binary(), options()) :: APIResponse.t()
@@ -66,9 +62,7 @@ defmodule Playwright.APIRequestContext do
 
   # TODO: move to `APIResponse.body`, probably.
   @spec body(t(), Playwright.APIResponse.t()) :: any()
-  def body(%APIRequestContext{session: session} = context, response) do
-    Channel.post(session, {:guid, context.guid}, :fetch_response_body, %{
-      fetchUid: response.fetchUid
-    })
+  def body(%APIRequestContext{} = context, response) do
+    Channel.post({context, :fetch_response_body}, %{fetchUid: response.fetchUid})
   end
 end

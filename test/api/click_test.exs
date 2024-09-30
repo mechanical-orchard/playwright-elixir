@@ -4,7 +4,7 @@ defmodule Playwright.ClickTest do
 
   describe "Frame.click/3" do
     test "with a button inside an iframe", %{assets: assets, page: page} do
-      :ok = Page.set_content(page, "<div style='width:100px; height:100px'>spacer</div>")
+      %Page{} = Page.set_content(page, "<div style='width:100px; height:100px'>spacer</div>")
       frame = attach_frame(page, "button-test", assets.prefix <> "/input/button.html")
 
       Frame.query_selector(frame, "button")
