@@ -17,7 +17,7 @@ defmodule Playwright.SDK.ChannelOwner do
       defstruct @properties ++ [:session, :guid, :initializer, :listeners, :parent, :type]
 
       @typedoc """
-      %#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}{}
+      #{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}
       """
       @type t() :: %__MODULE__{}
 

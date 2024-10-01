@@ -8,8 +8,8 @@ defmodule Playwright do
 
       alias Playwright.API.{Browser, Page, Response}
 
-      {:ok, browser}  = Playwright.launch(:chromium)
-      {:ok, page}     = Browser.new_page(browser)
+      {:ok, session, browser}  = Playwright.launch(:chromium)
+      {:ok, page} = Browser.new_page(browser)
       {:ok, response} = Page.goto(browser, "http://example.com")
 
       assert Response.ok(response)
@@ -19,6 +19,7 @@ defmodule Playwright do
 
   use Playwright.SDK.ChannelOwner
   alias Playwright
+  alias Playwright.APIRequest
   alias Playwright.SDK.Channel
   alias Playwright.SDK.Config
 
@@ -34,6 +35,9 @@ defmodule Playwright do
   #
   #   @typedoc "Options for `launch`."
   #   @type launch_options :: Playwright.SDK.Config.launch_options()
+
+  # API
+  # ---------------------------------------------------------------------------
 
   @doc """
   Initiates an instance of `Playwright.Browser` use the WebSocket transport.
@@ -57,7 +61,7 @@ defmodule Playwright do
     options = Map.merge(Config.connect_options(), options)
     {:ok, session} = new_session(Playwright.SDK.Transport.WebSocket, options)
     {:ok, browser} = new_browser(session, client, options)
-    {:ok, browser}
+    {:ok, session, browser}
   end
 
   @doc """
@@ -69,7 +73,7 @@ defmodule Playwright do
 
   ## Arguments
 
-  | key/name  | typ   |             | description |
+  | key/name  | type  |             | description |
   | ----------| ----- | ----------- | ----------- |
   | `client`  | param | `client()`  | The type of client (browser) to launch. |
   | `options` | param | `options()` | `Playwright.SDK.Config.launch_options()` |
@@ -79,7 +83,11 @@ defmodule Playwright do
     options = Map.merge(Config.launch_options(), options)
     {:ok, session} = new_session(Playwright.SDK.Transport.Driver, options)
     {:ok, browser} = new_browser(session, client, options)
-    {:ok, browser}
+    {:ok, session, browser}
+  end
+
+  def request(session) do
+    APIRequest.new(session)
   end
 
   # private

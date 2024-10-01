@@ -98,7 +98,7 @@ defmodule Playwright.Locator do
   > list of elements changes dynamically, `Playwright.Locator.all/1` will
   > produce unpredictable and flaky results. When the list of elements is
   > stable, but loaded dynamically, wait for the full list to finish loading
-  > before calling `Playwright.Locator.all/1``.
+  > before calling `Playwright.Locator.all/1`.
 
   ## Returns
 

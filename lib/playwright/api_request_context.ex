@@ -9,8 +9,8 @@ defmodule Playwright.APIRequestContext do
   """
 
   use Playwright.SDK.ChannelOwner
-  alias Playwright.SDK.Channel
   alias Playwright.APIRequestContext
+  alias Playwright.SDK.Channel
 
   # types
   # ----------------------------------------------------------------------------
