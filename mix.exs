@@ -115,7 +115,6 @@ defmodule Playwright.MixProject do
           Playwright.APIRequestContext,
           Playwright.Browser,
           Playwright.BrowserContext,
-          Playwright.BrowserContext.Tracing,
           Playwright.BrowserType,
           Playwright.ConsoleMessage,
           Playwright.ElementHandle,
@@ -131,6 +130,7 @@ defmodule Playwright.MixProject do
           Playwright.Response,
           Playwright.Route,
           Playwright.Selectors,
+          Playwright.Tracing,
           Playwright.WebSocket,
           Playwright.Worker
         ],

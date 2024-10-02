@@ -1,5 +1,8 @@
-defmodule Playwright.BrowserContext.Tracing do
-  @moduledoc false
+defmodule Playwright.Tracing do
+  @moduledoc """
+  ...
+  """
+  use Playwright.SDK.ChannelOwner
 
   # @spec start(Tracing.t(), options()) :: :ok
   # def start(tracing, options \\ %{})

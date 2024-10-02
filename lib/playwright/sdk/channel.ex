@@ -3,6 +3,8 @@ defmodule Playwright.SDK.Channel do
   import Playwright.SDK.Helpers.ErrorHandling
   alias Playwright.SDK.Channel.{Catalog, Connection, Event, Message, Response, Session}
 
+  @type resource :: struct()
+
   # API
   # ---------------------------------------------------------------------------
 
@@ -39,7 +41,7 @@ defmodule Playwright.SDK.Channel do
 
   # NOTE(20240929):
   #
-  # Calls to `post!/3` that return the subject resource generally refresh
+  # Calls to `post/3` that return the subject resource generally refresh
   # that resource prior to returning. However, some posts will result in removal
   # of the resource from the `Catalog`, in which case the `find/2` will fail and
   # cause a timeout. In those cases, pass `refresh: false` with the options.
@@ -47,6 +49,7 @@ defmodule Playwright.SDK.Channel do
   # Examples:
   # - `Page.close/1`
   # - `CDPSession.detach/1`
+  @spec post({resource(), atom() | String.t()}, map(), map()) :: any() | {:error, any()}
   def post({resource, action}, params \\ %{}, options \\ %{})
       when is_struct(resource)
       when is_atom(action) do
