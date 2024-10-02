@@ -2,6 +2,14 @@ defmodule Playwright.APIResponse do
   @moduledoc """
   `Playwright.APIResponse` represents responses returned by
   `Playwrigh.APIRequestContext.fetch/3` and similar.
+
+  ## Usage
+
+      request = Playwright.request(session)
+      context = APIRequest.new_context(request)
+
+      response = APIRequest.get(context, "https://example.com")
+      json = APIResponse.json(response)
   """
 
   alias Playwright.APIRequestContext

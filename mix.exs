@@ -113,6 +113,7 @@ defmodule Playwright.MixProject do
           Playwright,
           Playwright.APIRequest,
           Playwright.APIRequestContext,
+          Playwright.APIResponse,
           Playwright.Browser,
           Playwright.BrowserContext,
           Playwright.BrowserType,
