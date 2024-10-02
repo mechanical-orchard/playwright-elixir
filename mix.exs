@@ -111,9 +111,11 @@ defmodule Playwright.MixProject do
       groups_for_modules: [
         API: [
           Playwright,
+          Playwright.APIRequest,
           Playwright.APIRequestContext,
           Playwright.Browser,
           Playwright.BrowserContext,
+          Playwright.BrowserContext.Tracing,
           Playwright.BrowserType,
           Playwright.ConsoleMessage,
           Playwright.ElementHandle,
@@ -122,6 +124,7 @@ defmodule Playwright.MixProject do
           Playwright.Page,
           Playwright.JSHandle,
           Playwright.Page.Accessibility,
+          Playwright.Page.Keyboard,
           Playwright.Page.Locator,
           Playwright.RemoteBrowser,
           Playwright.Request,
