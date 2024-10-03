@@ -93,16 +93,53 @@ defmodule Playwright.APIRequestContext do
   # API
   # ----------------------------------------------------------------------------
 
-  # @spec delete(t(), binary(), options()) :: APIResponse.t()
-  # def delete(context, url, options \\ %{})
+  @doc """
+  Sends an HTTP(S) [`DELETE`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/DELETE)
+  request and returns its response.
+
+  Function invocation will populate request cookies from the context, and update
+  context cookies from the response. Calls automatically follow redirects.
+
+  ## Usage
+
+      request = Playwright.request(session)
+      context = APIRequest.new_context(request)
+
+      APIRequest.delete(context, "https://example.com/api/books")
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
+
+  ## Options
+
+  See "Shared options" above.
+
+  ## Returns
+
+  - `Playwright.APIResponse.t()`
+  - `{:error, Error.t()}`
+  """
+  @spec delete(t(), binary(), options()) :: t() | {:error, Error.t()}
+  def delete(context, url, options \\ %{})
+
+  def delete(%APIRequestContext{} = context, url, options) do
+    fetch(context, url, Map.merge(options, %{method: "DELETE"}))
+  end
 
   # @spec dispose(t()) :: t()
   # def dispose(api_request_context)
 
+  # ---
+
   @doc """
   Sends an HTTP(S) request and returns the response (`Playwright.APIResponse`).
 
-  The function will populate request cookies from the context, and update
+  Function invocation will populate request cookies from the context, and update
   context cookies from the response.
 
   ## Usage
@@ -138,14 +175,20 @@ defmodule Playwright.APIRequestContext do
 
   ## Arguments
 
-  | name             |            | description                   |
-  | ---------------- | ---------- | ----------------------------- |
-  | `url_or_request` |            | The "subject" `APIRequest`    |
-  | `options`        | (optional) | `APIRequestContext.options()` |
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
 
   ## Options
 
   See "Shared options" above.
+
+  ## Returns
+
+  - `Playwright.APIResponse.t()`
+  - `{:error, Error.t()}`
   """
   @spec fetch(t(), binary() | Request.t(), options()) :: APIResponse.t() | {:error, Error.t()}
   def fetch(context, url_or_request, options \\ %{})
@@ -160,22 +203,204 @@ defmodule Playwright.APIRequestContext do
     end
   end
 
-  # @spec get(t(), binary(), options()) :: APIResponse.t()
-  # def get(context, url, options \\ %{})
+  @doc """
+  Sends an HTTP(S) [`GET`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET)
+  request and returns its response.
 
-  # @spec head(t(), binary(), options()) :: APIResponse.t()
-  # def head(context, url, options \\ %{})
+  Function invocation will populate request cookies from the context, and update
+  context cookies from the response. Calls automatically follow redirects.
 
-  # @spec patch(t(), binary(), options()) :: APIResponse.t()
-  # def patch(context, url, options \\ %{})
+  ## Usage
 
-  # @spec post(t(), binary(), options()) :: Playwright.APIResponse.t()
-  # def post(%APIRequestContext{} = context, url, options \\ %{}) do
-  #   Channel.post({context, :fetch}, %{url: url, method: "POST"}, options)
-  # end
+      request = Playwright.request(session)
+      context = APIRequest.new_context(request)
 
-  # @spec put(t(), binary(), options()) :: APIResponse.t()
-  # def put(context, url, options \\ %{})
+      APIRequest.get(context, "https://example.com/api/books", %{
+        params: %{isbn: "1234", page: "23"}
+      })
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
+
+  ## Options
+
+  See "Shared options" above.
+
+  ## Returns
+
+  - `Playwright.APIResponse.t()`
+  - `{:error, Error.t()}`
+  """
+  @spec get(t(), binary(), options()) :: t() | {:error, Error.t()}
+  def get(context, url, options \\ %{})
+
+  def get(%APIRequestContext{} = context, url, options) do
+    fetch(context, url, Map.merge(options, %{method: "GET"}))
+  end
+
+  @doc """
+  Sends an HTTP(S) [`HEAD`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/HEAD)
+  request and returns its response.
+
+  Function invocation will populate request cookies from the context, and update
+  context cookies from the response. Calls automatically follow redirects.
+
+  ## Usage
+
+      request = Playwright.request(session)
+      context = APIRequest.new_context(request)
+
+      APIRequest.head(context, "https://example.com/api/books")
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
+
+  ## Options
+
+  See "Shared options" above.
+
+  ## Returns
+
+  - `Playwright.APIResponse.t()`
+  - `{:error, Error.t()}`
+  """
+  @spec head(t(), binary(), options()) :: t() | {:error, Error.t()}
+  def head(context, url, options \\ %{})
+
+  def head(%APIRequestContext{} = context, url, options) do
+    fetch(context, url, Map.merge(options, %{method: "HEAD"}))
+  end
+
+  @doc """
+  Sends an HTTP(S) [`PATCH`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PATCH)
+  request and returns its response.
+
+  Function invocation will populate request cookies from the context, and update
+  context cookies from the response. Calls automatically follow redirects.
+
+  ## Usage
+
+      request = Playwright.request(session)
+      context = APIRequest.new_context(request)
+
+      APIRequest.patch(context, "https://example.com/api/books", %{
+        data: %{title: "Updated"},
+        params: %{isbn: "1234"}
+      })
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
+
+  ## Options
+
+  See "Shared options" above.
+
+  ## Returns
+
+  - `Playwright.APIResponse.t()`
+  - `{:error, Error.t()}`
+  """
+  @spec patch(t(), binary(), options()) :: t() | {:error, Error.t()}
+  def patch(context, url, options \\ %{})
+
+  def patch(%APIRequestContext{} = context, url, options) do
+    fetch(context, url, Map.merge(options, %{method: "PATCH"}))
+  end
+
+  @doc """
+  Sends an HTTP(S) [`POST`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST)
+  request and returns its response.
+
+  Function invocation will populate request cookies from the context, and update
+  context cookies from the response. Calls automatically follow redirects.
+
+  ## Usage
+
+      request = Playwright.request(session)
+      context = APIRequest.new_context(request)
+
+      APIRequest.post(context, "https://example.com/api/books", %{
+        data: %{title: "Updated"}
+      })
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
+
+  ## Options
+
+  See "Shared options" above.
+
+  ## Returns
+
+  - `Playwright.APIResponse.t()`
+  - `{:error, Error.t()}`
+  """
+  @spec post(t(), binary(), options()) :: t() | {:error, Error.t()}
+  def post(context, url, options \\ %{})
+
+  def post(%APIRequestContext{} = context, url, options) do
+    fetch(context, url, Map.merge(options, %{method: "POST"}))
+  end
+
+  @doc """
+  Sends an HTTP(S) [`PUT`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/PUT)
+  request and returns its response.
+
+  Function invocation will populate request cookies from the context, and update
+  context cookies from the response. Calls automatically follow redirects.
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
+
+  ## Usage
+
+      request = Playwright.request(session)
+      context = APIRequest.new_context(request)
+
+      APIRequest.put(context, "https://example.com/api/books", %{
+        data: %{title: "Updated"}
+      })
+
+  ## Options
+
+  See "Shared options" above.
+
+  ## Returns
+
+  - `Playwright.APIResponse.t()`
+  - `{:error, Error.t()}`
+  """
+  @spec put(t(), binary(), options()) :: t() | {:error, Error.t()}
+  def put(context, url, options \\ %{})
+
+  def put(%APIRequestContext{} = context, url, options) do
+    fetch(context, url, Map.merge(options, %{method: "PUT"}))
+  end
 
   # @spec storage_state(t(), options()) :: StorageState.t()
   # def storage_state(context, options \\ %{})
