@@ -12,6 +12,7 @@ defmodule Playwright.APIRequest do
   use Playwright.SDK.Pipeline
   alias Playwright.API.Error
   alias Playwright.APIRequest
+  alias Playwright.APIRequestContext
   alias Playwright.SDK.Channel
 
   @enforce_keys [:guid, :session]
@@ -276,7 +277,7 @@ defmodule Playwright.APIRequest do
   """
   @pipe {:new_context, [:request]}
   @pipe {:new_context, [:request, :options]}
-  @spec new_context(t(), options()) :: t() | {:error, Error.t()}
+  @spec new_context(t(), options()) :: APIRequestContext.t() | {:error, Error.t()}
   def new_context(%APIRequest{} = request, options \\ %{}) do
     Channel.post({request, :new_request}, options)
   end

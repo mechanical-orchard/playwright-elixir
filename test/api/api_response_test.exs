@@ -1,7 +1,7 @@
 defmodule Playwright.APIResponseTest do
   use Playwright.TestCase, async: true
-  alias Playwright.APIResponse
   alias Playwright.APIRequest
+  alias Playwright.APIResponse
   alias Playwright.APIRequestContext
 
   describe "APIResponse.dispose/" do
@@ -9,7 +9,7 @@ defmodule Playwright.APIResponseTest do
       request = Playwright.request(session) |> APIRequest.new_context()
       response = APIRequestContext.fetch(request, assets.prefix <> "/simple.json")
 
-      APIResponse.dispose(response)
+      assert :ok = APIResponse.dispose(response)
       assert {:error, %{type: "ResponseError", message: "Response has been disposed"}} = APIResponse.body(response)
     end
   end

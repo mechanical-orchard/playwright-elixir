@@ -13,9 +13,9 @@ defmodule Playwright.APIResponse do
   """
 
   alias Playwright.APIRequestContext
-  alias Playwright.SDK.Channel
   alias Playwright.APIResponse
   alias Playwright.API.Error
+  alias Playwright.SDK.Channel
 
   defstruct [:context, :fetchUid, :headers, :status, :statusText, :url]
 
@@ -77,7 +77,7 @@ defmodule Playwright.APIResponse do
   - `:ok`
   - `{:error, %Error{}}`
   """
-  @spec dispose(t()) :: :ok
+  @spec dispose(t()) :: :ok | {:error, Error.t()}
   def dispose(%APIResponse{} = response) do
     case Channel.post({response.context, "disposeAPIResponse"}, %{fetch_uid: response.fetchUid}) do
       {:error, %Playwright.API.Error{} = error} ->

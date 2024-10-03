@@ -1,18 +1,25 @@
 defmodule Playwright.APIRequestContextTest do
   use Playwright.TestCase, async: true
-  alias Playwright.APIResponse
   alias Playwright.APIRequest
+  alias Playwright.APIResponse
   alias Playwright.APIRequestContext
 
   describe "APIRequestContext.delete/3" do
     test "on success, returns `APIResponse`", %{assets: assets, session: session} do
-      request = Playwright.request(session) |> APIRequest.new_context()
-      response = APIRequestContext.delete(request, assets.prefix <> "/simple.json")
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.delete(context, assets.prefix <> "/simple.json")
       assert APIResponse.ok(response)
     end
   end
 
   describe "APIRequestContext.dispose/2" do
+    test "on success, invalidates subsequent use related `APIResponse`", %{assets: assets, session: session} do
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.fetch(context, assets.prefix <> "/simple.json")
+
+      assert :ok = APIRequestContext.dispose(context)
+      assert {:error, %{type: "TargetClosedError"}} = APIResponse.body(response)
+    end
   end
 
   describe "APIRequestContext.fetch/3" do
@@ -20,8 +27,8 @@ defmodule Playwright.APIRequestContextTest do
       methods = [:delete, :get, :head, :patch, :post, :put]
 
       Enum.map(methods, fn method ->
-        request = Playwright.request(session) |> APIRequest.new_context()
-        response = APIRequestContext.fetch(request, assets.prefix <> "/simple.json", %{method: method})
+        context = Playwright.request(session) |> APIRequest.new_context()
+        response = APIRequestContext.fetch(context, assets.prefix <> "/simple.json", %{method: method})
 
         assert APIResponse.ok(response)
         assert APIResponse.header(response, "x-playwright-request-method") == String.upcase(Atom.to_string(method))
@@ -42,40 +49,40 @@ defmodule Playwright.APIRequestContextTest do
 
   describe "APIRequestContext.get/3" do
     test "on success, returns `APIResponse`", %{assets: assets, session: session} do
-      request = Playwright.request(session) |> APIRequest.new_context()
-      response = APIRequestContext.get(request, assets.prefix <> "/simple.json")
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.get(context, assets.prefix <> "/simple.json")
       assert APIResponse.ok(response)
     end
   end
 
   describe "APIRequestContext.head/3" do
     test "on success, returns `APIResponse`", %{assets: assets, session: session} do
-      request = Playwright.request(session) |> APIRequest.new_context()
-      response = APIRequestContext.head(request, assets.prefix <> "/simple.json")
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.head(context, assets.prefix <> "/simple.json")
       assert APIResponse.ok(response)
     end
   end
 
   describe "APIRequestContext.patch/3" do
     test "on success, returns `APIResponse`", %{assets: assets, session: session} do
-      request = Playwright.request(session) |> APIRequest.new_context()
-      response = APIRequestContext.patch(request, assets.prefix <> "/simple.json")
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.patch(context, assets.prefix <> "/simple.json")
       assert APIResponse.ok(response)
     end
   end
 
   describe "APIRequestContext.post/3" do
     test "on success, returns `APIResponse`", %{assets: assets, session: session} do
-      request = Playwright.request(session) |> APIRequest.new_context()
-      response = APIRequestContext.post(request, assets.prefix <> "/simple.json")
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.post(context, assets.prefix <> "/simple.json")
       assert APIResponse.ok(response)
     end
   end
 
   describe "APIRequestContext.put/3" do
     test "on success, returns `APIResponse`", %{assets: assets, session: session} do
-      request = Playwright.request(session) |> APIRequest.new_context()
-      response = APIRequestContext.put(request, assets.prefix <> "/simple.json")
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.put(context, assets.prefix <> "/simple.json")
       assert APIResponse.ok(response)
     end
   end

@@ -131,8 +131,39 @@ defmodule Playwright.APIRequestContext do
     fetch(context, url, Map.merge(options, %{method: "DELETE"}))
   end
 
-  # @spec dispose(t()) :: t()
-  # def dispose(api_request_context)
+  @doc """
+  Disposes of resources related to this `Playwright.APIRequestContext`.
+
+  All responses returned by `Playwright.APIRequestContext.fetch/3` and similar
+  are stored in memory in order to support later, cached calls to
+  `Playwright.APIResponse.body/1`, etc. `dispose/1` discards all associated
+  resources. Subsequent calls to any function on disposed `APIRequestContext`
+  will result in errors.
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `reason`         | (optional) | The reason to be reported to any operations interrupted by the context disposal. |
+
+  ## Returns
+
+  - `:ok`
+  - `{:error, %Error{}}`
+  """
+  @spec dispose(t(), String.t()) :: :ok
+  def dispose(context, reason \\ nil)
+
+  def dispose(%APIRequestContext{} = context, reason) do
+    case Channel.post({context, "dispose"}, %{reason: reason}, %{refresh: false}) do
+      {:error, %Playwright.API.Error{} = error} ->
+        {:error, error}
+
+      _ ->
+        :ok
+    end
+  end
 
   # ---
 
