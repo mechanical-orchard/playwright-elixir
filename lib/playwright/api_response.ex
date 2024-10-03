@@ -12,6 +12,7 @@ defmodule Playwright.APIResponse do
       json = APIResponse.json(response)
   """
 
+  use Playwright.SDK.Pipeline
   alias Playwright.APIRequestContext
   alias Playwright.APIResponse
   alias Playwright.API.Error
@@ -54,6 +55,7 @@ defmodule Playwright.APIResponse do
   - `binary()`
   - `{:error, %Error{type: "ResponseError"}}`
   """
+  @pipe {:body, [:response]}
   @spec body(t()) :: binary() | {:error, Error.t()}
   def body(%APIResponse{} = response) do
     case Channel.post({response.context, :fetch_response_body}, %{fetch_uid: response.fetchUid}) do
@@ -77,6 +79,7 @@ defmodule Playwright.APIResponse do
   - `:ok`
   - `{:error, %Error{}}`
   """
+  @pipe {:dispose, [:response]}
   @spec dispose(t()) :: :ok | {:error, Error.t()}
   def dispose(%APIResponse{} = response) do
     case Channel.post({response.context, "disposeAPIResponse"}, %{fetch_uid: response.fetchUid}) do
@@ -110,6 +113,7 @@ defmodule Playwright.APIResponse do
   - `binary()`
   - `nil`
   """
+  @pipe {:header, [:response, :name]}
   @spec header(t(), atom() | String.t()) :: binary() | nil
   def header(response, name)
 
@@ -145,6 +149,7 @@ defmodule Playwright.APIResponse do
   - `serializable()`
   - `{:error, %Error{name: "ResponseError"}}`
   """
+  @pipe {:json, [:response]}
   @spec json(t()) :: serializable() | {:error, Error.t()}
   def json(%APIResponse{} = response) do
     case body(response) do
@@ -167,6 +172,7 @@ defmodule Playwright.APIResponse do
 
   Success means the response status code is within the range of `200-299`.
   """
+  @pipe {:ok, [:response]}
   @spec ok(t()) :: boolean()
   def ok(%APIResponse{} = response) do
     response.status === 0 || (response.status >= 200 && response.status <= 299)
@@ -180,6 +186,7 @@ defmodule Playwright.APIResponse do
   - `binary()`
   - `{:error, %Error{name: "ResponseError"}}`
   """
+  @pipe {:text, [:response]}
   @spec text(t()) :: binary() | {:error, Error.t()}
   def text(%APIResponse{} = response) do
     body(response)

@@ -53,7 +53,6 @@ defmodule Playwright.APIRequestContext do
   """
 
   use Playwright.SDK.ChannelOwner
-  alias ElixirLS.LanguageServer.Providers.Completion.Reducers.Returns
   alias Playwright.APIRequestContext
   alias Playwright.APIResponse
   alias Playwright.Request
@@ -120,6 +119,20 @@ defmodule Playwright.APIRequestContext do
           required(:value) => String.t()
         }
 
+  @typedoc """
+  Options for `dispose/2`.
+  """
+  @type opts_dispose :: %{
+          optional(:reason) => String.t()
+        }
+
+  @typedoc """
+  Options for `storage_state/2`.
+  """
+  @type opts_storage :: %{
+          optional(:path) => String.t()
+        }
+
   # API
   # ----------------------------------------------------------------------------
 
@@ -154,6 +167,8 @@ defmodule Playwright.APIRequestContext do
   - `Playwright.APIResponse.t()`
   - `{:error, Error.t()}`
   """
+  @pipe {:delete, [:context, :url]}
+  @pipe {:delete, [:context, :url, :options]}
   @spec delete(t(), binary(), options()) :: t() | {:error, Error.t()}
   def delete(context, url, options \\ %{})
 
@@ -188,7 +203,9 @@ defmodule Playwright.APIRequestContext do
   - `:ok`
   - `{:error, %Error{}}`
   """
-  @spec dispose(t(), map()) :: :ok | {:error, Error.t()}
+  @pipe {:dispose, [:context]}
+  @pipe {:dispose, [:context, :options]}
+  @spec dispose(t(), opts_dispose()) :: :ok | {:error, Error.t()}
   def dispose(context, options \\ %{})
 
   def dispose(%APIRequestContext{} = context, options) do
@@ -257,6 +274,8 @@ defmodule Playwright.APIRequestContext do
   - `Playwright.APIResponse.t()`
   - `{:error, Error.t()}`
   """
+  @pipe {:fetch, [:context, :url_or_request]}
+  @pipe {:fetch, [:context, :url_or_request, :options]}
   @spec fetch(t(), binary() | Request.t(), options()) :: APIResponse.t() | {:error, Error.t()}
   def fetch(context, url_or_request, options \\ %{})
 
@@ -303,6 +322,8 @@ defmodule Playwright.APIRequestContext do
   - `Playwright.APIResponse.t()`
   - `{:error, Error.t()}`
   """
+  @pipe {:get, [:context, :url]}
+  @pipe {:get, [:context, :url, :options]}
   @spec get(t(), binary(), options()) :: t() | {:error, Error.t()}
   def get(context, url, options \\ %{})
 
@@ -341,6 +362,8 @@ defmodule Playwright.APIRequestContext do
   - `Playwright.APIResponse.t()`
   - `{:error, Error.t()}`
   """
+  @pipe {:head, [:context, :url]}
+  @pipe {:head, [:context, :url, :options]}
   @spec head(t(), binary(), options()) :: t() | {:error, Error.t()}
   def head(context, url, options \\ %{})
 
@@ -382,6 +405,8 @@ defmodule Playwright.APIRequestContext do
   - `Playwright.APIResponse.t()`
   - `{:error, Error.t()}`
   """
+  @pipe {:patch, [:context, :url]}
+  @pipe {:patch, [:context, :url, :options]}
   @spec patch(t(), binary(), options()) :: t() | {:error, Error.t()}
   def patch(context, url, options \\ %{})
 
@@ -422,6 +447,8 @@ defmodule Playwright.APIRequestContext do
   - `Playwright.APIResponse.t()`
   - `{:error, Error.t()}`
   """
+  @pipe {:post, [:context, :url]}
+  @pipe {:post, [:context, :url, :options]}
   @spec post(t(), binary(), options()) :: t() | {:error, Error.t()}
   def post(context, url, options \\ %{})
 
@@ -462,6 +489,8 @@ defmodule Playwright.APIRequestContext do
   - `Playwright.APIResponse.t()`
   - `{:error, Error.t()}`
   """
+  @pipe {:put, [:context, :url]}
+  @pipe {:put, [:context, :url, :options]}
   @spec put(t(), binary(), options()) :: t() | {:error, Error.t()}
   def put(context, url, options \\ %{})
 
@@ -493,8 +522,20 @@ defmodule Playwright.APIRequestContext do
   - `storage_state()`
   - `{:error, Error.t()}`
   """
-  @spec storage_state(t(), map()) :: storage_state()
+  @pipe {:storage_state, [:context]}
+  @pipe {:storage_state, [:context, :options]}
+  @spec storage_state(t(), opts_storage()) :: storage_state()
   def storage_state(context, options \\ %{}) do
-    Channel.post({context, :storage_state}, options)
+    {path, options} = Map.pop(options, :path)
+
+    case Channel.post({context, :storage_state}, options) do
+      {:error, _} = error ->
+        error
+
+      result ->
+        result = Map.new(result)
+        path && File.write!(path, Jason.encode!(result))
+        result
+    end
   end
 end

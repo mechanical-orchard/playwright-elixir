@@ -279,7 +279,14 @@ defmodule Playwright.APIRequest do
   @pipe {:new_context, [:request]}
   @pipe {:new_context, [:request, :options]}
   @spec new_context(t(), options()) :: APIRequestContext.t() | {:error, Error.t()}
-  def new_context(%APIRequest{} = request, options \\ %{}) do
+  def new_context(request, options \\ %{})
+
+  def new_context(%APIRequest{} = request, %{storage_state: storage} = options) when is_binary(storage) do
+    storage = Jason.decode!(File.read!(storage))
+    new_context(request, Map.merge(options, %{storage_state: storage}))
+  end
+
+  def new_context(%APIRequest{} = request, options) do
     Channel.post({request, :new_request}, options)
   end
 end
