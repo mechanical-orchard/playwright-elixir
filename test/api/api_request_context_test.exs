@@ -20,6 +20,11 @@ defmodule Playwright.APIRequestContextTest do
       assert :ok = APIRequestContext.dispose(context)
       assert {:error, %{type: "TargetClosedError"}} = APIResponse.body(response)
     end
+
+    test "succeeds when provided a 'reason'", %{session: session} do
+      context = Playwright.request(session) |> APIRequest.new_context()
+      assert :ok = APIRequestContext.dispose(context, %{reason: "Done!"})
+    end
   end
 
   describe "APIRequestContext.fetch/3" do
@@ -88,5 +93,44 @@ defmodule Playwright.APIRequestContextTest do
   end
 
   describe "APIRequestContext.storage_state/2" do
+    test "(WIP) on success, ...", %{session: session} do
+      # python: test_storage_state_should_round_trip_through_file
+      # ---
+      context =
+        Playwright.request(session)
+        |> APIRequest.new_context(%{
+          storage_state: %{
+            cookies: [
+              %{
+                name: "cookie name",
+                value: "cookie value",
+                domain: "example.com",
+                path: "/",
+                expires: -1,
+                http_only: false,
+                secure: false,
+                same_site: "Lax"
+              }
+            ],
+            origins: []
+          }
+        })
+
+      assert [
+               cookies: [
+                 %{
+                   name: "cookie name",
+                   value: "cookie value",
+                   domain: "example.com",
+                   path: "/",
+                   expires: -1,
+                   httpOnly: false,
+                   secure: false,
+                   sameSite: "Lax"
+                 }
+               ],
+               origins: []
+             ] = APIRequestContext.storage_state(context)
+    end
   end
 end

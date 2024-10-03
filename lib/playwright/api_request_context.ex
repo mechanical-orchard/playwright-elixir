@@ -53,6 +53,7 @@ defmodule Playwright.APIRequestContext do
   """
 
   use Playwright.SDK.ChannelOwner
+  alias ElixirLS.LanguageServer.Providers.Completion.Reducers.Returns
   alias Playwright.APIRequestContext
   alias Playwright.APIResponse
   alias Playwright.Request
@@ -89,6 +90,35 @@ defmodule Playwright.APIRequestContext do
 
   @typedoc "Data serializable as JSON."
   @type serializable :: list() | map()
+
+  @typedoc "Storage state settings."
+  @type storage_state :: %{
+          required(:cookies) => [cookie()],
+          required(:origins) => [
+            %{
+              required(:origin) => String.t(),
+              required(:local_storage) => [local_storage()]
+            }
+          ]
+        }
+
+  @typedoc "An HTTP cookie."
+  @type cookie :: %{
+          required(:name) => String.t(),
+          required(:value) => String.t(),
+          required(:domain) => String.t(),
+          required(:path) => String.t(),
+          required(:expires) => float(),
+          required(:http_only) => boolean(),
+          required(:secure) => boolean(),
+          required(:same_site) => :lax | :none | :strict
+        }
+
+  @typedoc "Local storage settings."
+  @type local_storage :: %{
+          required(:name) => String.t(),
+          required(:value) => String.t()
+        }
 
   # API
   # ----------------------------------------------------------------------------
@@ -145,18 +175,24 @@ defmodule Playwright.APIRequestContext do
   | name             |            | description                       |
   | ---------------- | ---------- | --------------------------------- |
   | `context`        |            | The "subject" `APIRequestContext` |
-  | `reason`         | (optional) | The reason to be reported to any operations interrupted by the context disposal. |
+  | `options`        | (optional) | Options (see below)               |
+
+  ## Options
+
+  | name     |            | description                       |
+  | -------- | ---------- | --------------------------------- |
+  | `reason` | (optional) | The reason to be reported to any operations interrupted by the context disposal. |
 
   ## Returns
 
   - `:ok`
   - `{:error, %Error{}}`
   """
-  @spec dispose(t(), String.t()) :: :ok
-  def dispose(context, reason \\ nil)
+  @spec dispose(t(), map()) :: :ok | {:error, Error.t()}
+  def dispose(context, options \\ %{})
 
-  def dispose(%APIRequestContext{} = context, reason) do
-    case Channel.post({context, "dispose"}, %{reason: reason}, %{refresh: false}) do
+  def dispose(%APIRequestContext{} = context, options) do
+    case Channel.post({context, "dispose"}, options, %{refresh: false}) do
       {:error, %Playwright.API.Error{} = error} ->
         {:error, error}
 
@@ -400,14 +436,6 @@ defmodule Playwright.APIRequestContext do
   Function invocation will populate request cookies from the context, and update
   context cookies from the response. Calls automatically follow redirects.
 
-  ## Arguments
-
-  | name             |            | description                       |
-  | ---------------- | ---------- | --------------------------------- |
-  | `context`        |            | The "subject" `APIRequestContext` |
-  | `url`            |            | Target URL                        |
-  | `options`        | (optional) | `APIRequestContext.options()`     |
-
   ## Usage
 
       request = Playwright.request(session)
@@ -416,6 +444,14 @@ defmodule Playwright.APIRequestContext do
       APIRequest.put(context, "https://example.com/api/books", %{
         data: %{title: "Updated"}
       })
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `url`            |            | Target URL                        |
+  | `options`        | (optional) | `APIRequestContext.options()`     |
 
   ## Options
 
@@ -433,6 +469,32 @@ defmodule Playwright.APIRequestContext do
     fetch(context, url, Map.merge(options, %{method: "PUT"}))
   end
 
-  # @spec storage_state(t(), options()) :: StorageState.t()
-  # def storage_state(context, options \\ %{})
+  @doc """
+  Returns storage state for this request context.
+
+  The storage state contains current cookies and a local storage snapshot if it
+  was passed to the initializer.
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `options`        | (optional) | Options (see below)               |
+
+  ## Options
+
+  | name     |            | description                       |
+  | -------- | ---------- | --------------------------------- |
+  | `path`   | (optional) | **NOT IMPLEMENTED** The file path to save the storage state to. If path is a relative path, then it is resolved relative to current working directory. If no path is provided, storage state is still returned, but won't be saved to the disk. |
+
+  ## Returns
+
+  - `storage_state()`
+  - `{:error, Error.t()}`
+  """
+  @spec storage_state(t(), map()) :: storage_state()
+  def storage_state(context, options \\ %{}) do
+    Channel.post({context, :storage_state}, options)
+  end
 end

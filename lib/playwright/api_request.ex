@@ -91,7 +91,8 @@ defmodule Playwright.APIRequest do
           required(:expires) => float(),
           required(:http_only) => boolean(),
           required(:secure) => boolean(),
-          required(:same_site) => :lax | :none | :strict
+          # same_site: "Lax" | "None" | "Strict"
+          required(:same_site) => String.t()
         }
 
   @typedoc "Local storage settings."

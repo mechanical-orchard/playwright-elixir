@@ -97,6 +97,11 @@ defmodule Playwright.SDK.Channel.Response do
     nil
   end
 
+  # ?
+  defp parse(list, _catalog) when is_list(list) do
+    list
+  end
+
   defp resolve(session, catalog, owner, event) do
     bindings = Map.get(Channel.Session.bindings(session), {owner.guid, event.type}, [])
 
