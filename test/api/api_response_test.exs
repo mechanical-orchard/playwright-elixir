@@ -87,24 +87,18 @@ defmodule Playwright.APIResponseTest do
     end
   end
 
-  describe "APIResponse.header!/1" do
-    test "on success, returns the value of the HTTP header", %{assets: assets, session: session} do
+  describe "APIResponse.headers/1" do
+    test "returns the response headers as a `map(name => value)`", %{assets: assets, session: session} do
       request = Playwright.request(session) |> APIRequest.new_context()
       response = APIRequestContext.fetch(request, assets.prefix <> "/simple.json")
 
-      assert "application/json" = APIResponse.header(response, "content-type")
+      assert %{
+               "connection" => "close",
+               "content-length" => "15",
+               "content-type" => "application/json",
+               "x-playwright-request-method" => "GET"
+             } = APIResponse.headers(response)
     end
-
-    # @tag :skip
-    # ...haven't found a way to fail
-    # test "on failure, raises", %{assets: assets, session: session} do
-    # end
-  end
-
-  describe "APIResponse.headers/1" do
-  end
-
-  describe "APIResponse.headers!/1" do
   end
 
   describe "APIResponse.json/1" do
@@ -144,7 +138,7 @@ defmodule Playwright.APIResponseTest do
   end
 
   describe "APIResponse.ok/1" do
-    test "is true when the response status code is in the range, 200-299" do
+    test "returns true when the response status code is in the range, 200-299" do
       range = 200..299
 
       Enum.each(range, fn code ->
@@ -152,11 +146,11 @@ defmodule Playwright.APIResponseTest do
       end)
     end
 
-    test "is true when the response status code is 0" do
+    test "returns true when the response status code is 0" do
       assert APIResponse.ok(%APIResponse{status: 0})
     end
 
-    test "is false otherwise" do
+    test "returns false otherwise" do
       range = 1..199
 
       Enum.each(range, fn code ->

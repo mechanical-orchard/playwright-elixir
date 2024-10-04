@@ -5,11 +5,12 @@ defmodule Playwright.APIResponse do
 
   ## Usage
 
+      {:ok, session, _} = Playwright.launch()
       request = Playwright.request(session)
       context = APIRequest.new_context(request)
 
       response = APIRequest.get(context, "https://example.com")
-      json = APIResponse.json(response)
+      json = APIResponse.json!(response)
   """
 
   use Playwright.SDK.Pipeline
@@ -56,6 +57,12 @@ defmodule Playwright.APIResponse do
   @doc """
   Returns a buffer with the response body.
 
+  ## Usage
+
+        request = Playwright.request(session) |> APIRequest.new_context()
+        response = APIRequestContext.fetch("https://example.com")
+        APIResponse.body!(response) |> IO.puts()
+
   ## Returns
 
   - `binary()`
@@ -97,15 +104,15 @@ defmodule Playwright.APIResponse do
     end
   end
 
-  # ---
-
-  # @spec headers(t()) :: map()
-  # def headers(response)
-
-  # ---
-
   @doc """
   Returns the value of a header.
+
+
+  ## Usage
+
+        request = Playwright.request(session) |> APIRequest.new_context()
+        response = APIRequestContext.fetch("https://example.com")
+        APIResponse.header(response, "content-type") |> IO.puts()
 
   ## Arguments
 
@@ -119,7 +126,6 @@ defmodule Playwright.APIResponse do
   - `binary()`
   - `nil`
   """
-  @pipe {:header, [:response, :name]}
   @spec header(t(), atom() | String.t()) :: binary() | nil
   def header(response, name)
 
@@ -137,18 +143,36 @@ defmodule Playwright.APIResponse do
     end
   end
 
-  # ---
+  @doc """
+  Returns a `map(name => value)` with all the response HTTP headers associated
+  with this response.
 
-  # @spec headers(t()) :: map()
-  # def headers(response)
+  ## Usage
 
-  # @spec headers_list(APIResponse.t()) :: [map()]
-  # def headers_list(response)
+        request = Playwright.request(session) |> APIRequest.new_context()
+        response = APIRequestContext.fetch("https://example.com")
+        APIResponse.headers(response) |> IO.inspect()
 
-  # ---
+  ## Returns
+
+  - `%{String.t() => String.t()}`
+  """
+  @spec headers(t()) :: %{String.t() => String.t()}
+  def headers(%APIResponse{} = response) do
+    # Map.new([{1, 2}, {3, 4}])
+    Enum.reduce(response.headers, %{}, fn %{name: name, value: value}, headers ->
+      Map.put(headers, name, value)
+    end)
+  end
 
   @doc """
   Returns a deserialized version of the JSON representation of response body.
+
+  ## Usage
+
+        request = Playwright.request(session) |> APIRequest.new_context()
+        response = APIRequestContext.fetch("https://example.com")
+        APIResponse.json!(response) |> IO.inspect()
 
   ## Returns
 
@@ -182,7 +206,6 @@ defmodule Playwright.APIResponse do
 
   - `boolean()`
   """
-  @pipe {:ok, [:response]}
   @spec ok(t()) :: boolean()
   def ok(%APIResponse{} = response) do
     response.status === 0 || (response.status >= 200 && response.status <= 299)
@@ -190,6 +213,12 @@ defmodule Playwright.APIResponse do
 
   @doc """
   Returns a text representation of response body.
+
+  ## Usage
+
+        request = Playwright.request(session) |> APIRequest.new_context()
+        response = APIRequestContext.fetch("https://example.com")
+        APIResponse.text!(response) |> IO.puts()
 
   ## Returns
 

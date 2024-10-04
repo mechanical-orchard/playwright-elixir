@@ -96,6 +96,14 @@ defmodule Playwright.APIRequestContextTest do
       end)
     end
 
+    test "defaults the HTTP request method to 'GET'", %{assets: assets, session: session} do
+      context = Playwright.request(session) |> APIRequest.new_context()
+      response = APIRequestContext.fetch(context, assets.prefix <> "/simple.json")
+
+      assert APIResponse.ok(response)
+      assert APIResponse.header(response, "x-playwright-request-method") == "GET"
+    end
+
     test "on 404, returns `APIResponse` w/ error status", %{assets: assets, session: session} do
       context = Playwright.request(session) |> APIRequest.new_context()
       %APIResponse{status: status} = response = APIRequestContext.fetch(context, assets.prefix <> "/bogus.json")
