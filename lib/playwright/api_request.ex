@@ -15,6 +15,9 @@ defmodule Playwright.APIRequest do
   alias Playwright.APIRequestContext
   alias Playwright.SDK.Channel
 
+  # structs & types
+  # ----------------------------------------------------------------------------
+
   @enforce_keys [:guid, :session]
   defstruct [:guid, :session]
 
@@ -100,6 +103,9 @@ defmodule Playwright.APIRequest do
           required(:name) => String.t(),
           required(:value) => String.t()
         }
+
+  # API
+  # ----------------------------------------------------------------------------
 
   @doc """
   Returns a new `Playwright.APIRequest`.

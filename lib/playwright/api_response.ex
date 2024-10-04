@@ -18,6 +18,9 @@ defmodule Playwright.APIResponse do
   alias Playwright.API.Error
   alias Playwright.SDK.Channel
 
+  # structs & types
+  # ----------------------------------------------------------------------------
+
   defstruct [:context, :fetchUid, :headers, :status, :statusText, :url]
 
   @typedoc """
@@ -34,6 +37,9 @@ defmodule Playwright.APIResponse do
 
   @typedoc "Data serializable as JSON."
   @type serializable() :: list() | map()
+
+  # API
+  # ----------------------------------------------------------------------------
 
   @doc """
   Returns a `Playwright.APIResponse` hydrated from the provided `properties`.
@@ -171,6 +177,10 @@ defmodule Playwright.APIResponse do
   Returns a boolean indicating whether the response was successful.
 
   Success means the response status code is within the range of `200-299`.
+
+  ## Returns
+
+  - `boolean()`
   """
   @pipe {:ok, [:response]}
   @spec ok(t()) :: boolean()

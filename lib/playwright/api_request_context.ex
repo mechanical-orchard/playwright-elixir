@@ -59,7 +59,7 @@ defmodule Playwright.APIRequestContext do
   alias Playwright.API.Error
   alias Playwright.SDK.Channel
 
-  # types
+  # structs & types
   # ----------------------------------------------------------------------------
 
   @typedoc "Options for the various request types."

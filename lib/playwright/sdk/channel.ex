@@ -52,7 +52,7 @@ defmodule Playwright.SDK.Channel do
   @spec post({resource(), atom() | String.t()}, map(), map()) :: any() | {:error, any()}
   def post({resource, action}, params \\ %{}, options \\ %{})
       when is_struct(resource)
-      when is_atom(action) do
+      when is_atom(action) or is_binary(action) do
     {refresh?, params} = Map.pop(Map.merge(%{refresh: true}, Map.merge(params, options)), :refresh)
     connection = Session.connection(resource.session)
     message = Message.new(resource.guid, action, params)
