@@ -93,6 +93,18 @@ defmodule Playwright.SDK.Channel.Response do
     values
   end
 
+  defp parse([{:matches, matches}], _catalog) do
+    matches
+  end
+
+  defp parse([{:matches, matches}, {:received, _}], _catalog) do
+    matches
+  end
+
+  defp parse([{:log, _}, {:matches, matches}, {:received, _}, {:timedOut, true}], _catalog) do
+    matches
+  end
+
   defp parse([], _catalog) do
     nil
   end
