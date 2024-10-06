@@ -114,6 +114,7 @@ defmodule Playwright.MixProject do
           Playwright.APIRequest,
           Playwright.APIRequestContext,
           Playwright.APIResponse,
+          Playwright.Artifact,
           Playwright.Browser,
           Playwright.BrowserContext,
           Playwright.BrowserType,

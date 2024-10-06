@@ -190,7 +190,28 @@ defmodule Playwright.BrowserTest do
     end
   end
 
+  describe "Browser.start_tracing/3" do
+    test "on success, returns the 'subject' `Browser`", %{browser: browser} do
+      assert %Browser{} = Browser.start_tracing(browser)
+      Browser.stop_tracing(browser)
+    end
 
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      browser = %{browser | guid: "bogus"}
+      assert {:error, %Error{type: "TargetClosedError"}} = Browser.start_tracing(browser)
+    end
+  end
+
+  describe "Browser.stop_tracing/1" do
+    test "on success, returns the resultant `Artifact`", %{browser: browser} do
+      Browser.start_tracing(browser)
+      assert %Playwright.Artifact{} = Browser.stop_tracing(browser)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      Browser.start_tracing(browser)
+      browser = %{browser | guid: "bogus"}
+      assert {:error, %Error{type: "TargetClosedError"}} = Browser.start_tracing(browser)
     end
   end
 end

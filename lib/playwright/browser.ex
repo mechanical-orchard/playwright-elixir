@@ -725,18 +725,19 @@ defmodule Playwright.Browser do
 
   # ---
 
-  # test_chromium_tracing.py
-  # @spec start_tracing(t(), Page.t(), options()) :: :ok
-  # def start_tracing(browser, page \\ nil, options \\ %{})
+  @type opts_tracing :: map()
 
-  # test_chromium_tracing.py
-  # @spec stop_tracing(t()) :: binary()
-  # def stop_tracing(browser)
+  @spec start_tracing(t(), Page.t(), opts_tracing()) :: t() | {:error, Error.t()}
+  def start_tracing(browser, page \\ nil, options \\ %{})
 
-  # @spec version(BrowserContext.t()) :: binary
-  # def version(browser)
+  def start_tracing(%Browser{} = browser, _page, _options) do
+    Channel.post({browser, :start_tracing})
+  end
 
-  # ---
+  @spec stop_tracing(t()) :: binary()
+  def stop_tracing(%Browser{} = browser) do
+    Channel.post({browser, :stop_tracing})
+  end
 
   # events
   # ----------------------------------------------------------------------------
