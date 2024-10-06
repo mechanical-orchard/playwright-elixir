@@ -13,13 +13,27 @@ defmodule Playwright.BrowserTest do
     end
   end
 
+  describe "Browser.close/2" do
+    @tag exclude: [:page]
+    test "on success, returns `:ok`", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
+      assert :ok = Browser.close(browser)
+    end
 
-  describe "Browser.close/1" do
     @tag exclude: [:page]
     test "is callable twice", %{transport: transport} do
-      {_session, inline_browser} = setup_browser(transport)
-      assert :ok = Browser.close(inline_browser)
-      assert :ok = Browser.close(inline_browser)
+      {_session, browser} = setup_browser(transport)
+      assert :ok = Browser.close(browser)
+      assert :ok = Browser.close(browser)
+    end
+
+    @tag exclude: [:page]
+    test "accepts a `:reason` option", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
+      assert :ok = Browser.close(browser, %{reason: "All done."})
+    end
+  end
+
   describe "Browser.contexts/1" do
     @tag exclude: [:page]
     test "for a newly created `Browser`, returns an empty list", %{browser: browser} do

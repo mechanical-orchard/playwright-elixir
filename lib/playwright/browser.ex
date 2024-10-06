@@ -282,10 +282,11 @@ defmodule Playwright.Browser do
     - `:ok`
 
   """
-  def close(%Browser{session: session} = browser) do
+  @spec close(t(), options()) :: :ok
+  def close(%Browser{session: session} = browser, options \\ %{}) do
     case Channel.find(session, {:guid, browser.guid}, %{timeout: 10}) do
       %Browser{} ->
-        Channel.close(browser)
+        Channel.close(browser, options)
 
       {:error, _} ->
         :ok

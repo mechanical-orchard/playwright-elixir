@@ -12,8 +12,10 @@ defmodule Playwright.SDK.Channel do
     Session.bind(session, {guid, event_type}, callback)
   end
 
-  def close(resource) do
-    case post({resource, :close}, %{refresh: false}) do
+  def close(resource, options \\ %{})
+
+  def close(resource, options) do
+    case post({resource, :close}, %{refresh: false}, options) do
       {:error, %Playwright.API.Error{} = error} ->
         {:error, error}
 
