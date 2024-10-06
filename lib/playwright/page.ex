@@ -729,6 +729,12 @@ defmodule Playwright.Page do
 
   # ---
 
+  # @spec wait_for_request(Page.t(), ..., options()) :: :ok
+  # def wait_for_request(page, url_or_predicate, options \\ %{})
+
+  # @spec wait_for_response(Page.t(), ..., options()) :: :ok
+  # def wait_for_response(page, url_or_predicate, options \\ %{})
+
   # @spec wait_for_url(Page.t(), binary(), options()) :: :ok
   # def wait_for_url(page, url, options \\ %{})
 

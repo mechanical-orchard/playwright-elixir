@@ -1,6 +1,18 @@
 defmodule Playwright.BrowserTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Browser, BrowserContext, Page, Response}
+  alias Playwright.Browser
+  alias Playwright.BrowserContext
+  alias Playwright.BrowserType
+  alias Playwright.CDPSession
+  alias Playwright.Page
+  alias Playwright.Response
+
+  describe "Browser.browser_type/1" do
+    test "returns the 'parent' `BrowserType`", %{browser: browser} do
+      assert %BrowserType{} = Browser.browser_type(browser)
+    end
+  end
+
 
   describe "Browser.close/1" do
     @tag exclude: [:page]
@@ -8,6 +20,37 @@ defmodule Playwright.BrowserTest do
       {_session, inline_browser} = setup_browser(transport)
       assert :ok = Browser.close(inline_browser)
       assert :ok = Browser.close(inline_browser)
+  describe "Browser.contexts/1" do
+    @tag exclude: [:page]
+    test "for a newly created `Browser`, returns an empty list", %{browser: browser} do
+      assert Browser.contexts(browser) == []
+    end
+
+    @tag exclude: [:page]
+    test "when related `BrowserContext` instances are created, lists those", %{browser: browser} do
+      context1 = Browser.new_context(browser)
+      context2 = Browser.new_context(browser)
+
+      desired = [context1, context2] |> Enum.sort()
+      assert ^desired = Browser.contexts(browser) |> Enum.sort()
+
+      BrowserContext.close(context1)
+      BrowserContext.close(context2)
+    end
+
+    @tag exclude: [:page]
+    test "when related `BrowserContext` instances are closed, excludes those", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert [^context] = Browser.contexts(browser)
+
+      BrowserContext.close(context)
+      assert Browser.contexts(browser) == []
+    end
+  end
+
+  describe "Browser.new_cdp_session_/1" do
+    test "on success, returns a new `CDPSession`", %{browser: browser} do
+      assert %CDPSession{} = Browser.new_browser_cdp_session(browser)
     end
   end
 
@@ -36,8 +79,11 @@ defmodule Playwright.BrowserTest do
 
       assert Response.ok(response)
       assert Page.text_content(page, "#inner") == "Text,\nmore text"
+
+      Page.close(page)
     end
 
+    @tag exclude: [:page]
     test "succeeds when configured with a custom `userAgent` header", %{browser: browser} do
       context = Browser.new_context(browser, %{"userAgent" => "Mozzies"})
       page = BrowserContext.new_page(context)
@@ -45,6 +91,7 @@ defmodule Playwright.BrowserTest do
       assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
 
       BrowserContext.close(context)
+      Page.close(page)
     end
 
     # test_should_use_proxy_for_second_page
@@ -55,7 +102,8 @@ defmodule Playwright.BrowserTest do
 
   describe "Browser.new_page/1" do
     @tag exclude: [:page]
-    test "creates and binds a new context", %{browser: browser} do
+    test "creates and binds a new context", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
       assert Browser.contexts(browser) == []
 
       page = Browser.new_page(browser)
@@ -67,7 +115,8 @@ defmodule Playwright.BrowserTest do
     end
 
     @tag exclude: [:page]
-    test "builds a new Page, incl. context", %{browser: browser} do
+    test "builds a new Page, incl. context", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
       assert [] = Browser.contexts(browser)
 
       page1 = Browser.new_page(browser)
@@ -95,7 +144,6 @@ defmodule Playwright.BrowserTest do
       page = Browser.new_page(browser, %{"userAgent" => "Mozzies"})
 
       assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
-
       Page.close(page)
     end
   end

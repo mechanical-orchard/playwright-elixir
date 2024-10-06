@@ -119,16 +119,12 @@ defmodule Playwright.APIRequestContext do
           required(:value) => String.t()
         }
 
-  @typedoc """
-  Options for `dispose/2`.
-  """
+  @typedoc "Options for `dispose/2`."
   @type opts_dispose :: %{
           optional(:reason) => String.t()
         }
 
-  @typedoc """
-  Options for `storage_state/2`.
-  """
+  @typedoc "Options for `storage_state/2`."
   @type opts_storage :: %{
           optional(:path) => String.t()
         }

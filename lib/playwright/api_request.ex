@@ -43,7 +43,7 @@ defmodule Playwright.APIRequest do
         }
 
   @typedoc """
-  A client certificate to be used in requests.
+  A client TLS certificate to be used in requests.
   """
   @type client_certificate :: %{
           required(:origin) => String.t(),
@@ -53,9 +53,7 @@ defmodule Playwright.APIRequest do
           optional(:passphrase) => String.t()
         }
 
-  @typedoc """
-  A `map` containing additional HTTP headers to be sent with every request.
-  """
+  @typedoc "A `map` containing additional HTTP headers to be sent with every request."
   @type http_headers :: %{required(String.t()) => String.t()}
 
   @typedoc "HTTP authetication credentials."
@@ -195,7 +193,7 @@ defmodule Playwright.APIRequest do
   > When using WebKit on macOS, accessing `localhost` will not pick up client
   > certificates. As a work-around: replace `localhost` with `local.playwright`.
 
-  #### Certificate details
+  #### Details
 
   | name          |            | description                       |
   | ------------- | ---------- | --------------------------------- |
@@ -219,7 +217,7 @@ defmodule Playwright.APIRequest do
   If no `:origin` is specified, the `:username` and `:password` are sent to any
   servers upon unauthorized responses.
 
-  #### Credential details
+  #### Details
 
   | name        |            | description |
   | ----------- | ---------- | ----------- |
