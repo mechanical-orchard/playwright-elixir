@@ -664,7 +664,7 @@ defmodule Playwright.Browser do
     - `Playwright.BrowserContext.t()`
     - `{:error, Error.t()}`
   """
-  @spec new_context(t(), opts_new()) :: t() | {:error, Error.t()}
+  @spec new_context(t(), opts_new()) :: BrowserContext.t() | {:error, Error.t()}
   def new_context(%Browser{} = browser, options \\ %{}) do
     Channel.post({browser, :new_context}, prepare(options))
   end
@@ -705,16 +705,22 @@ defmodule Playwright.Browser do
     - `Playwright.Page.t()`
     - `{:error, Error.t()}`
   """
-  @spec new_page(t(), opts_new()) :: Page.t()
+  @spec new_page(t(), opts_new()) :: {Page.t() | {:error, Error.t()}}
   def new_page(browser, options \\ %{})
 
   def new_page(%Browser{session: session} = browser, options) do
     context = new_context(browser, options)
-    page = BrowserContext.new_page(context)
 
-    # establish co-dependency
-    Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
-    Channel.patch(session, {:guid, page.guid}, %{owned_context: context})
+    case BrowserContext.new_page(context) do
+      {:error, _} = error ->
+        error
+
+      page ->
+        # establish co-dependency
+        Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
+        Channel.patch(session, {:guid, page.guid}, %{owned_context: context})
+        page
+    end
   end
 
   # ---

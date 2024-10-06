@@ -161,6 +161,7 @@ defmodule Playwright.BrowserContext do
 
   use Playwright.SDK.ChannelOwner
   alias Playwright.{BrowserContext, Frame, Page}
+  alias Playwright.API.Error
   alias Playwright.SDK.{Channel, ChannelOwner, Helpers}
 
   @property :bindings
@@ -492,7 +493,7 @@ defmodule Playwright.BrowserContext do
   as a side effect of `Playwright.Browser.new_page/1`), will raise an error
   because there should be a 1-to-1 mapping in that case.
   """
-  @spec new_page(t()) :: Page.t()
+  @spec new_page(t()) :: Page.t() | {:error, Error.t()}
   def new_page(context)
 
   def new_page(%BrowserContext{} = context) do
