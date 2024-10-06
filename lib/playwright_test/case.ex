@@ -42,9 +42,10 @@ defmodule PlaywrightTest.Case do
         end
       end
   """
-
   defmacro __using__(options \\ %{}) do
     quote do
+      alias Playwright.SDK.Channel.Catalog
+      alias Playwright.SDK.Channel.Session
       alias Playwright.SDK.Config
 
       setup_all(context) do
@@ -60,17 +61,10 @@ defmodule PlaywrightTest.Case do
       end
 
       setup(context) do
-        tagged_exclude = Map.get(context, :exclude, [])
+        tagged_excludes = Map.get(context, :exclude, [])
 
-        case Enum.member?(tagged_exclude, :page) do
+        case Enum.member?(tagged_excludes, :page) do
           true ->
-            on_exit(:ok, fn ->
-              Playwright.Browser.contexts(context.browser)
-              |> Enum.map(fn ctx ->
-                Playwright.BrowserContext.close(ctx)
-              end)
-            end)
-
             context
 
           false ->
@@ -78,11 +72,6 @@ defmodule PlaywrightTest.Case do
 
             on_exit(:ok, fn ->
               Playwright.Page.close(page)
-
-              Playwright.Browser.contexts(context.browser)
-              |> Enum.map(fn ctx ->
-                Playwright.BrowserContext.close(ctx)
-              end)
             end)
 
             Map.put(context, :page, page)
