@@ -1,5 +1,6 @@
 defmodule Playwright.BrowserTest do
   use Playwright.TestCase, async: true
+  alias Playwright.API.Error
   alias Playwright.Browser
   alias Playwright.BrowserContext
   alias Playwright.BrowserType
@@ -36,12 +37,14 @@ defmodule Playwright.BrowserTest do
 
   describe "Browser.contexts/1" do
     @tag exclude: [:page]
-    test "for a newly created `Browser`, returns an empty list", %{browser: browser} do
+    test "for a newly created `Browser`, returns an empty list", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
       assert Browser.contexts(browser) == []
     end
 
     @tag exclude: [:page]
-    test "when related `BrowserContext` instances are created, lists those", %{browser: browser} do
+    test "when related `BrowserContext` instances are created, lists those", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
       context1 = Browser.new_context(browser)
       context2 = Browser.new_context(browser)
 
@@ -53,7 +56,8 @@ defmodule Playwright.BrowserTest do
     end
 
     @tag exclude: [:page]
-    test "when related `BrowserContext` instances are closed, excludes those", %{browser: browser} do
+    test "when related `BrowserContext` instances are closed, excludes those", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
       context = Browser.new_context(browser)
       assert [^context] = Browser.contexts(browser)
 
@@ -69,8 +73,19 @@ defmodule Playwright.BrowserTest do
   end
 
   describe "Browser.new_context/1" do
+    test "on success, returns a new `BrowserContext`", %{browser: browser} do
+      assert %BrowserContext{} = context = Browser.new_context(browser)
+      BrowserContext.close(context)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      browser = %{browser | guid: "bogus"}
+      assert {:error, %Error{type: "TargetClosedError"}} = Browser.new_context(browser)
+    end
+
     @tag exclude: [:page]
-    test "creates and binds a new context", %{browser: browser} do
+    test "creates and binds a new context", %{transport: transport} do
+      {_session, browser} = setup_browser(transport)
       assert Browser.contexts(browser) == []
 
       Browser.new_context(browser)

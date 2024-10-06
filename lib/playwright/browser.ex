@@ -18,387 +18,13 @@ defmodule Playwright.Browser do
 
     - `:name`
     - `:version`
-  """
-  use Playwright.SDK.ChannelOwner
-  alias ExUnit.DocTest.Error
-  alias Playwright.Browser
-  alias Playwright.BrowserContext
-  alias Playwright.BrowserType
-  alias Playwright.CDPSession
-  alias Playwright.Page
-  alias Playwright.SDK.Channel
-  alias Playwright.SDK.ChannelOwner
-  alias Playwright.SDK.Extra
 
-  @property :name
-  @property(:version, %{doc: "Returns the browser version"})
+  ## Shared options
 
-  @typedoc "Supported events"
-  @type event :: :disconnected
+  The follow options are applicable to both:
 
-  @typedoc "A map/struct providing call options"
-  @type options :: map()
-
-  @typedoc "Options for `close/2`."
-  @type opts_close :: %{
-          optional(:reason) => String.t()
-        }
-
-  @typedoc "Options for `new_context/2`."
-  @type opts_context :: %{
-          optional(:accept_downloads) => boolean(),
-          optional(:base_url) => String.t(),
-          optional(:bypass_csp) => boolean(),
-          optional(:client_certificates) => [client_certificate()],
-          optional(:color_scheme) => color_scheme(),
-          optional(:device_scale_factor) => number(),
-          optional(:extra_http_headers) => http_headers(),
-          optional(:forced_colors) => forced_colors(),
-          optional(:geolocation) => geolocation(),
-          optional(:has_touch) => boolean(),
-          optional(:http_credentials) => http_credentials(),
-          optional(:ignore_https_errors) => boolean(),
-          optional(:is_mobile) => boolean(),
-          optional(:javascript_enabled) => boolean(),
-          optional(:locale) => String.t(),
-          optional(:logger) => Playwright.Logger.t(),
-          optional(:offline) => boolean(),
-          optional(:permissions) => [String.t()],
-          optional(:proxy) => proxy_settings(),
-          optional(:record_har) => har_settings(),
-          optional(:record_video) => video_settings(),
-          optional(:reduced_motion) => motion_settings(),
-          optional(:screen) => screen_settings(),
-          optional(:service_workers) => worker_settings(),
-          optional(:storage_state) => storage_state(),
-          optional(:strict_selectors) => boolean(),
-          optional(:timezone_id) => String.t(),
-          optional(:user_agent) => String.t(),
-          optional(:video_size) => map(),
-          optional(:videos_path) => String.t(),
-          optional(:viewport) => viewport_settings()
-        }
-
-  @typedoc "A client TLS certificate to be used in requests."
-  @type client_certificate :: %{
-          required(:origin) => String.t(),
-          optional(:cert_path) => Path.t() | String.t(),
-          optional(:key_path) => Path.t() | String.t(),
-          optional(:pfx_path) => Path.t() | String.t(),
-          optional(:passphrase) => String.t()
-        }
-
-  @typedoc """
-  A value used to emulate "prefers-color-scheme" media feature.
-
-  - `"light"`
-  - `"dark"`
-  - `"no-preference"`
-  - `nil`
-  """
-  @type color_scheme :: String.t() | nil
-
-  @typedoc "An HTTP cookie."
-  @type cookie :: %{
-          required(:name) => String.t(),
-          required(:value) => String.t(),
-          required(:domain) => String.t(),
-          required(:path) => String.t(),
-          required(:expires) => float(),
-          required(:http_only) => boolean(),
-          required(:secure) => boolean(),
-          # same_site: "Lax" | "None" | "Strict"
-          required(:same_site) => String.t()
-        }
-
-  @typedoc """
-  A value used to emulate "forced-colors" media feature.
-
-  - `"active"`
-  - `"none"`
-  - `nil`
-  """
-  @type forced_colors :: String.t() | nil
-
-  @typedoc "Geolocation emulation settings."
-  @type geolocation :: %{
-          required(:latitude) => number(),
-          required(:longitude) => number(),
-          optional(:accuracy) => number()
-        }
-
-  @typedoc """
-  HAR recording settings.
-
-  - `:content`:
-    - `"omit"`
-    - `"embed"`
-    - `"attach"`
-  - `:mode`:
-    - `"full"`
-    - `"minimal"`
-  """
-  @type har_settings :: %{
-          optional(:omit_content) => boolean(),
-          optional(:content) => String.t(),
-          required(:path) => String.t(),
-          optional(:mode) => String.t(),
-          optional(:url_filter) => String.t() | Regex.t()
-        }
-
-  @typedoc "HTTP authetication credentials."
-  @type http_credentials :: %{
-          required(:username) => String.t(),
-          required(:password) => String.t(),
-          optional(:origin) => String.t(),
-          optional(:send) => :always | :unauthorized
-        }
-
-  @typedoc "A `map` containing additional HTTP headers to be sent with every request."
-  @type http_headers :: %{required(String.t()) => String.t()}
-
-  @typedoc "Local storage settings."
-  @type local_storage :: %{
-          required(:name) => String.t(),
-          required(:value) => String.t()
-        }
-
-  @typedoc "Network proxy settings."
-  @type proxy_settings :: %{
-          required(:server) => String.t(),
-          optional(:bypass) => String.t(),
-          optional(:username) => String.t(),
-          optional(:password) => String.t()
-        }
-
-  @typedoc """
-  Settings for emulating "prefers-reduced-motion" media feature
-
-  - `"reduce"`
-  - `"no-preference"`
-  - `nil`
-  """
-  @type motion_settings :: %{
-          required(:server) => String.t(),
-          optional(:bypass) => String.t(),
-          optional(:username) => String.t(),
-          optional(:password) => String.t()
-        }
-
-  @typedoc "Window screen size settings."
-  @type screen_settings :: %{
-          required(:width) => number(),
-          required(:height) => number()
-        }
-
-  @typedoc "Storage state settings."
-  @type storage_state :: %{
-          required(:cookies) => [cookie()],
-          required(:origins) => [
-            %{
-              required(:origin) => String.t(),
-              required(:local_storage) => [local_storage()]
-            }
-          ]
-        }
-
-  @typedoc "Video recording settings."
-  @type video_settings :: %{
-          required(:dir) => String.t(),
-          optional(:size) => %{
-            width: number(),
-            height: number()
-          }
-        }
-
-  @typedoc "Viewport settings."
-  @type viewport_settings :: %{
-          required(:width) => number(),
-          required(:height) => number()
-        }
-
-  @typedoc """
-  Window screen size settings.
-
-  - `"allow"`
-  - `"block"`
-  """
-  @type worker_settings :: String.t()
-
-  # callbacks
-  # ---------------------------------------------------------------------------
-
-  @impl ChannelOwner
-  def init(browser, _initializer) do
-    {:ok, %{browser | version: cut_version(browser.version)}}
-  end
-
-  # API
-  # ---------------------------------------------------------------------------
-
-  @doc """
-  Get the `Playwright.BrowserType` (as, `:chromium`, `:firefox` or `:webkit`)
-  to which this `Playwright.Browser` belongs.
-
-  Usage
-
-      Browser.browser_type(browser);
-
-  Returns
-
-    - `Playwright.BrowserType.t()`
-  """
-  @spec browser_type(t()) :: BrowserType.t()
-  def browser_type(%Browser{} = browser) do
-    browser.parent
-  end
-
-  @doc """
-  Closes the browser.
-
-  Given a `Playwright.Browser` obtained from `Playwright.BrowserType.launch/2`,
-  closes the `Browser` and all of its `Pages` (if any were opened).
-
-  Given a `Playwright.Browser` obtained via `Playwright.BrowserType.connect/2`,
-  clears all created `Contexts` belonging to this `Browser` and disconnects
-  from the browser server.
-
-  > #### NOTE {: .info}
-  >
-  > This is similar to force-quitting the browser. Therefore, be sure to call
-  > `Playwright.BrowserContext.close/1` on any `BrowserContext` instances
-  > explicitly created earlier by calling `Browser.new_context/1` before calling
-  > `Browser.close/2`.
-
-  The `Browser` instance itself is considered to be disposed and cannot be
-  used any longer.
-
-  ## Usage
-
-      Browser.close(browser)
-      Browser.close(browser, %{reason: "All done."})
-
-  ## Arguments
-
-  | name      |            | description             |
-  | --------- | ---------- | ----------------------- |
-  | `browser` |            | The "subject" `Browser` |
-  | `options` | (optional) | `Browser.opts_close()`  |
-
-  ## Options
-
-  | name      |            | description                       |
-  | --------- | ---------- | --------------------------------- |
-  | `:reason` | (optional) | The reason to be reported to any operations interrupted by the browser closure. |
-
-  ## Returns
-
-    - `:ok`
-
-  """
-  @spec close(t(), options()) :: :ok
-  def close(%Browser{session: session} = browser, options \\ %{}) do
-    case Channel.find(session, {:guid, browser.guid}, %{timeout: 10}) do
-      %Browser{} ->
-        Channel.close(browser, options)
-
-      {:error, _} ->
-        :ok
-    end
-  end
-
-  @doc """
-  Returns a list of all open browser contexts.
-
-  For a newly created `Playwright.Browser`, this will return zero contexts.
-
-  ## Usage
-
-      contexts = Browser.contexts(browser)
-      assert Enum.empty?(contexts)
-
-      Browser.new_context(browser)
-
-      contexts = Browser.contexts(browser)
-      assert length(contexts) == 1
-
-  ## Arguments
-
-  | name      |            | description             |
-  | --------- | ---------- | ----------------------- |
-  | `browser` |            | The "subject" `Browser` |
-
-
-  ## Returns
-
-  - `[Playwright.BrowserContext.t()]`
-
-  """
-  @spec contexts(t()) :: [BrowserContext.t()]
-  def contexts(%Browser{} = browser) do
-    Channel.list(browser.session, {:guid, browser.guid}, "BrowserContext")
-  end
-
-  @doc """
-  Returns a new `Playwright.CDPSession` instance.
-
-  > #### NOTE {: .info}
-  >
-  > CDP Sessions are only supported on Chromium-based browsers.
-
-  ## Usage
-
-      sesssion = Browser.new_browser_cdp_session(browser)
-
-  ## Arguments
-
-  | name      |            | description             |
-  | --------- | ---------- | ----------------------- |
-  | `browser` |            | The "subject" `Browser` |
-
-  ## Returns
-
-  - `[Playwright.CDPSession.t()]`
-  - `{:error, %Error{}}`
-  """
-  @spec new_browser_cdp_session(t()) :: CDPSession.t() | {:error, Error.t()}
-  def new_browser_cdp_session(browser) do
-    Channel.post({browser, "newBrowserCDPSession"})
-  end
-
-  @doc """
-  Creates a new `Playwright.BrowserContext` for this `Playwright.Browser`.
-
-  A `BrowserContext` does not share cookies/cache with other `BrowserContexts`
-  and is somewhat equivalent to an "incognito" browser "window".
-
-  > #### NOTE {: .info}
-  >
-  > If directly using this method to create `BrowserContext` instances, it is a
-  > best practice to explicitly close the returned context via
-  > `Playwright.BrowserContext.close/1` when your code is finished with the
-  > `BrowserContext` and before calling `Playwright.Browser.close/2`.
-  > This approach will ensure the context is closed gracefully and any artifacts
-  > (e.g., HARs and videos) are fully flushed and saved.
-
-  ## Example
-
-      # create a new "incognito" browser context.
-      context = Browser.new_context(browser)
-
-      # create a new page in a pristine context.
-      page = BrowserContext.new_page(context)
-
-      Page.goto(page, "https://example.com")
-
-  ## Arguments
-
-  | name      |            | description              |
-  | --------- | ---------- | ------------------------ |
-  | `browser` |            | The "subject" `Browser`  |
-  | `options` | (optional) | `Browser.opts_context()` |
-
-  ## Options
+  `Playwright.Browser.new_context/2`
+  `Playwright.Browser.new_page/2`
 
   | name                   | description                       |
   | ---------------------- | --------------------------------- |
@@ -652,13 +278,393 @@ defmodule Playwright.Browser do
   | --------- | ---------- | ----------- |
   | `:width`  |            | Page width in pixels. |
   | `:height` |            | Page height in pixels. |
+  """
+  use Playwright.SDK.ChannelOwner
+  alias ExUnit.DocTest.Error
+  alias Playwright.Browser
+  alias Playwright.BrowserContext
+  alias Playwright.BrowserType
+  alias Playwright.CDPSession
+  alias Playwright.Page
+  alias Playwright.SDK.Channel
+  alias Playwright.SDK.ChannelOwner
+  alias Playwright.SDK.Extra
+
+  @property :name
+  @property(:version, %{doc: "Returns the browser version"})
+
+  @typedoc "Supported events"
+  @type event :: :disconnected
+
+  @typedoc "Options for `close/2`."
+  @type opts_close :: %{
+          optional(:reason) => String.t()
+        }
+
+  @typedoc "Options for `new_context/2` and `new_page/2`."
+  @type opts_new :: %{
+          optional(:accept_downloads) => boolean(),
+          optional(:base_url) => String.t(),
+          optional(:bypass_csp) => boolean(),
+          optional(:client_certificates) => [client_certificate()],
+          optional(:color_scheme) => color_scheme(),
+          optional(:device_scale_factor) => number(),
+          optional(:extra_http_headers) => http_headers(),
+          optional(:forced_colors) => forced_colors(),
+          optional(:geolocation) => geolocation(),
+          optional(:has_touch) => boolean(),
+          optional(:http_credentials) => http_credentials(),
+          optional(:ignore_https_errors) => boolean(),
+          optional(:is_mobile) => boolean(),
+          optional(:javascript_enabled) => boolean(),
+          optional(:locale) => String.t(),
+          optional(:logger) => Playwright.Logger.t(),
+          optional(:offline) => boolean(),
+          optional(:permissions) => [String.t()],
+          optional(:proxy) => proxy_settings(),
+          optional(:record_har) => har_settings(),
+          optional(:record_video) => video_settings(),
+          optional(:reduced_motion) => motion_settings(),
+          optional(:screen) => screen_settings(),
+          optional(:service_workers) => worker_settings(),
+          optional(:storage_state) => storage_state(),
+          optional(:strict_selectors) => boolean(),
+          optional(:timezone_id) => String.t(),
+          optional(:user_agent) => String.t(),
+          optional(:video_size) => map(),
+          optional(:videos_path) => String.t(),
+          optional(:viewport) => viewport_settings()
+        }
+
+  @typedoc "A client TLS certificate to be used in requests."
+  @type client_certificate :: %{
+          required(:origin) => String.t(),
+          optional(:cert_path) => Path.t() | String.t(),
+          optional(:key_path) => Path.t() | String.t(),
+          optional(:pfx_path) => Path.t() | String.t(),
+          optional(:passphrase) => String.t()
+        }
+
+  @typedoc """
+  A value used to emulate "prefers-color-scheme" media feature.
+
+  - `"light"`
+  - `"dark"`
+  - `"no-preference"`
+  - `nil`
+  """
+  @type color_scheme :: String.t() | nil
+
+  @typedoc "An HTTP cookie."
+  @type cookie :: %{
+          required(:name) => String.t(),
+          required(:value) => String.t(),
+          required(:domain) => String.t(),
+          required(:path) => String.t(),
+          required(:expires) => float(),
+          required(:http_only) => boolean(),
+          required(:secure) => boolean(),
+          # same_site: "Lax" | "None" | "Strict"
+          required(:same_site) => String.t()
+        }
+
+  @typedoc """
+  A value used to emulate "forced-colors" media feature.
+
+  - `"active"`
+  - `"none"`
+  - `nil`
+  """
+  @type forced_colors :: String.t() | nil
+
+  @typedoc "Geolocation emulation settings."
+  @type geolocation :: %{
+          required(:latitude) => number(),
+          required(:longitude) => number(),
+          optional(:accuracy) => number()
+        }
+
+  @typedoc """
+  HAR recording settings.
+
+  - `:content`:
+    - `"omit"`
+    - `"embed"`
+    - `"attach"`
+  - `:mode`:
+    - `"full"`
+    - `"minimal"`
+  """
+  @type har_settings :: %{
+          optional(:omit_content) => boolean(),
+          optional(:content) => String.t(),
+          required(:path) => String.t(),
+          optional(:mode) => String.t(),
+          optional(:url_filter) => String.t() | Regex.t()
+        }
+
+  @typedoc "HTTP authetication credentials."
+  @type http_credentials :: %{
+          required(:username) => String.t(),
+          required(:password) => String.t(),
+          optional(:origin) => String.t(),
+          optional(:send) => :always | :unauthorized
+        }
+
+  @typedoc "A `map` containing additional HTTP headers to be sent with every request."
+  @type http_headers :: %{required(String.t()) => String.t()}
+
+  @typedoc "Local storage settings."
+  @type local_storage :: %{
+          required(:name) => String.t(),
+          required(:value) => String.t()
+        }
+
+  @typedoc "Network proxy settings."
+  @type proxy_settings :: %{
+          required(:server) => String.t(),
+          optional(:bypass) => String.t(),
+          optional(:username) => String.t(),
+          optional(:password) => String.t()
+        }
+
+  @typedoc """
+  Settings for emulating "prefers-reduced-motion" media feature
+
+  - `"reduce"`
+  - `"no-preference"`
+  - `nil`
+  """
+  @type motion_settings :: %{
+          required(:server) => String.t(),
+          optional(:bypass) => String.t(),
+          optional(:username) => String.t(),
+          optional(:password) => String.t()
+        }
+
+  @typedoc "Window screen size settings."
+  @type screen_settings :: %{
+          required(:width) => number(),
+          required(:height) => number()
+        }
+
+  @typedoc "Storage state settings."
+  @type storage_state :: %{
+          required(:cookies) => [cookie()],
+          required(:origins) => [
+            %{
+              required(:origin) => String.t(),
+              required(:local_storage) => [local_storage()]
+            }
+          ]
+        }
+
+  @typedoc "Video recording settings."
+  @type video_settings :: %{
+          required(:dir) => String.t(),
+          optional(:size) => %{
+            width: number(),
+            height: number()
+          }
+        }
+
+  @typedoc "Viewport settings."
+  @type viewport_settings :: %{
+          required(:width) => number(),
+          required(:height) => number()
+        }
+
+  @typedoc """
+  Window screen size settings.
+
+  - `"allow"`
+  - `"block"`
+  """
+  @type worker_settings :: String.t()
+
+  # callbacks
+  # ---------------------------------------------------------------------------
+
+  @impl ChannelOwner
+  def init(browser, _initializer) do
+    {:ok, %{browser | version: cut_version(browser.version)}}
+  end
+
+  # API
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Get the `Playwright.BrowserType` (as, `:chromium`, `:firefox` or `:webkit`)
+  to which this `Playwright.Browser` belongs.
+
+  Usage
+
+      Browser.browser_type(browser);
+
+  Returns
+
+    - `Playwright.BrowserType.t()`
+  """
+  @spec browser_type(t()) :: BrowserType.t()
+  def browser_type(%Browser{} = browser) do
+    browser.parent
+  end
+
+  @doc """
+  Closes the browser.
+
+  Given a `Playwright.Browser` obtained from `Playwright.BrowserType.launch/2`,
+  closes the `Browser` and all of its `Pages` (if any were opened).
+
+  Given a `Playwright.Browser` obtained via `Playwright.BrowserType.connect/2`,
+  clears all created `Contexts` belonging to this `Browser` and disconnects
+  from the browser server.
+
+  > #### NOTE {: .info}
+  >
+  > This is similar to force-quitting the browser. Therefore, be sure to call
+  > `Playwright.BrowserContext.close/1` on any `BrowserContext` instances
+  > explicitly created earlier by calling `Browser.new_context/1` before calling
+  > `Browser.close/2`.
+
+  The `Browser` instance itself is considered to be disposed and cannot be
+  used any longer.
+
+  ## Usage
+
+      Browser.close(browser)
+      Browser.close(browser, %{reason: "All done."})
+
+  ## Arguments
+
+  | name      |            | description             |
+  | --------- | ---------- | ----------------------- |
+  | `browser` |            | The "subject" `Browser` |
+  | `options` | (optional) | `Browser.opts_close()`  |
+
+  ## Options
+
+  | name      |            | description                       |
+  | --------- | ---------- | --------------------------------- |
+  | `:reason` | (optional) | The reason to be reported to any operations interrupted by the browser closure. |
+
+  ## Returns
+
+    - `:ok`
+
+  """
+  @spec close(t(), opts_close()) :: :ok
+  def close(%Browser{session: session} = browser, options \\ %{}) do
+    case Channel.find(session, {:guid, browser.guid}, %{timeout: 10}) do
+      %Browser{} ->
+        Channel.close(browser, options)
+
+      {:error, _} ->
+        :ok
+    end
+  end
+
+  @doc """
+  Returns a list of all open browser contexts.
+
+  For a newly created `Playwright.Browser`, this will return zero contexts.
+
+  ## Usage
+
+      contexts = Browser.contexts(browser)
+      assert Enum.empty?(contexts)
+
+      Browser.new_context(browser)
+
+      contexts = Browser.contexts(browser)
+      assert length(contexts) == 1
+
+  ## Arguments
+
+  | name      |            | description             |
+  | --------- | ---------- | ----------------------- |
+  | `browser` |            | The "subject" `Browser` |
+
+
+  ## Returns
+
+  - `[Playwright.BrowserContext.t()]`
+
+  """
+  @spec contexts(t()) :: [BrowserContext.t()]
+  def contexts(%Browser{} = browser) do
+    Channel.list(browser.session, {:guid, browser.guid}, "BrowserContext")
+  end
+
+  @doc """
+  Returns a new `Playwright.CDPSession` instance.
+
+  > #### NOTE {: .info}
+  >
+  > CDP Sessions are only supported on Chromium-based browsers.
+
+  ## Usage
+
+      sesssion = Browser.new_browser_cdp_session(browser)
+
+  ## Arguments
+
+  | name      |            | description             |
+  | --------- | ---------- | ----------------------- |
+  | `browser` |            | The "subject" `Browser` |
+
+  ## Returns
+
+  - `[Playwright.CDPSession.t()]`
+  - `{:error, %Error{}}`
+  """
+  @spec new_browser_cdp_session(t()) :: CDPSession.t() | {:error, Error.t()}
+  def new_browser_cdp_session(browser) do
+    Channel.post({browser, "newBrowserCDPSession"})
+  end
+
+  @doc """
+  Creates a new `Playwright.BrowserContext` for this `Playwright.Browser`.
+
+  A `BrowserContext` does not share cookies/cache with other `BrowserContexts`
+  and is somewhat equivalent to an "incognito" browser "window".
+
+  > #### NOTE {: .info}
+  >
+  > If directly using this method to create `BrowserContext` instances, it is a
+  > best practice to explicitly close the returned context via
+  > `Playwright.BrowserContext.close/1` when your code is finished with the
+  > `BrowserContext` and before calling `Playwright.Browser.close/2`.
+  > This approach will ensure the context is closed gracefully and any artifacts
+  > (e.g., HARs and videos) are fully flushed and saved.
+
+  ## Usage
+
+      # create a new "incognito" browser context.
+      context = Browser.new_context(browser)
+
+      # create a new page in a pristine context.
+      page = BrowserContext.new_page(context)
+
+      Page.goto(page, "https://example.com")
+
+  ## Arguments
+
+  | name      |            | description              |
+  | --------- | ---------- | ------------------------ |
+  | `browser` |            | The "subject" `Browser`  |
+  | `options` | (optional) | `Browser.opts_new()`     |
+
+  ## Options
+
+  See "Shared options" above.
 
   ## Returns
 
     - `Playwright.BrowserContext.t()`
     - `{:error, Error.t()}`
   """
-  @spec new_context(t(), opts_context()) :: t() | {:error, Error.t()}
+  @spec new_context(t(), opts_new()) :: t() | {:error, Error.t()}
   def new_context(%Browser{} = browser, options \\ %{}) do
     Channel.post({browser, :new_context}, prepare(options))
   end
@@ -677,16 +683,34 @@ defmodule Playwright.Browser do
   explicitly create via `Playwright.Browser.new_context/2` followed by
   `Playwright.BrowserContext.new_page/2`, given the new context, to manage
   resource lifecycles.
+
+  ## Usage
+
+      Browser.new_page(browser)
+      Browser.new_page(browser, options)
+
+  ## Arguments
+
+  | name      |            | description              |
+  | --------- | ---------- | ------------------------ |
+  | `browser` |            | The "subject" `Browser`  |
+  | `options` | (optional) | `Browser.opts_new()`     |
+
+  ## Options
+
+  See "Shared options" above.
+
+  ## Returns
+
+    - `Playwright.Page.t()`
+    - `{:error, Error.t()}`
   """
-  @spec new_page(t(), options()) :: Page.t()
+  @spec new_page(t(), opts_new()) :: Page.t()
   def new_page(browser, options \\ %{})
 
   def new_page(%Browser{session: session} = browser, options) do
     context = new_context(browser, options)
     page = BrowserContext.new_page(context)
-
-    # TODO: handle the following, for `page`:
-    # ** (KeyError) key :guid not found in: {:error, %Playwright.Channel.Error{message: "Target closed"}}
 
     # establish co-dependency
     Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
