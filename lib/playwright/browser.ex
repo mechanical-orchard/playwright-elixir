@@ -236,8 +236,22 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
-  # @spec browser_type(t()) :: BrowserType.t()
-  # def browser_type(browser)
+  @doc """
+  Get the `Playwright.BrowserType` (as, `:chromium`, `:firefox` or `:webkit`)
+  to which this `Playwright.Browser` belongs.
+
+  Usage
+
+      Browser.browser_type(browser);
+
+  Returns
+
+    - `Playwright.BrowserType.t()`
+  """
+  @spec browser_type(t()) :: BrowserType.t()
+  def browser_type(%Browser{} = browser) do
+    browser.parent
+  end
 
   @doc """
   Closes the browser.
