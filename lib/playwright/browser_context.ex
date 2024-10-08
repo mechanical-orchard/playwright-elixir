@@ -1,9 +1,3 @@
-# self._request: APIRequestContext = from_channel(
-#   initializer["APIRequestContext"]
-# )
-
-# ---
-
 defmodule Playwright.BrowserContext do
   @moduledoc """
   `Playwright.BrowserContext` provides a way to operate multiple independent
@@ -35,7 +29,7 @@ defmodule Playwright.BrowserContext do
   The second argument is the event type.
 
   The third argument is a callback function that will be executed when the
-  event fires, and is passed an instance of `Playwright.Channel.Event`.
+  event fires, and is passed an instance of `Playwright.SDK.Channel.Event`.
 
   ### Details for `expect_event/5`
 
@@ -165,9 +159,9 @@ defmodule Playwright.BrowserContext do
       > - Service workers are only supported on Chromium-based browsers.
   """
 
-  use Playwright.ChannelOwner
-  alias Playwright.{BrowserContext, ChannelOwner, Frame, Page}
-  alias Playwright.{Channel, Helpers}
+  use Playwright.SDK.ChannelOwner
+  alias Playwright.{BrowserContext, Frame, Page}
+  alias Playwright.SDK.{Channel, ChannelOwner, Helpers}
 
   @property :bindings
   @property :browser
@@ -308,7 +302,14 @@ defmodule Playwright.BrowserContext do
   @spec add_init_script(t(), binary() | map()) :: :ok
   def add_init_script(%BrowserContext{session: session} = context, script) when is_binary(script) do
     params = %{source: script}
-    Channel.post(session, {:guid, context.guid}, :add_init_script, params)
+
+    case Channel.post(session, {:guid, context.guid}, :add_init_script, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   def add_init_script(%BrowserContext{} = context, %{path: path} = script) when is_map(script) do
@@ -319,6 +320,9 @@ defmodule Playwright.BrowserContext do
 
   # @spec background_pages(t()) :: [Playwright.Page.t()]
   # def background_pages(context)
+
+  # @spec browser(t()) :: Playwright.Browser.t()
+  # def browser(context)
 
   # ---
 
@@ -344,11 +348,14 @@ defmodule Playwright.BrowserContext do
   """
   @spec close(t()) :: :ok
   def close(%BrowserContext{session: session} = context) do
-    case Channel.post(session, {:guid, context.guid}, :close) do
-      :ok ->
+    # A call to `close` will remove the item from the catalog. `Catalog.find`
+    # here ensures that we do not `post` a 2nd `close`.
+    case Channel.find(session, {:guid, context.guid}, %{timeout: 10}) do
+      %BrowserContext{} ->
+        Channel.post(session, {:guid, context.guid}, :close)
         :ok
 
-      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
+      {:error, _} ->
         :ok
     end
   end
@@ -379,12 +386,12 @@ defmodule Playwright.BrowserContext do
   predicate function.
 
   Returns when the predicate returns a truthy value. Throws an error if the
-  context closes before the event is fired. Returns a `Playwright.Channel.Event`.
+  context closes before the event is fired. Returns a `Playwright.SDK.Channel.Event`.
 
   ## Arguments
 
   - `event`: Event name; the same as those passed to `Playwright.BrowserContext.on/3`
-  - `predicate`: Receives the `Playwright.Channel.Event` and resolves to a
+  - `predicate`: Receives the `Playwright.SDK.Channel.Event` and resolves to a
     "truthy" value when the waiting should resolve.
   - `options`:
     - `predicate`: ...
@@ -409,7 +416,7 @@ defmodule Playwright.BrowserContext do
   the `Playwright.BrowserContext`.
 
   If `predicate` is provided, it passes the `Playwright.Page` value into the
-  predicate function, wrapped in `Playwright.Channel.Event`, and waits for
+  predicate function, wrapped in `Playwright.SDK.Channel.Event`, and waits for
   `predicate/1` to return a "truthy" value. Throws an error if the context
   closes before new `Playwright.Page` is created.
 
@@ -424,25 +431,45 @@ defmodule Playwright.BrowserContext do
       via `Playwright.BrowserContext.set_default_timeout/2`.
   """
   # Temporarily disable spec:
-  # @spec expect_page(t(), map(), function()) :: Playwright.Channel.Event.t()
+  # @spec expect_page(t(), map(), function()) :: Playwright.SDK.Channel.Event.t()
   def expect_page(context, options \\ %{}, trigger \\ nil) do
     expect_event(context, :page, options, trigger)
   end
 
   @doc """
-  Adds a function called `param: name` on the `window` object of every
-  frame in every page in the context.
-  """
-  @spec expose_binding(t(), String.t(), function(), options()) :: :ok
-  def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
-    bindings = context.bindings
-    Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(bindings, %{name => callback})})
+  Adds a function called `param:name` on the `window` object of every frame in
+  every page in the context.
 
-    params = Map.merge(%{name: name, needs_handle: false}, options)
-    Channel.post(session, {:guid, context.guid}, :expose_binding, params)
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  The first argument to the `callback` function includes the following details
+  about the caller:
+
+      %{
+        context: %Playwright.BrowserContext{},
+        frame:   %Playwright.Frame{},
+        page:    %Playwright.Page{}
+      }
+
+  See `Playwright.Page.expose_binding/4` for a similar, page-scoped version.
+  """
+  @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: BrowserContext.t()
+  def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
+    Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(context.bindings, %{name => callback})})
+    post!(context, :expose_binding, Map.merge(%{name: name, needs_handle: false}, options))
   end
 
-  @spec expose_function(t(), String.t(), function()) :: :ok
+  @doc """
+  Adds a function called `param:name` on the `window` object of every frame in
+  every page in the context.
+
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  See `Playwright.Page.expose_function/3` for a similar, Page-scoped version.
+  """
+  @spec expose_function(BrowserContext.t(), String.t(), function()) :: BrowserContext.t()
   def expose_function(context, name, callback) do
     expose_binding(context, name, fn _, args ->
       callback.(args)
@@ -513,18 +540,19 @@ defmodule Playwright.BrowserContext do
     with_latest(context, fn context ->
       matcher = Helpers.URLMatcher.new(pattern)
       handler = Helpers.RouteHandler.new(matcher, handler)
-      routes = context.routes
 
-      if Enum.empty?(routes) do
-        Channel.post(session, {:guid, context.guid}, :set_network_interception_enabled, %{enabled: true})
-      end
+      routes = [handler | context.routes]
+      patterns = Helpers.RouteHandler.prepare(routes)
 
-      Channel.patch(session, {:guid, context.guid}, %{routes: [handler | routes]})
-      :ok
+      Channel.patch(session, {:guid, context.guid}, %{routes: routes})
+      Channel.post(session, {:guid, context.guid}, :set_network_interception_patterns, %{patterns: patterns})
     end)
   end
 
   # ---
+
+  # @spec route_from_har(t(), binary(), map()) :: :ok
+  # def route(context, har, options \\ %{})
 
   # ???
   # @spec service_workers(t()) :: [Playwright.Worker.t()]
@@ -578,6 +606,12 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
+  # @spec unroute_all(t(), map()) :: :ok
+  # def unroute_all(context, options \\ %{})
+
+  # @spec wait_for_event(t(), binary(), map()) :: map()
+  # def wait_for_event(context, event, options \\ %{})
+
   # private
   # ---------------------------------------------------------------------------
 
@@ -596,10 +630,16 @@ defmodule Playwright.BrowserContext do
   #         break
   #
   # ...hoping for a test to drive that out.
-  defp on_route(context, %{params: %{request: request} = params} = _event) do
+
+  # NOTE(20240525):
+  # Do not love this; See Page.on_route/2 (which is an exact copy of this) for why.
+  defp on_route(context, %{params: %{route: %{request: request} = route} = _params} = _event) do
     Enum.reduce_while(context.routes, [], fn handler, acc ->
+      catalog = Channel.Session.catalog(context.session)
+      request = Channel.Catalog.get(catalog, request.guid)
+
       if Helpers.RouteHandler.matches(handler, request.url) do
-        Helpers.RouteHandler.handle(handler, params)
+        Helpers.RouteHandler.handle(handler, %{request: request, route: route})
         # break
         {:halt, acc}
       else

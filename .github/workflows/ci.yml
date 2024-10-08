@@ -16,13 +16,17 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Elixir
-      uses: erlef/setup-elixir@v1
+      uses: erlef/setup-beam@v1
       with:
-        elixir-version: '1.12.0'
-        otp-version: '24.0.1'
+        elixir-version: '1.16.2'
+        otp-version: '26.2.5'
     - name: Install Elixir dependencies
       run: mix deps.get
-    - name: Install Node dependencies
-      run: npm install --prefix assets
+    - name: Install Playwright dependencies (e.g., browsers)
+      run: mix playwright.install
+    # NOTE: not needed for now, while assets are
+    #       directly installed to `priv/static`.
+    # - name: Install Node dependencies
+    #   run: npm install --prefix assets
     - name: Run tests
       run: mix test

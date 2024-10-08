@@ -33,7 +33,7 @@ defmodule Playwright.UnitTest do
       require Logger
 
       defp pass(other) do
-        Logger.warn("pass/1 not implemented for: #{inspect(other)}")
+        Logger.warning("pass/1 not implemented for: #{inspect(other)}")
         assert true
       end
     end

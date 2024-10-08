@@ -7,7 +7,7 @@ defmodule Playwright.APIRequestContext do
 
   """
 
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.APIRequestContext
 
   @type fetch_options() :: %{
@@ -22,6 +22,24 @@ defmodule Playwright.APIRequestContext do
           optional(:failOnStatusCode) => boolean(),
           optional(:ignoreHTTPSErrors) => boolean()
         }
+
+  # @spec delete(t(), binary(), options()) :: APIResponse.t()
+  # def delete(context, url, options \\ %{})
+
+  # @spec dispose(t()) :: :ok
+  # def dispose(api_request_context)
+
+  # @spec fetch(t(), binary() | Request.t(), options()) :: APIResponse.t()
+  # def fetch(context, url_or_request, options \\ %{})
+
+  # @spec get(t(), binary(), options()) :: APIResponse.t()
+  # def get(context, url, options \\ %{})
+
+  # @spec head(t(), binary(), options()) :: APIResponse.t()
+  # def head(context, url, options \\ %{})
+
+  # @spec patch(t(), binary(), options()) :: APIResponse.t()
+  # def patch(context, url, options \\ %{})
 
   @spec post(t(), binary(), fetch_options()) :: Playwright.APIResponse.t()
   def post(%APIRequestContext{session: session} = context, url, options \\ %{}) do
@@ -39,6 +57,13 @@ defmodule Playwright.APIRequestContext do
     )
   end
 
+  # @spec put(t(), binary(), options()) :: APIResponse.t()
+  # def put(context, url, options \\ %{})
+
+  # @spec storage_state(t(), options()) :: StorageState.t()
+  # def storage_state(context, options \\ %{})
+
+  # TODO: move to `APIResponse.body`, probably.
   @spec body(t(), Playwright.APIResponse.t()) :: any()
   def body(%APIRequestContext{session: session} = context, response) do
     Channel.post(session, {:guid, context.guid}, :fetch_response_body, %{

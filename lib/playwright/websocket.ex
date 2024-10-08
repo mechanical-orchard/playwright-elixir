@@ -2,7 +2,7 @@ defmodule Playwright.WebSocket do
   @moduledoc """
   ...
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   @property :is_closed
   @property :url
@@ -13,6 +13,11 @@ defmodule Playwright.WebSocket do
   # def expect_event(web_socket, event, predicate \\ nil, options \\ %{})
   # ...delegate wait_for_event -> expect_event
 
+  # on(...):
+  #   - close
+  #   - framereceived
+  #   - framesent
+  #   - socketerror
   # @spec on(t(), binary(), function()) :: nil
   # def on(web_socket, event, callback)
 

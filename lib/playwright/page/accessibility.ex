@@ -18,7 +18,8 @@ defmodule Playwright.Page.Accessibility do
   [2]: https://en.wikipedia.org/wiki/Switch_access
   """
 
-  alias Playwright.{Channel, ElementHandle, Extra, Page}
+  alias Playwright.{ElementHandle, Page}
+  alias Playwright.SDK.{Channel, Extra}
 
   @typedoc """
   Options given to `snapshot/2`
@@ -115,7 +116,8 @@ defmodule Playwright.Page.Accessibility do
         |> (&(Enum.find(&1.children, fn e -> e.readonly end))).()
       %{name: "pick me", readonly: true, role: "textbox"}
   """
-  @spec snapshot(Page.t(), options) :: snapshot
+  @doc deprecated: "Please use other libraries such as [Axe](https://www.deque.com/axe/) if you need to test page accessibility.
+  See the Playwright.dev Node.js [guide](https://playwright.dev/docs/accessibility-testing) for integration with Axe."
   def snapshot(page, options \\ %{})
 
   def snapshot(%Page{session: session} = page, options) do

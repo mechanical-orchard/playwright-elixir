@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-: ${PROJECT:?'UNDEFINED - Be sure to `direnv allow` first'}
+: ${REPO:?'UNDEFINED - Be sure to `direnv allow` first'}
 
-pushd ${PROJECT} > /dev/null
+pushd ${REPO} > /dev/null
   MIX_ENV=dev mix docs
 popd > /dev/null

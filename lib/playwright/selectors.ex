@@ -2,7 +2,7 @@ defmodule Playwright.Selectors do
   @moduledoc """
   ...
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
   @type options :: map()
 
@@ -10,6 +10,9 @@ defmodule Playwright.Selectors do
 
   # @spec register(Selectors.t(), binary(), any(), options()) :: :ok
   # def register(selectors, name, script, options \\ %{})
+
+  # @spec set_testid_attribute(Selectors.t(), binary()) :: :ok
+  # def set_testid_attribute(selectors, attribute_name)
 
   # ---
 end

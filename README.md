@@ -1,10 +1,10 @@
 # Playwright for Elixir
 
-**NOTE:** This package is currently in "preview". The features are not yet at parity with other Playwright implementations. Once `playwright-elixir` is at or near parity with [`playwright`](https://github.com/microsoft/playwright), the version number will be updated to mirror the supported version of `playwright`.
+**NOTE:** This package is currently in "preview" (or "alpha"). The features are not yet at parity with other Playwright implementations. Once `playwright-elixir` is at or near parity with [`playwright`](https://github.com/microsoft/playwright), the version number will be updated to mirror the supported version of `playwright`.
 
 ## Overview
 
-[Playwright](https://github.com/geometerio/playwright-elixir) is an Elixir library to automate Chromium, Firefox and WebKit with a single API. Playwright is built to enable cross-browser web automation that is **ever-green**, **capable**, **reliable** and **fast**. [See how Playwright is better](https://playwright.dev/docs/why-playwright).
+[Playwright](https://github.com/mechanical-orchard/playwright-elixir) is an Elixir library to automate Chromium, Firefox and WebKit with a single API. Playwright is built to enable cross-browser web automation that is **ever-green**, **capable**, **reliable** and **fast**. [See how Playwright is better](https://playwright.dev/docs/why-playwright).
 
 ## Installation
 
@@ -13,14 +13,14 @@ The package can be installed by adding `playwright` to your list of dependencies
 ```elixir
 def deps do
   [
-    {:playwright, "~> 1.18.0-alpha.1"}
+    {:playwright, "~> 1.44.0-alpha.4"}
   ]
 end
 ```
 
 ## Usage
 
-- [README](https://hexdocs.pm/playwright/README.html)
+- [README](https://hexdocs.pm/playwright/readme.html)
 - [Getting started](https://hexdocs.pm/playwright/basics-getting-started.html)
 - [API Reference](https://hexdocs.pm/playwright/api-reference.html)
 
@@ -45,6 +45,10 @@ defmodule Test.ExampleTest do
 end
 ```
 
+## Releases
+
+This project aims to track the release versioning found in [Playwright proper](https://github.com/microsoft/playwright).
+
 ## Contributing
 
 ### Getting started
@@ -60,6 +64,10 @@ end
 - Start server: `bin/dev/start`
 - Run tests and push: `bin/dev/shipit`
 
-### Building assets for a release
+### Releasing
 
-`mix assets.build`
+1. Update the version in `mix.exs`
+   a. Search for and update the version anywhere it appears in the repo, such as this README
+2. `git tag -a v${version_number}` such that the tag look like `v1.44.0-alpha.3` or `v1.44.0`
+3. `git push --tags`
+4. `mix hex.publish`

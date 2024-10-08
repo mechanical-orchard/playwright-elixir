@@ -5,8 +5,8 @@ defmodule Playwright.Application do
   @impl Application
   def start(_type, _args) do
     children = [
-      Playwright.Channel.SessionID,
-      {DynamicSupervisor, strategy: :one_for_one, name: Playwright.Channel.Session.Supervisor}
+      Playwright.SDK.Channel.SessionID,
+      {DynamicSupervisor, strategy: :one_for_one, name: Playwright.SDK.Channel.Session.Supervisor}
     ]
 
     options = [

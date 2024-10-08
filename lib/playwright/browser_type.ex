@@ -24,12 +24,12 @@ defmodule Playwright.BrowserType do
   Connect to a running playwright instance:
 
       {session, browser} =
-        Playwright.BrowserType.connect("ws://localhost:3000/playwright")
+        Playwright.BrowserType.connect("ws://localhost:3000/")
   """
 
-  use Playwright.ChannelOwner
-  alias Playwright.{BrowserType, Config, Transport}
-  alias Playwright.Channel.Session
+  use Playwright.SDK.ChannelOwner
+  alias Playwright.BrowserType
+  alias Playwright.SDK.{Channel, Config, Transport}
 
   @typedoc "The web client type used for `launch/1` and `connect/2` functions."
   @type client :: :chromium | :firefox | :webkit
@@ -67,7 +67,7 @@ defmodule Playwright.BrowserType do
   def connect(ws_endpoint, options \\ %{})
 
   def connect(ws_endpoint, _options) do
-    with {:ok, session} <- new_session(Transport.WebSocket, [ws_endpoint]),
+    with {:ok, session} <- new_session(Transport.WebSocket, %{ws_endpoint: ws_endpoint}),
          %{guid: guid} <- launched_browser(session),
          browser <- Channel.find(session, {:guid, guid}) do
       {session, browser}
@@ -94,7 +94,7 @@ defmodule Playwright.BrowserType do
 
       # Use `:ignore_default_args` option to filter out `--mute-audio` from
       # default arguments:
-      browser =
+      {:ok, browser} =
         Playwright.launch(:chromium, %{ignore_default_args = ["--mute-audio"]})
 
   ## Returns
@@ -179,8 +179,8 @@ defmodule Playwright.BrowserType do
 
   defp new_session(transport, args) do
     DynamicSupervisor.start_child(
-      Session.Supervisor,
-      {Session, {transport, args}}
+      Channel.Session.Supervisor,
+      {Channel.Session, {transport, args}}
     )
   end
 

@@ -14,9 +14,9 @@ defmodule Playwright.Frame do
     - `Page event: :frame_detached` - fired when the frame gets detached from
       the page.  A Frame can be detached from the page only once.
   """
-  use Playwright.ChannelOwner
-  alias Playwright.Channel.Event
-  alias Playwright.{ChannelOwner, ElementHandle, Frame, Helpers, Response}
+  use Playwright.SDK.ChannelOwner
+  alias Playwright.{ElementHandle, Frame, Locator, Response}
+  alias Playwright.SDK.{ChannelOwner, Helpers}
 
   @property :load_states
   @property :url
@@ -67,7 +67,14 @@ defmodule Playwright.Frame do
   @spec check(t(), binary(), options()) :: :ok
   def check(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(session, {:guid, frame.guid}, :check, params)
+
+    case Channel.post(session, {:guid, frame.guid}, :check, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---
@@ -109,13 +116,27 @@ defmodule Playwright.Frame do
         options
       )
 
-    Channel.post(session, {:guid, frame.guid}, :click, params)
+    case Channel.post(session, {:guid, frame.guid}, :click, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---
 
-  # @spec content(Frame.t()) :: binary()
-  # def content(frame)
+  @spec content(Frame.t()) :: binary() | {:error, term()}
+  def content(%Frame{session: session} = frame) do
+    case Channel.post(session, {:guid, frame.guid}, :content) do
+      {:error, error} ->
+        {:error, error}
+
+      content ->
+        content
+    end
+  end
 
   # ---
 
@@ -173,7 +194,13 @@ defmodule Playwright.Frame do
         options
       )
 
-    Channel.post(session, {:guid, frame.guid}, :dblclick, params)
+    case Channel.post(session, {:guid, frame.guid}, :dblclick, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   @doc """
@@ -246,8 +273,11 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec drag_and_drop(Frame.t(), binary(), binary(), options()) :: :ok
-  # def drag_and_drop(frame, source, target, options \\ %{})
+  @spec drag_and_drop(Frame.t(), binary(), binary(), options()) :: Frame.t()
+  def drag_and_drop(frame, source, target, options \\ %{}) do
+    params = Map.merge(%{source: source, target: target}, options)
+    post!(frame, :drag_and_drop, params)
+  end
 
   # @spec eval_on_selector(Frame.t(), binary(), expression(), any(), options()) :: :ok
   # def eval_on_selector(frame, selector, expression, arg \\ nil, options \\ %{})
@@ -296,6 +326,7 @@ defmodule Playwright.Frame do
     parse_result(fn ->
       Channel.post(session, {:guid, frame.guid}, :evaluate_expression, %{
         expression: expression,
+        is_function: Helpers.Expression.function?(expression),
         arg: serialize(arg)
       })
     end)
@@ -407,6 +438,39 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :get_attribute, params)
   end
 
+  # @spec get_by_alt_text(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_alt_text(frame, text, options \\ %{})
+
+  # @spec get_by_label(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_label(frame, text, options \\ %{})
+
+  # @spec get_by_placeholder(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_placeholder(frame, text, options \\ %{})
+
+  # @spec get_by_role(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_role(frame, text, options \\ %{})
+
+  # @spec get_by_test_id(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_test_id(frame, text, options \\ %{})
+
+  @doc """
+  Allows locating elements that contain given text.
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Text to locate the element for. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match: case-sensitive and whole-string. Default to false. Ignored when locating by a regular expression. Note that exact match still trims whitespace. |
+  """
+  @spec get_by_text(Frame.t(), binary(), %{optional(:exact) => boolean()}) :: Playwright.Locator.t() | nil
+  def get_by_text(frame, text, options \\ %{}) do
+    locator(frame, Locator.get_by_text_selector(text, options))
+  end
+
+  # @spec get_by_title(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_title(frame, text, options \\ %{})
+
   @doc """
   !!!
   """
@@ -484,8 +548,8 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :is_checked, params)
   end
 
-  # # @spec is_detached(Frame.t(), binary(), options()) :: boolean()
-  # # def is_detached(frame, selector, options \\ %{})
+  # @spec is_detached(Frame.t(), binary(), options()) :: boolean()
+  # def is_detached(frame, selector, options \\ %{})
 
   @spec is_disabled(Frame.t(), binary(), options()) :: boolean()
   def is_disabled(%Frame{session: session} = frame, selector, options \\ %{}) do
@@ -519,8 +583,10 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec locator(Frame.t(), binary()) :: Playwright.Locator.t()
-  # def locator(frame, selector)
+  @spec locator(Frame.t(), binary()) :: Playwright.Locator.t()
+  def locator(frame, selector) do
+    Playwright.Locator.new(frame, selector)
+  end
 
   # @spec name(Frame.t()) :: binary()
   # def name(frame)
@@ -528,6 +594,10 @@ defmodule Playwright.Frame do
   # @spec page(Frame.t()) :: Page.t()
   # def page(frame)
 
+  # @spec parent_frame(Frame.t()) :: Frame.t()
+  # def parent_frame(frame)
+
+  # ??? is it `parent_frame` now, instead?
   # @spec parent_page(Frame.t()) :: Frame.t()
   # def parent_page(frame)
 
@@ -578,6 +648,16 @@ defmodule Playwright.Frame do
   @spec press(t(), binary(), binary(), options()) :: :ok
   def press(%Frame{session: session} = frame, selector, key, options \\ %{}) do
     Channel.post(session, {:guid, frame.guid}, :press, Map.merge(%{selector: selector, key: key}, options))
+  end
+
+  # 20240807: Official implementations define (something similar to) this as
+  # a pseudo-private function/method. As such, our implementation is hidden
+  # from documentation for the time being. Only called from `Locator.count/1`.
+  # ---
+  @doc false
+  @spec query_count(t(), binary()) :: number()
+  def query_count(%Frame{session: session} = frame, selector) do
+    Channel.post(session, {:guid, frame.guid}, :query_count, %{selector: selector})
   end
 
   @doc """
@@ -719,28 +799,29 @@ defmodule Playwright.Frame do
   @spec set_content(t(), binary(), options()) :: :ok
   def set_content(%Frame{session: session} = frame, html, options \\ %{}) do
     params = Map.merge(%{html: html, timeout: 30_000, wait_until: "load"}, options)
-    Channel.post(session, {:guid, frame.guid}, :set_content, params)
+
+    case Channel.post(session, {:guid, frame.guid}, :set_content, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
+  # **NOTE:**
+  # Of `payloads`, `local_paths`, and `streams` playwright-core capabilities,
+  # only `local_paths` is currently supported by playwright-elixir.
   @spec set_input_files(Frame.t(), binary(), any(), options()) :: :ok
   def set_input_files(%Frame{session: session} = frame, selector, files, options \\ %{}) do
     params =
       Map.merge(options, %{
         selector: selector,
-        files: normalize_file_payloads(files)
+        local_paths: normalize_file_payloads(files)
       })
 
     Channel.post(session, {:guid, frame.guid}, :set_input_files, params)
   end
-
-  # when it's a `FilePayload`...
-  # defp normalize_file_payload(file) do
-  #   %{
-  #     name: file.name,
-  #     mime_type: file.mime_type,
-  #     buffer: Base.encode64(file.buffer)
-  #   }
-  # end
 
   @spec tap(Frame.t(), binary(), options()) :: :ok
   def tap(%Frame{session: session} = frame, selector, options \\ %{}) do
@@ -789,10 +870,20 @@ defmodule Playwright.Frame do
   @spec uncheck(t(), binary(), options()) :: :ok
   def uncheck(%Frame{session: session} = frame, selector, options \\ %{}) do
     params = Map.merge(%{selector: selector}, options)
-    Channel.post(session, {:guid, frame.guid}, :uncheck, params)
+
+    case Channel.post(session, {:guid, frame.guid}, :uncheck, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   # ---
+
+  # @spec url(Frame.t()) :: binary()
+  # def url(frame)
 
   # @spec wait_for_function(Frame.t(), expression(), any(), options()) :: JSHandle.t()
   # def wait_for_function(frame, expression, arg \\ nil, options \\ %{})
@@ -840,9 +931,9 @@ defmodule Playwright.Frame do
   @doc """
   Returns when element specified by selector satisfies state option.
 
-  Returns `nil` if waiting for a hidden or detached element.
+  FIXME: the following is NOT TRUE... Returns `nil` if waiting for a hidden or detached element.
   """
-  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | nil
+  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | {:error, Channel.Error.t()}
   def wait_for_selector(%Frame{session: session} = frame, selector, options \\ %{}) do
     Channel.post(session, {:guid, frame.guid}, :wait_for_selector, Map.merge(%{selector: selector}, options))
   end
@@ -871,13 +962,26 @@ defmodule Playwright.Frame do
   end
 
   defp normalize_file_payload(file) when is_binary(file) do
-    {:ok, data} = File.read(file)
+    Path.expand(file)
 
-    %{
-      name: Path.basename(file),
-      buffer: Base.encode64(data)
-    }
+    # NOTE: will need to re-introduce something similar to what follows when
+    # we add support for the `payloads` and `streams` approaches.
+    # {:ok, data} = File.read(file)
+
+    # %{
+    #   name: Path.basename(file),
+    #   buffer: Base.encode64(data)
+    # }
   end
+
+  # when it's a `FilePayload`...
+  # defp normalize_file_payload(file) do
+  #   %{
+  #     name: file.name,
+  #     mime_type: file.mime_type,
+  #     buffer: Base.encode64(file.buffer)
+  #   }
+  # end
 
   defp parse_result(task) when is_function(task) do
     task.() |> Helpers.Serialization.deserialize()

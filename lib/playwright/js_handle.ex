@@ -18,9 +18,9 @@ defmodule Playwright.JSHandle do
     - `Playwright.Page.evaluate/3`
     - `Playwright.Page.evaluate_handle/3`
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
   alias Playwright.{ElementHandle, JSHandle}
-  alias Playwright.Helpers
+  alias Playwright.SDK.Helpers
 
   @property :preview
 
@@ -37,6 +37,9 @@ defmodule Playwright.JSHandle do
   def as_element(%JSHandle{} = _handle) do
     nil
   end
+
+  # @spec dispose(JSHandle.t()) :: :ok
+  # def dispose(handle)
 
   def evaluate(%{session: session} = handle, expression, arg \\ nil) do
     params = %{
@@ -86,6 +89,15 @@ defmodule Playwright.JSHandle do
 
     Channel.post(session, {:guid, handle.guid}, :evaluate_expression_handle, params)
   end
+
+  # @spec get_properties(JSHandle.t()) :: [property()]
+  # def get_properties(handle)
+
+  # @spec get_property(JSHandle.t()) :: property()
+  # def get_property(handle)
+
+  # @spec json_value(JSHandle.t()) :: property()
+  # def json_value(handle)
 
   def string(%{} = handle) do
     handle.preview

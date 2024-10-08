@@ -1,61 +1,20 @@
 defmodule Playwright.Locator do
   @moduledoc """
-  `Playwright.Locator` represents a view to the element(s) on the page.
-  It captures the logic sufficient to retrieve the element at any given moment.
-  `Locator` can be created with the `Playwright.Locator.new/2` function.
+  Locators are the central piece of Playwright's auto-waiting and retry-ability.
+  In a nutshell, locators represent a way to find element(s) on the page at any
+  moment. A locator may be created with the `Page.locator/2` function.
 
-  See also `Playwright.Page.locator/2`.
+  Instances of `Playwright.Locator` may be created via the following means:
 
-  ## Example
+  - `Playwright.Locator.new/2`
+  - `Playwright.Frame.locator/2`
+  - `Playwright.Page.locator/2`
 
-      locator = Playwright.Locator.new(page, "a#exists")
-      Playwright.Locator.click(locator)
-
-  The difference between the `Playwright.Locator` and `Playwright.ElementHandle`
-  is that the latter points to a particular element, while `Playwright.Locator` captures
-  the logic of how to retrieve that element.
-
-  ## ElementHandle Example
-
-  In the example below, `handle` points to a particular DOM element on page. If
-  that element changes text or is used by React to render an entirely different
-  component, `handle` is still pointing to that very DOM element. This can lead
-  to unexpected behaviors.
-
-      handle = Page.query_selector(page, "text=Submit")
-      ElementHandle.hover(handle)
-      ElementHandle.click(handle)
-
-  ## Locator Example
-
-  With the locator, every time the element is used, up-to-date DOM element is
-  located in the page using the selector. So in the snippet below, underlying
-  DOM element is going to be located twice.
-
-      locator = Playwright.Locator.new(page, "a#exists")
-      :ok = Playwright.Locator.hover(locator)
-      :ok = Playwright.Locator.click(locator)
-
-  ## Strictness
-
-  Locators are strict. This means that all operations on locators that imply
-  some target DOM element will throw if more than one element matches given
-  selector.
-
-      alias Playwright.Locator
-      locator = Locator.new(page, "button")
-
-      # Throws if there are several buttons in DOM:
-      Locator.click(locator)
-
-      # Works because we explicitly tell locator to pick the first element:
-      Locator.first(locator) |> Locator.click()
-
-      # Works because count knows what to do with multiple matches:
-      Locator.count(locator)
+  [Learn more about locators](guides-locators.html).
   """
 
-  alias Playwright.{Channel, ElementHandle, Frame, Locator, Page}
+  alias Playwright.{ElementHandle, Frame, Locator, Page}
+  alias Playwright.SDK.Channel
 
   @enforce_keys [:frame, :selector]
   defstruct [:frame, :selector]
@@ -97,14 +56,18 @@ defmodule Playwright.Locator do
   @type serializable :: any()
 
   @doc """
-  Returns a `%Playwright.Locator{}`.
+  Creates a `Playwright.Locator`.
+
+  ## Returns
+
+    - `Playwright.Locator`
 
   ## Arguments
 
-  | key/name | type   |                        | description |
-  | ---------- | ------ | ---------------------- | ----------- |
-  | `frame`    | param  | `Frame.t() | Page.t()` |  |
-  | `selector` | param  | `binary()`             | A Playwright selector. |
+  | key/name          | type   |                        | description |
+  | ----------------- | ------ | ---------------------- | ----------- |
+  | `frame` or `page` | param  | `Frame.t() | Page.t()` |  |
+  | `selector`        | param  | `binary()`             | A Playwright selector. |
   """
   @spec new(Frame.t() | Page.t(), selector()) :: Locator.t()
   def new(frame, selector)
@@ -124,11 +87,50 @@ defmodule Playwright.Locator do
   end
 
   @doc """
+  When the locator points to a list of elements, returns a list of locators,
+  each addressing their respective elements.
+
+  > ### NOTE {: .warning}
+  >
+  > `Playwright.Locator.all/1` does not wait for elements to match the locator,
+  > and instead immediately returns whatever is present in the page. When the
+  > list of elements changes dynamically, `Playwright.Locator.all/1` will
+  > produce unpredictable and flaky results. When the list of elements is
+  > stable, but loaded dynamically, wait for the full list to finish loading
+  > before calling `Playwright.Locator.all/1``.
+
+  ## Returns
+
+    - `[Playwright.Locator]`
+
+  ## Example
+
+  Retrieve the text for all `<p>` elements currently on the page:
+
+      Playwright.Page.locator(page, "p")
+      |> Playwright.Locator.all()
+      |> Enum.map(fn locator -> Playwright.Locator.text_content(locator) end)
+  """
+  @spec all(Locator.t()) :: [Locator.t()]
+  def all(locator) do
+    Enum.map(1..count(locator), fn n ->
+      Locator.nth(locator, n - 1)
+    end)
+  end
+
+  @doc """
   Returns an list of `node.innerText` values for all matching nodes.
 
   ## Returns
 
     - `[binary()]`
+
+  ## Example
+
+  Retrieve the text for all `<p>` elements currently on the page:
+
+      Playwright.Page.locator(page, "p")
+      |> Playwright.Locator.all_inner_texts()
   """
   @spec all_inner_texts(t()) :: [binary()]
   def all_inner_texts(%Locator{} = locator) do
@@ -141,10 +143,27 @@ defmodule Playwright.Locator do
   ## Returns
 
     - `[binary()]`
+
+  ## Example
+
+  Retrieve the text for all `<p>` elements currently on the page:
+
+      Playwright.Page.locator(page, "p")
+      |> Playwright.Locator.all_text_contents()
   """
   @spec all_text_contents(t()) :: [binary()]
   def all_text_contents(%Locator{} = locator) do
     Frame.eval_on_selector_all(locator.frame, locator.selector, "ee => ee.map(e => e.textContent || '')")
+  end
+
+  # @spec and(Locator.t(), Locator.t()) :: Locator.t()
+  # def and(locator, other)
+
+  # @spec blur(Locator.t(), options()) :: :ok
+  def blur(locator, options \\ %{}) do
+    frame = locator.frame
+    options = Map.merge(%{selector: locator.selector, strict: true}, options)
+    Channel.post(frame.session, {:guid, frame.guid}, :blur, options)
   end
 
   @doc """
@@ -173,7 +192,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2`. `(default: 30 seconds)` |
   """
@@ -208,7 +227,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
@@ -220,6 +239,14 @@ defmodule Playwright.Locator do
   def check(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(options, %{strict: true})
     Frame.check(locator.frame, locator.selector, options)
+  end
+
+  @doc """
+  Clears the contents of a form input/textarea field.
+  """
+  @spec clear(Locator.t(), options()) :: :ok
+  def clear(locator, options \\ %{}) do
+    fill(locator, "", options)
   end
 
   @doc """
@@ -235,7 +262,7 @@ defmodule Playwright.Locator do
   If the element is detached from the DOM at any moment during the action, this method throws.
 
   When all steps combined have not finished during the specified timeout, this method throws a
-  `Playwright.Channel.Error.t()`. Passing `0` timeout disables this.
+  `Playwright.SDK.Channel.Error.t()`. Passing `0` timeout disables this.
 
   ## Returns
 
@@ -243,7 +270,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
   | `:click_count`   | option | `number()`                        | See [MDN: `UIEvent.detail`](https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail) `(default: 1)` |
@@ -261,6 +288,9 @@ defmodule Playwright.Locator do
     Frame.click(locator.frame, locator.selector, options)
   end
 
+  # @spec content_frame(Locator.t()) :: FrameLocator.t()
+  # def content_frame(locator)
+
   @doc """
   Returns the number of elements matching given selector.
 
@@ -268,9 +298,9 @@ defmodule Playwright.Locator do
 
     - `number()`
   """
-  @spec count(t()) :: number()
+  @spec count(Locator.t()) :: number()
   def count(%Locator{} = locator) do
-    evaluate_all(locator, "ee => ee.length")
+    Frame.query_count(locator.frame, locator.selector)
   end
 
   @doc """
@@ -304,7 +334,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `:button`        | option | `:left`, `:right` or `:middle`    | `(default: :left)` |
   | `:delay`         | option | `number() `                       | Time to wait between keydown and keyup in milliseconds. `(default: 0)` |
@@ -361,7 +391,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                         | description |
+  | key/name         | type   |                         | description |
   | ---------------- | ------ | ----------------------- | ----------- |
   | `type`           | param  | `atom()` or `binary()`  | DOM event type: `:click`, `:dragstart`, etc. |
   | `event_init`     | param  | `evaluation_argument()` | Optional event-specific initialization properties. |
@@ -373,6 +403,14 @@ defmodule Playwright.Locator do
     Frame.dispatch_event(locator.frame, locator.selector, type, event_init, options)
   end
 
+  @spec drag_to(Locator.t(), Locator.t(), options()) :: Locator.t()
+  def drag_to(source, target, options \\ %{}) do
+    returning(source, fn ->
+      options = Map.merge(options, %{strict: true})
+      Frame.drag_and_drop(source.frame, source.selector, target.selector, options)
+    end)
+  end
+
   @doc """
   Resolves the given `Playwright.Locator` to the first matching DOM element.
 
@@ -382,14 +420,15 @@ defmodule Playwright.Locator do
   ## Returns
 
   - `Playwright.ElementHandle.t()`
-  - `{:error, Playwright.Channel.Error.t()}`
+  - `{:error, Playwright.SDK.Channel.Error.t()}`
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
+  @doc deprecated: "Discouraged: Prefer using Locators and web assertions over ElementHandles because latter are inherently racy."
   @spec element_handle(t(), options()) :: ElementHandle.t() | {:error, Channel.Error.t()}
   def element_handle(%Locator{} = locator, options \\ %{}) do
     options = Map.merge(%{strict: true, state: "attached"}, options)
@@ -406,6 +445,7 @@ defmodule Playwright.Locator do
 
     - `[Playwright.ElementHandle.t()]`
   """
+  @doc deprecated: "Discouraged: Prefer using Locators and web assertions over ElementHandles because latter are inherently racy."
   @spec element_handles(t()) :: [ElementHandle.t()]
   def element_handles(locator) do
     Frame.query_selector_all(locator.frame, locator.selector)
@@ -422,7 +462,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name   | type   |            | description |
+  | key/name     | type   |            | description |
   | ------------ | ------ | ---------- | ----------- |
   | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
@@ -431,10 +471,6 @@ defmodule Playwright.Locator do
   @spec evaluate(t(), binary(), any(), options()) :: serializable()
   def evaluate(locator, expression, arg \\ nil, options \\ %{})
 
-  require Logger
-
-  # NOTE: need to do all of the map-like things before a plain `map()`,
-  # then do `map()`, then do anything else.
   def evaluate(%Locator{} = locator, expression, arg, options)
       when is_struct(arg, ElementHandle) do
     with_element(locator, options, fn handle ->
@@ -491,11 +527,11 @@ defmodule Playwright.Locator do
   ## Returns
 
     - `Playwright.ElementHandle.t()`
-    - `{:error, Playwright.Channel.Error.t()}`
+    - `{:error, Playwright.SDK.Channel.Error.t()}`
 
   ## Arguments
 
-  | key/name   | type   |            | description |
+  | key/name     | type   |            | description |
   | ------------ | ------ | ---------- | ----------- |
   | `expression` | param  | `binary()` | JavaScript expression to be evaluated in the browser context. If it looks like a function declaration, it is interpreted as a function. Otherwise, evaluated as an expression. |
   | `arg`        | param  | `any()`    | Argument to pass to `expression` `(optional)` |
@@ -555,7 +591,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |             | description |
+  | key/name         | type   |             | description |
   | ---------------- | ------ | ----------- | ----------- |
   | `value`          | param  | `binary()`  | Value to fill for the `<input>`, `<textarea>` or `[contenteditable]` element |
   | `:force`         | option | `boolean()` | Whether to bypass the actionability checks. `(default: false)` |
@@ -567,6 +603,9 @@ defmodule Playwright.Locator do
     options = Map.merge(options, %{strict: true})
     Frame.fill(locator.frame, locator.selector, value, options)
   end
+
+  # @spec filter(Locator.t(), options()) :: Locator.t()
+  # def filter(locator, options \\ %{})
 
   @doc """
   Returns a new `Playwright.Locator` scoped to the first matching element.
@@ -585,7 +624,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -607,7 +646,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `name`     | param  | `binary()` | Name of the attribute to retrieve. |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
@@ -617,6 +656,58 @@ defmodule Playwright.Locator do
     options = Map.merge(options, %{strict: true})
     Frame.get_attribute(locator.frame, locator.selector, name, options)
   end
+
+  # @spec get_by_alt_text(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_alt_text(locator, text, options \\ %{})
+
+  # @spec get_by_label(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_label(locator, text, options \\ %{})
+
+  # @spec get_by_placeholder(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_placeholder(locator, text, options \\ %{})
+
+  # @spec get_by_test_id(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_test_id(locator, text, options \\ %{})
+
+  @doc """
+  Allows locating elements that contain given text.
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Text to locate the element for. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match: case-sensitive and whole-string. Default to false. Ignored when locating by a regular expression. Note that exact match still trims whitespace. |
+  """
+  @spec get_by_text(Locator.t(), binary(), %{optional(:exact) => boolean()}) :: Locator.t()
+  def get_by_text(locator, text, options \\ %{}) when is_binary(text) do
+    locator
+    |> Locator.locator(get_by_text_selector(text, options))
+  end
+
+  # @spec get_by_text(Locator.t(), Regex.t(), %{optional(:exact) => boolean()}) :: Locator.t()
+  # def get_by_text(locator, text, options \\ %{}) when is_regex(text)
+
+  # NOTE: this is a kind of helper; not ideally part of the API.
+  @doc false
+  def get_by_text_selector(text, options) do
+    exact = Map.get(options, :exact, false)
+
+    selector_suffix =
+      if exact do
+        "s"
+      else
+        "i"
+      end
+
+    "internal:text=\"#{text}\"" <> selector_suffix
+  end
+
+  # @spec get_by_title(Locator.t(), binary(), options()) :: Locator.t()
+  # def get_by_title(locator, text, options \\ %{})
+
+  # @spec highlight(Locator.t()) :: :ok
+  # def highlight(locator)
 
   @doc """
   Hovers over the element.
@@ -641,7 +732,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `selector`       | param  | `binary()`                        | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
@@ -661,7 +752,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -675,7 +766,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -692,7 +783,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -708,7 +799,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -722,7 +813,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -736,7 +827,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -750,7 +841,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -764,7 +855,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -778,7 +869,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -810,6 +901,12 @@ defmodule Playwright.Locator do
   def nth(%Locator{} = context, index) do
     locator(context, "nth=#{index}")
   end
+
+  # @spec or(Locator.t(), Locator.t()) :: Locator.t()
+  # def or(locator, other)
+
+  # @spec page(Locator.t()) :: Page.t()
+  # def page(locator)
 
   @doc """
   Focuses the element, and then uses `keyboard.down(key)` and `keyboard.up(key)`.
@@ -860,7 +957,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `key`            | param  | `binary()`      | Name of the key to press or a character to generate, such as `ArrowLeft` or `a`. |
   | `:delay`         | option | `number()`      | Time to wait between `mousedown` and `mouseup` in milliseconds. `(default: 0)` |
@@ -873,6 +970,9 @@ defmodule Playwright.Locator do
     Frame.press(locator.frame, locator.selector, key, options)
   end
 
+  # @spec press_sequentially(Locator.t(), binary(), options()) :: :ok
+  # def press_sequentially(locator, text, options \\ %{})
+
   @doc """
   Returns a buffer with the captured screenshot data.
 
@@ -881,7 +981,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name         | type   |                   | description |
+  | key/name           | type   |                   | description |
   | ------------------ | ------ | ----------------- | ----------- |
   | `:omit_background` | option | `boolean()`       | Hides default white background and allows capturing screenshots with transparency. Not applicable to jpeg images. `(default: false)` |
   | `:path`            | option | `binary()`        | The file path to which to save the image. The screenshot type will be inferred from file extension. If path is a relative path, then it is resolved relative to the current working directory. If no path is provided, the image won't be saved to the disk. |
@@ -903,7 +1003,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -934,6 +1034,7 @@ defmodule Playwright.Locator do
   Triggers a change and input event once all the provided options have been selected.
 
   ## Example
+
       alias Playwright.Locator
       locator = Locator.new(page, "select#colors")
 
@@ -952,7 +1053,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `values`         | param  | `any()`         | Options to select. |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
@@ -985,7 +1086,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
   | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
@@ -1020,7 +1121,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `checked`        | param  | `boolean()`     | Whether to check or uncheck the checkbox. |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
@@ -1046,9 +1147,13 @@ defmodule Playwright.Locator do
 
   Expects element (i.e., `locator.selector`) to point to an input element.
 
+  # **NOTE:**
+  # Of `payloads`, `local_paths`, and `streams` playwright-core capabilities,
+  # only `local_paths` is currently supported by playwright-elixir.
+
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `files`          | param  | `any()`         | ... |
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
@@ -1094,7 +1199,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                                   | description |
+  | key/name         | type   |                                   | description |
   | ---------------- | ------ | --------------------------------- | ----------- |
   | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
   | `:modifiers`     | option | `[:alt, :control, :meta, :shift]` | Modifier keys to press. Ensures that only these modifiers are pressed during the operation, and then restores current modifiers back. If not specified, currently pressed modifiers are used. |
@@ -1114,7 +1219,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name | type   |            | description |
+  | key/name   | type   |            | description |
   | ---------- | ------ | ---------- | ----------- |
   | `:timeout` | option | `number()` | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
   """
@@ -1132,7 +1237,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |             | description |
+  | key/name         | type   |             | description |
   | ---------------- | ------ | ----------- | ----------- |
   | `text`           | param  | `binary()`  | Text to type into a focused element. |
   | `:delay`         | option | `number()`  | Time to wait between `mousedown` and `mouseup` in milliseconds. `(default: 0)` |
@@ -1169,7 +1274,7 @@ defmodule Playwright.Locator do
 
   ## Arguments
 
-  | key/name       | type   |                 | description |
+  | key/name         | type   |                 | description |
   | ---------------- | ------ | --------------- | ----------- |
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
@@ -1189,30 +1294,52 @@ defmodule Playwright.Locator do
   immediately. Otherwise, waits for up to `option: timeout` milliseconds until
   the condition is met.
 
-  ## Options
+  ## Returns
+
+    - `Locator.t()`
+
+  ## Arguments
 
   | key/name   | type   |              | description |
   | ---------- | ------ | ------------ | ----------- |
-  | `:state`   | option | state option | Defaults to `visible`. See "state options" below" |
+  | `:state`   | option | state option | Defaults to `visible`. See "Options for `:state`" below". |
   | `:timeout` | option | float        | Maximum time in milliseconds, defaults to 30 seconds, pass 0 to disable timeout. The default value can be changed by using the browser_context.set_default_timeout(timeout) or page.set_default_timeout(timeout) methods. |
 
-  ## State options
+  ## Options for `:state`
 
   | value      | description |
   | ---------- | ----------- |
-  | 'attached' | wait for element to be present in DOM. |
+  | 'attached' | wait for element to be present in DOM. (default) |
   | 'detached' | wait for element to not be present in DOM. |
   | 'visible'  | wait for element to have non-empty bounding box and no visibility:hidden. Note that element without any content or with display:none has an empty bounding box and is not considered visible. |
   | 'hidden'   | wait for element to be either detached from DOM, or have an empty bounding box or visibility:hidden. This is opposite to the 'visible' option. |
+
+  ## Example
+
+  ...
   """
-  @spec wait_for(t(), options()) :: :ok
+
+  # const orderSent = page.locator('#order-sent');
+  # await orderSent.waitFor();
+
+  @spec wait_for(t(), options()) :: t() | {:error, Channel.Error.t()}
   def wait_for(%Locator{} = locator, options \\ %{}) do
-    Frame.wait_for_selector(locator.frame, locator.selector, options)
-    :ok
+    case Frame.wait_for_selector(locator.frame, locator.selector, options) do
+      {:error, _} = error ->
+        error
+
+      _ ->
+        locator
+    end
   end
 
   # private
   # ---------------------------------------------------------------------------
+
+  defp returning(subject, task) do
+    task.()
+    subject
+  end
 
   defp with_element(%Locator{frame: frame} = locator, options, task) do
     params = Map.merge(options, %{selector: locator.selector})

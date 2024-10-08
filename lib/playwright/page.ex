@@ -38,16 +38,25 @@ defmodule Playwright.Page do
 
       Page.remove_listener(page, log_request)
   """
-  use Playwright.ChannelOwner
+  use Playwright.SDK.ChannelOwner
 
+  alias Playwright.SDK.Channel
   alias Playwright.{BrowserContext, ElementHandle, Frame, Page, Response}
-  alias Playwright.ChannelOwner
-  alias Playwright.Helpers
+  alias Playwright.SDK.{ChannelOwner, Helpers}
 
+  @property :bindings
   @property :is_closed
   @property :main_frame
   @property :owned_context
   @property :routes
+
+  # ---
+  # @property :coverage
+  # @property :keyboard
+  # @property :mouse
+  # @property :request
+  # @property :touchscreen
+  # ---
 
   @type dimensions :: map()
   @type expression :: binary()
@@ -55,8 +64,6 @@ defmodule Playwright.Page do
   @type options :: map()
   @type selector :: binary()
   @type serializable :: any()
-
-  require Logger
 
   # callbacks
   # ---------------------------------------------------------------------------
@@ -67,12 +74,16 @@ defmodule Playwright.Page do
       {:patch, %{event.target | is_closed: true}}
     end)
 
+    Channel.bind(session, {:guid, page.guid}, :binding_call, fn %{params: %{binding: binding}, target: target} ->
+      on_binding(target, binding)
+    end)
+
     Channel.bind(session, {:guid, page.guid}, :route, fn %{target: target} = e ->
       on_route(target, e)
       # NOTE: will patch here
     end)
 
-    {:ok, %{page | routes: []}}
+    {:ok, %{page | bindings: %{}, routes: []}}
   end
 
   # API
@@ -108,7 +119,7 @@ defmodule Playwright.Page do
       # preload.js
       Math.random = () => 42;
 
-      Page.add_init_script(context, %{path: "preload.js"})
+      Page.add_init_script(page, %{path: "preload.js"})
 
   ## Notes
 
@@ -123,7 +134,14 @@ defmodule Playwright.Page do
   @spec add_init_script(t(), binary() | map()) :: :ok
   def add_init_script(%Page{session: session} = page, script) when is_binary(script) do
     params = %{source: script}
-    Channel.post(session, {:guid, page.guid}, :add_init_script, params)
+
+    case Channel.post(session, {:guid, page.guid}, :add_init_script, params) do
+      {:ok, _} ->
+        :ok
+
+      {:error, error} ->
+        {:error, error}
+    end
   end
 
   def add_init_script(%Page{} = page, %{path: path} = script) when is_map(script) do
@@ -132,8 +150,17 @@ defmodule Playwright.Page do
 
   # ---
 
+  # @spec add_locator_handler(t(), Locator.t(), (Locator.t() -> any()), options()) :: :ok
+  # def add_locator_handler(page, locator, func, options \\ %{})
+
+  # @spec add_script_tag(Page.t(), options()) :: ElementHandle.t()
+  # def add_script_tag(page, options \\ %{})
+
+  # @spec add_style_tag(Page.t(), options()) :: ElementHandle.t()
+  # def add_style_tag(page, options \\ %{})
+
   # @spec bring_to_front(t()) :: :ok
-  # def bring_to_front(owner)
+  # def bring_to_front(page)
 
   # ---
 
@@ -160,7 +187,7 @@ defmodule Playwright.Page do
 
   ## Arguments
 
-  | key/name          | type   |             | description |
+  | key/name            | type   |             | description |
   | ------------------- | ------ | ----------- | ----------- |
   | `run_before_unload` | option | `boolean()` | Whether to run the before unload page handlers. `(default: false)` |
 
@@ -172,16 +199,31 @@ defmodule Playwright.Page do
   """
   @spec close(t(), options()) :: :ok
   def close(%Page{session: session} = page, options \\ %{}) do
-    Channel.post(session, {:guid, page.guid}, :close, options)
+    # A call to `close` will remove the item from the catalog. `Catalog.find`
+    # here ensures that we do not `post` a 2nd `close`.
+    case Channel.find(session, {:guid, page.guid}, %{timeout: 10}) do
+      %Page{} ->
+        Channel.post(session, {:guid, page.guid}, :close, options)
 
-    # NOTE: this *might* prefer to be done on `__dispose__`
-    # ...OR, `.on(_, "close", _)`
-    if page.owned_context do
-      context(page) |> BrowserContext.close()
+        # NOTE: this *might* prefer to be done on `__dispose__`
+        # ...OR, `.on(_, "close", _)`
+        if page.owned_context do
+          context(page) |> BrowserContext.close()
+        end
+
+        :ok
+
+      {:error, _} ->
+        :ok
     end
-
-    :ok
   end
+
+  # ---
+
+  # @spec content(Page.t()) :: binary()
+  # def content(page)
+
+  # ---
 
   # @doc """
   # Get the full HTML contents of the page, including the doctype.
@@ -195,10 +237,15 @@ defmodule Playwright.Page do
   Get the `Playwright.BrowserContext` that the page belongs to.
   """
   @spec context(t()) :: BrowserContext.t()
-  def context(owner)
+  def context(page)
 
-  def context(%Page{session: session} = owner) do
-    Channel.find(session, {:guid, owner.parent.guid})
+  def context(%Page{session: session} = page) do
+    Channel.find(session, {:guid, page.parent.guid})
+  end
+
+  @spec content(t()) :: binary() | {:error, term()}
+  def content(%Page{} = page) do
+    main_frame(page) |> Frame.content()
   end
 
   @doc """
@@ -219,6 +266,13 @@ defmodule Playwright.Page do
     main_frame(page) |> Frame.dispatch_event(selector, type, event_init, options)
   end
 
+  @spec drag_and_drop(Page.t(), binary(), binary(), options()) :: Page.t()
+  def drag_and_drop(page, source, target, options \\ %{}) do
+    with_latest(page, fn page ->
+      main_frame(page) |> Frame.drag_and_drop(source, target, options)
+    end)
+  end
+
   # ---
 
   # @spec emulate_media(t(), options()) :: :ok
@@ -227,8 +281,8 @@ defmodule Playwright.Page do
   # ---
 
   @spec eval_on_selector(t(), binary(), binary(), term(), map()) :: term()
-  def eval_on_selector(%Page{} = owner, selector, expression, arg \\ nil, options \\ %{}) do
-    main_frame(owner)
+  def eval_on_selector(%Page{} = page, selector, expression, arg \\ nil, options \\ %{}) do
+    main_frame(page)
     |> Frame.eval_on_selector(selector, expression, arg, options)
   end
 
@@ -244,7 +298,7 @@ defmodule Playwright.Page do
     main_frame(page) |> Frame.evaluate_handle(expression, arg)
   end
 
-  # @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.Channel.Event.t()
+  # @spec expect_event(t(), atom() | binary(), function(), any(), any()) :: Playwright.SDK.Channel.Event.t()
   # def expect_event(page, event, trigger, predicate \\ nil, options \\ %{})
 
   # def expect_event(%Page{} = page, event, trigger, predicate, options) do
@@ -267,11 +321,47 @@ defmodule Playwright.Page do
   # def expect_response(page, url_or_predicate, options \\ %{})
   # ...defdelegate wait_for_response
 
-  # @spec expose_binding(t(), binary(), function(), options()) :: :ok
-  # def expose_binding(page, name, callback, options \\ %{})
+  @doc """
+  Adds a function called `param:name` on the `window` object of every frame in
+  this page.
 
-  # @spec expose_function(t(), binary(), function()) :: :ok
-  # def expose_function(page, name, callback)
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  The first argument to the `callback` function includes the following details
+  about the caller:
+
+      %{
+        context: %Playwright.BrowserContext{},
+        frame:   %Playwright.Frame{},
+        page:    %Playwright.Page{}
+      }
+
+  See `Playwright.BrowserContext.expose_binding/4` for a similar,
+  context-scoped version.
+  """
+  @spec expose_binding(t(), binary(), function(), options()) :: Page.t()
+  def expose_binding(%Page{session: session} = page, name, callback, options \\ %{}) do
+    Channel.patch(session, {:guid, page.guid}, %{bindings: Map.merge(page.bindings, %{name => callback})})
+    post!(page, :expose_binding, Map.merge(%{name: name, needs_handle: false}, options))
+  end
+
+  @doc """
+  Adds a function called `param:name` on the `window` object of every frame in
+  the page.
+
+  When called, the function executes `param:callback` and resolves to the return
+  value of the `callback`.
+
+  See `Playwright.BrowserContext.expose_function/3` for a similar,
+  context-scoped version.
+  """
+  @spec expose_function(Page.t(), String.t(), function()) :: Page.t()
+  def expose_function(page, name, callback) do
+    expose_binding(page, name, fn _, args ->
+      callback.(args)
+    end)
+  end
 
   # ---
 
@@ -314,6 +404,39 @@ defmodule Playwright.Page do
 
   # ---
 
+  # @spec get_by_alt_text(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_alt_text(page, text, options \\ %{})
+
+  # @spec get_by_label(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_label(page, text, options \\ %{})
+
+  # @spec get_by_placeholder(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_placeholder(page, text, options \\ %{})
+
+  # @spec get_by_role(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_role(page, text, options \\ %{})
+
+  # @spec get_by_test_id(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_test_id(page, text, options \\ %{})
+
+  @doc """
+  Allows locating elements that contain given text.
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Text to locate the element for. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match: case-sensitive and whole-string. Default to false. Ignored when locating by a regular expression. Note that exact match still trims whitespace. |
+  """
+  @spec get_by_text(Page.t(), binary(), %{optional(:exact) => boolean()}) :: Playwright.Locator.t() | nil
+  def get_by_text(page, text, options \\ %{}) do
+    main_frame(page) |> Frame.get_by_text(text, options)
+  end
+
+  # @spec get_by_title(Page.t(), binary(), options()) :: Playwright.Locator.t() | nil
+  # def get_by_title(page, text, options \\ %{})
+
   # @spec go_back(t(), options()) :: Response.t() | nil
   # def go_back(page, options \\ %{})
 
@@ -346,32 +469,61 @@ defmodule Playwright.Page do
     Playwright.Locator.new(page, selector)
   end
 
+  # @spec main_frame(t()) :: Frame.t()
+  # def main_frame(page)
+
+  # @spec opener(t()) :: Frame.t() | nil
+  # def opener(page)
+
+  # @spec pause(t()) :: :ok
+  # def pause(page)
+
   # ---
 
-  @spec request(t()) :: Playwright.APIRequestContext.t()
-  def request(%Page{session: session} = page) do
-    Channel.list(session, {:guid, page.owned_context.browser.guid}, "APIRequestContext")
-    |> List.first()
+  # on(...):
+  #   - close
+  #   - console
+  #   - crash
+  #   - dialog
+  #   - domcontentloaded
+  #   - download
+  #   - filechooser
+  #   - frameattached
+  #   - framedetached
+  #   - framenavigated
+  #   - load
+  #   - pageerror
+  #   - popup
+  #   - requestfailed
+  #   - websocket
+  #   - worker
+
+  def on(%Page{} = page, event, callback) when is_binary(event) do
+    on(page, String.to_atom(event), callback)
   end
 
-  # NOTE: these events will be recv'd from Playwright server with
-  # the parent BrowserContext as the context/bound :guid. So, we need to
-  # add our handlers there, on that (BrowserContext) parent.
+  # NOTE: These events will be recv'd from Playwright server with the parent
+  # BrowserContext as the context/bound :guid. So, we need to add our handlers
+  # there, on that (BrowserContext) parent.
+  #
+  # For :update_subscription, :event is one of:
+  # (console|dialog|fileChooser|request|response|requestFinished|requestFailed)
   def on(%Page{session: session} = page, event, callback)
-      when event in [:request, :response, :request_finished, "request", "response", "requestFinished"] do
+      when event in [:console, :dialog, :file_chooser, :request, :response, :request_finished, :request_failed] do
+    # HACK!
+    e = Atom.to_string(event) |> Recase.to_camel()
+
+    Channel.post(session, {:guid, page.guid}, :update_subscription, %{event: e, enabled: true})
     Channel.bind(session, {:guid, context(page).guid}, event, callback)
   end
 
-  def on(%Page{session: session} = page, event, callback) do
+  def on(%Page{session: session} = page, event, callback) when is_atom(event) do
     Channel.bind(session, {:guid, page.guid}, event, callback)
   end
 
   # ---
 
-  # @spec opener(t()) :: Page.t() | nil
-  # def opener(page)
-
-  # @spec pdf(t(), options()) :: binary()
+  # @spec pdf(t(), options()) :: binary() # ?
   # def pdf(page, options \\ %{})
 
   # ---
@@ -426,6 +578,19 @@ defmodule Playwright.Page do
     Channel.post(session, {:guid, page.guid}, :reload, options)
   end
 
+  # ---
+
+  # @spec remove_locator_handler(t(), Locator.t()) :: :ok
+  # def remove_locator_handler(page, locator)
+
+  # ---
+
+  @spec request(t()) :: Playwright.APIRequestContext.t()
+  def request(%Page{session: session} = page) do
+    Channel.list(session, {:guid, page.owned_context.browser.guid}, "APIRequestContext")
+    |> List.first()
+  end
+
   @spec route(t(), binary(), function(), map()) :: :ok
   def route(page, pattern, handler, options \\ %{})
 
@@ -433,16 +598,21 @@ defmodule Playwright.Page do
     with_latest(page, fn page ->
       matcher = Helpers.URLMatcher.new(pattern)
       handler = Helpers.RouteHandler.new(matcher, handler)
-      routes = page.routes
 
-      if Enum.empty?(routes) do
-        Channel.post(session, {:guid, page.guid}, :set_network_interception_enabled, %{enabled: true})
-      end
+      routes = [handler | page.routes]
+      patterns = Helpers.RouteHandler.prepare(routes)
 
-      Channel.patch(session, {:guid, page.guid}, %{routes: [handler | routes]})
-      :ok
+      Channel.patch(session, {:guid, page.guid}, %{routes: routes})
+      Channel.post(session, {:guid, page.guid}, :set_network_interception_patterns, %{patterns: patterns})
     end)
   end
+
+  # ---
+
+  # @spec route_from_har(t(), binary(), map()) :: :ok
+  # def route_from_har(page, har, options \\ %{})
+
+  # ---
 
   @spec screenshot(t(), options()) :: binary()
   def screenshot(%Page{session: session} = page, options \\ %{}) do
@@ -510,7 +680,10 @@ defmodule Playwright.Page do
   # ---
 
   # @spec unroute(t(), function()) :: :ok
-  # def unroute(owner, handler \\ nil)
+  # def unroute(page, handler \\ nil)
+
+  # @spec unroute_all(t(), map()) :: :ok
+  # def unroute_all(page, options \\ %{})
 
   # ---
 
@@ -522,10 +695,16 @@ defmodule Playwright.Page do
   # ---
 
   # @spec video(t()) :: Video.t() | nil
-  # def video(owner, handler \\ nil)
+  # def video(page, handler \\ nil)
 
   # @spec viewport_size(t()) :: dimensions() | nil
-  # def viewport_size(owner)
+  # def viewport_size(page)
+
+  # @spec wait_for_event(t(), binary(), map()) :: map()
+  # def wait_for_event(page, event, options \\ %{})
+
+  # @spec wait_for_function(Page.t(), expression(), any(), options()) :: JSHandle.t()
+  # def wait_for_function(page, expression, arg \\ nil, options \\ %{})
 
   # ---
 
@@ -554,8 +733,11 @@ defmodule Playwright.Page do
 
   # ---
 
+  # @spec wait_for_url(Page.t(), binary(), options()) :: :ok
+  # def wait_for_url(page, url, options \\ %{})
+
   # @spec workers(t()) :: [Worker.t()]
-  # def workers(owner)
+  # def workers(page)
 
   # ---
 
@@ -572,26 +754,25 @@ defmodule Playwright.Page do
   # private
   # ---------------------------------------------------------------------------
 
-  defp on_route(page, %{params: %{request: request} = params} = _event) do
+  defp on_binding(page, binding) do
+    Playwright.BindingCall.call(binding, Map.get(page.bindings, binding.name))
+  end
+
+  # Do not love this.
+  # It's good enough for now (to deal with v1.26.0 changes). However, it feels
+  # dirty for API resource implementations to be reaching into Catalog.
+  defp on_route(page, %{params: %{route: %{request: request} = route} = _params} = _event) do
     Enum.reduce_while(page.routes, [], fn handler, acc ->
+      catalog = Channel.Session.catalog(page.session)
+      request = Channel.Catalog.get(catalog, request.guid)
+
       if Helpers.RouteHandler.matches(handler, request.url) do
-        Helpers.RouteHandler.handle(handler, params)
+        Helpers.RouteHandler.handle(handler, %{request: request, route: route})
         # break
         {:halt, acc}
       else
         {:cont, [handler | acc]}
       end
     end)
-
-    # task =
-    #   Task.async(fn ->
-    #     IO.puts("fetching context for page...")
-
-    #     context(page)
-    #     |> IO.inspect(label: "task context")
-    #     |> BrowserContext.on_route(event)
-    #   end)
-
-    # Task.await(task)
   end
 end

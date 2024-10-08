@@ -1,6 +1,6 @@
 defmodule Playwright.Browser do
   @moduledoc """
-  A `Playwright.Browser` instance is createed via:
+  A `Playwright.Browser` instance is created via:
 
     - `Playwright.BrowserType.launch/0`, when using the "driver" transport.
     - `Playwright.BrowserType.connect/1`, when using the "websocket" transport.
@@ -9,7 +9,7 @@ defmodule Playwright.Browser do
 
       alias Playwright.{Browser, Page}
 
-      browser = Playwright.launch(:chromium)
+      {:ok, browser} = Playwright.launch(:chromium)
       page = Browser.new_page(browser)
 
       Page.goto(page, "https://example.com")
@@ -20,9 +20,9 @@ defmodule Playwright.Browser do
     - `:name`
     - `:version`
   """
-  use Playwright.ChannelOwner
-  alias Playwright.{Browser, BrowserContext, ChannelOwner, Extra, Page}
-  alias Playwright.Channel
+  use Playwright.SDK.ChannelOwner
+  alias Playwright.{Browser, BrowserContext, Page}
+  alias Playwright.SDK.{Channel, ChannelOwner, Extra}
 
   @property :name
   @property(:version, %{doc: "Returns the browser version"})
@@ -44,6 +44,9 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
+  # @spec browser_type(t()) :: BrowserType.t()
+  # def browser_type(browser)
+
   @doc """
   Closes the browser.
 
@@ -62,17 +65,18 @@ defmodule Playwright.Browser do
 
   """
   def close(%Browser{session: session} = browser) do
-    case Channel.post(session, {:guid, browser.guid}, :close) do
-      :ok ->
+    case Channel.find(session, {:guid, browser.guid}, %{timeout: 10}) do
+      %Browser{} ->
+        Channel.post(session, {:guid, browser.guid}, :close)
         :ok
 
-      {:error, %Channel.Error{message: "Target page, context or browser has been closed"}} ->
+      {:error, _} ->
         :ok
     end
   end
 
   @doc """
-  Returns an array of all open browser contexts. In a newly created browser,
+  Returns a list of all open browser contexts. In a newly created browser,
   this will return zero browser contexts.
 
   ## Example
@@ -89,8 +93,6 @@ defmodule Playwright.Browser do
   def contexts(%Browser{} = browser) do
     Channel.list(browser.session, {:guid, browser.guid}, "BrowserContext")
   end
-
-  # ---
 
   # @spec is_connected(BrowserContext.t()) :: boolean()
   # def is_connected(browser)
@@ -154,16 +156,15 @@ defmodule Playwright.Browser do
     context = new_context(browser, options)
     page = BrowserContext.new_page(context)
 
+    # TODO: handle the following, for `page`:
+    # ** (KeyError) key :guid not found in: {:error, %Playwright.Channel.Error{message: "Target closed"}}
+
     # establish co-dependency
     Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
     Channel.patch(session, {:guid, page.guid}, %{owned_context: context})
   end
 
   # ---
-
-  # test_browsertype_connect.py
-  # @spec on(t(), event(), function()) :: Browser.t()
-  # def on(browser, event, callback)
 
   # test_chromium_tracing.py
   # @spec start_tracing(t(), Page.t(), options()) :: :ok
@@ -173,7 +174,17 @@ defmodule Playwright.Browser do
   # @spec stop_tracing(t()) :: binary()
   # def stop_tracing(browser)
 
+  # @spec version(BrowserContext.t()) :: binary
+  # def version(browser)
+
   # ---
+
+  # events
+  # ----------------------------------------------------------------------------
+
+  # test_browsertype_connect.py
+  # @spec on(t(), event(), function()) :: Browser.t()
+  # def on(browser, event, callback)
 
   # private
   # ----------------------------------------------------------------------------

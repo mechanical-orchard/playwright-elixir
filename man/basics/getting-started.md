@@ -15,7 +15,7 @@ def deps do
 end
 ```
 
-To ensure Playwright's runtime dependencies (e.g., browsers) are available, execute the following (from within your `mix` project):
+To ensure Playwright's runtime dependencies (e.g., browsers) are available, execute the following:
 
 ```bash
 $ mix playwright.install
@@ -26,7 +26,7 @@ $ mix playwright.install
 Once installed, you can `alias` and/or `import` Playwright in your Elixir module, and launch any of the 3 browsers (`chromium`, `firefox` and `webkit`).
 
 ```elixir
-browser = Playwright.launch(:chromium)
+{:ok, browser} = Playwright.launch(:chromium)
 page =
   browser |> Playwright.Browser.new_page()
 
