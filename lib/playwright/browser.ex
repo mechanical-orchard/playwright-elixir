@@ -357,15 +357,15 @@ defmodule Playwright.Browser do
 
   @typedoc "An HTTP cookie."
   @type cookie :: %{
-          required(:name) => String.t(),
-          required(:value) => String.t(),
+          optional(:name) => String.t(),
+          optional(:value) => String.t(),
           required(:domain) => String.t(),
           required(:path) => String.t(),
-          required(:expires) => float(),
-          required(:http_only) => boolean(),
-          required(:secure) => boolean(),
+          optional(:expires) => float(),
+          optional(:http_only) => boolean(),
+          optional(:secure) => boolean(),
           # same_site: "Lax" | "None" | "Strict"
-          required(:same_site) => String.t()
+          optional(:same_site) => String.t()
         }
 
   @typedoc """

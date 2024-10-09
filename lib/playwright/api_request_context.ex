@@ -103,14 +103,15 @@ defmodule Playwright.APIRequestContext do
 
   @typedoc "An HTTP cookie."
   @type cookie :: %{
-          required(:name) => String.t(),
-          required(:value) => String.t(),
+          optional(:name) => String.t(),
+          optional(:value) => String.t(),
           required(:domain) => String.t(),
           required(:path) => String.t(),
-          required(:expires) => float(),
-          required(:http_only) => boolean(),
-          required(:secure) => boolean(),
-          required(:same_site) => :lax | :none | :strict
+          optional(:expires) => float(),
+          optional(:http_only) => boolean(),
+          optional(:secure) => boolean(),
+          # same_site: "Lax" | "None" | "Strict"
+          optional(:same_site) => String.t()
         }
 
   @typedoc "Local storage settings."

@@ -169,17 +169,17 @@ defmodule Playwright.BrowserContext do
   @property :owner_page
   @property :routes
 
-  @typedoc "Recognized cookie fields"
+  @typedoc "An HTTP cookie."
   @type cookie :: %{
-          name: String.t(),
-          value: String.t(),
-          url: String.t(),
-          domain: String.t(),
-          path: String.t(),
-          expires: float,
-          httpOnly: boolean,
-          secure: boolean,
-          sameSite: String.t()
+          optional(:name) => String.t(),
+          optional(:value) => String.t(),
+          required(:domain) => String.t(),
+          required(:path) => String.t(),
+          optional(:expires) => float(),
+          optional(:http_only) => boolean(),
+          optional(:secure) => boolean(),
+          # same_site: "Lax" | "None" | "Strict"
+          optional(:same_site) => String.t()
         }
 
   @typedoc "Supported events"
@@ -198,6 +198,15 @@ defmodule Playwright.BrowserContext do
 
   @typedoc "A map/struct providing call options"
   @type options :: map()
+
+  @typedoc "JavaScript provided as a filesystem path, or as script content."
+  @type script ::
+          %{
+            optional(:content) => String.t(),
+            optional(:path) => String.t()
+          }
+          | function()
+          | String.t()
 
   @typedoc "A string URL"
   @type url :: String.t()
@@ -228,30 +237,31 @@ defmodule Playwright.BrowserContext do
   All pages within this context will have these cookies installed. Cookies can
   be obtained via `Playwright.BrowserContext.cookies/1`.
 
+  ## Usage
+
+      BrowserContext.add_cookies(context, [cookie_1, cookie_2])
+
+  ## Cookie settings
+
+  | name         |             | description |
+  | ------------ | ----------- | ----------- |
+  | `:name`      | optional()  |             |
+  | `:value`     | optional()  |             |
+  | `:url`       | optional()  | One of `:url` or `:domain` / `:path` are required. |
+  | `:domain`    | optional()  | One of `:url` or `:domain` / `:path` are required. For the cookie to apply to all subdomains as well, prefix `:domain` with a dot, like so: `".example.com"`. |
+  | `:path`      | optional()  | One of `:url` or `:domain` / `:path` are required. |
+  | `:expires`   | optional()  | Unix time in seconds. |
+  | `:http_only` | optional()` |             |
+  | `:secure`    | optional()` |             |
+  | `:same_site` | optional()  | One of "Strict", "Lax", "None" |
+
   ## Returns
 
-    - `t()`
-
-  ## Example
-
-      context = BrowserContext.add_cookies(context, [cookie_1, cookie_2])
-
-  ## Cookie fields
-
-  | key         | type        | description |
-  | ----------  | ----------- | ----------- |
-  | `:name`     | `binary()`  | |
-  | `:value`    | `binary()`  | |
-  | `:url`      | `binary()`  | *(optional)* either url or domain / path are required |
-  | `:domain`   | `binary()`  | *(optional)* either url or domain / path are required |
-  | `:path`     | `binary()`  | *(optional)* either url or domain / path are required |
-  | `:expires`  | `float()`   | *(optional)* Unix time in seconds. |
-  | `:httpOnly` | `boolean()` | *(optional)* |
-  | `:secure`   | `boolean()` | *(optional)* |
-  | `:sameSite` | `binary()`  | *(optional)* one of "Strict", "Lax", "None" |
+    - `Playwright.BrowserContext.t()`
+    - `{:error, Playwright.API.Error.t()}`
   """
   @pipe {:add_cookies, [:context, :cookies]}
-  @spec add_cookies(t(), [cookie]) :: t()
+  @spec add_cookies(t(), [cookie]) :: t() | {:error, Error.t()}
   def add_cookies(context, cookies)
 
   def add_cookies(%BrowserContext{} = context, cookies) do
@@ -272,36 +282,47 @@ defmodule Playwright.BrowserContext do
   scripts are run. This is useful to amend the JavaScript environment, e.g. to
   seed `Math.random`.
 
-  ## Returns
-
-    - `:ok`
-
-  ## Arguments
-
-  | key/name  | type   |                       | description |
-  | ----------- | ------ | --------------------- | ----------- |
-  | `script`    | param  | `binary()` or `map()` | As `binary()`: an inlined script to be evaluated; As `%{path: path}`: a path to a JavaScript file. |
-
-  ## Example
+  ## Usage
 
   Overriding `Math.random` before the page loads:
 
       # preload.js
       Math.random = () => 42;
 
+      # Playwright script
       BrowserContext.add_init_script(context, %{path: "preload.js"})
 
-  ## Notes
-
-  > While the official Node.js Playwright implementation supports an optional
-  > `param: arg` for this function, the official Python implementation does
-  > not. This implementation matches the Python for now.
-
+  > #### NOTE {: .info}
+  >
   > The order of evaluation of multiple scripts installed via
   > `Playwright.BrowserContext.add_init_script/2` and
   > `Playwright.Page.add_init_script/2` is not defined.
+
+  ## Arguments
+
+  | name        |            | description |
+  | ----------- | ---------- | ----------- |
+  | `script`    |            | `script()`  |
+  | `arg`       | (optional) | An optional argument to be passed to the `:script` (only supported when `:script` is a `function()`). |
+
+  ### Script details
+
+  The `:script` argument may be provided as follows:
+
+  - As `function()`, is an Elixir callback. This mechanism supports an optional
+    `:arg` to be passed to the script at evaluation.
+  - As a `String.t()`, is raw script content to be evaluated.
+  - As a `map()`, one of the following:
+    - `:content` - Raw script content to be evaluated.
+    - `:path` - A path to a JavaScript file. If `:path` is a relative path, it
+      is resolved to the current working directory.
+
+  ## Returns
+
+    - `Playwright.BrowserContext.t()`
+    - `{:error, Playwright.API.Error.t()}`
   """
-  @spec add_init_script(t(), binary() | map()) :: t()
+  @spec add_init_script(t(), binary() | map()) :: t() | {:error, Error.t()}
   def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
     Channel.post({context, :add_init_script}, %{source: script})
   end
@@ -323,12 +344,12 @@ defmodule Playwright.BrowserContext do
   @doc """
   Clears `Playwright.BrowserContext` cookies.
   """
-  @spec clear_cookies(t()) :: t()
+  @spec clear_cookies(t()) :: t() | {:error, Error.t()}
   def clear_cookies(%BrowserContext{} = context) do
     Channel.post({context, :clear_cookies})
   end
 
-  @spec clear_permissions(t()) :: t()
+  @spec clear_permissions(t()) :: t() | {:error, Error.t()}
   def clear_permissions(%BrowserContext{} = context) do
     Channel.post({context, :clear_permissions})
   end
@@ -369,7 +390,7 @@ defmodule Playwright.BrowserContext do
   | ---------- | ----- | -------------------------- | ----------- |
   | `urls`     | param | `binary()` or `[binary()]` | List of URLs. `(optional)` |
   """
-  @spec cookies(t(), url | [url]) :: [cookie]
+  @spec cookies(t(), url | [url]) :: [cookie] | {:error, Error.t()}
   def cookies(%BrowserContext{} = context, urls \\ []) do
     Channel.post({context, :cookies}, %{urls: urls})
   end
@@ -398,6 +419,7 @@ defmodule Playwright.BrowserContext do
         BrowserContext.new_page(context)
       end)
   """
+  @spec expect_event(t(), event(), options(), function()) :: Playwright.SDK.Channel.Event.t() | {:error, Error.t()}
   def expect_event(context, event, options \\ %{}, trigger \\ nil)
 
   def expect_event(%BrowserContext{session: session} = context, event, options, trigger) do
@@ -447,7 +469,7 @@ defmodule Playwright.BrowserContext do
 
   See `Playwright.Page.expose_binding/4` for a similar, Page-scoped version.
   """
-  @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: BrowserContext.t()
+  @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: t() | {:error, Error.t()}
   def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
     Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(context.bindings, %{name => callback})})
     Channel.post({context, :expose_binding}, Map.merge(%{name: name, needs_handle: false}, options))
@@ -462,7 +484,7 @@ defmodule Playwright.BrowserContext do
 
   See `Playwright.Page.expose_function/3` for a similar, Page-scoped version.
   """
-  @spec expose_function(BrowserContext.t(), String.t(), function()) :: BrowserContext.t()
+  @spec expose_function(BrowserContext.t(), String.t(), function()) :: t() | {:error, Error.t()}
   def expose_function(context, name, callback) do
     expose_binding(context, name, fn _, args ->
       callback.(args)
@@ -475,7 +497,7 @@ defmodule Playwright.BrowserContext do
     Channel.post({context, :grant_permissions}, params)
   end
 
-  @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
+  @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t() | {:error, Error.t()}
   def new_cdp_session(context, owner)
 
   def new_cdp_session(%BrowserContext{} = context, %Frame{} = frame) do
@@ -526,7 +548,7 @@ defmodule Playwright.BrowserContext do
     Channel.list(context.session, {:guid, context.guid}, "Page")
   end
 
-  @spec route(t(), binary(), function(), map()) :: t()
+  @spec route(t(), binary(), function(), map()) :: t() | {:error, Error.t()}
   def route(context, pattern, handler, options \\ %{})
 
   def route(%BrowserContext{session: session} = context, pattern, handler, _options) do
@@ -544,49 +566,49 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec route_from_har(t(), binary(), map()) :: :ok
-  # def route(context, har, options \\ %{})
+  # @spec route_from_har(t(), binary(), map()) :: t() | {:error, Error.t()}
+  # def route_from_har(context, har, options \\ %{})
 
   # ???
   # @spec service_workers(t()) :: [Playwright.Worker.t()]
   # def service_workers(context)
 
   # test_navigation.py
-  # @spec set_default_navigation_timeout(t(), number()) :: :ok
+  # @spec set_default_navigation_timeout(t(), number()) :: t() | {:error, Error.t()}
   # def set_default_navigation_timeout(context, timeout)
 
   # test_navigation.py
-  # @spec set_default_timeout(t(), number()) :: :ok
+  # @spec set_default_timeout(t(), number()) :: t() | {:error, Error.t()}
   # def set_default_timeout(context, timeout)
 
   # test_interception.py
   # test_network.py
-  # @spec set_extra_http_headers(t(), headers()) :: :ok
+  # @spec set_extra_http_headers(t(), headers()) :: t() | {:error, Error.t()}
   # def set_extra_http_headers(context, headers)
 
   # test_geolocation.py
-  # @spec set_geolocation(t(), geolocation()) :: :ok
+  # @spec set_geolocation(t(), geolocation()) :: t() | {:error, Error.t()}
   # def set_geolocation(context, geolocation)
 
   # ???
-  # @spec set_http_credentials(t(), http_credentials()) :: :ok
+  # @spec set_http_credentials(t(), http_credentials()) :: t() | {:error, Error.t()}
   # def set_http_credentials(context, http_credentials)
 
   # ---
 
-  @spec set_offline(t(), boolean()) :: t()
+  @spec set_offline(t(), boolean()) :: t() | {:error, Error.t()}
   def set_offline(%BrowserContext{} = context, offline) do
     Channel.post({context, :set_offline}, %{offline: offline})
   end
 
   # ---
 
-  # @spec storage_state(t(), String.t()) :: {:ok, storage_state()}
+  # @spec storage_state(t(), String.t()) :: storage_state()
   # def storage_state(context, path \\ nil)
 
   # ---
 
-  @spec unroute(t(), binary(), function() | nil) :: t()
+  @spec unroute(t(), binary(), function() | nil) :: t() | {:error, Error.t()}
   def unroute(%BrowserContext{session: session} = context, pattern, callback \\ nil) do
     with_latest(context, fn context ->
       remaining =
@@ -598,7 +620,7 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
-  # @spec unroute_all(t(), map()) :: :ok
+  # @spec unroute_all(t(), map()) :: t() | {:error, Error.t()}
   # def unroute_all(context, options \\ %{})
 
   # @spec wait_for_event(t(), binary(), map()) :: map()
