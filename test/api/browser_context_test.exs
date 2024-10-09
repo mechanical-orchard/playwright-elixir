@@ -936,6 +936,57 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  # skip: See documentation comment for `BrowserContext.set_geolocation/2`
+  @tag :skip
+  describe "BrowserContext.set_geolocation/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_geolocation(context, nil)
+    end
+
+    test "on failure, returns `{:error, error}`", %{page: page} do
+      context = Page.context(page)
+      context = %{context | guid: "bogus"}
+
+      assert {:error, %Error{message: "Target page, context or browser has been closed"}} =
+               BrowserContext.set_geolocation(context, %{})
+    end
+
+    test "...", %{assets: assets, page: page} do
+      context = Page.context(page)
+      BrowserContext.grant_permissions(context, ["geolocation"])
+
+      BrowserContext.set_geolocation(context, %{latitude: 10, longitude: 10})
+
+      Page.goto(page, assets.empty)
+
+      geolocation =
+        Page.evaluate(page, """
+          async() => new Promise(resolve => navigator.geolocation.getCurrentPosition(position => {
+           resolve({latitude: position.coords.latitude, longitude: position.coords.longitude});
+           }))
+        """)
+        |> IO.inspect(label: "geolocation")
+
+      assert %{latitude: 10, longitude: 10} = geolocation
+    end
+  end
+
+  describe "BrowserContext.set_geolocation!/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_geolocation!(context, %{latitude: 0, longitude: 0})
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.set_geolocation!(context, %{latitude: 0, longitude: 0})
+      end
+    end
+  end
+
   describe "BrowserContext.set_offline/2" do
     test "returns 'subject'", %{page: page} do
       context = Page.context(page)

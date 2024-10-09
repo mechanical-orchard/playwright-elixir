@@ -1030,6 +1030,62 @@ defmodule Playwright.BrowserContext do
     Channel.post({context, "setExtraHTTPHeaders"}, %{headers: serialize_headers(headers)})
   end
 
+  @doc """
+  Sets the context's geolocation.
+
+  Passing `nil` emulates position unavailable.
+
+  > #### NOTE {: .info}
+  >
+  > Consider using `Playwright.BrowserContext.grant_permissions/3` to grant
+  > permissions for the browser context pages to read geolocation.
+
+  > #### WARNING! {: .warning}
+  >
+  > As of 2024-10-09, this function has not yet been successfully tested.
+  > So far, the test runs have failed to receive location data and instead
+  > experiences "error code 2", which [reportedly](https://developer.mozilla.org/en-US/docs/Web/API/GeolocationPositionError/code)
+  > represents `POSITION_UNAVAILABLE` - "The acquisition of the geolocation
+  > failed because one or several internal sources of position returned an internal error."
+
+  ## Usage
+
+      BrowserContext.set_geolocation(context, %{
+        latitude: 59.95,
+        longitude: 30.31667
+      })
+
+  ## Arguments
+
+  | name          |            | description                     |
+  | ------------- | ---------- | ------------------------------- |
+  | `context`     |            | The "subject" `BrowserContext`. |
+  | `geolocation` |            | `BrowserContext.geolocation()`. |
+
+  ### Geolocation settings
+
+  | name        |            | description                         |
+  | ----------- | ---------- | ----------------------------------- |
+  | `latitude`  |            | Latitude between `-90` and `90`.    |
+  | `lingitude` |            | Longitude between `-180` and `180`. |
+  | `accuracy`  | (optional) | Non-negative accuracy value. Defaults to `0`. |
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error. t()}`
+  """
+  @pipe {:set_geolocation, [:context, :geolocation]}
+  @spec set_geolocation(t(), geolocation() | nil) :: t() | {:error, Error.t()}
+  def set_geolocation(context, params \\ nil)
+
+  def set_geolocation(%BrowserContext{} = context, params) when is_map(params) do
+    Channel.post({context, :set_geolocation}, params)
+  end
+
+  def set_geolocation(%BrowserContext{} = context, nil) do
+    Channel.post({context, :set_geolocation})
+  end
 
   @spec set_offline(t(), boolean()) :: t() | {:error, Error.t()}
   def set_offline(%BrowserContext{} = context, offline) do
