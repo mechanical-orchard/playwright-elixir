@@ -8,19 +8,6 @@ defmodule Playwright.BrowserTest do
   alias Playwright.Page
   alias Playwright.Response
 
-  describe "@property :version" do
-    test "returns the expected version", %{browser: browser} do
-      case browser.name do
-        "chromium" ->
-          assert %{major: major, minor: _, patch: _} = Version.parse!(browser.version)
-          assert major >= 90
-
-        _name ->
-          assert %{major: _, minor: _} = Version.parse!(browser.version)
-      end
-    end
-  end
-
   describe "Browser.browser_type/1" do
     test "returns the 'parent' `BrowserType`", %{browser: browser} do
       assert %BrowserType{} = Browser.browser_type(browser)
@@ -304,6 +291,19 @@ defmodule Playwright.BrowserTest do
         Browser.start_tracing(browser)
         browser = %{browser | guid: "bogus"}
         Browser.stop_tracing!(browser)
+      end
+    end
+  end
+
+  describe "Browser.version/1" do
+    test "returns the expected version", %{browser: browser} do
+      case browser.name do
+        "chromium" ->
+          assert %{major: major, minor: _, patch: _} = Version.parse!(Browser.version(browser))
+          assert major >= 90
+
+        _name ->
+          assert %{major: _, minor: _} = Version.parse!(Browser.version(browser))
       end
     end
   end

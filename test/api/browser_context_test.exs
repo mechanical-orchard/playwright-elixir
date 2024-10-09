@@ -1,12 +1,25 @@
 defmodule Playwright.BrowserContextTest do
   use Playwright.TestCase, async: true
-  alias Playwright.{Browser, BrowserContext, Frame, Page, Request, Response, Route}
+  alias Playwright.API.Error
+  alias Playwright.Browser
+  alias Playwright.BrowserContext
+  alias Playwright.CDPSession
+  alias Playwright.Frame
+  alias Playwright.Page
+  alias Playwright.Request
+  alias Playwright.Response
+  alias Playwright.Route
 
   describe "BrowserContext.add_cookies/2" do
-    test "returns 'subject'", %{assets: assets, page: page} do
+    test "on success, returns the 'subject' `BrowserContext`", %{assets: assets, page: page} do
       context = Page.owned_context(page)
       cookies = [%{url: assets.empty, name: "password", value: "123456"}]
       assert %BrowserContext{} = BrowserContext.add_cookies(context, cookies)
+    end
+
+    test "on failure, returns `{:error, error}`", %{page: page} do
+      context = Page.owned_context(page)
+      assert {:error, %Error{}} = BrowserContext.add_cookies(context, [%{bogus: "cookie"}])
     end
 
     test "adds cookies, readable by Page", %{assets: assets, page: page} do
@@ -42,7 +55,7 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.add_cookies!/2" do
-    test "on success, returns 'subject", %{assets: assets, page: page} do
+    test "on success, returns the 'subject' `BrowserContext`", %{assets: assets, page: page} do
       context = Page.owned_context(page)
       cookies = [%{url: assets.empty, name: "password", value: "123456"}]
       assert %BrowserContext{} = BrowserContext.add_cookies(context, cookies)
@@ -57,9 +70,15 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.add_init_script/2" do
-    test "returns 'subject'", %{browser: browser} do
+    test "on success, returns the 'subject' `BrowserContext`", %{browser: browser} do
       context = Browser.new_context(browser)
       assert %BrowserContext{} = BrowserContext.add_init_script(context, "window.injected = 123")
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      context = %{context | guid: "bogus"}
+      assert {:error, %Error{}} = BrowserContext.add_cookies(context, [%{bogus: "cookie"}])
     end
 
     @tag exclude: [:page]
@@ -97,6 +116,24 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.add_init_script!/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{browser: browser} do
+      context = Browser.new_context!(browser)
+      assert %BrowserContext{} = BrowserContext.add_init_script!(context, "window.injected = 123")
+    end
+
+    test "on failure, raises `RuntimeError`", %{browser: browser} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Browser.new_context(browser)
+        context = %{context | guid: "bogus"}
+        BrowserContext.add_init_script!(context, "window.injected = 123")
+      end
+    end
+  end
+
+  describe "BrowserContext.background_pages/1" do
+  end
+
   describe "BrowserContext.browser/1" do
     test "returns the Browser", %{browser: browser, page: page} do
       context = Page.context(page)
@@ -105,9 +142,15 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.clear_cookies/1" do
-    test "returns 'subject'", %{page: page} do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
       context = Page.owned_context(page)
       assert %BrowserContext{} = BrowserContext.clear_cookies(context)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      context = %{context | guid: "bogus"}
+      assert {:error, %Error{}} = BrowserContext.clear_cookies(context)
     end
 
     test "clears cookies for the context", %{assets: assets, page: page} do
@@ -127,10 +170,31 @@ defmodule Playwright.BrowserContextTest do
     # test_should_isolate_cookies_when_clearing
   end
 
+  describe "BrowserContext.clear_cookies!/1" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.owned_context(page)
+      assert %BrowserContext{} = BrowserContext.clear_cookies!(context)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.owned_context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.clear_cookies!(context)
+      end
+    end
+  end
+
   describe "BrowserContext.clear_permissions/1" do
-    test "returns 'subject'", %{browser: browser} do
+    test "on success, returns the 'subject' `BrowserContext`", %{browser: browser} do
       context = Browser.new_context(browser)
       assert %BrowserContext{} = BrowserContext.clear_permissions(context)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      context = %{context | guid: "bogus"}
+      assert {:error, %Error{}} = BrowserContext.clear_permissions(context)
     end
 
     test "clears previously granted permissions", %{assets: assets, page: page} do
@@ -152,6 +216,21 @@ defmodule Playwright.BrowserContextTest do
       BrowserContext.grant_permissions(context, ["geolocation"])
       BrowserContext.clear_permissions(context)
       assert get_permission(page, "geolocation") == "prompt"
+    end
+  end
+
+  describe "BrowserContext.clear_permissions!/1" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.owned_context(page)
+      assert %BrowserContext{} = BrowserContext.clear_permissions!(context)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.owned_context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.clear_permissions!(context)
+      end
     end
   end
 
@@ -252,9 +331,16 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.expose_binding/4" do
-    test "returns 'subject'", %{page: page} do
-      context = Page.context(page)
+    test "on success, returns the 'subject' `BrowserContext`", %{browser: browser} do
+      context = Browser.new_context(browser)
       assert %BrowserContext{} = BrowserContext.expose_binding(context, "fn", fn -> nil end)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      context = Browser.new_context(browser)
+
+      assert {:error, %Error{message: "name: expected string, got object"}} =
+               BrowserContext.expose_binding(context, nil, fn -> nil end)
     end
 
     test "binds a local function", %{page: page} do
@@ -270,10 +356,31 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.expose_binding!/1" do
+    test "on success, returns the 'subject' `BrowserContext`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.expose_binding!(context, "fn", fn -> nil end)
+    end
+
+    test "on failure, raises `RuntimeError`", %{browser: browser} do
+      assert_raise RuntimeError, "name: expected string, got object", fn ->
+        context = Browser.new_context(browser)
+        BrowserContext.expose_binding!(context, nil, fn -> nil end)
+      end
+    end
+  end
+
   describe "BrowserContext.expose_function/3" do
-    test "returns 'subject'", %{page: page} do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
       context = Page.context(page)
       assert %BrowserContext{} = BrowserContext.expose_function(context, "fn", fn -> nil end)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      context = Browser.new_context(browser)
+
+      assert {:error, %Error{message: "name: expected string, got object"}} =
+               BrowserContext.expose_function(context, nil, fn -> nil end)
     end
 
     test "binds a local function", %{page: page} do
@@ -288,17 +395,36 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
-  describe "BrowserContext.get_permission/2" do
-    test "default to 'prompt'", %{assets: assets, page: page} do
-      page |> Page.goto(assets.empty)
-      assert get_permission(page, "geolocation") == "prompt"
+  describe "BrowserContext.expose_function!/1" do
+    test "on success, returns the 'subject' `BrowserContext`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.expose_function!(context, "fn", fn -> nil end)
+    end
+
+    test "on failure, raises `RuntimeError`", %{browser: browser} do
+      assert_raise RuntimeError, "name: expected string, got object", fn ->
+        context = Browser.new_context(browser)
+        BrowserContext.expose_function!(context, nil, fn -> nil end)
+      end
     end
   end
 
   describe "BrowserContext.grant_permissions/3" do
-    test "returns 'subject'", %{assets: assets, browser: browser} do
+    test "on success, returns the 'subject' `BrowserContext`", %{assets: assets, browser: browser} do
       context = Browser.new_context(browser)
       assert %BrowserContext{} = BrowserContext.grant_permissions(context, [], %{origin: assets.empty})
+    end
+
+    test "on failure, returns `{:error, error}`", %{assets: assets, browser: browser} do
+      context = Browser.new_context(browser)
+
+      assert {:error, %Error{message: "Unknown permission: bogus"}} =
+               BrowserContext.grant_permissions(context, :bogus, %{origin: assets.empty})
+    end
+
+    test "prior to granting, defaults to 'prompt'", %{assets: assets, page: page} do
+      page |> Page.goto(assets.empty)
+      assert get_permission(page, "geolocation") == "prompt"
     end
 
     test "denies permission when not listed", %{assets: assets, page: page} do
@@ -374,8 +500,82 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.grant_permissions!/1" do
+    test "on success, returns the 'subject' `BrowserContext`", %{assets: assets, browser: browser} do
+      context = Browser.new_context(browser)
+      assert %BrowserContext{} = BrowserContext.grant_permissions!(context, [], %{origin: assets.empty})
+    end
+
+    test "on failure, raises `RuntimeError`", %{assets: assets, browser: browser} do
+      assert_raise RuntimeError, "Unknown permission: bogus", fn ->
+        context = Browser.new_context(browser)
+        BrowserContext.grant_permissions!(context, :bogus, %{origin: assets.empty})
+      end
+    end
+  end
+
+  describe "BrowserContext.new_cdp_session/1" do
+    test "on success, returns a `CDPSession`", %{page: page} do
+      context = Page.context(page)
+      assert %CDPSession{} = BrowserContext.new_cdp_session(context, page)
+    end
+
+    test "on failure, returns `{:error, error}`", %{page: page} do
+      context = Page.context(page)
+      context = %{context | guid: "bogus"}
+
+      assert {:error, %Error{message: "Target page, context or browser has been closed"}} =
+               BrowserContext.new_cdp_session(context, page)
+    end
+  end
+
+  describe "BrowserContext.new_cdp_session!/1" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %CDPSession{} = BrowserContext.new_cdp_session!(context, page)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.new_cdp_session!(context, page)
+      end
+    end
+  end
+
+  describe "BrowserContext.new_page/1" do
+    test "on success, returns a `Page`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %Page{} = BrowserContext.new_page(context)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      context = %{context | guid: "bogus"}
+
+      assert {:error, %Error{message: "Target page, context or browser has been closed"}} =
+               BrowserContext.new_page(context)
+    end
+  end
+
+  describe "BrowserContext.new_page!/1" do
+    test "on success, returns a `Page`", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert %Page{} = BrowserContext.new_page!(context)
+    end
+
+    test "on failure, raises `RuntimeError`", %{browser: browser} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Browser.new_context(browser)
+        context = %{context | guid: "bogus"}
+        BrowserContext.new_page!(context)
+      end
+    end
+  end
+
   describe "BrowserContext.on/3" do
-    test "returns 'subject'", %{browser: browser} do
+    test "on success, returns the 'subject' `BrowserContext`", %{browser: browser} do
       context = Browser.new_context(browser)
       assert %BrowserContext{} = BrowserContext.on(context, :foo, fn -> nil end)
     end
@@ -412,7 +612,7 @@ defmodule Playwright.BrowserContextTest do
 
   describe "BrowserContext.pages/1" do
     @tag exclude: [:page]
-    test "returns the pages", %{browser: browser} do
+    test "returns the pages associated with the `BrowserContext`", %{browser: browser} do
       context = Browser.new_context(browser)
       BrowserContext.new_page(context)
       BrowserContext.new_page(context)
@@ -424,11 +624,22 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.remove_all_listeners/2" do
+  end
+
+  describe "BrowserContext.remove_all_listeners!/2" do
+  end
+
   describe "BrowserContext.route/4" do
-    test "returns 'subject'", %{page: page} do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
       context = Page.context(page)
       assert %BrowserContext{} = BrowserContext.route(context, "**/*", fn -> nil end)
     end
+
+    # test "on failure, returns `{:error, error}`", %{page: page} do
+    #   context = Page.context(page)
+    #   assert {:error, %Error{message: "lala"}} = BrowserContext.route(context, "**/*", fn -> nil end, %{bogus: "option"})
+    # end
 
     test "intercepts requests w/ a glob-style matcher", %{assets: assets, page: page} do
       pid = self()
@@ -549,6 +760,182 @@ defmodule Playwright.BrowserContextTest do
     # end
   end
 
+  describe "BrowserContext.route!/1" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.route!(context, "**/*", fn -> nil end)
+    end
+
+    # test "on failure, raises `RuntimeError`", %{browser: browser} do
+    #   assert_raise RuntimeError, "...", fn ->
+    #     context = Page.context(page)
+    #     BrowserContext.route!(context, "**/*", fn -> nil end)
+    #   end
+    # end
+  end
+
+  describe "BrowserContext.route_from_har/1" do
+    # test "...", %{assets: assets, browser: browser} do
+    #   context =
+    #     Browser.new_context(browser)
+    #     |> BrowserContext.route_from_har(assets.prefix <> "har-fulfill.har")
+
+    #   page =
+    #     BrowserContext.new_page(context)
+    #     |> Page.goto("http://no.playwright/")
+
+    #   assert "foo" = Page.evaluate(page, "window.value")
+    # end
+  end
+
+  describe "BrowserContext.route_from_har!/1" do
+  end
+
+  describe "BrowserContext.route_web_socket/1" do
+  end
+
+  describe "BrowserContext.route_web_socket!/1" do
+  end
+
+  describe "BrowserContext.service_workers/1" do
+  end
+
+  describe "BrowserContext.set_default_navigation_timeout/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_default_navigation_timeout(context, 5)
+    end
+
+    test "on failure, returns `{:error, error}`", %{page: page} do
+      context = Page.context(page)
+      context = %{context | guid: "bogus"}
+
+      assert {:error, %Error{message: "Target page, context or browser has been closed"}} =
+               BrowserContext.set_default_navigation_timeout(context, 5)
+    end
+
+    test "causes `Page.goto/3` to fail when exceeding the timeout", %{assets: assets, page: page} do
+      context = Page.context(page)
+
+      BrowserContext.route(context, "**/*", fn _, _ ->
+        :timer.sleep(3)
+      end)
+
+      BrowserContext.set_default_navigation_timeout(context, 5)
+      assert {:error, %Error{message: "Timeout 5ms exceeded."}} = Page.goto(page, assets.empty)
+    end
+  end
+
+  describe "BrowserContext.set_default_navigation_timeout!/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_default_navigation_timeout!(context, 5)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.set_default_navigation_timeout!(context, 5)
+      end
+    end
+  end
+
+  describe "BrowserContext.set_default_timeout/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_default_timeout(context, 5)
+    end
+
+    test "on failure, returns `{:error, error}`", %{page: page} do
+      context = Page.context(page)
+      context = %{context | guid: "bogus"}
+
+      assert {:error, %Error{message: "Target page, context or browser has been closed"}} =
+               BrowserContext.set_default_timeout(context, 5)
+    end
+
+    test "causes `Page.goto/3` to fail when exceeding the timeout", %{assets: assets, page: page} do
+      context = Page.context(page)
+
+      BrowserContext.route(context, "**/*", fn _, _ ->
+        :timer.sleep(3)
+      end)
+
+      BrowserContext.set_default_timeout(context, 5)
+      assert {:error, %Error{message: "Timeout 5ms exceeded."}} = Page.goto(page, assets.empty)
+    end
+  end
+
+  describe "BrowserContext.set_default_timeout!/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_default_timeout!(context, 5)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.set_default_timeout!(context, 5)
+      end
+    end
+  end
+
+  describe "BrowserContext.set_extra_http_headers/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{assets: assets, page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_extra_http_headers(context, %{referer: assets.empty})
+    end
+
+    test "on failure, returns `{:error, error}`", %{assets: assets, page: page} do
+      context = Page.context(page)
+      context = %{context | guid: "bogus"}
+
+      assert {:error, %Error{message: "Target page, context or browser has been closed"}} =
+               BrowserContext.set_extra_http_headers(context, %{referer: assets.empty})
+    end
+
+    test "sends custom headers with subsequent requests", %{assets: assets, page: page} do
+      pid = self()
+      empty = assets.empty
+
+      context = Page.context(page)
+      BrowserContext.set_extra_http_headers(context, %{referer: assets.empty})
+
+      BrowserContext.route(context, "**/*", fn route, _request ->
+        request = Route.request(route)
+        headers = Request.headers(request)
+
+        referer =
+          Enum.find(headers, fn header ->
+            header.name == "referer"
+          end)
+
+        send(pid, %{referer: referer.value})
+        Route.continue(route)
+      end)
+
+      Page.goto(page, assets.empty)
+      assert_received(%{referer: ^empty})
+    end
+  end
+
+  describe "BrowserContext.set_extra_http_headers!/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{assets: assets, page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_extra_http_headers!(context, %{referer: assets.empty})
+    end
+
+    test "on failure, raises `RuntimeError`", %{assets: assets, page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.set_extra_http_headers!(context, %{referer: assets.empty})
+      end
+    end
+  end
+
   describe "BrowserContext.set_offline/2" do
     test "returns 'subject'", %{page: page} do
       context = Page.context(page)
@@ -581,6 +968,30 @@ defmodule Playwright.BrowserContextTest do
       BrowserContext.set_offline(context, false)
       assert Page.evaluate(page, "window.navigator.onLine")
     end
+  end
+
+  describe "BrowserContext.set_offline!/2" do
+  end
+
+  describe "BrowserContext.storage_state/2" do
+  end
+
+  describe "BrowserContext.unroute/2" do
+  end
+
+  describe "BrowserContext.unroute!/2" do
+  end
+
+  describe "BrowserContext.unroute_all/2" do
+  end
+
+  describe "BrowserContext.unroute_all!/2" do
+  end
+
+  describe "BrowserContext.wait_for_event/2" do
+  end
+
+  describe "BrowserContext.wait_for_event!/2" do
   end
 
   # private helpers

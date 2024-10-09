@@ -196,8 +196,43 @@ defmodule Playwright.BrowserContext do
   @typedoc "An optional (maybe nil) function or option"
   @type function_or_options :: fun() | options() | nil
 
-  @typedoc "A map/struct providing call options"
+  @typedoc "Geolocation emulation settings."
+  @type geolocation :: %{
+          required(:latitude) => number(),
+          required(:longitude) => number(),
+          optional(:accuracy) => number()
+        }
+
+  @typedoc "A map/struct providing generic call options"
   @type options :: map()
+
+  @typedoc "Options for calls to `clear_cookies/2`"
+  @type opts_clear_cookies :: %{
+          optional(:domain) => String.t() | Regex.t(),
+          optional(:name) => String.t() | Regex.t(),
+          optional(:path) => String.t() | Regex.t()
+        }
+
+  @typedoc "Options for `close/2`."
+  @type opts_close :: %{
+          optional(:reason) => String.t()
+        }
+
+  @typedoc "Options for `grant_permissions/3`."
+  @type opts_permissions :: %{
+          optional(:origin) => String.t()
+        }
+
+  @typedoc "Options for `route/4`"
+  @type opts_route :: %{
+          optional(:times) => number()
+        }
+
+  @typedoc "A permission available for `grant_permissions/3`."
+  @type permission :: String.t() | atom()
+
+  @typedoc "A route matcher for `route/4"
+  @type route_url :: String.t() | Regex.t() | function()
 
   @typedoc "JavaScript provided as a filesystem path, or as script content."
   @type script ::
@@ -322,7 +357,8 @@ defmodule Playwright.BrowserContext do
     - `Playwright.BrowserContext.t()`
     - `{:error, Playwright.API.Error.t()}`
   """
-  @spec add_init_script(t(), binary() | map()) :: t() | {:error, Error.t()}
+  @pipe {:add_init_script, [:context, :script]}
+  @spec add_init_script(t(), script()) :: t() | {:error, Error.t()}
   def add_init_script(%BrowserContext{} = context, script) when is_binary(script) do
     Channel.post({context, :add_init_script}, %{source: script})
   end
@@ -331,24 +367,70 @@ defmodule Playwright.BrowserContext do
     add_init_script(context, File.read!(path))
   end
 
-  # ---
-
   # @spec background_pages(t()) :: [Playwright.Page.t()]
-  # def background_pages(context)
-
-  # @spec browser(t()) :: Playwright.Browser.t()
-  # def browser(context)
-
-  # ---
+  # def background_pages(%BrowserContext{} = context)
 
   @doc """
-  Clears `Playwright.BrowserContext` cookies.
+  Clears `Playwright.BrowserContext` cookies. Accepts an optional filter.
+
+  ## Usage
+
+      BrowserContext.clear_cookies(context)
+      BrowserContext.clear_cookies(context, %{name: "session-id"})
+      BrowserContext.clear_cookies(context, %{domain: "example.com"})
+      BrowserContext.clear_cookies(context, %{domain: ~r/.*example\.com/})
+      BrowserContext.clear_cookies(context, %{path: "/api/v1"})
+      BrowserContext.clear_cookies(context, %{name: "session-id", domain: "example.com"})
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `BrowserContext`    |
+  | `options`        | (optional) | Options (see below)               |
+
+  ### Options
+
+  | name     |            | description                       |
+  | -------- | ---------- | --------------------------------- |
+  | `domain` | (optional) | Filters to only remove cookies with the given domain. |
+  | `name`   | (optional) | Filters to only remove cookies with the given name. |
+  | `path`   | (optional) | Filters to only remove cookies with the given path. |
+
+  ## Returns
+
+  - `Playwright.BrowserContext.t()`
+  - `{:error, Playwright.API.Error.t()}`
   """
-  @spec clear_cookies(t()) :: t() | {:error, Error.t()}
-  def clear_cookies(%BrowserContext{} = context) do
-    Channel.post({context, :clear_cookies})
+  @pipe {:clear_cookies, [:context]}
+  @pipe {:clear_cookies, [:context, :options]}
+  @spec clear_cookies(t(), opts_clear_cookies()) :: t() | {:error, Error.t()}
+  def clear_cookies(context, options \\ %{})
+
+  def clear_cookies(%BrowserContext{} = context, options) do
+    Channel.post({context, :clear_cookies}, options)
   end
 
+  @doc """
+  Clears all permission overrides for the `Playwright.BrowserContext`.
+
+  ## Usage
+
+      BrowserContext.grant_permissions(context, ["clipboard-read"])
+      BrowserContext.clear_permissions(context)
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `BrowserContext`    |
+
+  ## Returns
+
+  - `Playwright.BrowserContext.t()`
+  - `{:error, Playwright.API.Error.t()}`
+  """
+  @pipe {:clear_permissions, [:context]}
   @spec clear_permissions(t()) :: t() | {:error, Error.t()}
   def clear_permissions(%BrowserContext{} = context) do
     Channel.post({context, :clear_permissions})
@@ -356,18 +438,41 @@ defmodule Playwright.BrowserContext do
 
   @doc """
   Closes the `Playwright.BrowserContext`. All pages that belong to the
-  `Playwright.BrowserContext` will be closed.
+  context will be closed.
 
-  > NOTE:
-  > - The default browser context cannot be closed.
+  > #### NOTE {: .info}
+  >
+  > The default browser context cannot be closed.
+
+  ## Usage
+
+      BrowserContext.close(context)
+      BrowserContext.close(context, %{reason: "All done"})
+
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `BrowserContext`    |
+  | `options`        | (optional) | Options (see below)               |
+
+  ### Options
+
+  | name     |            | description                       |
+  | -------- | ---------- | --------------------------------- |
+  | `reason` | (optional) | The reason to be reported to any operations interrupted by the context disposal. |
+
+  ## Returns
+
+  - `:ok`
   """
-  @spec close(t()) :: :ok
-  def close(%BrowserContext{} = context) do
+  @spec close(t(), opts_close()) :: :ok
+  def close(%BrowserContext{} = context, options \\ %{}) do
     # A call to `close` will remove the item from the catalog. `Catalog.find`
     # here ensures that we do not `post` a 2nd `close`.
     case Channel.find(context.session, {:guid, context.guid}, %{timeout: 10}) do
       %BrowserContext{} ->
-        Channel.close(context)
+        Channel.close(context, options)
 
       {:error, _} ->
         :ok
@@ -380,17 +485,25 @@ defmodule Playwright.BrowserContext do
   If no URLs are specified, this method returns all cookies. If URLs are
   specified, only cookies that affect those URLs are returned.
 
-  ## Returns
+  ## Usage
 
-    - `[cookie()]` See `add_cookies/2` for cookie field details.
+      BrowserContext.cookies(context)
+      BrowserContext.cookies(context, "https://example.com")
+      BrowserContext.cookies(context, ["https://example.com"])
 
   ## Arguments
 
-  | key/name   | type  |                            | description |
-  | ---------- | ----- | -------------------------- | ----------- |
-  | `urls`     | param | `binary()` or `[binary()]` | List of URLs. `(optional)` |
+  | name       |            | description                     |
+  | ---------- | ---------- | ------------------------------- |
+  | `context`  |            | The "subject" `BrowserContext`. |
+  | `urls`     | (optional) | A list of URLs.                 |
+
+  ## Returns
+
+  - `[cookie()]` See `add_cookies/2` for cookie field details.
+  - `{:error, Playwright.API.Error.t()}`
   """
-  @spec cookies(t(), url | [url]) :: [cookie] | {:error, Error.t()}
+  @spec cookies(t(), url() | [url()]) :: [cookie()] | {:error, Error.t()}
   def cookies(%BrowserContext{} = context, urls \\ []) do
     Channel.post({context, :cookies}, %{urls: urls})
   end
@@ -419,6 +532,7 @@ defmodule Playwright.BrowserContext do
         BrowserContext.new_page(context)
       end)
   """
+  @doc deprecated: "This function will be removed in favor of `BrowserContext.on/3`."
   @spec expect_event(t(), event(), options(), function()) :: Playwright.SDK.Channel.Event.t() | {:error, Error.t()}
   def expect_event(context, event, options \\ %{}, trigger \\ nil)
 
@@ -445,17 +559,16 @@ defmodule Playwright.BrowserContext do
       (30 seconds). Pass 0 to disable timeout. The default value can be changed
       via `Playwright.BrowserContext.set_default_timeout/2`.
   """
-  # Temporarily disable spec:
-  # @spec expect_page(t(), map(), function()) :: Playwright.SDK.Channel.Event.t()
-  def expect_page(context, options \\ %{}, trigger \\ nil) do
+  @doc deprecated: "This function will be removed in favor of `BrowserContext.on/3`."
+  def expect_page(%BrowserContext{} = context, options \\ %{}, trigger \\ nil) do
     expect_event(context, :page, options, trigger)
   end
 
   @doc """
-  Adds a function called `param:name` on the `window` object of every frame in
+  Adds a function called `name` on the `window` object of every frame in
   every page in the context.
 
-  When called, the function executes `param:callback` and resolves to the return
+  When evaluated, the function executes `callback` and resolves to the return
   value of the `callback`.
 
   The first argument to the `callback` function includes the following details
@@ -468,37 +581,186 @@ defmodule Playwright.BrowserContext do
       }
 
   See `Playwright.Page.expose_binding/4` for a similar, Page-scoped version.
+
+  ## Usage
+
+  An example of exposing a page URL to all frames in all pages in the context:
+
+      BrowserContext.expose_binding(context, "pageURL", fn %{page: page} ->
+        Page.url(page)
+      end)
+
+      BrowserContext.new_page(context)
+      |> Page.set_content(\"\"\"
+        <script>
+          async function onClick() {
+            document.querySelector("div").textContent = await window.pageURL();
+          }
+        </script>
+        <button onclick="onClick()">Click me</button>
+        <div></div>
+      \"\"\")
+      |> Page.get_by_role("button")
+      |> Page.click()
+
+  ## Arguments
+
+  | name       |            | description                     |
+  | ---------- | ---------- | ------------------------------- |
+  | `context`  |            | The "subject" `BrowserContext`. |
+  | `name`     |            | Name of the function on the `window` object. |
+  | `callback` |            | Callback function that will be evaluated. |
+
+  ## Returns
+
+  - `Playwright.BrowserContext.t()`
+  - `{:error, Playwright.API.Error.t()}`
   """
-  @spec expose_binding(BrowserContext.t(), String.t(), function(), options()) :: t() | {:error, Error.t()}
-  def expose_binding(%BrowserContext{session: session} = context, name, callback, options \\ %{}) do
+  @pipe {:expose_binding, [:context, :name, :callback]}
+  @spec expose_binding(BrowserContext.t(), String.t(), function()) :: t() | {:error, Error.t()}
+  def expose_binding(%BrowserContext{session: session} = context, name, callback) do
     Channel.patch(session, {:guid, context.guid}, %{bindings: Map.merge(context.bindings, %{name => callback})})
-    Channel.post({context, :expose_binding}, Map.merge(%{name: name, needs_handle: false}, options))
+    Channel.post({context, :expose_binding}, %{name: name, needs_handle: false})
   end
 
   @doc """
-  Adds a function called `param:name` on the `window` object of every frame in
+  Adds a function called `name` on the `window` object of every frame in
   every page in the context.
 
-  When called, the function executes `param:callback` and resolves to the return
+  When evaluated, the function executes `callback` and resolves to the return
   value of the `callback`.
 
   See `Playwright.Page.expose_function/3` for a similar, Page-scoped version.
+
+  ## Usage
+
+  An example of adding a `sha256` function all pages in the context:
+
+      BrowserContext.expose_function(context, "sha256", fn text ->
+        :crypto.hash(:sha256, text)
+        |> Base.encode16()
+        |> String.downcase()
+      end)
+
+      BrowserContext.new_page(context)
+      |> Page.set_content(\"\"\"
+        <script>
+          async function onClick() {
+            document.querySelector("div").textContent = await window.sha256("example");
+          }
+        </script>
+        <button onclick="onClick()">Click me</button>
+        <div></div>
+      \"\"\")
+      |> Page.get_by_role("button")
+      |> Page.click()
+
+  ## Arguments
+
+  | name       |            | description                     |
+  | ---------- | ---------- | ------------------------------- |
+  | `context`  |            | The "subject" `BrowserContext`. |
+  | `name`     |            | Name of the function on the `window` object. |
+  | `callback` |            | Callback function that will be evaluated. |
+
+  ## Returns
+
+  - `Playwright.BrowserContext.t()`
+  - `{:error, Playwright.API.Error.t()}`
   """
+  @pipe {:expose_function, [:context, :name, :callback]}
   @spec expose_function(BrowserContext.t(), String.t(), function()) :: t() | {:error, Error.t()}
-  def expose_function(context, name, callback) do
+  def expose_function(%BrowserContext{} = context, name, callback) do
     expose_binding(context, name, fn _, args ->
       callback.(args)
     end)
   end
 
-  @spec grant_permissions(t(), [String.t()], options()) :: t() | {:error, Playwright.API.Error.t()}
+  @doc """
+  Grants the specified permissions to the browser context.
+
+  If the optional `origin` is provided, only grants the corresponding
+  permissions to that origin.
+
+  ## Usage
+
+      BrowserContext.grant_permissions(context, ["geolocation"])
+      BrowserContext.grant_permissions(context, ["geolocation"], %{origin: "https://example.com"})
+
+  ## Arguments
+
+  | name          |            | description                     |
+  | ------------- | ---------- | ------------------------------- |
+  | `context`     |            | The "subject" `BrowserContext`. |
+  | `permissions` |            | A permission or list of permissions to grant. |
+  | `options`     | (optional) | Options (see below)             |
+
+  ### Available permisions
+
+  Permissions may be any of the following:
+
+  - `'accelerometer'`
+  - `'accessibility-events'`
+  - `'ambient-light-sensor'`
+  - `'background-sync'`
+  - `'camera'`
+  - `'clipboard-read'`
+  - `'clipboard-write'`
+  - `'geolocation'`
+  - `'gyroscope'`
+  - `'magnetometer'`
+  - `'microphone'`
+  - `'midi'`
+  - `'midi-sysex'` (system-exlusive midi)
+  - `'notifications'`
+  - `'payment-handler'`
+  - `'storage-access'`
+
+  ### Options
+
+  | name     |            | description                       |
+  | -------- | ---------- | --------------------------------- |
+  | `origin` | (optional) | The [origin](https://developer.mozilla.org/en-US/docs/Glossary/Origin) to which to scope the granted permissions. e.g., "https://example.com" |
+
+  ## Returns
+
+  - `Playwright.BrowserContext.t()`
+  - `{:error, Playwright.API.Error.t()}`
+  """
+  @pipe {:grant_permissions, [:context, :permissions]}
+  @pipe {:grant_permissions, [:context, :permissions, :options]}
+  @spec grant_permissions(t(), permission() | [permission()], opts_permissions()) :: t() | {:error, Playwright.API.Error.t()}
   def grant_permissions(%BrowserContext{} = context, permissions, options \\ %{}) do
-    params = Map.merge(%{permissions: permissions}, options)
-    Channel.post({context, :grant_permissions}, params)
+    Channel.post({context, :grant_permissions}, %{permissions: List.flatten([permissions])}, options)
   end
 
+  @doc """
+  Returns a newly created Chrome DevTools Protocol (CDP) session.
+
+  > #### NOTE {: .info}
+  >
+  > CDP sessions are only supported in Chromium-based browsers.
+
+  ## Usage
+
+      page = BrowserContext.new_page(context)
+      BrowserContext.new_cdp_session(context, page)
+
+  ## Arguments
+
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+  | `target`  |            | Target for which to create the new CDP session. May be a `Playwright.Page` or a `Playwright.Frame` |
+
+  ## Returns
+
+  - `Playwright.CDPSession.t()`
+  - `{:error, Playwright.API.Error.t()}`
+  """
+  @pipe {:new_cdp_session, [:context, :target]}
   @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t() | {:error, Error.t()}
-  def new_cdp_session(context, owner)
+  def new_cdp_session(context, target)
 
   def new_cdp_session(%BrowserContext{} = context, %Frame{} = frame) do
     Channel.post({context, "newCDPSession"}, %{frame: %{guid: frame.guid}})
@@ -511,10 +773,22 @@ defmodule Playwright.BrowserContext do
   @doc """
   Creates a new `Playwright.Page` in the context.
 
-  If the context is already "owned" by a `Playwright.Page` (i.e., was created
-  as a side effect of `Playwright.Browser.new_page/1`), will raise an error
-  because there should be a 1-to-1 mapping in that case.
+  ## Usage
+
+      BrowserContext.new_page(context)
+
+  ## Arguments
+
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+
+  ## Returns
+
+  - `Playwright.Page.t()`
+  - `{:error, Playwright.API.Error.t()}`
   """
+  @pipe {:new_page, [:context]}
   @spec new_page(t()) :: Page.t() | {:error, Error.t()}
   def new_page(context)
 
@@ -539,16 +813,97 @@ defmodule Playwright.BrowserContext do
   @doc """
   Returns all open pages in the context.
 
+  ## Usage
+
+      BrowserContext.pages(context)
+
+  ## Arguments
+
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+
   ## Returns
 
-    - `[Page.t()]`
+  - `[Page.t()]`
   """
   @spec pages(t()) :: [Page.t()]
   def pages(%BrowserContext{} = context) do
     Channel.list(context.session, {:guid, context.guid}, "Page")
   end
 
-  @spec route(t(), binary(), function(), map()) :: t() | {:error, Error.t()}
+  @doc """
+  Routing provides the capability of modifying network requests that are
+  initiated by any page in the browser context.
+
+  Once a route is enabled, every request matching the URL pattern will stall
+  unless it is continued, fulfilled, or aborted.
+
+  Page routes (set up with `Page.route4`) take precedence over browser context
+  routes when the request matches both handlers.
+
+  To remove a route with its handler, use `Playwright.BrowserContext.unroute/3`.
+
+  > #### NOTE {: .info}
+  >
+  > `Playwright.BrowserContext.route/4` will not intercept requets intercepted
+  > by a Service Worker. See [GitHub issue 1010](https://github.com/microsoft/playwright/issues/1090).
+  > It is recommended to disable Service Workers when using request interception
+  > by setting `:service_workers` to `'block'` when creating a `BrowserContext`.
+
+  > #### NOTE {: .info}
+  >
+  > Enabling routing disables http caching.
+
+  ## Usage
+
+  An example of a naïve handler that aborts all image requests:
+
+      Browser.new_context(browser)
+        |> BrowserContext.route("**/*.{png,jpg,jpeg}", fn route -> Route.abort(route) end)
+        |> BrowserContext.new_page()
+        |> Page.goto("https://example.com")
+
+      Browser.close(browser)
+
+  An example of examining the request to decide on the route action. For
+  example, mocking all requests that contain some post data, and leaving
+  all other requests un-modified.
+
+      Browser.new_context(browser)
+        |> BrowserContext.route("/api/**", fn route ->
+          case Route.request(route) |> Request.post_data() |> Enum.fetch("some-data") do
+            {:ok, _} ->
+              Route.fulfill(route, %{body: "mock-data"})
+
+            _ ->
+              Route.continue(route)
+          end
+        end)
+
+  ## Arguments
+
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+  | `url`     |            | A glob pattern, regex pattern, or predicate receiving a [URL](https://nodejs.org/api/url.html) to match against while routing. When a `:base_url` was provided via the context options, and the provided URL is a path, the two are merged. |
+  | `handler` |            | The handler function to manage request routing. |
+  | `options` | (optional) | Options (see below). |
+
+  ### Options
+
+  | name     |            | description                       |
+  | -------- | ---------- | --------------------------------- |
+  | `times`  | (optional) | How many times a route should be used. Defaults to every time. |
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error.t()}`
+  """
+  @pipe {:route, [:context, :pattern, :handler]}
+  @pipe {:route, [:context, :pattern, :handler, :options]}
+  @spec route(t(), route_url(), function(), opts_route()) :: t() | {:error, Error.t()}
   def route(context, pattern, handler, options \\ %{})
 
   def route(%BrowserContext{session: session} = context, pattern, handler, _options) do
@@ -573,28 +928,108 @@ defmodule Playwright.BrowserContext do
   # @spec service_workers(t()) :: [Playwright.Worker.t()]
   # def service_workers(context)
 
-  # test_navigation.py
-  # @spec set_default_navigation_timeout(t(), number()) :: t() | {:error, Error.t()}
-  # def set_default_navigation_timeout(context, timeout)
+  @doc """
+  Changes the default maximum navigation time for the following calls and
+  related shortcuts:
 
-  # test_navigation.py
-  # @spec set_default_timeout(t(), number()) :: t() | {:error, Error.t()}
-  # def set_default_timeout(context, timeout)
+  - `Playwright.Page.go_back/2`
+  - `Playwright.Page.go_forward/2`
+  - `Playwright.Page.goto/2`
+  - `Playwright.Page.reload/2`
+  - `Playwright.Page.set_content/3`
 
-  # test_interception.py
-  # test_network.py
-  # @spec set_extra_http_headers(t(), headers()) :: t() | {:error, Error.t()}
-  # def set_extra_http_headers(context, headers)
+  ## Usage
 
-  # test_geolocation.py
-  # @spec set_geolocation(t(), geolocation()) :: t() | {:error, Error.t()}
-  # def set_geolocation(context, geolocation)
+      BrowserContext.set_default_navigation_timeout(context, 1_000)
 
-  # ???
-  # @spec set_http_credentials(t(), http_credentials()) :: t() | {:error, Error.t()}
-  # def set_http_credentials(context, http_credentials)
+  ## Arguments
 
-  # ---
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+  | `timeout` |            | Maximum navigation time in milliseconds. |
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error. t()}`
+  """
+  @pipe {:set_default_navigation_timeout, [:context, :timeout]}
+  @spec set_default_navigation_timeout(t(), number()) :: t() | {:error, Error.t()}
+  def set_default_navigation_timeout(%BrowserContext{} = context, timeout) do
+    Channel.post({context, :set_default_navigation_timeout_no_reply}, %{timeout: timeout})
+  end
+
+  @doc """
+  Changes the default maximum time for the following calls that accept a
+  `:timeout` option.
+
+  > #### NOTE {: .info}
+  >
+  > The following take precedence over this setting:
+  >
+  > - `Playwright.Page.set_default_navigation_timeout/2`
+  > - `Playwright.Page.set_default_timeout/2`
+  > - `Playwright.BrowserContext.set_default_navigation_timeout/2`
+
+  ## Usage
+
+      BrowserContext.set_default_timeout(context, 1_000)
+
+  ## Arguments
+
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+  | `timeout` |            | Maximum navigation time in milliseconds. |
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error. t()}`
+  """
+  @pipe {:set_default_timeout, [:context, :timeout]}
+  @spec set_default_timeout(t(), number()) :: t() | {:error, Error.t()}
+  def set_default_timeout(%BrowserContext{} = context, timeout) do
+    Channel.post({context, :set_default_timeout_no_reply}, %{timeout: timeout})
+  end
+
+  @doc """
+  Configures extra HTTP headers to be sent with every request initiated by any
+  page in the context.
+
+  The headers are merged with page-specific extra HTTP headers set with
+  `Playwright.Page.set_extra_http_headers/2`. If page overrides a particular
+  header, the page-specific header value will be used instead of that from
+  the browser context.
+
+  > #### NOTE {: .info}
+  >
+  > `Playwright.BrowserContext.set_extra_http_headers/2` does not guarantee
+  > the order of hedaers in the outgoing requests.
+
+  ## Usage
+
+      BrowserContext.set_extra_http_headers(context, %{referer: "https://example.com"})
+
+  ## Arguments
+
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+  | `headers` |            | A `map()` containing additional HTTP headers to be sent with every request. All header values must be `String.t()`. |
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error. t()}`
+  """
+  @pipe {:set_extra_http_headers, [:context, :headers]}
+  @spec set_extra_http_headers(t(), map()) :: t() | {:error, Error.t()}
+  def set_extra_http_headers(%BrowserContext{} = context, headers) do
+    Channel.post({context, "setExtraHTTPHeaders"}, %{headers: serialize_headers(headers)})
+  end
+
 
   @spec set_offline(t(), boolean()) :: t() | {:error, Error.t()}
   def set_offline(%BrowserContext{} = context, offline) do
@@ -659,6 +1094,12 @@ defmodule Playwright.BrowserContext do
       else
         {:cont, [handler | acc]}
       end
+    end)
+  end
+
+  defp serialize_headers(headers) when is_map(headers) do
+    Enum.into(headers, [], fn {name, value} ->
+      %{name: name, value: value}
     end)
   end
 end

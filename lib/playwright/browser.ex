@@ -239,7 +239,7 @@ defmodule Playwright.Browser do
 
   ### Option: `:video_size`
 
-  > #### DEPRECATED {: .warn}
+  > #### DEPRECATED {: .warning}
   >
   > Use `:record_video` instead.
 
@@ -254,7 +254,7 @@ defmodule Playwright.Browser do
 
   ### Option: `:videos_path`
 
-  > #### DEPRECATED {: .warn}
+  > #### DEPRECATED {: .warning}
   >
   > Use `:record_video` instead.
 
