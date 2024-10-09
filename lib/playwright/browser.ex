@@ -722,7 +722,6 @@ defmodule Playwright.Browser do
         # establish co-dependency
         Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
         Channel.patch(session, {:guid, page.guid}, %{owned_context: context})
-        page
     end
   end
 
