@@ -79,9 +79,27 @@ defmodule Playwright.BrowserTest do
     end
   end
 
-  describe "Browser.new_cdp_session_/1" do
+  describe "Browser.new_browser_cdp_session/1" do
     test "on success, returns a new `CDPSession`", %{browser: browser} do
       assert %CDPSession{} = Browser.new_browser_cdp_session(browser)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      browser = %{browser | guid: "bogus"}
+      assert {:error, %Error{type: "TargetClosedError"}} = Browser.new_browser_cdp_session(browser)
+    end
+  end
+
+  describe "Browser.new_browser_cdp_session!/1" do
+    test "on success, returns a new `CDPSession`", %{browser: browser} do
+      assert %CDPSession{} = Browser.new_browser_cdp_session!(browser)
+    end
+
+    test "on failure, raises", %{browser: browser} do
+      assert_raise RuntimeError, fn ->
+        browser = %{browser | guid: "bogus"}
+        Browser.new_browser_cdp_session!(browser)
+      end
     end
   end
 
@@ -142,6 +160,32 @@ defmodule Playwright.BrowserTest do
     # test_should_authenticate_with_empty_password
   end
 
+  describe "Browser.new_context!/1" do
+    test "on success, returns a new `BrowserContext`", %{browser: browser} do
+      assert %BrowserContext{} = Browser.new_context!(browser)
+    end
+
+    test "on failure, raises", %{browser: browser} do
+      assert_raise RuntimeError, fn ->
+        browser = %{browser | guid: "bogus"}
+        Browser.new_context!(browser)
+      end
+    end
+  end
+
+  describe "Browser.new_context!/2" do
+    test "on success, returns a new `BrowserContext`", %{browser: browser} do
+      assert %BrowserContext{} = Browser.new_context!(browser, %{base_url: "https://example.com"})
+    end
+
+    test "on failure, raises", %{browser: browser} do
+      assert_raise RuntimeError, fn ->
+        browser = %{browser | guid: "bogus"}
+        Browser.new_context!(browser, %{base_url: "https://example.com"})
+      end
+    end
+  end
+
   describe "Browser.new_page/1" do
     @tag exclude: [:page]
     test "creates and binds a new context", %{transport: transport} do
@@ -190,6 +234,26 @@ defmodule Playwright.BrowserTest do
     end
   end
 
+  # skip: the `:disconnected` event is meant to be emitted from the client-side,
+  # upon `Browser.close/1`; we don't yet have a good mechanism for that.
+  @tag :skip
+  describe "Browser.on/3" do
+    # test "on success, returns the 'subject' `Browser`", %{transport: transport} do
+    #   {_session, browser} = setup_browser(transport)
+    #   assert %Browser{} = Browser.on(browser, :disconnected, fn -> nil end)
+    # end
+
+    # test "on `:disconnected`, ...", %{transport: transport} do
+    #   {_session, browser} = setup_browser(transport)
+
+    #   Browser.on(browser, :disconnected, fn data ->
+    #     IO.inspect(data, label: "on(:disconnected) data ->")
+    #   end)
+
+    #   Browser.close(browser)
+    # end
+  end
+
   describe "Browser.start_tracing/3" do
     test "on success, returns the 'subject' `Browser`", %{browser: browser} do
       assert %Browser{} = Browser.start_tracing(browser)
@@ -199,6 +263,20 @@ defmodule Playwright.BrowserTest do
     test "on failure, returns `{:error, error}`", %{browser: browser} do
       browser = %{browser | guid: "bogus"}
       assert {:error, %Error{type: "TargetClosedError"}} = Browser.start_tracing(browser)
+    end
+  end
+
+  describe "Browser.start_tracing!/3" do
+    test "on success, returns the 'subject' `Browser`", %{browser: browser} do
+      assert %Browser{} = Browser.start_tracing!(browser)
+      Browser.stop_tracing(browser)
+    end
+
+    test "on failure, raises", %{browser: browser} do
+      assert_raise RuntimeError, fn ->
+        browser = %{browser | guid: "bogus"}
+        Browser.start_tracing!(browser)
+      end
     end
   end
 
@@ -212,6 +290,21 @@ defmodule Playwright.BrowserTest do
       Browser.start_tracing(browser)
       browser = %{browser | guid: "bogus"}
       assert {:error, %Error{type: "TargetClosedError"}} = Browser.start_tracing(browser)
+    end
+  end
+
+  describe "Browser.stop_tracing!/3" do
+    test "on success, returns the resultant `Artifact`", %{browser: browser} do
+      Browser.start_tracing(browser)
+      assert %Playwright.Artifact{} = Browser.stop_tracing!(browser)
+    end
+
+    test "on failure, raises", %{browser: browser} do
+      assert_raise RuntimeError, fn ->
+        Browser.start_tracing(browser)
+        browser = %{browser | guid: "bogus"}
+        Browser.stop_tracing!(browser)
+      end
     end
   end
 end

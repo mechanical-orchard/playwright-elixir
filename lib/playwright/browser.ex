@@ -420,6 +420,13 @@ defmodule Playwright.Browser do
           required(:value) => String.t()
         }
 
+  @typedoc "Options for tracing API."
+  @type opts_tracing :: %{
+          optional(:categories) => [String.t()],
+          optional(:path) => String.t(),
+          optional(:screenshots) => boolean()
+        }
+
   @typedoc "Network proxy settings."
   @type proxy_settings :: %{
           required(:server) => String.t(),
@@ -482,9 +489,6 @@ defmodule Playwright.Browser do
   """
   @type worker_settings :: String.t()
 
-  @typedoc "Options for tracing API."
-  @type opts_tracing :: map()
-
   # callbacks
   # ---------------------------------------------------------------------------
 
@@ -506,7 +510,7 @@ defmodule Playwright.Browser do
 
   Returns
 
-    - `Playwright.BrowserType.t()`
+  - `Playwright.BrowserType.t()`
   """
   @spec browser_type(t()) :: BrowserType.t()
   def browser_type(%Browser{} = browser) do
@@ -553,8 +557,7 @@ defmodule Playwright.Browser do
 
   ## Returns
 
-    - `:ok`
-
+  - `:ok`
   """
   @spec close(t(), opts_close()) :: :ok
   def close(%Browser{session: session} = browser, options \\ %{}) do
@@ -588,11 +591,9 @@ defmodule Playwright.Browser do
   | --------- | ---------- | ----------------------- |
   | `browser` |            | The "subject" `Browser` |
 
-
   ## Returns
 
   - `[Playwright.BrowserContext.t()]`
-
   """
   @spec contexts(t()) :: [BrowserContext.t()]
   def contexts(%Browser{} = browser) do
@@ -621,6 +622,7 @@ defmodule Playwright.Browser do
   - `[Playwright.CDPSession.t()]`
   - `{:error, %Error{}}`
   """
+  @pipe {:new_browser_cdp_session, [:browser]}
   @spec new_browser_cdp_session(t()) :: CDPSession.t() | {:error, Error.t()}
   def new_browser_cdp_session(browser) do
     Channel.post({browser, "newBrowserCDPSession"})
@@ -664,9 +666,11 @@ defmodule Playwright.Browser do
 
   ## Returns
 
-    - `Playwright.BrowserContext.t()`
-    - `{:error, Error.t()}`
+  - `Playwright.BrowserContext.t()`
+  - `{:error, Error.t()}`
   """
+  @pipe {:new_context, [:browser]}
+  @pipe {:new_context, [:browser, :options]}
   @spec new_context(t(), opts_new()) :: BrowserContext.t() | {:error, Error.t()}
   def new_context(%Browser{} = browser, options \\ %{}) do
     Channel.post({browser, :new_context}, prepare(options))
@@ -705,8 +709,8 @@ defmodule Playwright.Browser do
 
   ## Returns
 
-    - `Playwright.Page.t()`
-    - `{:error, Error.t()}`
+  - `Playwright.Page.t()`
+  - `{:error, Error.t()}`
   """
   @spec new_page(t(), opts_new()) :: {Page.t() | {:error, Error.t()}}
   def new_page(browser, options \\ %{})
@@ -725,8 +729,55 @@ defmodule Playwright.Browser do
     end
   end
 
-  # ---
+  @doc """
+  `Playwright.Browser.start_tracing/3` initiates a Chromium Tracing session.
 
+  `start_tracing/3` may be used in conjunction with `Playwright.Browser.stop_tracing/1`
+  to create a trace file that can be opened in the Chrome DevTools performance
+  panel.
+
+  > #### NOTE {: .info}
+  >
+  > This API controls [Chromium Tracing](https://www.chromium.org/developers/how-tos/trace-event-profiling-tool)
+  > which is a low-level Chromium-specific debugging tool. Details on the API
+  > used to work with [Playwright Tracing](https://playwright.dev/docs/trace-viewer)
+  > are found in the `Playwright.Tracing` API documentation.
+
+  ## Usage
+
+      browser = Browser.start_tracing(browser)
+      browser = Browser.start_tracing(browser, %{path: "trace.json"})
+      browser = Browser.start_tracing(browser, page)
+      browser = Browser.start_tracing(browser, page, %{path: "trace.json"})
+
+      Page.goto(page, "https://example.com")
+
+      Browser.stop_tracing(browser)
+
+  ## Arguments
+
+  | name      |            | description              |
+  | --------- | ---------- | ------------------------ |
+  | `browser` |            | The "subject" `Browser`  |
+  | `page`    | (optional) | If specified, tracing includes screenshots of the given page. |
+  | `options` | (optional) | `Browser.opts_tracing()` |
+
+  ## Options
+
+  | name           |            | description                       |
+  | -------------- | ---------- | --------------------------------- |
+  | `:categories`  | (optional) | Specifies custom categories to use instead of defaults. |
+  | `:path`        | (optional) | Provides a path to write the trace file.   |
+  | `:screenshots` | (optional) | Indicates whether to capture screenshots in the trace. |
+
+  ## Returns
+
+  - `Playwright.Browser.t()`
+  - `{:error, Error.t()}`
+  """
+  @pipe {:start_tracing, [:browser]}
+  @pipe {:start_tracing, [:browser, :page]}
+  @pipe {:start_tracing, [:browser, :page, :options]}
   @spec start_tracing(t(), Page.t(), opts_tracing()) :: t() | {:error, Error.t()}
   def start_tracing(browser, page \\ nil, options \\ %{})
 
@@ -734,17 +785,36 @@ defmodule Playwright.Browser do
     Channel.post({browser, :start_tracing})
   end
 
-  @spec stop_tracing(t()) :: binary()
+  @doc """
+  `Playwright.Browser.stop_tracing/3` terminates a Chromium Tracing session.
+
+  > #### NOTE {: .info}
+  >
+  > This API controls [Chromium Tracing](https://www.chromium.org/developers/how-tos/trace-event-profiling-tool)
+  > which is a low-level Chromium-specific debugging tool. Details on the API
+  > used to work with [Playwright Tracing](https://playwright.dev/docs/trace-viewer)
+  > are found in the `Playwright.Tracing` API documentation.
+
+  ## Usage
+
+      Browser.stop_tracing(browser)
+
+  ## Arguments
+
+  | name      |            | description              |
+  | --------- | ---------- | ------------------------ |
+  | `browser` |            | The "subject" `Browser`  |
+
+  ## Returns
+
+  - `Playwright.Artifact.t()`
+  - `{:error, Error.t()}`
+  """
+  @pipe {:stop_tracing, [:browser]}
+  @spec stop_tracing(t()) :: Playwright.Artifact.t() | {:error, Error.t()}
   def stop_tracing(%Browser{} = browser) do
     Channel.post({browser, :stop_tracing})
   end
-
-  # events
-  # ----------------------------------------------------------------------------
-
-  # test_browsertype_connect.py
-  # @spec on(t(), event(), function()) :: Browser.t()
-  # def on(browser, event, callback)
 
   # private
   # ----------------------------------------------------------------------------
