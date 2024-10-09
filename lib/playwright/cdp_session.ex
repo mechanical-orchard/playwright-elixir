@@ -50,7 +50,7 @@ defmodule Playwright.CDPSession do
   # private
   # ---------------------------------------------------------------------------
 
-  def handle_event(session, %{params: %{method: method, params: params}}) do
+  defp handle_event(session, %{params: %{method: method, params: params}}) do
     event = %{
       params: params,
       target: session

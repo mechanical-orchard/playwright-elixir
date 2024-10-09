@@ -482,6 +482,9 @@ defmodule Playwright.Browser do
   """
   @type worker_settings :: String.t()
 
+  @typedoc "Options for tracing API."
+  @type opts_tracing :: map()
+
   # callbacks
   # ---------------------------------------------------------------------------
 
@@ -724,8 +727,6 @@ defmodule Playwright.Browser do
   end
 
   # ---
-
-  @type opts_tracing :: map()
 
   @spec start_tracing(t(), Page.t(), opts_tracing()) :: t() | {:error, Error.t()}
   def start_tracing(browser, page \\ nil, options \\ %{})
