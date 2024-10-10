@@ -512,7 +512,7 @@ defmodule Playwright.APIRequestContext do
 
   | name     |            | description                       |
   | -------- | ---------- | --------------------------------- |
-  | `path`   | (optional) | **NOT IMPLEMENTED** The file path to save the storage state to. If path is a relative path, then it is resolved relative to current working directory. If no path is provided, storage state is still returned, but won't be saved to the disk. |
+  | `path`   | (optional) | The file path to save the storage state. If path is a relative path, then it is resolved relative to current working directory. If no path is provided, storage state is still returned, but won't be saved to the disk. |
 
   ## Returns
 
@@ -521,7 +521,7 @@ defmodule Playwright.APIRequestContext do
   """
   @pipe {:storage_state, [:context]}
   @pipe {:storage_state, [:context, :options]}
-  @spec storage_state(t(), opts_storage()) :: storage_state()
+  @spec storage_state(t(), opts_storage()) :: storage_state() | {:error, Error.t()}
   def storage_state(context, options \\ %{}) do
     {path, options} = Map.pop(options, :path)
 

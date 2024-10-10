@@ -937,13 +937,14 @@ defmodule Playwright.BrowserContextTest do
   end
 
   # skip: See documentation comment for `BrowserContext.set_geolocation/2`
-  @tag :skip
   describe "BrowserContext.set_geolocation/2" do
+    @tag :skip
     test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
       context = Page.context(page)
       assert %BrowserContext{} = BrowserContext.set_geolocation(context, nil)
     end
 
+    @tag :skip
     test "on failure, returns `{:error, error}`", %{page: page} do
       context = Page.context(page)
       context = %{context | guid: "bogus"}
@@ -952,7 +953,8 @@ defmodule Playwright.BrowserContextTest do
                BrowserContext.set_geolocation(context, %{})
     end
 
-    test "...", %{assets: assets, page: page} do
+    @tag :skip
+    test "mimics geolocation settings in the browser context", %{assets: assets, page: page} do
       context = Page.context(page)
       BrowserContext.grant_permissions(context, ["geolocation"])
 
@@ -966,18 +968,20 @@ defmodule Playwright.BrowserContextTest do
            resolve({latitude: position.coords.latitude, longitude: position.coords.longitude});
            }))
         """)
-        |> IO.inspect(label: "geolocation")
 
       assert %{latitude: 10, longitude: 10} = geolocation
     end
   end
 
+  @tag :skip
   describe "BrowserContext.set_geolocation!/2" do
+    @tag :skip
     test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
       context = Page.context(page)
       assert %BrowserContext{} = BrowserContext.set_geolocation!(context, %{latitude: 0, longitude: 0})
     end
 
+    @tag :skip
     test "on failure, raises `RuntimeError`", %{page: page} do
       assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
         context = Page.context(page)
@@ -988,10 +992,18 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.set_offline/2" do
-    test "returns 'subject'", %{page: page} do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
       context = Page.context(page)
       assert %BrowserContext{} = BrowserContext.set_offline(context, false)
       assert %BrowserContext{} = BrowserContext.set_offline(context, true)
+    end
+
+    test "on failure, returns `{:error, error}`", %{page: page} do
+      context = Page.context(page)
+      context = %{context | guid: "bogus"}
+
+      assert {:error, %Error{message: "Target page, context or browser has been closed"}} =
+               BrowserContext.set_offline(context, true)
     end
 
     @tag without: [:page]
@@ -1022,9 +1034,77 @@ defmodule Playwright.BrowserContextTest do
   end
 
   describe "BrowserContext.set_offline!/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.set_offline!(context, false)
+      assert %BrowserContext{} = BrowserContext.set_offline!(context, true)
+    end
+
+    test "on failure, raises `RuntimeError`", %{page: page} do
+      assert_raise RuntimeError, "Target page, context or browser has been closed", fn ->
+        context = Page.context(page)
+        context = %{context | guid: "bogus"}
+        BrowserContext.set_offline!(context, true)
+      end
+    end
   end
 
   describe "BrowserContext.storage_state/2" do
+    test "on success, returns storage state JSON", %{browser: browser} do
+      storage = %{
+        cookies: [
+          %{
+            name: "cookie name",
+            value: "cookie value",
+            domain: "example.com",
+            path: "/",
+            expires: -1,
+            httpOnly: false,
+            secure: false,
+            sameSite: "Lax"
+          }
+        ],
+        origins: []
+      }
+
+      context = Browser.new_context(browser, %{storage_state: storage})
+      assert ^storage = BrowserContext.storage_state(context)
+    end
+
+    test "on failure, returns `{:error, error}`", %{browser: browser} do
+      context = Browser.new_context(browser, %{storage_state: %{}})
+      context = %{context | guid: "bogus"}
+      assert {:error, %Error{}} = BrowserContext.storage_state(context)
+    end
+
+    test "given the `:path` option, writes the state to disk", %{browser: browser} do
+      slug = DateTime.utc_now() |> DateTime.to_unix()
+      path = "storage-state-#{slug}.json"
+
+      storage = %{
+        cookies: [
+          %{
+            name: "cookie name",
+            value: "cookie value",
+            domain: "example.com",
+            path: "/",
+            expires: -1,
+            httpOnly: false,
+            secure: false,
+            sameSite: "Lax"
+          }
+        ],
+        origins: []
+      }
+
+      context = Browser.new_context(browser, %{storage_state: storage})
+
+      assert ^storage = BrowserContext.storage_state(context, %{path: path})
+      assert(File.exists?(path))
+      assert(Jason.decode!(File.read!(path)))
+
+      File.rm!(path)
+    end
   end
 
   describe "BrowserContext.unroute/2" do

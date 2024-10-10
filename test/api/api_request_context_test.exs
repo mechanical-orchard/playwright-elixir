@@ -303,8 +303,6 @@ defmodule Playwright.APIRequestContextTest do
 
   describe "APIRequestContext.storage_state/2" do
     test "(WIP) on success, ...", %{session: session} do
-      # python: test_storage_state_should_round_trip_through_file
-      # ---
       slug = DateTime.utc_now() |> DateTime.to_unix()
       path = "storage-state-#{slug}.json"
 

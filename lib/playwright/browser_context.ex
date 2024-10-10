@@ -203,6 +203,12 @@ defmodule Playwright.BrowserContext do
           optional(:accuracy) => number()
         }
 
+  @typedoc "Local storage settings."
+  @type local_storage :: %{
+          required(:name) => String.t(),
+          required(:value) => String.t()
+        }
+
   @typedoc "A map/struct providing generic call options"
   @type options :: map()
 
@@ -228,6 +234,11 @@ defmodule Playwright.BrowserContext do
           optional(:times) => number()
         }
 
+  @typedoc "Options for `storage_state/2`."
+  @type opts_storage :: %{
+          optional(:path) => String.t()
+        }
+
   @typedoc "A permission available for `grant_permissions/3`."
   @type permission :: String.t() | atom()
 
@@ -242,6 +253,17 @@ defmodule Playwright.BrowserContext do
           }
           | function()
           | String.t()
+
+  @typedoc "Storage state settings."
+  @type storage_state :: %{
+          required(:cookies) => [cookie()],
+          required(:origins) => [
+            %{
+              required(:origin) => String.t(),
+              required(:local_storage) => [local_storage()]
+            }
+          ]
+        }
 
   @typedoc "A string URL"
   @type url :: String.t()
@@ -1087,17 +1109,69 @@ defmodule Playwright.BrowserContext do
     Channel.post({context, :set_geolocation})
   end
 
+  @doc """
+  Configures whether the browser context should emulate being offline.
+
+  ## Usage
+
+      BrowserContext.set_offline(context, true)
+      BrowserContext.set_offline(context, false)
+
+  ## Arguments
+
+  | name      |            | description                     |
+  | --------- | ---------- | ------------------------------- |
+  | `context` |            | The "subject" `BrowserContext`. |
+  | `offline` |            | Whether to emulate the network being offline. |
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error. t()}`
+  """
+  @pipe {:set_offline, [:context, :offline]}
   @spec set_offline(t(), boolean()) :: t() | {:error, Error.t()}
   def set_offline(%BrowserContext{} = context, offline) do
     Channel.post({context, :set_offline}, %{offline: offline})
   end
 
-  # ---
+  @doc """
+  Returns storage state for this browser context.
 
-  # @spec storage_state(t(), String.t()) :: storage_state()
-  # def storage_state(context, path \\ nil)
+  The storage state contains current cookies and a local storage snapshot.
 
-  # ---
+  ## Arguments
+
+  | name             |            | description                       |
+  | ---------------- | ---------- | --------------------------------- |
+  | `context`        |            | The "subject" `APIRequestContext` |
+  | `options`        | (optional) | Options (see below)               |
+
+  ## Options
+
+  | name     |            | description                       |
+  | -------- | ---------- | --------------------------------- |
+  | `path`   | (optional) | The file path to save the storage state. If path is a relative path, then it is resolved relative to current working directory. If no path is provided, storage state is still returned, but won't be saved to the disk. |
+
+  ## Returns
+
+  - `storage_state()`
+  - `{:error, Error.t()}`
+  """
+  @spec storage_state(t(), opts_storage()) :: storage_state() | {:error, Error.t()}
+  def storage_state(%BrowserContext{} = context, options \\ %{}) do
+    {path, options} = Map.pop(options, :path)
+
+    case Channel.post({context, :storage_state}, options) do
+      {:error, _} = error ->
+        error
+
+      result ->
+        result = Map.new(result)
+        path && File.write!(path, Jason.encode!(result))
+        result
+    end
+  end
 
   @spec unroute(t(), binary(), function() | nil) :: t() | {:error, Error.t()}
   def unroute(%BrowserContext{session: session} = context, pattern, callback \\ nil) do
