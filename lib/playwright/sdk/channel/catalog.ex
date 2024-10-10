@@ -7,7 +7,6 @@ defmodule Playwright.SDK.Channel.Catalog do
   """
   use GenServer
   import Playwright.SDK.Helpers.ErrorHandling
-  alias Playwright.SDK.Channel
 
   defstruct [:awaiting, :storage]
 
@@ -74,7 +73,7 @@ defmodule Playwright.SDK.Channel.Catalog do
   | `guid`     | param  | `binary()` | GUID to look up |
   | `:timeout` | option | `float()`  | Maximum time to wait, in milliseconds. Defaults to `30_000` (30 seconds). |
   """
-  @spec get(pid(), binary(), map()) :: struct() | {:error, Channel.Error.t()}
+  @spec get(pid(), binary(), map()) :: struct() | {:error, Playwright.API.Error.t()}
   def get(catalog, guid, options \\ %{}) do
     with_timeout(options, fn timeout ->
       GenServer.call(catalog, {:get, {:guid, guid}}, timeout)
@@ -136,8 +135,8 @@ defmodule Playwright.SDK.Channel.Catalog do
   """
   @spec rm_r(pid(), binary()) :: :ok
   def rm_r(catalog, guid) do
-    children = list(catalog, %{parent: get(catalog, guid)})
-    children |> Enum.each(fn child -> rm_r(catalog, child.guid) end)
+    list(catalog, %{parent: guid})
+    |> Enum.each(fn child -> rm_r(catalog, child.guid) end)
 
     rm(catalog, guid)
   end
@@ -201,18 +200,22 @@ defmodule Playwright.SDK.Channel.Catalog do
     filter(tail, attrs, result)
   end
 
+  defp filter(list, %{parent: %{guid: guid}, type: type}, result) do
+    filter(list, %{parent: guid, type: type}, result)
+  end
+
   defp filter([head | tail], %{parent: parent, type: type} = attrs, result)
-       when head.parent.guid == parent.guid and head.type == type do
+       when head.parent.guid == parent and head.type == type do
     filter(tail, attrs, result ++ [head])
   end
 
   defp filter([head | tail], %{parent: parent, type: type} = attrs, result)
-       when head.parent.guid != parent.guid or head.type != type do
+       when head.parent.guid != parent or head.type != type do
     filter(tail, attrs, result)
   end
 
   defp filter([head | tail], %{parent: parent} = attrs, result)
-       when head.parent.guid == parent.guid do
+       when head.parent.guid == parent do
     filter(tail, attrs, result ++ [head])
   end
 

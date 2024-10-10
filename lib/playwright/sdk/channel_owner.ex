@@ -17,7 +17,7 @@ defmodule Playwright.SDK.ChannelOwner do
       defstruct @properties ++ [:session, :guid, :initializer, :listeners, :parent, :type]
 
       @typedoc """
-      %#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}{}
+      `#{String.replace_prefix(inspect(__MODULE__), "Elixir.", "")}`
       """
       @type t() :: %__MODULE__{}
 
@@ -97,12 +97,10 @@ defmodule Playwright.SDK.ChannelOwner do
         {:ok, event.target}
       end
 
-      defp post!(owner, action, params) do
-        case Channel.post(owner.session, {:guid, owner.guid}, action, params) do
-          # simple "success": send "self"
-          {:ok, %{id: _}} ->
-            Channel.find(owner.session, {:guid, owner.guid})
-        end
+      defp bind!(owner, event, callback) do
+        returning(owner, fn ->
+          Channel.bind(owner.session, {:guid, owner.guid}, event, callback)
+        end)
       end
 
       defp returning(%{session: session} = subject, task) do
@@ -111,8 +109,15 @@ defmodule Playwright.SDK.ChannelOwner do
       end
 
       defp with_latest(subject, task) do
-        Channel.find(subject.session, {:guid, subject.guid}) |> task.()
-        Channel.find(subject.session, {:guid, subject.guid})
+        latest = Channel.find(subject.session, {:guid, subject.guid})
+
+        case latest |> task.() do
+          %{guid: _} ->
+            Channel.find(subject.session, {:guid, subject.guid})
+
+          {:error, _} = error ->
+            error
+        end
       end
     end
   end
@@ -147,7 +152,8 @@ defmodule Playwright.SDK.ChannelOwner do
     defmacro __using__(_args) do
       Module.register_attribute(__CALLER__.module, :properties, accumulate: true)
 
-      quote do
+      quote(location: :keep) do
+        use Playwright.SDK.Pipeline
         import Kernel, except: [@: 1]
         import unquote(__MODULE__), only: [@: 1]
       end
@@ -157,7 +163,7 @@ defmodule Playwright.SDK.ChannelOwner do
       Module.put_attribute(module, :properties, arg)
       doc = Keyword.get(options, :doc, false)
 
-      quote do
+      quote(location: :keep) do
         @doc unquote(doc)
         @spec unquote(arg)(t()) :: term()
         def unquote(arg)(owner) do
@@ -189,7 +195,7 @@ defmodule Playwright.SDK.ChannelOwner do
     end
 
     defmacro @expr do
-      quote do
+      quote(location: :keep) do
         Kernel.@(unquote(expr))
       end
     end

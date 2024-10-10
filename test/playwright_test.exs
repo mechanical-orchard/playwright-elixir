@@ -46,12 +46,21 @@ defmodule Playwright.PlaywrightTest do
 
   describe "Playwright.launch/2" do
     test "launches and returns an instance of the requested Browser" do
-      {:ok, browser} = Playwright.launch(:chromium)
+      {:ok, session, browser} = Playwright.launch(:chromium)
+
+      assert is_pid(session)
 
       assert browser
              |> Browser.new_page()
              |> Page.goto("http://example.com")
              |> Response.ok()
+    end
+  end
+
+  describe "Playwright.request/1" do
+    test "returns an `APIRequest` for the session" do
+      {:ok, session, _browser} = Playwright.launch(:chromium)
+      assert %Playwright.APIRequest{session: ^session} = Playwright.request(session)
     end
   end
 

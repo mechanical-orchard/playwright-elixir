@@ -54,7 +54,7 @@ defmodule Playwright.MixProject do
       {:gun, "~> 1.3.3"},
       {:jason, "~> 1.4"},
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:playwright_assets, "1.44.0", only: [:test]},
+      {:playwright_assets, "1.44.2", only: [:test]},
       {:recase, "~> 0.7"},
       {:uuid, "~> 1.1"}
     ]
@@ -111,7 +111,10 @@ defmodule Playwright.MixProject do
       groups_for_modules: [
         API: [
           Playwright,
+          Playwright.APIRequest,
           Playwright.APIRequestContext,
+          Playwright.APIResponse,
+          Playwright.Artifact,
           Playwright.Browser,
           Playwright.BrowserContext,
           Playwright.BrowserType,
@@ -122,12 +125,14 @@ defmodule Playwright.MixProject do
           Playwright.Page,
           Playwright.JSHandle,
           Playwright.Page.Accessibility,
+          Playwright.Page.Keyboard,
           Playwright.Page.Locator,
           Playwright.RemoteBrowser,
           Playwright.Request,
           Playwright.Response,
           Playwright.Route,
           Playwright.Selectors,
+          Playwright.Tracing,
           Playwright.WebSocket,
           Playwright.Worker
         ],

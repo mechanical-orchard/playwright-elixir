@@ -23,8 +23,8 @@ defmodule Playwright.Response do
   # ---
 
   @spec body(t()) :: binary()
-  def body(%Response{session: session} = response) do
-    Channel.post(session, {:guid, response.guid}, :body)
+  def body(%Response{} = response) do
+    Channel.post({response, :body})
     |> Base.decode64!()
   end
 
@@ -62,7 +62,7 @@ defmodule Playwright.Response do
   end
 
   @spec ok({t(), t()}) :: boolean()
-  def ok({:error, %Playwright.SDK.Channel.Error{}}) do
+  def ok({:error, %Playwright.SDK.Error{}}) do
     false
   end
 

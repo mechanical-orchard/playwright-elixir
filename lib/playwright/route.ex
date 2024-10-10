@@ -24,8 +24,7 @@ defmodule Playwright.Route do
     # HACK to deal with changes in v1.33.0
     catalog = Channel.Session.catalog(session)
     request = Channel.Catalog.get(catalog, route.request.guid)
-    params = Map.merge(options, %{is_fallback: false, request_url: request.url})
-    Channel.post(session, {:guid, route.guid}, :continue, params)
+    Channel.post({route, :continue}, %{is_fallback: false, request_url: request.url}, options)
   end
 
   # ---
@@ -60,7 +59,7 @@ defmodule Playwright.Route do
         })
     }
 
-    Channel.post(session, {:guid, route.guid}, :fulfill, params)
+    Channel.post({route, :fulfill}, params)
   end
 
   # ---

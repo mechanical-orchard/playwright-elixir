@@ -56,27 +56,3 @@ defmodule Playwright.SDK.Channel.Event do
     end)
   end
 end
-
-# defp module_for(%{__struct__: module}) do
-#   module
-# end
-
-# defp prepare(%{newDocument: %{request: request}} = params, type, catalog) when type in ["navigated"] do
-#   document = %{request: Channel.Catalog.get(catalog, request.guid)}
-#   Map.put(params, :newDocument, document)
-# end
-
-# defp prepare(params, type, catalog) when type in ["page"] do
-#   page = Channel.Catalog.get(catalog, params.page.guid)
-#   frame = Channel.Catalog.get(catalog, page.main_frame.guid)
-
-#   Map.merge(params, %{
-#     page: page,
-#     url: frame.url
-#   })
-# end
-
-# defp prepare(params, type, _catalog) do
-#   Logger.debug("Event.prepare/3 not implemented for type: #{inspect(type)} w/ params: #{inspect(params)}")
-#   params
-# end

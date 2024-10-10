@@ -38,7 +38,7 @@ defmodule Playwright.SDK.Channel.Response do
   end
 
   def recv(_session, %{error: error, id: _}) do
-    Channel.Error.new(error, nil)
+    Playwright.API.Error.new(error, nil)
   end
 
   def recv(session, %{id: _} = message) do
@@ -95,6 +95,11 @@ defmodule Playwright.SDK.Channel.Response do
 
   defp parse([], _catalog) do
     nil
+  end
+
+  # ?
+  defp parse(list, _catalog) when is_list(list) do
+    list
   end
 
   defp resolve(session, catalog, owner, event) do

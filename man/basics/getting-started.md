@@ -26,7 +26,7 @@ $ mix playwright.install
 Once installed, you can `alias` and/or `import` Playwright in your Elixir module, and launch any of the 3 browsers (`chromium`, `firefox` and `webkit`).
 
 ```elixir
-{:ok, browser} = Playwright.launch(:chromium)
+{:ok, session, browser} = Playwright.launch(:chromium)
 page =
   browser |> Playwright.Browser.new_page()
 

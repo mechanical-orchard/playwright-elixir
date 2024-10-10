@@ -1,6 +1,7 @@
 defmodule Plawyeright.Channel.CatalogTest do
   use ExUnit.Case, async: true
-  alias Playwright.SDK.Channel.{Catalog, Error}
+  alias Playwright.SDK.Error
+  alias Playwright.SDK.Channel.Catalog
 
   setup do
     %{
@@ -23,7 +24,7 @@ defmodule Plawyeright.Channel.CatalogTest do
     end
 
     test "returns an Error when there is no match within the timeout period", %{catalog: catalog} do
-      assert {:error, %Error{message: "Timeout 50ms exceeded."}} = Catalog.get(catalog, "Missing", %{timeout: 50})
+      assert {:error, %Error{message: "Timeout 50ms exceeded" <> _}} = Catalog.get(catalog, "Missing", %{timeout: 50})
     end
   end
 

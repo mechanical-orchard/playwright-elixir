@@ -48,6 +48,13 @@ defmodule Playwright.SDK.Helpers.Serialization do
     Enum.map(value, &deserialize(&1))
   end
 
+  def deserialize(value) when is_tuple(value) do
+    case value do
+      {:error, _} = error ->
+        error
+    end
+  end
+
   def serialize(arg) do
     {value, handles} = serialize(arg, [], 0)
     %{value: deep_atomize_keys(value), handles: handles}
