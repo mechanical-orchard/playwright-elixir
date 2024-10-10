@@ -1147,7 +1147,7 @@ defmodule Playwright.BrowserContext do
   | `context`        |            | The "subject" `APIRequestContext` |
   | `options`        | (optional) | Options (see below)               |
 
-  ## Options
+  ### Options
 
   | name     |            | description                       |
   | -------- | ---------- | --------------------------------- |
@@ -1173,6 +1173,32 @@ defmodule Playwright.BrowserContext do
     end
   end
 
+  @doc """
+  Removes a route created via `Playwright.BrowserContext.route/4`.
+
+  When `handler` is not specified, removes all routes for the provided
+  URL/pattern.
+
+  ## Usage
+
+      BrowserContext.unroute(context, "**/*")
+      BrowserContext.unroute(context, "**/*", handler)
+
+  ## Arguments
+
+  | name      |            | description                       |
+  | --------- | ---------- | --------------------------------- |
+  | `context` |            | The "subject" `APIRequestContext` |
+  | `url`     |            | A glob pattern, regex pattern, or predicate receiving a [URL]() used to register a routing handler via `route/4`. |
+  | `handler` | (optional) | A handler function provided when registering a routing handler via `route/4`. |
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error.t()}`
+  """
+  @pipe {:unroute, [:context, :url]}
+  @pipe {:unroute, [:context, :url, :callback]}
   @spec unroute(t(), binary(), function() | nil) :: t() | {:error, Error.t()}
   def unroute(%BrowserContext{session: session} = context, pattern, callback \\ nil) do
     with_latest(context, fn context ->
@@ -1181,12 +1207,63 @@ defmodule Playwright.BrowserContext do
           handler.matcher.match != pattern || (callback && handler.callback != callback)
         end)
 
+      patterns = Helpers.RouteHandler.prepare(remaining)
+
       Channel.patch(session, {:guid, context.guid}, %{routes: remaining})
+      Channel.post({context, :set_network_interception_patterns}, %{patterns: patterns})
     end)
   end
 
-  # @spec unroute_all(t(), map()) :: t() | {:error, Error.t()}
-  # def unroute_all(context, options \\ %{})
+  @doc """
+  Removes all routes created via `Playwright.BrowserContext.route/4` and
+  `Playwright.BrowserContext.route_from_har/3`.
+
+  ## Usage
+
+      BrowserContext.unroute_all(context)
+      BrowserContext.unroute_all(context, %{behavior: "default"})
+      BrowserContext.unroute_all(context, %{behavior: "ignoreErrors"})
+      BrowserContext.unroute_all(context, %{behavior: "wait"})
+
+  ## Arguments
+
+  | name      |            | description                       |
+  | --------- | ---------- | --------------------------------- |
+  | `context` |            | The "subject" `APIRequestContext` |
+  | `options` | (optional) | Options (see below). |
+
+  ### Options
+
+  | name        |            | description                       |
+  | ----------- | ---------- | --------------------------------- |
+  | `:behavior` | (optional) | Specifies whether to wait for already running handlers, and what to do if they throw errors. |
+
+  #### Detais for `:behavior`
+
+  One of:
+
+  - `"default"` - Do not wait for current handler calls, if any, to finish.
+    If a handler being removed throws, it may result in an unhandled error.
+  - `"ignoreErrors"` - Do not wait for current handler calls, if any, to finish.
+    Any errors thrown by handlers being removed are silently caught.
+  - `"wait"` - Wait for any current handler calls to finish.
+
+  ## Returns
+
+  - `BrowserContext.t()`
+  - `{:error, Error.t()}`
+  """
+  @pipe {:unroute_all, [:context]}
+  @pipe {:unroute_all, [:context, :options]}
+  @spec unroute_all(t(), options()) :: t() | {:error, Error.t()}
+  def unroute_all(%BrowserContext{session: session} = context, options \\ %{}) do
+    with_latest(context, fn context ->
+      patterns = Helpers.RouteHandler.prepare([])
+
+      Channel.patch(session, {:guid, context.guid}, %{routes: []})
+      Channel.post({context, :set_network_interception_patterns}, %{patterns: patterns}, options)
+    end)
+  end
 
   # @spec wait_for_event(t(), binary(), map()) :: map()
   # def wait_for_event(context, event, options \\ %{})
@@ -1197,18 +1274,6 @@ defmodule Playwright.BrowserContext do
   defp on_binding(context, binding) do
     Playwright.BindingCall.call(binding, Map.get(context.bindings, binding.name))
   end
-
-  # NOTE:
-  # Still need to remove the handler when it does the job. Like the following:
-  #
-  #     if handler_entry.matches(request.url):
-  #         if handler_entry.handle(route, request):
-  #             self._routes.remove(handler_entry)
-  #             if not len(self._routes) == 0:
-  #                 asyncio.create_task(self._disable_interception())
-  #         break
-  #
-  # ...hoping for a test to drive that out.
 
   # NOTE(20240525):
   # Do not love this; See Page.on_route/2 (which is an exact copy of this) for why.

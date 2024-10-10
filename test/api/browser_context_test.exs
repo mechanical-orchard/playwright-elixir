@@ -685,7 +685,7 @@ defmodule Playwright.BrowserContextTest do
       assert_received(:intercepted)
     end
 
-    test "with multiple, rolled-up handlers and `.unroute/1`", %{assets: assets, page: page} do
+    test "with multiple, rolled-up handlers, the latest wins", %{assets: assets, page: page} do
       pid = self()
       context = Page.context(page)
 
@@ -713,14 +713,12 @@ defmodule Playwright.BrowserContextTest do
       BrowserContext.route(context, "**/empty.html", handler_4)
 
       Page.goto(page, assets.empty)
-      BrowserContext.unroute(context, "**/empty.html", handler_4)
       Page.goto(page, assets.empty)
-      BrowserContext.unroute(context, "**/empty.html")
       Page.goto(page, assets.empty)
 
       assert_next_receive(4)
-      assert_next_receive(3)
-      assert_next_receive(1)
+      assert_next_receive(4)
+      assert_next_receive(4)
       assert_empty_mailbox()
     end
 
@@ -1107,16 +1105,115 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
-  describe "BrowserContext.unroute/2" do
+  describe "BrowserContext.unroute/3" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.unroute(context, "**/*")
+    end
+
+    # test "on failure, returns `{:error, error}`", %{page: page}
+
+    test "with multiple, rolled-up handlers and `.unroute/1`", %{assets: assets, page: page} do
+      pid = self()
+      context = Page.context(page)
+
+      handler = fn route, marker ->
+        send(pid, marker)
+        Route.continue(route)
+      end
+
+      handler_4 = fn route, _request ->
+        handler.(route, 4)
+      end
+
+      BrowserContext.route(context, "**/*", fn route, _request ->
+        handler.(route, 1)
+      end)
+
+      BrowserContext.route(context, "**/*.html", fn route, _request ->
+        handler.(route, 2)
+      end)
+
+      BrowserContext.route(context, "**/empty.html", fn route, _request ->
+        handler.(route, 3)
+      end)
+
+      BrowserContext.route(context, "**/empty.html", handler_4)
+
+      Page.goto(page, assets.empty)
+      Page.goto(page, assets.empty)
+
+      assert_next_receive(4)
+      assert_next_receive(4)
+
+      BrowserContext.unroute(context, "**/empty.html", handler_4)
+      Page.goto(page, assets.empty)
+      BrowserContext.unroute(context, "**/empty.html")
+      Page.goto(page, assets.empty)
+      BrowserContext.unroute(context, "**/*.html")
+      Page.goto(page, assets.empty)
+
+      assert_next_receive(3)
+      assert_next_receive(2)
+      assert_next_receive(1)
+      assert_empty_mailbox()
+    end
   end
 
-  describe "BrowserContext.unroute!/2" do
+  describe "BrowserContext.unroute!/3" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.unroute!(context, "**/*")
+    end
+
+    # test "on failure, raises `RuntimeError`", %{page: page}
   end
 
   describe "BrowserContext.unroute_all/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.unroute_all(context)
+    end
+
+    test "removes all routing configurations", %{assets: assets, page: page} do
+      pid = self()
+      context = Page.context(page)
+
+      handler = fn route, marker ->
+        send(pid, marker)
+        Route.continue(route)
+      end
+
+      BrowserContext.route(context, "**/*", fn route, _request ->
+        handler.(route, 1)
+      end)
+
+      BrowserContext.route(context, "**/*.html", fn route, _request ->
+        handler.(route, 2)
+      end)
+
+      BrowserContext.route(context, "**/empty.html", fn route, _request ->
+        handler.(route, 3)
+      end)
+
+      Page.goto(page, assets.empty)
+      assert_next_receive(3)
+
+      BrowserContext.unroute_all(context)
+      Page.goto(page, assets.empty)
+      Page.goto(page, assets.empty)
+      Page.goto(page, assets.empty)
+      assert_empty_mailbox()
+    end
   end
 
   describe "BrowserContext.unroute_all!/2" do
+    test "on success, returns the 'subject' `BrowserContext`", %{page: page} do
+      context = Page.context(page)
+      assert %BrowserContext{} = BrowserContext.unroute_all!(context)
+    end
+
+    # test "on failure, raises `RuntimeError`", %{page: page}
   end
 
   describe "BrowserContext.wait_for_event/2" do
