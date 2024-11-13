@@ -902,8 +902,18 @@ defmodule Playwright.Locator do
     locator(context, "nth=#{index}")
   end
 
-  # @spec or(Locator.t(), Locator.t()) :: Locator.t()
-  # def or(locator, other)
+  @doc """
+  Returns a new `Playwright.Locator` that matches either of the conditions of the given locators.
+
+  This implements the `or` function for locators, but `or` is not an allowed function name in elixir.
+  """
+   @spec or_(Locator.t(), Locator.t()) :: Locator.t()
+  def or_(%Locator{frame: frame} = locator, %Locator{frame: frame} = other) do
+   new(frame, locator.selector <> ">> internal:or=" <> Jason.encode!(other.selector))
+  end
+  def or_(_, _) do
+    raise ArgumentError, "Locators must belong to the same frame"
+  end
 
   # @spec page(Locator.t()) :: Page.t()
   # def page(locator)

@@ -641,6 +641,57 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.or_/2" do
+    test "returns a locator that matches either given condition", %{page: page} do
+      page
+      |> Page.set_content("""
+      <section>
+          <div class="pink">pink</div>
+          <div class="orange">orange</div>
+          <div class="green">green</div>
+      </section>
+      """)
+
+      pink = Page.locator(page, ".pink")
+      orange = Page.locator(page, ".orange")
+      redish = Locator.or_(pink, orange)
+      assert Locator.text_content(redish) == "pink"
+
+      page
+      |> Page.set_content("""
+      <section>
+          <div class="orange">orange</div>
+          <div class="green">green</div>
+      </section>
+      """)
+
+      pink = Page.locator(page, ".pink")
+      orange = Page.locator(page, ".orange")
+      redish = Locator.or_(pink, orange)
+
+      assert Locator.text_content(redish) == "orange"
+    end
+
+    test "raises an error when the given locators don't share a frame", %{page: page, browser: browser} do
+      other_page = Playwright.Browser.new_page(browser)
+
+      on_exit(:ok, fn ->
+        Playwright.Page.close(other_page)
+      end)
+      page
+      |> Page.set_content("<div></div>")
+
+      div_locator = Page.locator(page, "div")
+      other_page
+      |> Page.set_content("<span></span>")
+      span_locator = Page.locator(other_page, "span")
+
+      assert_raise ArgumentError, "Locators must belong to the same frame", fn ->
+        Locator.or_(div_locator, span_locator)
+      end
+    end
+  end
+
   describe "Locator.press/2" do
     test "focuses an element and 'presses' a key within it", %{page: page} do
       locator = Page.locator(page, "input")
