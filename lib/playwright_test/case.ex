@@ -42,9 +42,10 @@ defmodule PlaywrightTest.Case do
         end
       end
   """
-
   defmacro __using__(options \\ %{}) do
     quote do
+      alias Playwright.SDK.Channel.Catalog
+      alias Playwright.SDK.Channel.Session
       alias Playwright.SDK.Config
 
       setup_all(context) do
@@ -55,14 +56,14 @@ defmodule PlaywrightTest.Case do
         Application.put_env(:playwright, LaunchOptions, launch_options)
         {:ok, _} = Application.ensure_all_started(:playwright)
 
-        {_session, browser} = setup_browser(runner_options.transport)
-        [browser: browser, transport: runner_options.transport]
+        {session, browser} = setup_browser(runner_options.transport)
+        [browser: browser, session: session, transport: runner_options.transport]
       end
 
       setup(context) do
-        tagged_exclude = Map.get(context, :exclude, [])
+        tagged_excludes = Map.get(context, :exclude, [])
 
-        case Enum.member?(tagged_exclude, :page) do
+        case Enum.member?(tagged_excludes, :page) do
           true ->
             context
 

@@ -1,13 +1,27 @@
 defmodule Playwright.SDK.Channel do
   @moduledoc false
   import Playwright.SDK.Helpers.ErrorHandling
-  alias Playwright.SDK.Channel.{Catalog, Connection, Error, Event, Message, Response, Session}
+  alias Playwright.SDK.Channel.{Catalog, Connection, Event, Message, Response, Session}
+
+  @type resource :: struct()
 
   # API
   # ---------------------------------------------------------------------------
 
   def bind(session, {:guid, guid}, event_type, callback) when is_binary(guid) do
     Session.bind(session, {guid, event_type}, callback)
+  end
+
+  def close(resource, options \\ %{})
+
+  def close(resource, options) do
+    case post({resource, :close}, %{refresh: false}, options) do
+      {:error, %Playwright.API.Error{} = error} ->
+        {:error, error}
+
+      _ ->
+        :ok
+    end
   end
 
   def find(session, {:guid, guid}, options \\ %{}) when is_binary(guid) do
@@ -27,21 +41,42 @@ defmodule Playwright.SDK.Channel do
     Catalog.put(catalog, Map.merge(owner, data))
   end
 
-  def post(session, {:guid, guid}, action, params \\ %{}) when is_binary(guid) when is_pid(session) do
-    connection = Session.connection(session)
-    message = Message.new(guid, action, params)
-
-    # IO.inspect(message, label: "---> Channel.post/4")
+  # NOTE(20240929):
+  #
+  # Calls to `post/3` that return the subject resource generally refresh
+  # that resource prior to returning. However, some posts will result in removal
+  # of the resource from the `Catalog`, in which case the `find/2` will fail and
+  # cause a timeout. In those cases, pass `refresh: false` with the options.
+  #
+  # Examples:
+  # - `Page.close/1`
+  # - `CDPSession.detach/1`
+  @spec post({resource(), atom() | String.t()}, map(), map()) :: any() | {:error, any()}
+  def post({resource, action}, params \\ %{}, options \\ %{})
+      when is_struct(resource)
+      when is_atom(action) or is_binary(action) do
+    {refresh?, params} = Map.pop(Map.merge(%{refresh: true}, Map.merge(params, options)), :refresh)
+    connection = Session.connection(resource.session)
+    message = Message.new(resource.guid, action, params)
 
     with_timeout(params, fn timeout ->
       case Connection.post(connection, message, timeout) do
-        {:ok, %{id: _} = result} ->
-          {:ok, result}
+        # on success...
+        {:ok, %{id: _} = response} ->
+          if Enum.count(response) == 1 do
+            # ...empty message: send (generally refreshed) resource
+            if refresh?, do: find(resource.session, {:guid, resource.guid}), else: resource
+          else
+            # ...populated message: send that
+            response
+          end
 
+        # on successful fetch of related resource, send resource
         {:ok, resource} ->
           resource
 
-        {:error, error} ->
+        # on acceptable (API call) errors, send error tuple
+        {:error, %Playwright.API.Error{} = error} ->
           {:error, error}
       end
     end)
@@ -135,7 +170,7 @@ defmodule Playwright.SDK.Channel do
     item
   end
 
-  defp reply(%Error{} = error, from) do
+  defp reply(%Playwright.API.Error{} = error, from) do
     Task.start_link(fn ->
       GenServer.reply(from, {:error, error})
     end)

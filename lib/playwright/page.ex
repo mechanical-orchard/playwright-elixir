@@ -40,9 +40,9 @@ defmodule Playwright.Page do
   """
   use Playwright.SDK.ChannelOwner
 
-  alias Playwright.SDK.Channel
   alias Playwright.{BrowserContext, ElementHandle, Frame, Page, Response}
-  alias Playwright.SDK.{ChannelOwner, Helpers}
+  alias Playwright.API.Error
+  alias Playwright.SDK.{Channel, ChannelOwner, Helpers}
 
   @property :bindings
   @property :is_closed
@@ -131,17 +131,9 @@ defmodule Playwright.Page do
   > `Playwright.BrowserContext.add_init_script/2` and
   > `Playwright.Page.add_init_script/2` is not defined.
   """
-  @spec add_init_script(t(), binary() | map()) :: :ok
-  def add_init_script(%Page{session: session} = page, script) when is_binary(script) do
-    params = %{source: script}
-
-    case Channel.post(session, {:guid, page.guid}, :add_init_script, params) do
-      {:ok, _} ->
-        :ok
-
-      {:error, error} ->
-        {:error, error}
-    end
+  @spec add_init_script(t(), binary() | map()) :: t()
+  def add_init_script(%Page{} = page, script) when is_binary(script) do
+    Channel.post({page, :add_init_script}, %{source: script})
   end
 
   def add_init_script(%Page{} = page, %{path: path} = script) when is_map(script) do
@@ -164,9 +156,11 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec click(t(), binary(), options()) :: :ok
+  @spec click(t(), binary(), options()) :: t()
   def click(%Page{} = page, selector, options \\ %{}) do
-    main_frame(page) |> Frame.click(selector, options)
+    returning(page, fn ->
+      main_frame(page) |> Frame.click(selector, options)
+    end)
   end
 
   @doc """
@@ -198,12 +192,12 @@ defmodule Playwright.Page do
   > `Playwright.Page.on/3`.
   """
   @spec close(t(), options()) :: :ok
-  def close(%Page{session: session} = page, options \\ %{}) do
+  def close(%Page{session: session} = page, _options \\ %{}) do
     # A call to `close` will remove the item from the catalog. `Catalog.find`
     # here ensures that we do not `post` a 2nd `close`.
     case Channel.find(session, {:guid, page.guid}, %{timeout: 10}) do
       %Page{} ->
-        Channel.post(session, {:guid, page.guid}, :close, options)
+        Channel.close(page)
 
         # NOTE: this *might* prefer to be done on `__dispose__`
         # ...OR, `.on(_, "close", _)`
@@ -229,9 +223,7 @@ defmodule Playwright.Page do
   # Get the full HTML contents of the page, including the doctype.
   # """
   # @spec content(t()) :: binary()
-  # def content(%Page{session: session} = page) do
-  #   Channel.post(session, {:guid, page.guid}, :content)
-  # end
+  # def content(%Page{session: session} = page)
 
   @doc """
   Get the `Playwright.BrowserContext` that the page belongs to.
@@ -251,11 +243,13 @@ defmodule Playwright.Page do
   @doc """
   A shortcut for the main frame's `Playwright.Frame.dblclick/3`.
   """
-  @spec dblclick(t(), binary(), options()) :: :ok
+  @spec dblclick(t(), binary(), options()) :: t()
   def dblclick(page, selector, options \\ %{})
 
   def dblclick(%Page{} = page, selector, options) do
-    main_frame(page) |> Frame.dblclick(selector, options)
+    returning(page, fn ->
+      main_frame(page) |> Frame.dblclick(selector, options)
+    end)
   end
 
   @doc """
@@ -280,7 +274,7 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec eval_on_selector(t(), binary(), binary(), term(), map()) :: term()
+  @spec eval_on_selector(t(), binary(), binary(), term(), map()) :: term() | {:error, Error.t()}
   def eval_on_selector(%Page{} = page, selector, expression, arg \\ nil, options \\ %{}) do
     main_frame(page)
     |> Frame.eval_on_selector(selector, expression, arg, options)
@@ -343,7 +337,7 @@ defmodule Playwright.Page do
   @spec expose_binding(t(), binary(), function(), options()) :: Page.t()
   def expose_binding(%Page{session: session} = page, name, callback, options \\ %{}) do
     Channel.patch(session, {:guid, page.guid}, %{bindings: Map.merge(page.bindings, %{name => callback})})
-    post!(page, :expose_binding, Map.merge(%{name: name, needs_handle: false}, options))
+    Channel.post({page, :expose_binding}, Map.merge(%{name: name, needs_handle: false}, options))
   end
 
   @doc """
@@ -513,7 +507,7 @@ defmodule Playwright.Page do
     # HACK!
     e = Atom.to_string(event) |> Recase.to_camel()
 
-    Channel.post(session, {:guid, page.guid}, :update_subscription, %{event: e, enabled: true})
+    Channel.post({page, :update_subscription}, %{event: e, enabled: true})
     Channel.bind(session, {:guid, context(page).guid}, event, callback)
   end
 
@@ -574,8 +568,8 @@ defmodule Playwright.Page do
   - `commit` - consider operation to be finished when network response is received and the document started loading.
   """
   @spec reload(t(), options()) :: Response.t() | nil
-  def reload(%Page{session: session} = page, options \\ %{}) do
-    Channel.post(session, {:guid, page.guid}, :reload, options)
+  def reload(%Page{} = page, options \\ %{}) do
+    Channel.post({page, :reload}, options)
   end
 
   # ---
@@ -591,7 +585,7 @@ defmodule Playwright.Page do
     |> List.first()
   end
 
-  @spec route(t(), binary(), function(), map()) :: :ok
+  @spec route(t(), binary(), function(), map()) :: t() | Playwright.API.Error.t()
   def route(page, pattern, handler, options \\ %{})
 
   def route(%Page{session: session} = page, pattern, handler, _options) do
@@ -603,7 +597,7 @@ defmodule Playwright.Page do
       patterns = Helpers.RouteHandler.prepare(routes)
 
       Channel.patch(session, {:guid, page.guid}, %{routes: routes})
-      Channel.post(session, {:guid, page.guid}, :set_network_interception_patterns, %{patterns: patterns})
+      Channel.post({page, :set_network_interception_patterns}, %{patterns: patterns})
     end)
   end
 
@@ -615,15 +609,15 @@ defmodule Playwright.Page do
   # ---
 
   @spec screenshot(t(), options()) :: binary()
-  def screenshot(%Page{session: session} = page, options \\ %{}) do
+  def screenshot(%Page{} = page, options \\ %{}) do
     case Map.pop(options, :path) do
       {nil, params} ->
-        Channel.post(session, {:guid, page.guid}, :screenshot, params)
+        Channel.post({page, :screenshot}, params)
 
       {path, params} ->
         [_, filetype] = String.split(path, ".")
 
-        data = Channel.post(session, {:guid, page.guid}, :screenshot, Map.put(params, :type, filetype))
+        data = Channel.post({page, :screenshot}, Map.put(params, :type, filetype))
         File.write!(path, Base.decode64!(data))
         data
     end
@@ -644,9 +638,11 @@ defmodule Playwright.Page do
 
   # ---
 
-  @spec set_content(t(), binary(), options()) :: :ok
+  @spec set_content(t(), binary(), options()) :: t() | {:error, Error.t()}
   def set_content(%Page{} = page, html, options \\ %{}) do
-    main_frame(page) |> Frame.set_content(html, options)
+    returning(page, fn ->
+      main_frame(page) |> Frame.set_content(html, options)
+    end)
   end
 
   # NOTE: these 2 are good examples of functions that should `cast` instead of `call`.
@@ -663,8 +659,8 @@ defmodule Playwright.Page do
   # ---
 
   @spec set_viewport_size(t(), dimensions()) :: :ok
-  def set_viewport_size(%Page{session: session} = page, dimensions) do
-    Channel.post(session, {:guid, page.guid}, :set_viewport_size, %{viewport_size: dimensions})
+  def set_viewport_size(%Page{} = page, dimensions) do
+    Channel.post({page, :set_viewport_size}, %{viewport_size: dimensions})
   end
 
   @spec text_content(t(), binary(), map()) :: binary() | nil
@@ -732,6 +728,12 @@ defmodule Playwright.Page do
   end
 
   # ---
+
+  # @spec wait_for_request(Page.t(), ..., options()) :: :ok
+  # def wait_for_request(page, url_or_predicate, options \\ %{})
+
+  # @spec wait_for_response(Page.t(), ..., options()) :: :ok
+  # def wait_for_response(page, url_or_predicate, options \\ %{})
 
   # @spec wait_for_url(Page.t(), binary(), options()) :: :ok
   # def wait_for_url(page, url, options \\ %{})

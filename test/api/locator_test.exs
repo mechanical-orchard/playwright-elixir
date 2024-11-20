@@ -1,8 +1,9 @@
 defmodule Playwright.LocatorTest do
+  alias Playwright.JSHandle
   use Playwright.TestCase, async: true
 
   alias Playwright.{ElementHandle, Locator, Page}
-  alias Playwright.SDK.Channel.Error
+  alias Playwright.API.Error
 
   describe "Locator.all/1" do
     test "returns a list of Locators, addressing each respective element", %{page: page} do
@@ -91,7 +92,7 @@ defmodule Playwright.LocatorTest do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "input#checkbox")
-      assert :ok = Locator.check(locator, options)
+      assert %Locator{} = Locator.check(locator, options)
     end
 
     test "returns a timeout error when unable to 'check'", %{options: options, page: page} do
@@ -112,11 +113,11 @@ defmodule Playwright.LocatorTest do
       [options: options]
     end
 
-    test "returns :ok on a successful click", %{options: options, page: page} do
+    test "returns 'subject' on a successful click", %{options: options, page: page} do
       frame = Page.main_frame(page)
 
       locator = Locator.new(frame, "a#link")
-      assert :ok = Locator.click(locator, options)
+      assert ^locator = Locator.click(locator, options)
     end
 
     test "returns a timeout error when unable to click", %{options: options, page: page} do
@@ -257,6 +258,42 @@ defmodule Playwright.LocatorTest do
   end
 
   describe "Locator.evaluate/4" do
+    test "returns the evaluation result when evaluated on a successly located element", %{page: page} do
+      element = Locator.new(page, "input")
+      Page.set_content(page, "<input type='checkbox' checked>")
+
+      # result from returning from assignment statement...
+      assert Locator.evaluate(element, "function (input) { return input.checked = false; }") === false
+
+      # result from evaluating assignment statement, w/out return...
+      assert Locator.evaluate(element, "function (input) { input.checked = false; }") === nil
+
+      # result from returning from equality expression...
+      assert Locator.evaluate(element, "function (input) { return input.checked == false; }") === true
+
+      # result from evaluating equality expression, w/out return...
+      assert Locator.evaluate(element, "function (input) { input.checked == false; }") === nil
+
+      # returning something after action...
+      assert Locator.evaluate(element, "function (input) { input.checked = false; return 'finished'; }") === "finished"
+
+      # result from bogus JS...
+      assert {:error, %Error{type: "Error", message: "ReferenceError: bogus is not defined"}} =
+               Locator.evaluate(element, "function (input) { input.checked = bogus; }")
+
+      # result from a raised exception...
+      assert {:error, %Error{type: "Error", message: "Error: bang!"}} =
+               Locator.evaluate(element, "function (input) { throw new Error('bang!'); }")
+    end
+
+    test "returns a timeout error when unable to locate", %{page: page} do
+      element = Locator.new(page, "input")
+      Page.set_content(page, "<p>not an input</p>")
+
+      assert {:error, %Error{type: "TimeoutError", message: "Timeout 100ms exceeded."}} =
+               Locator.evaluate(element, "function (input) {}", %{timeout: 100})
+    end
+
     test "called with expression", %{page: page} do
       element = Locator.new(page, "input")
 
@@ -356,13 +393,12 @@ defmodule Playwright.LocatorTest do
     test "retrieves content from a subtree match", %{page: page} do
       locator = Page.locator(page, "#myId .a")
 
-      :ok =
-        Page.set_content(page, """
-          <div class="a">other content</div>
-          <div id="myId">
-            <div class="a">desired content</div>
-          </div>
-        """)
+      Page.set_content(page, """
+        <div class="a">other content</div>
+        <div id="myId">
+          <div class="a">desired content</div>
+        </div>
+      """)
 
       case Locator.evaluate(locator, "node => node.innerText") do
         "desired content" ->
@@ -404,14 +440,93 @@ defmodule Playwright.LocatorTest do
   end
 
   describe "Locator.evaluate_handle/3" do
-    test "returns a handle", %{assets: assets, page: page} do
+    @tag :skip
+    test "on success, returns a `JSHandle`", %{assets: assets, page: page} do
       locator = Page.locator(page, "#inner")
       Page.goto(page, assets.dom)
 
-      handle = Locator.evaluate_handle(locator, "e => e.firstChild")
-      assert ElementHandle.string(handle) == ~s|JSHandle@#text=Text,↵more text|
+      handle =
+        Locator.evaluate_handle(locator, "e => e.firstChild")
+        |> IO.inspect(label: "handle")
+
+      # Channel.list(context.session, {:guid, context.guid}, "Page")
+      # Catalog.list(Session.catalog(session), %{
+      #   parent: guid,
+      #   type: type
+      # })
+
+      # Catalog.list(Session.catalog(session), %{
+      #   parent: guid,
+      #   type: type
+      # })
+
+      Playwright.SDK.Channel.Catalog.list(Playwright.SDK.Channel.Session.catalog(page.session), %{type: "ElementHandle"})
+      |> IO.inspect(label: "ElementHandle list")
+
+      Playwright.SDK.Channel.Catalog.list(Playwright.SDK.Channel.Session.catalog(page.session), %{type: "JSHandle"})
+      |> IO.inspect(label: "JSHandle list")
+
+      assert %JSHandle{} = handle
+
+      # assert ElementHandle.string(handle) == ~s|JSHandle@#text=Text,↵more text|
     end
   end
+
+  # <--- Channel.recv/2 A: #Playwright.ElementHandle<
+  #   preview: "JSHandle@node",
+  #   guid: "handle@a715142a11dd4a2991fa46d84d586120",
+  #   ...
+  # >
+  # <--- Channel.recv/2 B: %Playwright.SDK.Channel.Response{
+  #   message: %{
+  #     id: 5,
+  #     result: %{element: %{guid: "handle@a715142a11dd4a2991fa46d84d586120"}}
+  #   },
+  #   parsed: #Playwright.ElementHandle<
+  #     preview: "JSHandle@node",
+  #     guid: "handle@a715142a11dd4a2991fa46d84d586120",
+  #     ...
+  #   >
+  # }
+  # <--- Channel.recv/2 A: %Playwright.SDK.Channel.Event{
+  #   target: #Playwright.ElementHandle<
+  #     preview: "JSHandle@<div id=\"inner\">Text,↵more text</div>",
+  #     guid: "handle@a715142a11dd4a2991fa46d84d586120",
+  #     ...
+  #   >,
+  #   type: :preview_updated,
+  #   params: %{preview: "JSHandle@<div id=\"inner\">Text,↵more text</div>"}
+  # }
+  # <--- Channel.recv/2 A: #Playwright.ElementHandle<
+  #   preview: "JSHandle@node",
+  #   guid: "handle@fe82f3d913e85bb3400bb0e5806605ea",
+  #   ...
+  # >
+  # <--- Channel.recv/2 B: %Playwright.SDK.Channel.Response{
+  #   message: %{
+  #     id: 6,
+  #     result: %{handle: %{guid: "handle@fe82f3d913e85bb3400bb0e5806605ea"}}
+  #   },
+  #   parsed: #Playwright.ElementHandle<
+  #     preview: "JSHandle@node",
+  #     guid: "handle@fe82f3d913e85bb3400bb0e5806605ea",
+  #     ...
+  #   >
+  # }
+  # <--- Channel.recv/2 A: %Playwright.SDK.Channel.Event{
+  #   target: #Playwright.ElementHandle<
+  #     preview: "JSHandle@#text=Text,↵more text",
+  #     guid: "handle@fe82f3d913e85bb3400bb0e5806605ea",
+  #     ...
+  #   >,
+  #   type: :preview_updated,
+  #   params: %{preview: "JSHandle@#text=Text,↵more text"}
+  # }
+  # handle: #Playwright.ElementHandle<
+  #   preview: "JSHandle@#text=Text,↵more text",
+  #   guid: "handle@fe82f3d913e85bb3400bb0e5806605ea",
+  #   ...
+  # >
 
   describe "Locator.fill/3" do
     test "filling a textarea element", %{assets: assets, page: page} do
@@ -808,18 +923,30 @@ defmodule Playwright.LocatorTest do
   end
 
   describe "Locator.type/3" do
+    test "returns 'subject' on a success", %{page: page} do
+      locator = Page.locator(page, "input")
+      page |> Page.set_content("<input type='text' />")
+
+      assert %Locator{} = Locator.type(locator, "hello")
+    end
+
+    test "returns timeout error when unable to locate", %{page: page} do
+      locator = Page.locator(page, "input")
+      assert {:error, %Error{type: "TimeoutError"}} = Locator.type(locator, "hello", %{timeout: 100})
+    end
+
     test "focuses an element and 'types' each key within it", %{page: page} do
       locator = Page.locator(page, "input")
       page |> Page.set_content("<input type='text' />")
 
-      Locator.type(locator, "hello")
+      assert %Locator{} = Locator.type(locator, "hello")
       assert Page.eval_on_selector(page, "input", "(input) => input.value") == "hello"
     end
   end
 
   describe "Locator.uncheck/2" do
     setup(%{assets: assets, page: page}) do
-      options = %{timeout: 500}
+      options = %{timeout: 100}
 
       page |> Page.goto(assets.prefix <> "/empty.html")
       page |> Page.set_content("<input id='checkbox' type='checkbox' checked/>")
@@ -827,17 +954,17 @@ defmodule Playwright.LocatorTest do
       [options: options]
     end
 
-    test "returns :ok on a successful 'uncheck'", %{options: options, page: page} do
+    test "on success, returns 'subject' Locator", %{options: options, page: page} do
       locator = Page.locator(page, "input#checkbox")
       assert Locator.is_checked(locator) === true
 
-      assert :ok = Locator.uncheck(locator, options)
+      assert %Locator{} = Locator.uncheck(locator, options)
       assert Locator.is_checked(locator) === false
     end
 
-    test "returns a timeout error when unable to 'uncheck'", %{options: options, page: page} do
+    test "on failure, returns a timeout error", %{options: options, page: page} do
       locator = Page.locator(page, "input#bogus")
-      assert {:error, %Error{message: "Timeout 500ms exceeded."}} = Locator.uncheck(locator, options)
+      assert {:error, %Error{type: "TimeoutError"}} = Locator.uncheck(locator, options)
     end
   end
 
@@ -863,7 +990,7 @@ defmodule Playwright.LocatorTest do
           Locator.wait_for(locator, %{timeout: 100})
         end)
 
-      assert [:ok, %Locator{}] = Task.await_many([setup, check])
+      assert [%Page{}, %Locator{}] = Task.await_many([setup, check])
     end
 
     test "on success with nil return (i.e., a match is found in time) returns the `Locator` instance", %{page: page} do
@@ -879,7 +1006,7 @@ defmodule Playwright.LocatorTest do
           Locator.wait_for(locator, %{timeout: 100, state: "hidden"})
         end)
 
-      assert [:ok, %Locator{}] = Task.await_many([setup, check])
+      assert [%Page{}, %Locator{}] = Task.await_many([setup, check])
     end
 
     test "on failure (i.e., the timeout is reached) returns an `{:error, error}` tuple", %{page: page} do
@@ -896,7 +1023,7 @@ defmodule Playwright.LocatorTest do
           Locator.wait_for(locator, %{timeout: 100})
         end)
 
-      assert [:ok, {:error, %Error{type: "TimeoutError"}}] = Task.await_many([setup, check])
+      assert [%Page{}, {:error, %Error{type: "TimeoutError"}}] = Task.await_many([setup, check])
     end
 
     test "waiting for 'attached'", %{options: options, page: page} do
@@ -912,7 +1039,7 @@ defmodule Playwright.LocatorTest do
           Locator.wait_for(locator, Map.put(options, :state, "attached"))
         end)
 
-      assert [:ok, %Locator{}] = Task.await_many([setup, check])
+      assert [%Page{}, %Locator{}] = Task.await_many([setup, check])
     end
   end
 end

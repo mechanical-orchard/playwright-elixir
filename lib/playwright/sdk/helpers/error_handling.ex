@@ -1,6 +1,6 @@
 defmodule Playwright.SDK.Helpers.ErrorHandling do
   @moduledoc false
-  alias Playwright.SDK.Channel.Error
+  alias Playwright.SDK.Error
 
   def with_timeout(options, action) when is_map(options) and is_function(action) do
     timeout = options |> Map.get(:timeout, 30_000)
@@ -15,7 +15,7 @@ defmodule Playwright.SDK.Helpers.ErrorHandling do
       action.(timeout + 100)
     catch
       :exit, {:timeout, _} = _reason ->
-        {:error, Error.new(%{error: %{message: "Timeout #{inspect(timeout)}ms exceeded."}}, nil)}
+        {:error, Error.new("TimeoutError", "Timeout #{inspect(timeout)}ms exceeded waiting for reply from Playwright Server.")}
     end
   end
 end

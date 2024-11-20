@@ -21,11 +21,18 @@ defmodule Playwright.ElementHandleTest do
   end
 
   describe "ElementHandle.click/1" do
-    test "", %{assets: assets, page: page} do
+    test "returns 'subject'", %{assets: assets, page: page} do
+      Page.goto(page, assets.prefix <> "/input/button.html")
+      button = Page.query_selector(page, "button")
+      assert %ElementHandle{} = ElementHandle.click(button)
+    end
+
+    test "...", %{assets: assets, page: page} do
       Page.goto(page, assets.prefix <> "/input/button.html")
 
-      button = Page.query_selector(page, "button")
-      assert ElementHandle.click(button) == :ok
+      Page.query_selector(page, "button")
+      |> ElementHandle.click()
+
       assert Page.evaluate(page, "function () { return window['result']; }") == "Clicked"
     end
   end
@@ -42,7 +49,7 @@ defmodule Playwright.ElementHandleTest do
 
   describe "ElementHandle.is_visible/1" do
     test "...", %{page: page} do
-      :ok = Page.set_content(page, "<div>Hi</div><span></span>")
+      %Page{} = Page.set_content(page, "<div>Hi</div><span></span>")
 
       div = Page.q(page, "div")
       span = Page.q(page, "span")
