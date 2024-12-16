@@ -99,15 +99,16 @@ class CRBrowser extends _browser.Browser {
     this._session.on('Browser.downloadProgress', this._onDownloadProgress.bind(this));
   }
   async doCreateNewContext(options) {
+    const proxy = options.proxyOverride || options.proxy;
     let proxyBypassList = undefined;
-    if (options.proxy) {
-      if (process.env.PLAYWRIGHT_DISABLE_FORCED_CHROMIUM_PROXIED_LOOPBACK) proxyBypassList = options.proxy.bypass;else proxyBypassList = '<-loopback>' + (options.proxy.bypass ? `,${options.proxy.bypass}` : '');
+    if (proxy) {
+      if (process.env.PLAYWRIGHT_DISABLE_FORCED_CHROMIUM_PROXIED_LOOPBACK) proxyBypassList = proxy.bypass;else proxyBypassList = '<-loopback>' + (proxy.bypass ? `,${proxy.bypass}` : '');
     }
     const {
       browserContextId
     } = await this._session.send('Target.createBrowserContext', {
       disposeOnDetach: true,
-      proxyServer: options.proxy ? options.proxy.server : undefined,
+      proxyServer: proxy ? proxy.server : undefined,
       proxyBypassList
     });
     const context = new CRBrowserContext(this, browserContextId, options);
@@ -298,7 +299,7 @@ class CRBrowserContext extends _browserContext.BrowserContext {
   async _initialize() {
     (0, _utils.assert)(!Array.from(this._browser._crPages.values()).some(page => page._browserContext === this));
     const promises = [super._initialize()];
-    if (this._browser.options.name !== 'electron' && this._browser.options.name !== 'clank' && this._options.acceptDownloads !== 'internal-browser-default') {
+    if (this._browser.options.name !== 'clank' && this._options.acceptDownloads !== 'internal-browser-default') {
       promises.push(this._browser._session.send('Browser.setDownloadBehavior', {
         behavior: this._options.acceptDownloads === 'accept' ? 'allowAndName' : 'deny',
         browserContextId: this._browserContextId,
@@ -373,7 +374,7 @@ class CRBrowserContext extends _browserContext.BrowserContext {
   async doGrantPermissions(origin, permissions) {
     const webPermissionToProtocol = new Map([['geolocation', 'geolocation'], ['midi', 'midi'], ['notifications', 'notifications'], ['camera', 'videoCapture'], ['microphone', 'audioCapture'], ['background-sync', 'backgroundSync'], ['ambient-light-sensor', 'sensors'], ['accelerometer', 'sensors'], ['gyroscope', 'sensors'], ['magnetometer', 'sensors'], ['accessibility-events', 'accessibilityEvents'], ['clipboard-read', 'clipboardReadWrite'], ['clipboard-write', 'clipboardSanitizedWrite'], ['payment-handler', 'paymentHandler'],
     // chrome-specific permissions we have.
-    ['midi-sysex', 'midiSysex']]);
+    ['midi-sysex', 'midiSysex'], ['storage-access', 'storageAccess']]);
     const filtered = permissions.map(permission => {
       const protocolPermission = webPermissionToProtocol.get(permission);
       if (!protocolPermission) throw new Error('Unknown permission: ' + permission);
@@ -415,17 +416,11 @@ class CRBrowserContext extends _browserContext.BrowserContext {
     for (const page of this.pages()) await page._delegate.updateHttpCredentials();
     for (const sw of this.serviceWorkers()) await sw.updateHttpCredentials();
   }
-  async doAddInitScript(source) {
-    for (const page of this.pages()) await page._delegate.addInitScript(source);
+  async doAddInitScript(initScript) {
+    for (const page of this.pages()) await page._delegate.addInitScript(initScript);
   }
-  async doRemoveInitScripts() {
-    for (const page of this.pages()) await page._delegate.removeInitScripts();
-  }
-  async doExposeBinding(binding) {
-    for (const page of this.pages()) await page._delegate.exposeBinding(binding);
-  }
-  async doRemoveExposedBindings() {
-    for (const page of this.pages()) await page._delegate.removeExposedBindings();
+  async doRemoveNonInternalInitScripts() {
+    for (const page of this.pages()) await page._delegate.removeNonInternalInitScripts();
   }
   async doUpdateRequestInterception() {
     for (const page of this.pages()) await page._delegate.updateRequestInterception();

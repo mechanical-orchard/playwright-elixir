@@ -186,8 +186,8 @@ class Mouse {
   }
   async click(x, y, options = {}, metadata) {
     if (metadata) metadata.point = {
-      x: this._x,
-      y: this._y
+      x,
+      y
     };
     const {
       delay = null,
@@ -266,7 +266,7 @@ function buildLayoutClosure(layout) {
       if (definition.shiftKeyCode) shiftedDescription.keyCode = definition.shiftKeyCode;
     }
 
-    // Map from code: Digit3 -> { ... descrption, shifted }
+    // Map from code: Digit3 -> { ... description, shifted }
     result.set(code, {
       ...description,
       shifted: shiftedDescription

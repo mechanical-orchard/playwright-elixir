@@ -13,6 +13,7 @@ var _channelOwner = require("./channelOwner");
 var _network = require("./network");
 var _tracing = require("./tracing");
 var _errors = require("./errors");
+var _browserContext = require("./browserContext");
 let _Symbol$asyncDispose, _Symbol$asyncDispose2, _util$inspect$custom;
 /**
  * Copyright (c) Microsoft Corporation.
@@ -53,12 +54,13 @@ class APIRequest {
       ...options,
       extraHTTPHeaders: options.extraHTTPHeaders ? (0, _utils.headersObjectToArray)(options.extraHTTPHeaders) : undefined,
       storageState,
-      tracesDir
+      tracesDir,
+      clientCertificates: await (0, _browserContext.toClientCertificatesProtocol)(options.clientCertificates)
     })).request);
     this._contexts.add(context);
     context._request = this;
     context._tracing._tracesDir = tracesDir;
-    await context._instrumentation.onDidCreateRequestContext(context);
+    await context._instrumentation.runAfterCreateRequestContext(context);
     return context;
   }
 }
@@ -72,15 +74,22 @@ class APIRequestContext extends _channelOwner.ChannelOwner {
     super(parent, type, guid, initializer);
     this._request = void 0;
     this._tracing = void 0;
+    this._closeReason = void 0;
     this._tracing = _tracing.Tracing.from(initializer.tracing);
   }
   async [_Symbol$asyncDispose]() {
     await this.dispose();
   }
-  async dispose() {
+  async dispose(options = {}) {
     var _this$_request;
-    await this._instrumentation.onWillCloseRequestContext(this);
-    await this._channel.dispose();
+    this._closeReason = options.reason;
+    await this._instrumentation.runBeforeCloseRequestContext(this);
+    try {
+      await this._channel.dispose(options);
+    } catch (e) {
+      if ((0, _errors.isTargetClosedError)(e)) return;
+      throw e;
+    }
     this._tracing._resetStackCounter();
     (_this$_request = this._request) === null || _this$_request === void 0 || _this$_request._contexts.delete(this);
   }
@@ -132,13 +141,15 @@ class APIRequestContext extends _channelOwner.ChannelOwner {
   async _innerFetch(options = {}) {
     return await this._wrapApiCall(async () => {
       var _options$request, _options$request2, _options$request3;
+      if (this._closeReason) throw new _errors.TargetClosedError(this._closeReason);
       (0, _utils.assert)(options.request || typeof options.url === 'string', 'First argument must be either URL string or Request');
       (0, _utils.assert)((options.data === undefined ? 0 : 1) + (options.form === undefined ? 0 : 1) + (options.multipart === undefined ? 0 : 1) <= 1, `Only one of 'data', 'form' or 'multipart' can be specified`);
-      (0, _utils.assert)(options.maxRedirects === undefined || options.maxRedirects >= 0, `'maxRedirects' should be greater than or equal to '0'`);
+      (0, _utils.assert)(options.maxRedirects === undefined || options.maxRedirects >= 0, `'maxRedirects' must be greater than or equal to '0'`);
+      (0, _utils.assert)(options.maxRetries === undefined || options.maxRetries >= 0, `'maxRetries' must be greater than or equal to '0'`);
       const url = options.url !== undefined ? options.url : options.request.url();
-      const params = objectToArray(options.params);
       const method = options.method || ((_options$request = options.request) === null || _options$request === void 0 ? void 0 : _options$request.method());
-      const maxRedirects = options.maxRedirects;
+      let encodedParams = undefined;
+      if (typeof options.params === 'string') encodedParams = options.params;else if (options.params instanceof URLSearchParams) encodedParams = options.params.toString();
       // Cannot call allHeaders() here as the request may be paused inside route handler.
       const headersObj = options.headers || ((_options$request2 = options.request) === null || _options$request2 === void 0 ? void 0 : _options$request2.headers());
       const headers = headersObj ? (0, _utils.headersObjectToArray)(headersObj) : undefined;
@@ -157,7 +168,18 @@ class APIRequestContext extends _channelOwner.ChannelOwner {
           throw new Error(`Unexpected 'data' type`);
         }
       } else if (options.form) {
-        formData = objectToArray(options.form);
+        if (globalThis.FormData && options.form instanceof FormData) {
+          formData = [];
+          for (const [name, value] of options.form.entries()) {
+            if (typeof value !== 'string') throw new Error(`Expected string for options.form["${name}"], found File. Please use options.multipart instead.`);
+            formData.push({
+              name,
+              value
+            });
+          }
+        } else {
+          formData = objectToArray(options.form);
+        }
       } else if (options.multipart) {
         multipartData = [];
         if (globalThis.FormData && options.multipart instanceof FormData) {
@@ -191,7 +213,8 @@ class APIRequestContext extends _channelOwner.ChannelOwner {
       };
       const result = await this._channel.fetch({
         url,
-        params,
+        params: typeof options.params === 'object' ? objectToArray(options.params) : undefined,
+        encodedParams,
         method,
         headers,
         postData: postDataBuffer,
@@ -201,7 +224,8 @@ class APIRequestContext extends _channelOwner.ChannelOwner {
         timeout: options.timeout,
         failOnStatusCode: options.failOnStatusCode,
         ignoreHTTPSErrors: options.ignoreHTTPSErrors,
-        maxRedirects: maxRedirects,
+        maxRedirects: options.maxRedirects,
+        maxRetries: options.maxRetries,
         ...fixtures
       });
       return new APIResponse(this, result.response);

@@ -41,6 +41,8 @@ class PlaywrightDispatcher extends _dispatcher.Dispatcher {
       chromium: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.chromium),
       firefox: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.firefox),
       webkit: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.webkit),
+      bidiChromium: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.bidiChromium),
+      bidiFirefox: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.bidiFirefox),
       android,
       electron: new _electronDispatcher.ElectronDispatcher(scope, playwright.electron),
       utils: playwright.options.isServer ? undefined : new _localUtilsDispatcher.LocalUtilsDispatcher(scope, playwright),

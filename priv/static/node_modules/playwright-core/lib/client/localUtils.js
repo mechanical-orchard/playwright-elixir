@@ -25,6 +25,7 @@ class LocalUtils extends _channelOwner.ChannelOwner {
   constructor(parent, type, guid, initializer) {
     super(parent, type, guid, initializer);
     this.devices = void 0;
+    this.markAsInternalType();
     this.devices = {};
     for (const {
       name,

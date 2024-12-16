@@ -39,15 +39,22 @@ class Download {
     this.url = url;
     this._suggestedFilename = suggestedFilename;
     page._browserContext._downloads.add(this);
-    if (suggestedFilename !== undefined) this._page.emit(_page.Page.Events.Download, this);
+    if (suggestedFilename !== undefined) this._fireDownloadEvent();
+  }
+  page() {
+    return this._page;
   }
   _filenameSuggested(suggestedFilename) {
     (0, _utils.assert)(this._suggestedFilename === undefined);
     this._suggestedFilename = suggestedFilename;
-    this._page.emit(_page.Page.Events.Download, this);
+    this._fireDownloadEvent();
   }
   suggestedFilename() {
     return this._suggestedFilename;
+  }
+  _fireDownloadEvent() {
+    this._page.instrumentation.onDownload(this._page, this);
+    this._page.emit(_page.Page.Events.Download, this);
   }
 }
 exports.Download = Download;

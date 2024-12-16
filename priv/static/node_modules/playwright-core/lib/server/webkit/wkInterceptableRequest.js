@@ -44,8 +44,8 @@ const errorReasons = {
 class WKInterceptableRequest {
   constructor(session, frame, event, redirectedFrom, documentId) {
     this._session = void 0;
-    this.request = void 0;
     this._requestId = void 0;
+    this.request = void 0;
     this._timestamp = void 0;
     this._wallTime = void 0;
     this._session = session;
@@ -56,6 +56,10 @@ class WKInterceptableRequest {
     this._wallTime = event.walltime * 1000;
     if (event.request.postData) postDataBuffer = Buffer.from(event.request.postData, 'base64');
     this.request = new network.Request(frame._page._browserContext, frame, null, (redirectedFrom === null || redirectedFrom === void 0 ? void 0 : redirectedFrom.request) || null, documentId, event.request.url, resourceType, event.request.method, postDataBuffer, (0, _utils.headersObjectToArray)(event.request.headers));
+  }
+  adoptRequestFromNewProcess(newSession, requestId) {
+    this._session = newSession;
+    this._requestId = requestId;
   }
   createResponse(responsePayload) {
     const getResponseBody = async () => {
@@ -75,7 +79,7 @@ class WKInterceptableRequest {
       requestStart: timingPayload ? wkMillisToRoundishMillis(timingPayload.requestStart) : -1,
       responseStart: timingPayload ? wkMillisToRoundishMillis(timingPayload.responseStart) : -1
     };
-    const setCookieSeparator = process.platform === 'darwin' ? ',' : '\n';
+    const setCookieSeparator = process.platform === 'darwin' ? ',' : 'playwright-set-cookie-separator';
     const response = new network.Response(this.request, responsePayload.status, responsePayload.statusText, (0, _utils.headersObjectToArray)(responsePayload.headers, ',', setCookieSeparator), timing, getResponseBody, responsePayload.source === 'service-worker');
 
     // No raw response headers in WebKit, use "provisional" ones.
@@ -125,14 +129,14 @@ class WKRouteImpl {
     await this._session.sendMayFail('Network.interceptRequestWithResponse', {
       requestId: this._requestId,
       status: response.status,
-      statusText: network.STATUS_TEXTS[String(response.status)],
+      statusText: network.statusText(response.status),
       mimeType,
       headers,
       base64Encoded: response.isBase64,
       content: response.body
     });
   }
-  async continue(request, overrides) {
+  async continue(overrides) {
     // In certain cases, protocol will return error if the request was already canceled
     // or the page was closed. We should tolerate these errors.
     await this._session.sendMayFail('Network.interceptWithRequest', {

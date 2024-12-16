@@ -33,13 +33,16 @@ async function prepareFilesForUpload(frame, params) {
   var _fileBuffers;
   const {
     payloads,
-    streams
+    streams,
+    directoryStream
   } = params;
   let {
-    localPaths
+    localPaths,
+    localDirectory
   } = params;
-  if ([payloads, localPaths, streams].filter(Boolean).length !== 1) throw new Error('Exactly one of payloads, localPaths and streams must be provided');
+  if ([payloads, localPaths, localDirectory, streams, directoryStream].filter(Boolean).length !== 1) throw new Error('Exactly one of payloads, localPaths and streams must be provided');
   if (streams) localPaths = streams.map(c => c.path());
+  if (directoryStream) localDirectory = directoryStream.path();
   if (localPaths) {
     for (const p of localPaths) (0, _utils.assert)(_path.default.isAbsolute(p) && _path.default.resolve(p) === p, 'Paths provided to localPaths must be absolute and fully resolved.');
   }
@@ -66,6 +69,7 @@ async function prepareFilesForUpload(frame, params) {
   }));
   return {
     localPaths,
+    localDirectory,
     filePayloads
   };
 }

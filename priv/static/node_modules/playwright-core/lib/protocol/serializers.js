@@ -40,6 +40,12 @@ function innerParseSerializedValue(value, handles, refs) {
   if (value.d !== undefined) return new Date(value.d);
   if (value.u !== undefined) return new URL(value.u);
   if (value.bi !== undefined) return BigInt(value.bi);
+  if (value.e !== undefined) {
+    const error = new Error(value.e.m);
+    error.name = value.e.n;
+    error.stack = value.e.s;
+    return error;
+  }
   if (value.r !== undefined) return new RegExp(value.r.p, value.r.f);
   if (value.a !== undefined) {
     const result = [];
@@ -104,18 +110,13 @@ function innerSerializeValue(value, handleSerializer, visitorInfo) {
   if (typeof value === 'bigint') return {
     bi: value.toString()
   };
-  if (isError(value)) {
-    const error = value;
-    if ('captureStackTrace' in globalThis.Error) {
-      // v8
-      return {
-        s: error.stack || ''
-      };
+  if (isError(value)) return {
+    e: {
+      n: value.name,
+      m: value.message,
+      s: value.stack || ''
     }
-    return {
-      s: `${error.name}: ${error.message}\n${error.stack}`
-    };
-  }
+  };
   if (isDate(value)) return {
     d: value.toJSON()
   };

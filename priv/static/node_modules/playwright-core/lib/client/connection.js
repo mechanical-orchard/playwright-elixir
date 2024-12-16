@@ -104,7 +104,7 @@ class Connection extends _events.EventEmitter {
   setIsTracing(isTracing) {
     if (isTracing) this._tracingCount++;else this._tracingCount--;
   }
-  async sendMessageToServer(object, method, params, apiName, frames, wallTime) {
+  async sendMessageToServer(object, method, params, apiName, frames, stepId) {
     var _this$_localUtils;
     if (this._closedError) throw this._closedError;
     if (object._wasCollected) throw new Error('The object has been collected to prevent unbounded heap growth.');
@@ -127,10 +127,10 @@ class Connection extends _events.EventEmitter {
       column: frames[0].column
     } : undefined;
     const metadata = {
-      wallTime,
       apiName,
       location,
-      internal: !apiName
+      internal: !apiName,
+      stepId
     };
     if (this._tracingCount && frames && type !== 'LocalUtils') (_this$_localUtils = this._localUtils) === null || _this$_localUtils === void 0 || _this$_localUtils._channel.addStackToTracingNoReply({
       callData: {
@@ -205,6 +205,7 @@ class Connection extends _events.EventEmitter {
     }));
   }
   close(cause) {
+    if (this._closedError) return;
     this._closedError = new _errors.TargetClosedError(cause);
     for (const callback of this._callbacks.values()) callback.reject(this._closedError);
     this._callbacks.clear();
@@ -313,6 +314,9 @@ class Connection extends _events.EventEmitter {
         break;
       case 'WebSocket':
         result = new _network.WebSocket(parent, type, guid, initializer);
+        break;
+      case 'WebSocketRoute':
+        result = new _network.WebSocketRoute(parent, type, guid, initializer);
         break;
       case 'Worker':
         result = new _worker.Worker(parent, type, guid, initializer);

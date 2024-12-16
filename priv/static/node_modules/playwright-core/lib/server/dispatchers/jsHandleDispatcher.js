@@ -74,11 +74,6 @@ class JSHandleDispatcher extends _dispatcher.Dispatcher {
       value: serializeResult(await this._object.jsonValue())
     };
   }
-  async objectCount(params) {
-    return {
-      count: await this._object.objectCount()
-    };
-  }
   async dispose(_, metadata) {
     metadata.potentiallyClosesScope = true;
     this._object.dispose();
@@ -87,7 +82,7 @@ class JSHandleDispatcher extends _dispatcher.Dispatcher {
 }
 
 // Generic channel parser converts guids to JSHandleDispatchers,
-// and this function takes care of coverting them into underlying JSHandles.
+// and this function takes care of converting them into underlying JSHandles.
 exports.JSHandleDispatcher = JSHandleDispatcher;
 function parseArgument(arg) {
   return (0, _serializers.parseSerializedValue)(arg.value, arg.handles.map(a => a._object));

@@ -160,7 +160,7 @@ class Screenshotter {
       const {
         viewportSize
       } = await this._originalViewportSize(progress);
-      await this._preparePageForScreenshot(progress, options.style, options.caret !== 'initial', options.animations === 'disabled');
+      await this._preparePageForScreenshot(progress, this._page.mainFrame(), options.style, options.caret !== 'initial', options.animations === 'disabled');
       progress.throwIfAborted(); // Avoid restoring after failure - should be done by cleanup.
 
       if (options.fullPage) {
@@ -196,7 +196,7 @@ class Screenshotter {
       const {
         viewportSize
       } = await this._originalViewportSize(progress);
-      await this._preparePageForScreenshot(progress, options.style, options.caret !== 'initial', options.animations === 'disabled');
+      await this._preparePageForScreenshot(progress, handle._frame, options.style, options.caret !== 'initial', options.animations === 'disabled');
       progress.throwIfAborted(); // Do not do extra work.
 
       await handle._waitAndScrollIntoViewIfNeeded(progress, true /* waitForVisible */);
@@ -222,25 +222,19 @@ class Screenshotter {
       return buffer;
     });
   }
-  async _preparePageForScreenshot(progress, screenshotStyle, hideCaret, disableAnimations) {
+  async _preparePageForScreenshot(progress, frame, screenshotStyle, hideCaret, disableAnimations) {
     if (disableAnimations) progress.log('  disabled all CSS animations');
     const syncAnimations = this._page._delegate.shouldToggleStyleSheetToSyncAnimations();
-    await Promise.all(this._page.frames().map(async frame => {
-      await frame.nonStallingEvaluateInExistingContext('(' + inPagePrepareForScreenshots.toString() + `)(${JSON.stringify(screenshotStyle)}, ${hideCaret}, ${disableAnimations}, ${syncAnimations})`, false, 'utility').catch(() => {});
-    }));
+    await this._page.safeNonStallingEvaluateInAllFrames('(' + inPagePrepareForScreenshots.toString() + `)(${JSON.stringify(screenshotStyle)}, ${hideCaret}, ${disableAnimations}, ${syncAnimations})`, 'utility');
     if (!process.env.PW_TEST_SCREENSHOT_NO_FONTS_READY) {
       progress.log('waiting for fonts to load...');
-      await Promise.all(this._page.frames().map(async frame => {
-        await frame.nonStallingEvaluateInExistingContext('document.fonts.ready', false, 'utility').catch(() => {});
-      }));
+      await frame.nonStallingEvaluateInExistingContext('document.fonts.ready', 'utility').catch(() => {});
       progress.log('fonts loaded');
     }
     progress.cleanupWhenAborted(() => this._restorePageAfterScreenshot());
   }
   async _restorePageAfterScreenshot() {
-    await Promise.all(this._page.frames().map(async frame => {
-      frame.nonStallingEvaluateInExistingContext('window.__pwCleanupScreenshot && window.__pwCleanupScreenshot()', false, 'utility').catch(() => {});
-    }));
+    await this._page.safeNonStallingEvaluateInAllFrames('window.__pwCleanupScreenshot && window.__pwCleanupScreenshot()', 'utility');
   }
   async _maskElements(progress, options) {
     const framesToParsedSelectors = new _multimap.MultiMap();

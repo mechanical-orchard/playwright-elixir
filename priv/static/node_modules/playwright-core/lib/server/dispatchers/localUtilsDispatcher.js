@@ -20,6 +20,7 @@ var _userAgent = require("../../utils/userAgent");
 var _progress = require("../progress");
 var _network = require("../../utils/network");
 var _instrumentation = require("../../server/instrumentation");
+var _deviceDescriptors = require("../deviceDescriptors");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright (c) Microsoft Corporation.
@@ -40,8 +41,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 class LocalUtilsDispatcher extends _dispatcher.Dispatcher {
   constructor(scope, playwright) {
     const localUtils = new _instrumentation.SdkObject(playwright, 'localUtils', 'localUtils');
-    const descriptors = require('../deviceDescriptors');
-    const deviceDescriptors = Object.entries(descriptors).map(([name, descriptor]) => ({
+    const deviceDescriptors = Object.entries(_deviceDescriptors.deviceDescriptors).map(([name, descriptor]) => ({
       name,
       descriptor
     }));
@@ -321,7 +321,14 @@ class HarBackend {
         if (candidate.request.url !== url || candidate.request.method !== method) continue;
         if (method === 'POST' && postData && candidate.request.postData) {
           const buffer = await this._loadContent(candidate.request.postData);
-          if (!buffer.equals(postData)) continue;
+          if (!buffer.equals(postData)) {
+            const boundary = multipartBoundary(headers);
+            if (!boundary) continue;
+            const candidataBoundary = multipartBoundary(candidate.request.headers);
+            if (!candidataBoundary) continue;
+            // Try to match multipart/form-data ignroing boundary as it changes between requests.
+            if (postData.toString().replaceAll(boundary, '') !== buffer.toString().replaceAll(candidataBoundary, '')) continue;
+          }
         }
         entries.push(candidate);
       }
@@ -396,4 +403,11 @@ async function urlToWSEndpoint(progress, endpointURL) {
   wsUrl.pathname += wsEndpointPath;
   wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss:' : 'ws:';
   return wsUrl.toString();
+}
+function multipartBoundary(headers) {
+  const contentType = headers.find(h => h.name.toLowerCase() === 'content-type');
+  if (!(contentType !== null && contentType !== void 0 && contentType.value.includes('multipart/form-data'))) return undefined;
+  const boundary = contentType.value.match(/boundary=(\S+)/);
+  if (boundary) return boundary[1];
+  return undefined;
 }

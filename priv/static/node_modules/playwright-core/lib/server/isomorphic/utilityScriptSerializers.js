@@ -67,6 +67,12 @@ function source() {
       if ('d' in value) return new Date(value.d);
       if ('u' in value) return new URL(value.u);
       if ('bi' in value) return BigInt(value.bi);
+      if ('e' in value) {
+        const error = new Error(value.e.m);
+        error.name = value.e.n;
+        error.stack = value.e.s;
+        return error;
+      }
       if ('r' in value) return new RegExp(value.r.p, value.r.f);
       if ('a' in value) {
         const result = [];
@@ -132,13 +138,21 @@ function source() {
       bi: value.toString()
     };
     if (isError(value)) {
-      var _error$stack;
-      const error = value;
-      if ((_error$stack = error.stack) !== null && _error$stack !== void 0 && _error$stack.startsWith(error.name + ': ' + error.message)) {
+      var _value$stack;
+      let stack;
+      if ((_value$stack = value.stack) !== null && _value$stack !== void 0 && _value$stack.startsWith(value.name + ': ' + value.message)) {
         // v8
-        return error.stack;
+        stack = value.stack;
+      } else {
+        stack = `${value.name}: ${value.message}\n${value.stack}`;
       }
-      return `${error.name}: ${error.message}\n${error.stack}`;
+      return {
+        e: {
+          n: value.name,
+          m: value.message,
+          s: stack
+        }
+      };
     }
     if (isDate(value)) return {
       d: value.toJSON()

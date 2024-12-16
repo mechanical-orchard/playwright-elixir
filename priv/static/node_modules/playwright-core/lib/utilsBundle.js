@@ -3,11 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.minimatch = exports.mime = exports.lockfile = exports.jpegjs = exports.getProxyForUrl = exports.debug = exports.colors = exports.SocksProxyAgent = exports.PNG = exports.HttpsProxyAgent = void 0;
+exports.minimatch = exports.mime = exports.lockfile = exports.jpegjs = exports.getProxyForUrl = exports.dotenv = exports.diff = exports.debug = exports.colors = exports.SocksProxyAgent = exports.PNG = exports.HttpsProxyAgent = void 0;
 exports.ms = ms;
 exports.open = void 0;
 exports.parseStackTraceLine = parseStackTraceLine;
-exports.wsServer = exports.wsSender = exports.wsReceiver = exports.ws = exports.progress = exports.program = void 0;
+exports.yaml = exports.wsServer = exports.wsSender = exports.wsReceiver = exports.ws = exports.progress = exports.program = void 0;
 var _url = _interopRequireDefault(require("url"));
 var _path = _interopRequireDefault(require("path"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -29,6 +29,8 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const colors = exports.colors = require('./utilsBundleImpl').colors;
 const debug = exports.debug = require('./utilsBundleImpl').debug;
+const diff = exports.diff = require('./utilsBundleImpl').diff;
+const dotenv = exports.dotenv = require('./utilsBundleImpl').dotenv;
 const getProxyForUrl = exports.getProxyForUrl = require('./utilsBundleImpl').getProxyForUrl;
 const HttpsProxyAgent = exports.HttpsProxyAgent = require('./utilsBundleImpl').HttpsProxyAgent;
 const jpegjs = exports.jpegjs = require('./utilsBundleImpl').jpegjs;
@@ -40,6 +42,7 @@ const PNG = exports.PNG = require('./utilsBundleImpl').PNG;
 const program = exports.program = require('./utilsBundleImpl').program;
 const progress = exports.progress = require('./utilsBundleImpl').progress;
 const SocksProxyAgent = exports.SocksProxyAgent = require('./utilsBundleImpl').SocksProxyAgent;
+const yaml = exports.yaml = require('./utilsBundleImpl').yaml;
 const ws = exports.ws = require('./utilsBundleImpl').ws;
 const wsServer = exports.wsServer = require('./utilsBundleImpl').wsServer;
 const wsReceiver = exports.wsReceiver = require('./utilsBundleImpl').wsReceiver;
@@ -48,11 +51,8 @@ const StackUtils = require('./utilsBundleImpl').StackUtils;
 const stackUtils = new StackUtils({
   internals: StackUtils.nodeInternals()
 });
-const nodeInternals = StackUtils.nodeInternals();
-const nodeMajorVersion = +process.versions.node.split('.')[0];
 function parseStackTraceLine(line) {
   var _frame$file, _frame$file2;
-  if (!process.env.PWDEBUGIMPL && nodeMajorVersion < 16 && nodeInternals.some(internal => internal.test(line))) return null;
   const frame = stackUtils.parseLine(line);
   if (!frame) return null;
   if (!process.env.PWDEBUGIMPL && ((_frame$file = frame.file) !== null && _frame$file !== void 0 && _frame$file.startsWith('internal') || (_frame$file2 = frame.file) !== null && _frame$file2 !== void 0 && _frame$file2.startsWith('node:'))) return null;

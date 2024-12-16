@@ -26,17 +26,18 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
  */
 
 class WritableStreamDispatcher extends _dispatcher.Dispatcher {
-  constructor(scope, stream, lastModifiedMs) {
+  constructor(scope, streamOrDirectory, lastModifiedMs) {
     super(scope, {
       guid: 'writableStream@' + (0, _utils.createGuid)(),
-      stream
+      streamOrDirectory
     }, 'WritableStream', {});
     this._type_WritableStream = true;
     this._lastModifiedMs = void 0;
     this._lastModifiedMs = lastModifiedMs;
   }
   async write(params) {
-    const stream = this._object.stream;
+    if (typeof this._object.streamOrDirectory === 'string') throw new Error('Cannot write to a directory');
+    const stream = this._object.streamOrDirectory;
     await new Promise((fulfill, reject) => {
       stream.write(params.binary, error => {
         if (error) reject(error);else fulfill();
@@ -44,12 +45,14 @@ class WritableStreamDispatcher extends _dispatcher.Dispatcher {
     });
   }
   async close() {
-    const stream = this._object.stream;
+    if (typeof this._object.streamOrDirectory === 'string') throw new Error('Cannot close a directory');
+    const stream = this._object.streamOrDirectory;
     await new Promise(fulfill => stream.end(fulfill));
     if (this._lastModifiedMs) await fs.promises.utimes(this.path(), new Date(this._lastModifiedMs), new Date(this._lastModifiedMs));
   }
   path() {
-    return this._object.stream.path;
+    if (typeof this._object.streamOrDirectory === 'string') return this._object.streamOrDirectory;
+    return this._object.streamOrDirectory.path;
   }
 }
 exports.WritableStreamDispatcher = WritableStreamDispatcher;

@@ -65,7 +65,7 @@ class BrowserServerLauncherImpl {
       preLaunchedBrowser: browser,
       preLaunchedSocksProxy: socksProxy
     });
-    const wsEndpoint = await server.listen(options.port);
+    const wsEndpoint = await server.listen(options.port, options.host);
 
     // 3. Return the BrowserServer interface
     const browserServer = new _utilsBundle.ws.EventEmitter();

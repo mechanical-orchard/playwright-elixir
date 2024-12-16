@@ -36,6 +36,8 @@ const debugLoggerColorMap = {
   // reset
   'socks': 92,
   // purple
+  'client-certificates': 92,
+  // purple
   'error': 160,
   // red,
   'channel': 33,

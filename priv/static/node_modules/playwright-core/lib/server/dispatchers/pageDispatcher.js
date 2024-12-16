@@ -13,6 +13,7 @@ var _jsHandleDispatcher = require("./jsHandleDispatcher");
 var _elementHandlerDispatcher = require("./elementHandlerDispatcher");
 var _artifactDispatcher = require("./artifactDispatcher");
 var _utils = require("../../utils");
+var _webSocketRouteDispatcher = require("./webSocketRouteDispatcher");
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -54,6 +55,7 @@ class PageDispatcher extends _dispatcher.Dispatcher {
     this._type_Page = true;
     this._page = void 0;
     this._subscriptions = new Set();
+    this._webSocketInterceptionPatterns = [];
     this.adopt(mainFrame);
     this._page = page;
     this.addObjectListener(_page.Page.Events.Close, () => {
@@ -133,6 +135,9 @@ class PageDispatcher extends _dispatcher.Dispatcher {
       response: _networkDispatchers.ResponseDispatcher.fromNullable(this.parentScope(), await this._page.goForward(metadata, params))
     };
   }
+  async requestGC(params, metadata) {
+    await this._page.requestGC();
+  }
   async registerLocatorHandler(params, metadata) {
     const uid = this._page.registerLocatorHandler(params.selector, params.noWaitAfter);
     return {
@@ -173,6 +178,10 @@ class PageDispatcher extends _dispatcher.Dispatcher {
       });
       return true;
     });
+  }
+  async setWebSocketInterceptionPatterns(params, metadata) {
+    this._webSocketInterceptionPatterns = params.patterns;
+    if (params.patterns.length) await _webSocketRouteDispatcher.WebSocketRouteDispatcher.installIfNeeded(this.parentScope(), this._page);
   }
   async expectScreenshot(params, metadata) {
     const mask = (params.mask || []).map(({

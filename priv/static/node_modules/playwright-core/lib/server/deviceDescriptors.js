@@ -1,3 +1,11 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.deviceDescriptors = void 0;
+var _deviceDescriptorsSource = _interopRequireDefault(require("./deviceDescriptorsSource.json"));
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 /**
  * Copyright 2017 Google Inc. All rights reserved.
  * Modifications copyright (c) Microsoft Corporation.
@@ -15,7 +23,4 @@
  * limitations under the License.
  */
 
-/**
- * @type {import('./types').Devices}
- */
-module.exports = require("./deviceDescriptorsSource.json")
+const deviceDescriptors = exports.deviceDescriptors = _deviceDescriptorsSource.default;

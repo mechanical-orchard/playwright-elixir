@@ -20,6 +20,9 @@ var _writableStreamDispatcher = require("./writableStreamDispatcher");
 var _dialogDispatcher = require("./dialogDispatcher");
 var _errors = require("../errors");
 var _elementHandlerDispatcher = require("./elementHandlerDispatcher");
+var _recorderInTraceViewer = require("../recorder/recorderInTraceViewer");
+var _recorderApp = require("../recorder/recorderApp");
+var _webSocketRouteDispatcher = require("./webSocketRouteDispatcher");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
@@ -53,6 +56,7 @@ class BrowserContextDispatcher extends _dispatcher.Dispatcher {
     this._type_BrowserContext = true;
     this._context = void 0;
     this._subscriptions = new Set();
+    this._webSocketInterceptionPatterns = [];
     this.adopt(requestContext);
     this.adopt(tracing);
     this._context = context;
@@ -181,14 +185,23 @@ class BrowserContextDispatcher extends _dispatcher.Dispatcher {
     if (pageDispatcher !== null && pageDispatcher !== void 0 && pageDispatcher._subscriptions.has(event)) return true;
     return false;
   }
-  async createTempFile(params) {
+  async createTempFiles(params) {
     const dir = this._context._browser.options.artifactsDir;
     const tmpDir = path.join(dir, 'upload-' + (0, _utils.createGuid)());
-    await fs.promises.mkdir(tmpDir);
+    const tempDirWithRootName = params.rootDirName ? path.join(tmpDir, path.basename(params.rootDirName)) : tmpDir;
+    await fs.promises.mkdir(tempDirWithRootName, {
+      recursive: true
+    });
     this._context._tempDirs.push(tmpDir);
-    const file = fs.createWriteStream(path.join(tmpDir, params.name));
     return {
-      writableStream: new _writableStreamDispatcher.WritableStreamDispatcher(this, file, params.lastModifiedMs)
+      rootDir: params.rootDirName ? new _writableStreamDispatcher.WritableStreamDispatcher(this, tempDirWithRootName) : undefined,
+      writableStreams: await Promise.all(params.items.map(async item => {
+        await fs.promises.mkdir(path.dirname(path.join(tempDirWithRootName, item.name)), {
+          recursive: true
+        });
+        const file = fs.createWriteStream(path.join(tempDirWithRootName, item.name));
+        return new _writableStreamDispatcher.WritableStreamDispatcher(this, file, item.lastModifiedMs);
+      }))
     };
   }
   async setDefaultNavigationTimeoutNoReply(params) {
@@ -269,6 +282,10 @@ class BrowserContextDispatcher extends _dispatcher.Dispatcher {
       return true;
     });
   }
+  async setWebSocketInterceptionPatterns(params, metadata) {
+    this._webSocketInterceptionPatterns = params.patterns;
+    if (params.patterns.length) await _webSocketRouteDispatcher.WebSocketRouteDispatcher.installIfNeeded(this, this._context);
+  }
   async storageState(params, metadata) {
     return await this._context.storageState();
   }
@@ -276,8 +293,18 @@ class BrowserContextDispatcher extends _dispatcher.Dispatcher {
     metadata.potentiallyClosesScope = true;
     await this._context.close(params);
   }
-  async recorderSupplementEnable(params) {
-    await _recorder.Recorder.show(this._context, params);
+  async enableRecorder(params) {
+    if (params.codegenMode === 'trace-events') {
+      await this._context.tracing.start({
+        name: 'trace',
+        snapshots: true,
+        screenshots: true,
+        live: true
+      });
+      await _recorder.Recorder.show('trace-events', this._context, _recorderInTraceViewer.RecorderInTraceViewer.factory(this._context), params);
+    } else {
+      await _recorder.Recorder.show('actions', this._context, _recorderApp.RecorderApp.factory(this._context), params);
+    }
   }
   async pause(params, metadata) {
     // Debugger will take care of this.
@@ -302,6 +329,33 @@ class BrowserContextDispatcher extends _dispatcher.Dispatcher {
     return {
       artifact: _artifactDispatcher.ArtifactDispatcher.from(this, artifact)
     };
+  }
+  async clockFastForward(params, metadata) {
+    var _ref, _params$ticksString;
+    await this._context.clock.fastForward((_ref = (_params$ticksString = params.ticksString) !== null && _params$ticksString !== void 0 ? _params$ticksString : params.ticksNumber) !== null && _ref !== void 0 ? _ref : 0);
+  }
+  async clockInstall(params, metadata) {
+    var _ref2, _params$timeString;
+    await this._context.clock.install((_ref2 = (_params$timeString = params.timeString) !== null && _params$timeString !== void 0 ? _params$timeString : params.timeNumber) !== null && _ref2 !== void 0 ? _ref2 : undefined);
+  }
+  async clockPauseAt(params, metadata) {
+    var _ref3, _params$timeString2;
+    await this._context.clock.pauseAt((_ref3 = (_params$timeString2 = params.timeString) !== null && _params$timeString2 !== void 0 ? _params$timeString2 : params.timeNumber) !== null && _ref3 !== void 0 ? _ref3 : 0);
+  }
+  async clockResume(params, metadata) {
+    await this._context.clock.resume();
+  }
+  async clockRunFor(params, metadata) {
+    var _ref4, _params$ticksString2;
+    await this._context.clock.runFor((_ref4 = (_params$ticksString2 = params.ticksString) !== null && _params$ticksString2 !== void 0 ? _params$ticksString2 : params.ticksNumber) !== null && _ref4 !== void 0 ? _ref4 : 0);
+  }
+  async clockSetFixedTime(params, metadata) {
+    var _ref5, _params$timeString3;
+    await this._context.clock.setFixedTime((_ref5 = (_params$timeString3 = params.timeString) !== null && _params$timeString3 !== void 0 ? _params$timeString3 : params.timeNumber) !== null && _ref5 !== void 0 ? _ref5 : 0);
+  }
+  async clockSetSystemTime(params, metadata) {
+    var _ref6, _params$timeString4;
+    await this._context.clock.setSystemTime((_ref6 = (_params$timeString4 = params.timeString) !== null && _params$timeString4 !== void 0 ? _params$timeString4 : params.timeNumber) !== null && _ref6 !== void 0 ? _ref6 : 0);
   }
   async updateSubscription(params) {
     if (params.enabled) this._subscriptions.add(params.event);else this._subscriptions.delete(params.event);

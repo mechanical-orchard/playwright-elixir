@@ -86,14 +86,6 @@ class JSHandle extends _channelOwner.ChannelOwner {
       throw e;
     }
   }
-  async _objectCount() {
-    return await this._wrapApiCall(async () => {
-      const {
-        count
-      } = await this._channel.objectCount();
-      return count;
-    });
-  }
   toString() {
     return this._preview;
   }

@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.BrowserContext = void 0;
 exports.prepareBrowserContextParams = prepareBrowserContextParams;
+exports.toClientCertificatesProtocol = toClientCertificatesProtocol;
 var _page = require("./page");
 var _frame = require("./frame");
 var network = _interopRequireWildcard(require("./network"));
@@ -18,7 +19,6 @@ var _events = require("./events");
 var _timeoutSettings = require("../common/timeoutSettings");
 var _waiter = require("./waiter");
 var _utils = require("../utils");
-var _fileUtils = require("../utils/fileUtils");
 var _cdpSession = require("./cdpSession");
 var _tracing = require("./tracing");
 var _artifact = require("./artifact");
@@ -29,6 +29,7 @@ var _consoleMessage = require("./consoleMessage");
 var _dialog = require("./dialog");
 var _webError = require("./webError");
 var _errors = require("./errors");
+var _clock = require("./clock");
 let _Symbol$asyncDispose;
 /**
  * Copyright 2017 Google Inc. All rights reserved.
@@ -62,6 +63,7 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     super(parent, type, guid, initializer);
     this._pages = new Set();
     this._routes = [];
+    this._webSocketRoutes = [];
     this._browser = null;
     this._browserType = void 0;
     this._bindings = new Map();
@@ -71,6 +73,7 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     this._options = {};
     this.request = void 0;
     this.tracing = void 0;
+    this.clock = void 0;
     this._backgroundPages = new Set();
     this._serviceWorkers = new Set();
     this._isChromium = void 0;
@@ -83,6 +86,7 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     this._isChromium = ((_this$_browser2 = this._browser) === null || _this$_browser2 === void 0 ? void 0 : _this$_browser2._name) === 'chromium';
     this.tracing = _tracing.Tracing.from(initializer.tracing);
     this.request = _fetch.APIRequestContext.from(initializer.requestContext);
+    this.clock = new _clock.Clock(this);
     this._channel.on('bindingCall', ({
       binding
     }) => this._onBinding(_page.BindingCall.from(binding)));
@@ -93,6 +97,9 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     this._channel.on('route', ({
       route
     }) => this._onRoute(network.Route.from(route)));
+    this._channel.on('webSocketRoute', ({
+      webSocketRoute
+    }) => this._onWebSocketRoute(network.WebSocketRoute.from(webSocketRoute)));
     this._channel.on('backgroundPage', ({
       page
     }) => {
@@ -212,7 +219,11 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     }
     // If the page is closed or unrouteAll() was called without waiting and interception disabled,
     // the method will throw an error - silence it.
-    await route._innerContinue(true).catch(() => {});
+    await route._innerContinue(true /* isFallback */).catch(() => {});
+  }
+  async _onWebSocketRoute(webSocketRoute) {
+    const routeHandler = this._webSocketRoutes.find(route => route.matches(webSocketRoute.url()));
+    if (routeHandler) await routeHandler.handle(webSocketRoute);else webSocketRoute.connectToServer();
   }
   async _onBinding(bindingCall) {
     const func = this._bindings.get(bindingCall._initializer.name);
@@ -324,6 +335,10 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     this._routes.unshift(new network.RouteHandler(this._options.baseURL, url, handler, options.times));
     await this._updateInterceptionPatterns();
   }
+  async routeWebSocket(url, handler) {
+    this._webSocketRoutes.unshift(new network.WebSocketRouteHandler(this._options.baseURL, url, handler));
+    await this._updateWebSocketInterceptionPatterns();
+  }
   async _recordIntoHAR(har, page, options = {}) {
     var _options$updateConten, _options$updateMode, _options$updateConten2;
     const {
@@ -382,6 +397,12 @@ class BrowserContext extends _channelOwner.ChannelOwner {
       patterns
     });
   }
+  async _updateWebSocketInterceptionPatterns() {
+    const patterns = network.WebSocketRouteHandler.prepareInterceptionPatterns(this._webSocketRoutes);
+    await this._channel.setWebSocketInterceptionPatterns({
+      patterns
+    });
+  }
   _effectiveCloseReason() {
     var _this$_browser3;
     return this._closeReason || ((_this$_browser3 = this._browser) === null || _this$_browser3 === void 0 ? void 0 : _this$_browser3._closeReason);
@@ -401,7 +422,7 @@ class BrowserContext extends _channelOwner.ChannelOwner {
   async storageState(options = {}) {
     const state = await this._channel.storageState();
     if (options.path) {
-      await (0, _fileUtils.mkdirIfNeeded)(options.path);
+      await (0, _utils.mkdirIfNeeded)(options.path);
       await _fs.default.promises.writeFile(options.path, JSON.stringify(state, undefined, 2), 'utf8');
     }
     return state;
@@ -438,6 +459,9 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     this._closeReason = options.reason;
     this._closeWasCalled = true;
     await this._wrapApiCall(async () => {
+      await this.request.dispose(options);
+    }, true);
+    await this._wrapApiCall(async () => {
       var _this$_browserType2;
       await ((_this$_browserType2 = this._browserType) === null || _this$_browserType2 === void 0 ? void 0 : _this$_browserType2._willCloseContext(this));
       for (const [harId, harParams] of this._harRecorders) {
@@ -464,7 +488,7 @@ class BrowserContext extends _channelOwner.ChannelOwner {
     await this._closedPromise;
   }
   async _enableRecorder(params) {
-    await this._channel.recorderSupplementEnable(params);
+    await this._channel.enableRecorder(params);
   }
 }
 exports.BrowserContext = BrowserContext;
@@ -502,7 +526,8 @@ async function prepareBrowserContextParams(options) {
     colorScheme: options.colorScheme === null ? 'no-override' : options.colorScheme,
     reducedMotion: options.reducedMotion === null ? 'no-override' : options.reducedMotion,
     forcedColors: options.forcedColors === null ? 'no-override' : options.forcedColors,
-    acceptDownloads: toAcceptDownloadsProtocol(options.acceptDownloads)
+    acceptDownloads: toAcceptDownloadsProtocol(options.acceptDownloads),
+    clientCertificates: await toClientCertificatesProtocol(options.clientCertificates)
   };
   if (!contextParams.recordVideo && options.videosPath) {
     contextParams.recordVideo = {
@@ -517,4 +542,18 @@ function toAcceptDownloadsProtocol(acceptDownloads) {
   if (acceptDownloads === undefined) return undefined;
   if (acceptDownloads) return 'accept';
   return 'deny';
+}
+async function toClientCertificatesProtocol(certs) {
+  if (!certs) return undefined;
+  const bufferizeContent = async (value, path) => {
+    if (value) return value;
+    if (path) return await _fs.default.promises.readFile(path);
+  };
+  return await Promise.all(certs.map(async cert => ({
+    origin: cert.origin,
+    cert: await bufferizeContent(cert.cert, cert.certPath),
+    key: await bufferizeContent(cert.key, cert.keyPath),
+    pfx: await bufferizeContent(cert.pfx, cert.pfxPath),
+    passphrase: cert.passphrase
+  })));
 }

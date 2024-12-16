@@ -29,14 +29,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 
 class HttpServer {
-  constructor(address = '') {
+  constructor() {
     this._server = void 0;
-    this._urlPrefix = void 0;
+    this._urlPrefixPrecise = '';
+    this._urlPrefixHumanReadable = '';
     this._port = 0;
     this._started = false;
     this._routes = [];
     this._wsGuid = void 0;
-    this._urlPrefix = address;
     this._server = (0, _network.createHttpServer)(this._onRequest.bind(this));
   }
   server() {
@@ -76,6 +76,7 @@ class HttpServer {
       path: '/' + this._wsGuid
     });
     wss.on('connection', ws => {
+      transport.onconnect();
       transport.sendEvent = (method, params) => ws.send(JSON.stringify({
         method,
         params
@@ -123,22 +124,21 @@ class HttpServer {
     }
     const address = this._server.address();
     (0, _debug.assert)(address, 'Could not bind server socket');
-    if (!this._urlPrefix) {
-      if (typeof address === 'string') {
-        this._urlPrefix = address;
-      } else {
-        this._port = address.port;
-        const resolvedHost = address.family === 'IPv4' ? address.address : `[${address.address}]`;
-        this._urlPrefix = `http://${resolvedHost}:${address.port}`;
-      }
+    if (typeof address === 'string') {
+      this._urlPrefixPrecise = address;
+      this._urlPrefixHumanReadable = address;
+    } else {
+      this._port = address.port;
+      const resolvedHost = address.family === 'IPv4' ? address.address : `[${address.address}]`;
+      this._urlPrefixPrecise = `http://${resolvedHost}:${address.port}`;
+      this._urlPrefixHumanReadable = `http://${host}:${address.port}`;
     }
-    return this._urlPrefix;
   }
   async stop() {
     await new Promise(cb => this._server.close(cb));
   }
-  urlPrefix() {
-    return this._urlPrefix;
+  urlPrefix(purpose) {
+    return purpose === 'human-readable' ? this._urlPrefixHumanReadable : this._urlPrefixPrecise;
   }
   serveFile(request, response, absoluteFilePath, headers) {
     try {

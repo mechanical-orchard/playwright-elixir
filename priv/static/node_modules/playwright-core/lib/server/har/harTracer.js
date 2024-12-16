@@ -12,10 +12,7 @@ var _utils = require("../../utils");
 var _eventsHelper = require("../../utils/eventsHelper");
 var _utilsBundle = require("../../utilsBundle");
 var _manualPromise = require("../../utils/manualPromise");
-var _userAgent = require("../../utils/userAgent");
-var _network2 = require("../../utils/network");
 var _frames = require("../frames");
-var _mimeType = require("../../utils/mimeType");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
@@ -76,7 +73,7 @@ class HarTracer {
     }
   }
   _shouldIncludeEntryWithUrl(urlString) {
-    return !this._options.urlFilter || (0, _network2.urlMatches)(this._baseURL, urlString, this._options.urlFilter);
+    return !this._options.urlFilter || (0, _utils.urlMatches)(this._baseURL, urlString, this._options.urlFilter);
   }
   _entryForRequest(request) {
     return request[this._entrySymbol];
@@ -159,12 +156,22 @@ class HarTracer {
     if (this._started) this._delegate.onEntryStarted(harEntry);
   }
   _onAPIRequestFinished(event) {
+    var _event$body$length, _event$body;
     const harEntry = this._entryForRequest(event.requestEvent);
     if (!harEntry) return;
     harEntry.response.status = event.statusCode;
     harEntry.response.statusText = event.statusMessage;
     harEntry.response.httpVersion = event.httpVersion;
     harEntry.response.redirectURL = event.headers.location || '';
+    if (!this._options.omitServerIP) {
+      harEntry.serverIPAddress = event.serverIPAddress;
+      harEntry._serverPort = event.serverPort;
+    }
+    if (!this._options.omitTiming) {
+      harEntry.timings = event.timings;
+      this._computeHarEntryTotalTime(harEntry);
+    }
+    if (!this._options.omitSecurityDetails) harEntry._securityDetails = event.securityDetails;
     for (let i = 0; i < event.rawHeaders.length; i += 2) {
       harEntry.response.headers.push({
         name: event.rawHeaders[i],
@@ -181,6 +188,7 @@ class HarTracer {
     const contentType = event.headers['content-type'];
     if (contentType) content.mimeType = contentType;
     this._storeResponseContent(event.body, content, 'other');
+    if (!this._options.omitSizes) harEntry.response.bodySize = (_event$body$length = (_event$body = event.body) === null || _event$body === void 0 ? void 0 : _event$body.length) !== null && _event$body$length !== void 0 ? _event$body$length : 0;
     if (this._started) this._delegate.onEntryFinished(harEntry);
   }
   _onRequest(request) {
@@ -276,7 +284,7 @@ class HarTracer {
     });
     this._addBarrier(page || request.serviceWorker(), promise);
 
-    // Respose end timing is only available after the response event was received.
+    // Response end timing is only available after the response event was received.
     const timing = response.timing();
     harEntry.timings.receive = response.request()._responseEndTiming !== -1 ? _helper.helper.millisToRoundishMillis(response.request()._responseEndTiming - timing.responseStart) : -1;
     this._computeHarEntryTotalTime(harEntry);
@@ -318,7 +326,7 @@ class HarTracer {
     if (this._options.content === 'embed') {
       // Sometimes, we can receive a font/media file with textual mime type. Browser
       // still interprets them correctly, but the 'content-type' header is obviously wrong.
-      if ((0, _mimeType.isTextualMimeType)(content.mimeType) && resourceType !== 'font') {
+      if ((0, _utils.isTextualMimeType)(content.mimeType) && resourceType !== 'font') {
         content.text = buffer.toString();
       } else {
         content.text = buffer.toString('base64');
@@ -337,11 +345,6 @@ class HarTracer {
     const page = (_response$frame = response.frame()) === null || _response$frame === void 0 ? void 0 : _response$frame._page;
     const pageEntry = this._createPageEntryIfNeeded(page);
     const request = response.request();
-
-    // Prefer "response received" time over "request sent" time
-    // for the purpose of matching requests that were used in a particular snapshot.
-    // Note that both snapshot time and request time are taken here in the Node process.
-    if (this._options.includeTraceInfo) harEntry._monotonicTime = (0, _utils.monotonicTime)();
     harEntry.response = {
       status: response.status(),
       statusText: response.statusText(),
@@ -411,7 +414,7 @@ class HarTracer {
       version: '1.2',
       creator: {
         name: 'Playwright',
-        version: (0, _userAgent.getPlaywrightVersion)()
+        version: (0, _utils.getPlaywrightVersion)()
       },
       browser: {
         name: (context === null || context === void 0 ? void 0 : context._browser.options.name) || '',

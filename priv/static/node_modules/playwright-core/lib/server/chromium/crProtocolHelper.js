@@ -94,6 +94,7 @@ function toConsoleMessageLocation(stackTrace) {
   };
 }
 function exceptionToError(exceptionDetails) {
+  var _exceptionDetails$exc, _nameOverride$value;
   const messageWithStack = getExceptionMessage(exceptionDetails);
   const lines = messageWithStack.split('\n');
   const firstStackTraceLine = lines.findIndex(line => line.startsWith('    at'));
@@ -111,7 +112,8 @@ function exceptionToError(exceptionDetails) {
   } = (0, _stackTrace.splitErrorMessage)(messageWithName);
   const err = new Error(message);
   err.stack = stack;
-  err.name = name;
+  const nameOverride = (_exceptionDetails$exc = exceptionDetails.exception) === null || _exceptionDetails$exc === void 0 || (_exceptionDetails$exc = _exceptionDetails$exc.preview) === null || _exceptionDetails$exc === void 0 ? void 0 : _exceptionDetails$exc.properties.find(o => o.name === 'name');
+  err.name = nameOverride ? (_nameOverride$value = nameOverride.value) !== null && _nameOverride$value !== void 0 ? _nameOverride$value : 'Error' : name;
   return err;
 }
 function toModifiersMask(modifiers) {

@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.SdkObject = void 0;
 exports.createInstrumentation = createInstrumentation;
-exports.kTestSdkObjects = void 0;
 exports.serverSideCallMetadata = serverSideCallMetadata;
 var _events = require("events");
 var _utils = require("../utils");
@@ -25,7 +24,6 @@ var _utils = require("../utils");
  * limitations under the License.
  */
 
-const kTestSdkObjects = exports.kTestSdkObjects = new WeakSet();
 class SdkObject extends _events.EventEmitter {
   constructor(parent, guidPrefix, guid) {
     super();
@@ -38,7 +36,6 @@ class SdkObject extends _events.EventEmitter {
       ...parent.attribution
     };
     this.instrumentation = parent.instrumentation;
-    if (process.env._PW_INTERNAL_COUNT_SDK_OBJECTS) kTestSdkObjects.add(this);
   }
 }
 exports.SdkObject = SdkObject;
@@ -64,7 +61,6 @@ function serverSideCallMetadata() {
     id: '',
     startTime: 0,
     endTime: 0,
-    wallTime: Date.now(),
     type: 'Internal',
     method: '',
     params: {},

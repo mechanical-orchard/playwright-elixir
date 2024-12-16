@@ -34,17 +34,17 @@ class Firefox extends _browserType.BrowserType {
   constructor(parent) {
     super(parent, 'firefox');
   }
-  _connectToTransport(transport, options) {
+  connectToTransport(transport, options) {
     return _ffBrowser.FFBrowser.connect(this.attribution.playwright, transport, options);
   }
-  _doRewriteStartupLog(error) {
+  doRewriteStartupLog(error) {
     if (!error.logs) return error;
     // https://github.com/microsoft/playwright/issues/6500
     if (error.logs.includes(`as root in a regular user's session is not supported.`)) error.logs = '\n' + (0, _utils.wrapInASCIIBox)(`Firefox is unable to launch if the $HOME folder isn't owned by the current user.\nWorkaround: Set the HOME=/root environment variable${process.env.GITHUB_ACTION ? ' in your GitHub Actions workflow file' : ''} when running Playwright.`, 1);
     if (error.logs.includes('no DISPLAY environment variable specified')) error.logs = '\n' + (0, _utils.wrapInASCIIBox)(_browserType.kNoXServerRunningError, 1);
     return error;
   }
-  _amendEnvironment(env, userDataDir, executable, browserArguments) {
+  amendEnvironment(env, userDataDir, executable, browserArguments) {
     if (!_path.default.isAbsolute(os.homedir())) throw new Error(`Cannot launch Firefox with relative home directory. Did you set ${os.platform() === 'win32' ? 'USERPROFILE' : 'HOME'} to a relative path?`);
     if (os.platform() === 'linux') {
       // Always remove SNAP_NAME and SNAP_INSTANCE_NAME env variables since they
@@ -58,7 +58,7 @@ class Firefox extends _browserType.BrowserType {
     }
     return env;
   }
-  _attemptToGracefullyCloseBrowser(transport) {
+  attemptToGracefullyCloseBrowser(transport) {
     const message = {
       method: 'Browser.close',
       params: {},
@@ -66,7 +66,7 @@ class Firefox extends _browserType.BrowserType {
     };
     transport.send(message);
   }
-  _defaultArgs(options, isPersistent, userDataDir) {
+  defaultArgs(options, isPersistent, userDataDir) {
     const {
       args = [],
       headless
@@ -87,5 +87,13 @@ class Firefox extends _browserType.BrowserType {
     if (isPersistent) firefoxArguments.push('about:blank');else firefoxArguments.push('-silent');
     return firefoxArguments;
   }
+  readyState(options) {
+    return new JugglerReadyState();
+  }
 }
 exports.Firefox = Firefox;
+class JugglerReadyState extends _browserType.BrowserReadyState {
+  onBrowserOutput(message) {
+    if (message.includes('Juggler listening to the pipe')) this._wsEndpoint.resolve(undefined);
+  }
+}

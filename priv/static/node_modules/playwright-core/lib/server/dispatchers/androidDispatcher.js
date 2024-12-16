@@ -96,8 +96,10 @@ class AndroidDeviceDispatcher extends _dispatcher.Dispatcher {
     await this._object.send('swipe', params);
   }
   async info(params) {
+    const info = await this._object.send('info', params);
+    fixupAndroidElementInfo(info);
     return {
-      info: await this._object.send('info', params)
+      info
     };
   }
   async inputType(params) {
@@ -190,4 +192,13 @@ class AndroidSocketDispatcher extends _dispatcher.Dispatcher {
   }
 }
 exports.AndroidSocketDispatcher = AndroidSocketDispatcher;
-const keyMap = new Map([['Unknown', 0], ['SoftLeft', 1], ['SoftRight', 2], ['Home', 3], ['Back', 4], ['Call', 5], ['EndCall', 6], ['0', 7], ['1', 8], ['2', 9], ['3', 10], ['4', 11], ['5', 12], ['6', 13], ['7', 14], ['8', 15], ['9', 16], ['Star', 17], ['*', 17], ['Pound', 18], ['#', 18], ['DialUp', 19], ['DialDown', 20], ['DialLeft', 21], ['DialRight', 22], ['DialCenter', 23], ['VolumeUp', 24], ['VolumeDown', 25], ['Power', 26], ['Camera', 27], ['Clear', 28], ['A', 29], ['B', 30], ['C', 31], ['D', 32], ['E', 33], ['F', 34], ['G', 35], ['H', 36], ['I', 37], ['J', 38], ['K', 39], ['L', 40], ['M', 41], ['N', 42], ['O', 43], ['P', 44], ['Q', 45], ['R', 46], ['S', 47], ['T', 48], ['U', 49], ['V', 50], ['W', 51], ['X', 52], ['Y', 53], ['Z', 54], ['Comma', 55], [',', 55], ['Period', 56], ['.', 56], ['AltLeft', 57], ['AltRight', 58], ['ShiftLeft', 59], ['ShiftRight', 60], ['Tab', 61], ['\t', 61], ['Space', 62], [' ', 62], ['Sym', 63], ['Explorer', 64], ['Envelop', 65], ['Enter', 66], ['Del', 67], ['Grave', 68], ['Minus', 69], ['-', 69], ['Equals', 70], ['=', 70], ['LeftBracket', 71], ['(', 71], ['RightBracket', 72], [')', 72], ['Backslash', 73], ['\\', 73], ['Semicolon', 74], [';', 74], ['Apostrophe', 75], ['`', 75], ['Slash', 76], ['/', 76], ['At', 77], ['@', 77], ['Num', 78], ['HeadsetHook', 79], ['Focus', 80], ['Plus', 81], ['Menu', 82], ['Notification', 83], ['Search', 84], ['AppSwitch', 187], ['Assist', 219], ['Cut', 277], ['Copy', 278], ['Paste', 279]]);
+const keyMap = new Map([['Unknown', 0], ['SoftLeft', 1], ['SoftRight', 2], ['Home', 3], ['Back', 4], ['Call', 5], ['EndCall', 6], ['0', 7], ['1', 8], ['2', 9], ['3', 10], ['4', 11], ['5', 12], ['6', 13], ['7', 14], ['8', 15], ['9', 16], ['Star', 17], ['*', 17], ['Pound', 18], ['#', 18], ['DialUp', 19], ['DialDown', 20], ['DialLeft', 21], ['DialRight', 22], ['DialCenter', 23], ['VolumeUp', 24], ['VolumeDown', 25], ['Power', 26], ['Camera', 27], ['Clear', 28], ['A', 29], ['B', 30], ['C', 31], ['D', 32], ['E', 33], ['F', 34], ['G', 35], ['H', 36], ['I', 37], ['J', 38], ['K', 39], ['L', 40], ['M', 41], ['N', 42], ['O', 43], ['P', 44], ['Q', 45], ['R', 46], ['S', 47], ['T', 48], ['U', 49], ['V', 50], ['W', 51], ['X', 52], ['Y', 53], ['Z', 54], ['Comma', 55], [',', 55], ['Period', 56], ['.', 56], ['AltLeft', 57], ['AltRight', 58], ['ShiftLeft', 59], ['ShiftRight', 60], ['Tab', 61], ['\t', 61], ['Space', 62], [' ', 62], ['Sym', 63], ['Explorer', 64], ['Envelop', 65], ['Enter', 66], ['Del', 67], ['Grave', 68], ['Minus', 69], ['-', 69], ['Equals', 70], ['=', 70], ['LeftBracket', 71], ['(', 71], ['RightBracket', 72], [')', 72], ['Backslash', 73], ['\\', 73], ['Semicolon', 74], [';', 74], ['Apostrophe', 75], ['`', 75], ['Slash', 76], ['/', 76], ['At', 77], ['@', 77], ['Num', 78], ['HeadsetHook', 79], ['Focus', 80], ['Plus', 81], ['Menu', 82], ['Notification', 83], ['Search', 84], ['ChannelUp', 166], ['ChannelDown', 167], ['AppSwitch', 187], ['Assist', 219], ['Cut', 277], ['Copy', 278], ['Paste', 279]]);
+function fixupAndroidElementInfo(info) {
+  // Some of the properties are nullable, see https://developer.android.com/reference/androidx/test/uiautomator/UiObject2.
+  info.clazz = info.clazz || '';
+  info.pkg = info.pkg || '';
+  info.res = info.res || '';
+  info.desc = info.desc || '';
+  info.text = info.text || '';
+  for (const child of info.children || []) fixupAndroidElementInfo(child);
+}

@@ -291,7 +291,7 @@ class CRNetworkManager {
       requestPausedSessionInfo.session._sendMayFail('Fetch.fulfillRequest', {
         requestId: requestPausedEvent.requestId,
         responseCode: 204,
-        responsePhrase: network.STATUS_TEXTS['204'],
+        responsePhrase: network.statusText(204),
         responseHeaders,
         body: ''
       });
@@ -306,15 +306,16 @@ class CRNetworkManager {
       return;
     }
     let route = null;
+    let headersOverride;
     if (requestPausedEvent) {
       // We do not support intercepting redirects.
       if (redirectedFrom || !this._userRequestInterceptionEnabled && this._protocolRequestInterceptionEnabled) {
         var _redirectedFrom;
         // Chromium does not preserve header overrides between redirects, so we have to do it ourselves.
-        const headers = (_redirectedFrom = redirectedFrom) === null || _redirectedFrom === void 0 || (_redirectedFrom = _redirectedFrom._originalRequestRoute) === null || _redirectedFrom === void 0 || (_redirectedFrom = _redirectedFrom._alreadyContinuedParams) === null || _redirectedFrom === void 0 ? void 0 : _redirectedFrom.headers;
+        headersOverride = (_redirectedFrom = redirectedFrom) === null || _redirectedFrom === void 0 || (_redirectedFrom = _redirectedFrom._originalRequestRoute) === null || _redirectedFrom === void 0 || (_redirectedFrom = _redirectedFrom._alreadyContinuedParams) === null || _redirectedFrom === void 0 ? void 0 : _redirectedFrom.headers;
         requestPausedSessionInfo.session._sendMayFail('Fetch.continueRequest', {
           requestId: requestPausedEvent.requestId,
-          headers
+          headers: headersOverride
         });
       } else {
         route = new RouteImpl(requestPausedSessionInfo.session, requestPausedEvent.requestId);
@@ -331,11 +332,12 @@ class CRNetworkManager {
       route,
       requestWillBeSentEvent,
       requestPausedEvent,
-      redirectedFrom
+      redirectedFrom,
+      headersOverride: headersOverride || null
     });
     this._requestIdToRequest.set(requestWillBeSentEvent.requestId, request);
-    if (requestPausedEvent) {
-      // We will not receive extra info when intercepting the request.
+    if (route) {
+      // We may not receive extra info when intercepting the request.
       // Use the headers from the Fetch.requestPausedPayload and release the allHeaders()
       // right away, so that client can call it from the route handler.
       request.request.setRawRequestHeaders((0, _utils.headersObjectToArray)(requestPausedEvent.request.headers, '\n'));
@@ -345,6 +347,7 @@ class CRNetworkManager {
   _createResponse(request, responsePayload, hasExtraInfo) {
     var _responsePayload$secu, _responsePayload$secu2, _responsePayload$secu3, _responsePayload$secu4, _responsePayload$secu5;
     const getResponseBody = async () => {
+      var _request$_route;
       const contentLengthHeader = Object.entries(responsePayload.headers).find(header => header[0].toLowerCase() === 'content-length');
       const expectedLength = contentLengthHeader ? +contentLengthHeader[1] : undefined;
       const session = request.session;
@@ -352,6 +355,9 @@ class CRNetworkManager {
         requestId: request._requestId
       });
       if (response.body || !expectedLength) return Buffer.from(response.body, response.base64Encoded ? 'base64' : 'utf8');
+
+      // Make sure no network requests sent while reading the body for fulfilled requests.
+      if ((_request$_route = request._route) !== null && _request$_route !== void 0 && _request$_route._fulfilled) return Buffer.from('');
 
       // For <link prefetch we are going to receive empty body with non-empty content-length expectation. Reach out for the actual content.
       const resource = await session.send('Network.loadNetworkResource', {
@@ -540,7 +546,8 @@ class InterceptableRequest {
       requestWillBeSentEvent,
       requestPausedEvent,
       redirectedFrom,
-      serviceWorker
+      serviceWorker,
+      headersOverride
     } = options;
     this.session = session;
     this._timestamp = requestWillBeSentEvent.timestamp;
@@ -558,8 +565,9 @@ class InterceptableRequest {
     } = requestPausedEvent ? requestPausedEvent.request : requestWillBeSentEvent.request;
     const type = (requestWillBeSentEvent.type || '').toLowerCase();
     let postDataBuffer = null;
-    if (postDataEntries && postDataEntries.length && postDataEntries[0].bytes) postDataBuffer = Buffer.from(postDataEntries[0].bytes, 'base64');
-    this.request = new network.Request(context, frame, serviceWorker, (redirectedFrom === null || redirectedFrom === void 0 ? void 0 : redirectedFrom.request) || null, documentId, url, type, method, postDataBuffer, (0, _utils.headersObjectToArray)(headers));
+    const entries = postDataEntries === null || postDataEntries === void 0 ? void 0 : postDataEntries.filter(entry => entry.bytes);
+    if (entries && entries.length) postDataBuffer = Buffer.concat(entries.map(entry => Buffer.from(entry.bytes, 'base64')));
+    this.request = new network.Request(context, frame, serviceWorker, (redirectedFrom === null || redirectedFrom === void 0 ? void 0 : redirectedFrom.request) || null, documentId, url, type, method, postDataBuffer, headersOverride || (0, _utils.headersObjectToArray)(headers));
   }
 }
 class RouteImpl {
@@ -567,10 +575,11 @@ class RouteImpl {
     this._session = void 0;
     this._interceptionId = void 0;
     this._alreadyContinuedParams = void 0;
+    this._fulfilled = false;
     this._session = session;
     this._interceptionId = interceptionId;
   }
-  async continue(request, overrides) {
+  async continue(overrides) {
     this._alreadyContinuedParams = {
       requestId: this._interceptionId,
       url: overrides.url,
@@ -583,13 +592,14 @@ class RouteImpl {
     });
   }
   async fulfill(response) {
+    this._fulfilled = true;
     const body = response.isBase64 ? response.body : Buffer.from(response.body).toString('base64');
     const responseHeaders = splitSetCookieHeader(response.headers);
     await catchDisallowedErrors(async () => {
       await this._session.send('Fetch.fulfillRequest', {
         requestId: this._interceptionId,
         responseCode: response.status,
-        responsePhrase: network.STATUS_TEXTS[String(response.status)],
+        responsePhrase: network.statusText(response.status),
         responseHeaders,
         body
       });

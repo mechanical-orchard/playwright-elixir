@@ -43,7 +43,7 @@ class Electron extends _channelOwner.ChannelOwner {
       tracesDir: options.tracesDir
     };
     const app = ElectronApplication.from((await this._channel.launch(params)).electronApplication);
-    app._context._options = params;
+    app._context._setOptions(params, options);
     return app;
   }
 }
@@ -58,12 +58,10 @@ class ElectronApplication extends _channelOwner.ChannelOwner {
     this._context = void 0;
     this._windows = new Set();
     this._timeoutSettings = new _timeoutSettings.TimeoutSettings();
-    this._isClosed = false;
     this._context = _browserContext.BrowserContext.from(initializer.context);
     for (const page of this._context._pages) this._onPage(page);
     this._context.on(_events.Events.BrowserContext.Page, page => this._onPage(page));
     this._channel.on('close', () => {
-      this._isClosed = true;
       this.emit(_events.Events.ElectronApplication.Close);
     });
     this._channel.on('console', event => this.emit(_events.Events.ElectronApplication.Console, new _consoleMessage.ConsoleMessage(event)));
@@ -92,8 +90,12 @@ class ElectronApplication extends _channelOwner.ChannelOwner {
     await this.close();
   }
   async close() {
-    if (this._isClosed) return;
-    await this._channel.close().catch(() => {});
+    try {
+      await this._context.close();
+    } catch (e) {
+      if ((0, _errors.isTargetClosedError)(e)) return;
+      throw e;
+    }
   }
   async waitForEvent(event, optionsOrPredicate = {}) {
     return await this._wrapApiCall(async () => {

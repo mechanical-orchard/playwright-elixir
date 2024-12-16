@@ -385,9 +385,9 @@ class SocksProxy extends _events.default {
   port() {
     return this._port;
   }
-  async listen(port) {
+  async listen(port, hostname) {
     return new Promise(f => {
-      this._server.listen(port, () => {
+      this._server.listen(port, hostname, () => {
         const port = this._server.address().port;
         this._port = port;
         f(port);

@@ -53,9 +53,7 @@ function runDriver() {
   // Certain Language Binding JSON parsers (e.g. .NET) do not like strings with lone surrogates.
   const isJavaScriptLanguageBinding = !process.env.PW_LANG_NAME || process.env.PW_LANG_NAME === 'javascript';
   const replacer = !isJavaScriptLanguageBinding && String.prototype.toWellFormed ? (key, value) => {
-    if (typeof value === 'string')
-      // @ts-expect-error
-      return value.toWellFormed();
+    if (typeof value === 'string') return value.toWellFormed();
     return value;
   } : undefined;
   dispatcherConnection.onmessage = message => transport.send(JSON.stringify(message, replacer));

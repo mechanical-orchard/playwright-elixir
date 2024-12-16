@@ -17,7 +17,6 @@ var _events = require("events");
 var _waiter = require("./waiter");
 var _events2 = require("./events");
 var _types = require("./types");
-var _network2 = require("../utils/network");
 var _clientHelper = require("./clientHelper");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -111,7 +110,7 @@ class Frame extends _channelOwner.ChannelOwner {
         // Any failed navigation results in a rejection.
         if (event.error) return true;
         waiter.log(`  navigated to "${event.url}"`);
-        return (0, _network2.urlMatches)((_this$_page = this._page) === null || _this$_page === void 0 ? void 0 : _this$_page.context()._options.baseURL, event.url, options.url);
+        return (0, _utils.urlMatches)((_this$_page = this._page) === null || _this$_page === void 0 ? void 0 : _this$_page.context()._options.baseURL, event.url, options.url);
       });
       if (navigatedEvent.error) {
         const e = new Error(navigatedEvent.error);
@@ -147,7 +146,7 @@ class Frame extends _channelOwner.ChannelOwner {
   }
   async waitForURL(url, options = {}) {
     var _this$_page2;
-    if ((0, _network2.urlMatches)((_this$_page2 = this._page) === null || _this$_page2 === void 0 ? void 0 : _this$_page2.context()._options.baseURL, this.url(), url)) return await this.waitForLoadState(options.waitUntil, options);
+    if ((0, _utils.urlMatches)((_this$_page2 = this._page) === null || _this$_page2 === void 0 ? void 0 : _this$_page2.context()._options.baseURL, this.url(), url)) return await this.waitForLoadState(options.waitUntil, options);
     await this.waitForNavigation({
       url,
       ...options
@@ -179,7 +178,6 @@ class Frame extends _channelOwner.ChannelOwner {
     const result = await this._channel.evaluateExpression({
       expression: String(pageFunction),
       isFunction: typeof pageFunction === 'function',
-      exposeUtilityScript: true,
       arg: (0, _jsHandle.serializeArgument)(arg)
     });
     return (0, _jsHandle.parseResult)(result.value);

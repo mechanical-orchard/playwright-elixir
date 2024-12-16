@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.CookieStore = void 0;
 exports.domainMatches = domainMatches;
+exports.parseRawCookie = parseRawCookie;
+var _network = require("./network");
 /**
  * Copyright (c) Microsoft Corporation.
  *
@@ -97,6 +99,77 @@ class CookieStore {
   }
 }
 exports.CookieStore = CookieStore;
+function parseRawCookie(header) {
+  const pairs = header.split(';').filter(s => s.trim().length > 0).map(p => {
+    let key = '';
+    let value = '';
+    const separatorPos = p.indexOf('=');
+    if (separatorPos === -1) {
+      // If only a key is specified, the value is left undefined.
+      key = p.trim();
+    } else {
+      // Otherwise we assume that the key is the element before the first `=`
+      key = p.slice(0, separatorPos).trim();
+      // And the value is the rest of the string.
+      value = p.slice(separatorPos + 1).trim();
+    }
+    return [key, value];
+  });
+  if (!pairs.length) return null;
+  const [name, value] = pairs[0];
+  const cookie = {
+    name,
+    value
+  };
+  for (let i = 1; i < pairs.length; i++) {
+    const [name, value] = pairs[i];
+    switch (name.toLowerCase()) {
+      case 'expires':
+        const expiresMs = +new Date(value);
+        // https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.1
+        if (isFinite(expiresMs)) {
+          if (expiresMs <= 0) cookie.expires = 0;else cookie.expires = Math.min(expiresMs / 1000, _network.kMaxCookieExpiresDateInSeconds);
+        }
+        break;
+      case 'max-age':
+        const maxAgeSec = parseInt(value, 10);
+        if (isFinite(maxAgeSec)) {
+          // From https://datatracker.ietf.org/doc/html/rfc6265#section-5.2.2
+          // If delta-seconds is less than or equal to zero (0), let expiry-time
+          // be the earliest representable date and time.
+          if (maxAgeSec <= 0) cookie.expires = 0;else cookie.expires = Math.min(Date.now() / 1000 + maxAgeSec, _network.kMaxCookieExpiresDateInSeconds);
+        }
+        break;
+      case 'domain':
+        cookie.domain = value.toLocaleLowerCase() || '';
+        if (cookie.domain && !cookie.domain.startsWith('.') && cookie.domain.includes('.')) cookie.domain = '.' + cookie.domain;
+        break;
+      case 'path':
+        cookie.path = value || '';
+        break;
+      case 'secure':
+        cookie.secure = true;
+        break;
+      case 'httponly':
+        cookie.httpOnly = true;
+        break;
+      case 'samesite':
+        switch (value.toLowerCase()) {
+          case 'none':
+            cookie.sameSite = 'None';
+            break;
+          case 'lax':
+            cookie.sameSite = 'Lax';
+            break;
+          case 'strict':
+            cookie.sameSite = 'Strict';
+            break;
+        }
+        break;
+    }
+  }
+  return cookie;
+}
 function domainMatches(value, domain) {
   if (value === domain) return true;
   // Only strict match is allowed if domain doesn't start with '.' (host-only-flag is true in the spec)

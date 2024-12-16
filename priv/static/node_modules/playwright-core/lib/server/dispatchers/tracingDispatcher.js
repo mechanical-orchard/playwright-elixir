@@ -37,6 +37,16 @@ class TracingDispatcher extends _dispatcher.Dispatcher {
   async tracingStartChunk(params) {
     return await this._object.startChunk(params);
   }
+  async tracingGroup(params, metadata) {
+    const {
+      name,
+      location
+    } = params;
+    await this._object.group(name, location, metadata);
+  }
+  async tracingGroupEnd(params) {
+    await this._object.groupEnd();
+  }
   async tracingStopChunk(params) {
     const {
       artifact,

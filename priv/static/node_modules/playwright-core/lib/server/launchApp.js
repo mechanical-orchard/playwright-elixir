@@ -28,18 +28,18 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  */
 
 async function launchApp(browserType, options) {
-  var _options$persistentCo, _options$persistentCo2;
+  var _options$persistentCo, _options$persistentCo2, _options$persistentCo3, _options$persistentCo4, _options$persistentCo5, _options$persistentCo6, _options$persistentCo7, _options$persistentCo8, _options$persistentCo9, _options$persistentCo10, _options$persistentCo11;
   const args = [...((_options$persistentCo = (_options$persistentCo2 = options.persistentContextOptions) === null || _options$persistentCo2 === void 0 ? void 0 : _options$persistentCo2.args) !== null && _options$persistentCo !== void 0 ? _options$persistentCo : [])];
   if (browserType.name() === 'chromium') {
     args.push('--app=data:text/html,', `--window-size=${options.windowSize.width},${options.windowSize.height}`, ...(options.windowPosition ? [`--window-position=${options.windowPosition.x},${options.windowPosition.y}`] : []), '--test-type=');
   }
   const context = await browserType.launchPersistentContext((0, _instrumentation.serverSideCallMetadata)(), '', {
-    channel: (0, _registry.findChromiumChannel)(options.sdkLanguage),
-    noDefaultViewport: true,
     ignoreDefaultArgs: ['--enable-automation'],
-    colorScheme: 'no-override',
-    acceptDownloads: (0, _utils.isUnderTest)() ? 'accept' : 'internal-browser-default',
     ...(options === null || options === void 0 ? void 0 : options.persistentContextOptions),
+    channel: (_options$persistentCo3 = (_options$persistentCo4 = options.persistentContextOptions) === null || _options$persistentCo4 === void 0 ? void 0 : _options$persistentCo4.channel) !== null && _options$persistentCo3 !== void 0 ? _options$persistentCo3 : !((_options$persistentCo5 = options.persistentContextOptions) !== null && _options$persistentCo5 !== void 0 && _options$persistentCo5.executablePath) ? (0, _registry.findChromiumChannel)(options.sdkLanguage) : undefined,
+    noDefaultViewport: (_options$persistentCo6 = (_options$persistentCo7 = options.persistentContextOptions) === null || _options$persistentCo7 === void 0 ? void 0 : _options$persistentCo7.noDefaultViewport) !== null && _options$persistentCo6 !== void 0 ? _options$persistentCo6 : true,
+    acceptDownloads: (_options$persistentCo8 = options === null || options === void 0 || (_options$persistentCo9 = options.persistentContextOptions) === null || _options$persistentCo9 === void 0 ? void 0 : _options$persistentCo9.acceptDownloads) !== null && _options$persistentCo8 !== void 0 ? _options$persistentCo8 : (0, _utils.isUnderTest)() ? 'accept' : 'internal-browser-default',
+    colorScheme: (_options$persistentCo10 = options === null || options === void 0 || (_options$persistentCo11 = options.persistentContextOptions) === null || _options$persistentCo11 === void 0 ? void 0 : _options$persistentCo11.colorScheme) !== null && _options$persistentCo10 !== void 0 ? _options$persistentCo10 : 'no-override',
     args
   });
   const [page] = context.pages();
@@ -79,6 +79,7 @@ async function syncLocalStorageWithSettings(page, appName) {
   await page.addInitScript(`(${String(settings => {
     // iframes w/ snapshots, etc.
     if (location && location.protocol === 'data:') return;
+    if (window.top !== window) return;
     Object.entries(settings).map(([k, v]) => localStorage[k] = v);
     window.saveSettings = () => {
       window._saveSerializedSettings(JSON.stringify({

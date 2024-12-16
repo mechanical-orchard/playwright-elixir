@@ -186,9 +186,9 @@ class APIRequestContextDispatcher extends _dispatcher.Dispatcher {
   async storageState() {
     return this._object.storageState();
   }
-  async dispose(_, metadata) {
+  async dispose(params, metadata) {
     metadata.potentiallyClosesScope = true;
-    await this._object.dispose();
+    await this._object.dispose(params);
     this._dispose();
   }
   async fetch(params, metadata) {

@@ -28,13 +28,23 @@ function createInstrumentation() {
       if (prop === 'addListener') return listener => listeners.push(listener);
       if (prop === 'removeListener') return listener => listeners.splice(listeners.indexOf(listener), 1);
       if (prop === 'removeAllListeners') return () => listeners.splice(0, listeners.length);
-      if (!prop.startsWith('on')) return obj[prop];
-      return async (...params) => {
-        for (const listener of listeners) {
-          var _prop, _ref;
-          await ((_prop = (_ref = listener)[prop]) === null || _prop === void 0 ? void 0 : _prop.call(_ref, ...params));
-        }
-      };
+      if (prop.startsWith('run')) {
+        return async (...params) => {
+          for (const listener of listeners) {
+            var _prop, _ref;
+            await ((_prop = (_ref = listener)[prop]) === null || _prop === void 0 ? void 0 : _prop.call(_ref, ...params));
+          }
+        };
+      }
+      if (prop.startsWith('on')) {
+        return (...params) => {
+          for (const listener of listeners) {
+            var _prop2, _ref2;
+            (_prop2 = (_ref2 = listener)[prop]) === null || _prop2 === void 0 || _prop2.call(_ref2, ...params);
+          }
+        };
+      }
+      return obj[prop];
     }
   });
 }

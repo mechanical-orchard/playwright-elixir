@@ -29,9 +29,11 @@ function getFromENV(name) {
   value = value === undefined ? process.env[`npm_package_config_${name.toLowerCase()}`] : value;
   return value;
 }
-function getAsBooleanFromENV(name) {
+function getAsBooleanFromENV(name, defaultValue) {
   const value = getFromENV(name);
-  return !!value && value !== 'false' && value !== '0';
+  if (value === 'false' || value === '0') return false;
+  if (value) return true;
+  return !!defaultValue;
 }
 function getPackageManager() {
   const env = process.env.npm_config_user_agent || '';

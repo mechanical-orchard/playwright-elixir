@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.locatorOrSelectorAsSelector = locatorOrSelectorAsSelector;
-var _stringUtils = require("../../utils/isomorphic/stringUtils");
+var _stringUtils = require("./stringUtils");
 var _locatorGenerators = require("./locatorGenerators");
 var _selectorParser = require("./selectorParser");
 /**
@@ -63,7 +63,7 @@ function parseLocator(locator, testIdAttributeName) {
   }
 
   // Equalize languages.
-  template = template.toLowerCase().replace(/get_by_alt_text/g, 'getbyalttext').replace(/get_by_test_id/g, 'getbytestid').replace(/get_by_([\w]+)/g, 'getby$1').replace(/has_not_text/g, 'hasnottext').replace(/has_text/g, 'hastext').replace(/has_not/g, 'hasnot').replace(/frame_locator/g, 'framelocator').replace(/[{}\s]/g, '').replace(/new\(\)/g, '').replace(/new[\w]+\.[\w]+options\(\)/g, '').replace(/\.set/g, ',set').replace(/\.or_\(/g, 'or(') // Python has "or_" instead of "or".
+  template = template.toLowerCase().replace(/get_by_alt_text/g, 'getbyalttext').replace(/get_by_test_id/g, 'getbytestid').replace(/get_by_([\w]+)/g, 'getby$1').replace(/has_not_text/g, 'hasnottext').replace(/has_text/g, 'hastext').replace(/has_not/g, 'hasnot').replace(/frame_locator/g, 'framelocator').replace(/content_frame/g, 'contentframe').replace(/[{}\s]/g, '').replace(/new\(\)/g, '').replace(/new[\w]+\.[\w]+options\(\)/g, '').replace(/\.set/g, ',set').replace(/\.or_\(/g, 'or(') // Python has "or_" instead of "or".
   .replace(/\.and_\(/g, 'and(') // Python has "and_" instead of "and".
   .replace(/:/g, '=').replace(/,re\.ignorecase/g, 'i').replace(/,pattern.case_insensitive/g, 'i').replace(/,regexoptions.ignorecase/g, 'i').replace(/re.compile\(([^)]+)\)/g, '$1') // Python has regex strings as r"foo"
   .replace(/pattern.compile\(([^)]+)\)/g, 'r$1').replace(/newregex\(([^)]+)\)/g, 'r$1').replace(/string=/g, '=').replace(/regex=/g, '=').replace(/,,/g, ',');
@@ -123,7 +123,7 @@ function transform(template, params, testIdAttributeName) {
   }
 
   // Transform to selector engines.
-  template = template.replace(/\,set([\w]+)\(([^)]+)\)/g, (_, group1, group2) => ',' + group1.toLowerCase() + '=' + group2.toLowerCase()).replace(/framelocator\(([^)]+)\)/g, '$1.internal:control=enter-frame').replace(/locator\(([^)]+),hastext=([^),]+)\)/g, 'locator($1).internal:has-text=$2').replace(/locator\(([^)]+),hasnottext=([^),]+)\)/g, 'locator($1).internal:has-not-text=$2').replace(/locator\(([^)]+),hastext=([^),]+)\)/g, 'locator($1).internal:has-text=$2').replace(/locator\(([^)]+)\)/g, '$1').replace(/getbyrole\(([^)]+)\)/g, 'internal:role=$1').replace(/getbytext\(([^)]+)\)/g, 'internal:text=$1').replace(/getbylabel\(([^)]+)\)/g, 'internal:label=$1').replace(/getbytestid\(([^)]+)\)/g, `internal:testid=[${testIdAttributeName}=$1]`).replace(/getby(placeholder|alt|title)(?:text)?\(([^)]+)\)/g, 'internal:attr=[$1=$2]').replace(/first(\(\))?/g, 'nth=0').replace(/last(\(\))?/g, 'nth=-1').replace(/nth\(([^)]+)\)/g, 'nth=$1').replace(/filter\(,?hastext=([^)]+)\)/g, 'internal:has-text=$1').replace(/filter\(,?hasnottext=([^)]+)\)/g, 'internal:has-not-text=$1').replace(/filter\(,?has2=([^)]+)\)/g, 'internal:has=$1').replace(/filter\(,?hasnot2=([^)]+)\)/g, 'internal:has-not=$1').replace(/,exact=false/g, '').replace(/,exact=true/g, 's').replace(/\,/g, '][');
+  template = template.replace(/\,set([\w]+)\(([^)]+)\)/g, (_, group1, group2) => ',' + group1.toLowerCase() + '=' + group2.toLowerCase()).replace(/framelocator\(([^)]+)\)/g, '$1.internal:control=enter-frame').replace(/contentframe(\(\))?/g, 'internal:control=enter-frame').replace(/locator\(([^)]+),hastext=([^),]+)\)/g, 'locator($1).internal:has-text=$2').replace(/locator\(([^)]+),hasnottext=([^),]+)\)/g, 'locator($1).internal:has-not-text=$2').replace(/locator\(([^)]+),hastext=([^),]+)\)/g, 'locator($1).internal:has-text=$2').replace(/locator\(([^)]+)\)/g, '$1').replace(/getbyrole\(([^)]+)\)/g, 'internal:role=$1').replace(/getbytext\(([^)]+)\)/g, 'internal:text=$1').replace(/getbylabel\(([^)]+)\)/g, 'internal:label=$1').replace(/getbytestid\(([^)]+)\)/g, `internal:testid=[${testIdAttributeName}=$1]`).replace(/getby(placeholder|alt|title)(?:text)?\(([^)]+)\)/g, 'internal:attr=[$1=$2]').replace(/first(\(\))?/g, 'nth=0').replace(/last(\(\))?/g, 'nth=-1').replace(/nth\(([^)]+)\)/g, 'nth=$1').replace(/filter\(,?hastext=([^)]+)\)/g, 'internal:has-text=$1').replace(/filter\(,?hasnottext=([^)]+)\)/g, 'internal:has-not-text=$1').replace(/filter\(,?has2=([^)]+)\)/g, 'internal:has=$1').replace(/filter\(,?hasnot2=([^)]+)\)/g, 'internal:has-not=$1').replace(/,exact=false/g, '').replace(/,exact=true/g, 's').replace(/\,/g, '][');
   const parts = template.split('.');
   // Turn "internal:control=enter-frame >> nth=0" into "nth=0 >> internal:control=enter-frame"
   // because these are swapped in locators vs selectors.

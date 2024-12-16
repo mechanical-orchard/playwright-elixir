@@ -81,6 +81,12 @@ Object.defineProperty(exports, "CDPSession", {
     return _cdpSession.CDPSession;
   }
 });
+Object.defineProperty(exports, "Clock", {
+  enumerable: true,
+  get: function () {
+    return _clock.Clock;
+  }
+});
 Object.defineProperty(exports, "ConsoleMessage", {
   enumerable: true,
   get: function () {
@@ -237,6 +243,12 @@ Object.defineProperty(exports, "WebSocket", {
     return _network.WebSocket;
   }
 });
+Object.defineProperty(exports, "WebSocketRoute", {
+  enumerable: true,
+  get: function () {
+    return _network.WebSocketRoute;
+  }
+});
 Object.defineProperty(exports, "Worker", {
   enumerable: true,
   get: function () {
@@ -248,6 +260,7 @@ var _android = require("./android");
 var _browser = require("./browser");
 var _browserContext = require("./browserContext");
 var _browserType = require("./browserType");
+var _clock = require("./clock");
 var _consoleMessage = require("./consoleMessage");
 var _coverage = require("./coverage");
 var _dialog = require("./dialog");

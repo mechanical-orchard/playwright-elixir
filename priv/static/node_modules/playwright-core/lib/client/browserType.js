@@ -143,20 +143,28 @@ class BrowserType extends _channelOwner.ChannelOwner {
       let browser;
       let closeError;
       const onPipeClosed = reason => {
-        var _browser2;
         // Emulate all pages, contexts and the browser closing upon disconnect.
         for (const context of ((_browser = browser) === null || _browser === void 0 ? void 0 : _browser.contexts()) || []) {
           var _browser;
           for (const page of context.pages()) page._onClose();
           context._onClose();
         }
-        (_browser2 = browser) === null || _browser2 === void 0 || _browser2._didClose();
         connection.close(reason || closeError);
+        // Give a chance to any API call promises to reject upon page/context closure.
+        // This happens naturally when we receive page.onClose and browser.onClose from the server
+        // in separate tasks. However, upon pipe closure we used to dispatch them all synchronously
+        // here and promises did not have a chance to reject.
+        // The order of rejects vs closure is a part of the API contract and our test runner
+        // relies on it to attribute rejections to the right test.
+        setTimeout(() => {
+          var _browser2;
+          return (_browser2 = browser) === null || _browser2 === void 0 ? void 0 : _browser2._didClose();
+        }, 0);
       };
       pipe.on('closed', params => onPipeClosed(params.reason));
-      connection.onmessage = message => pipe.send({
+      connection.onmessage = message => this._wrapApiCall(() => pipe.send({
         message
-      }).catch(() => onPipeClosed());
+      }).catch(() => onPipeClosed()), /* isInternal */true);
       pipe.on('message', ({
         message
       }) => {
@@ -180,7 +188,7 @@ class BrowserType extends _channelOwner.ChannelOwner {
         this._didLaunchBrowser(browser, {}, logger);
         browser._shouldCloseConnectionOnClose = true;
         browser._connectHeaders = connectHeaders;
-        browser.on(_events.Events.Browser.Disconnected, closePipe);
+        browser.on(_events.Events.Browser.Disconnected, () => this._wrapApiCall(() => closePipe(), /* isInternal */true));
         return browser;
       }, deadline);
       if (!result.timedOut) {
@@ -223,11 +231,11 @@ class BrowserType extends _channelOwner.ChannelOwner {
     context._setOptions(contextOptions, browserOptions);
     if (this._defaultContextTimeout !== undefined) context.setDefaultTimeout(this._defaultContextTimeout);
     if (this._defaultContextNavigationTimeout !== undefined) context.setDefaultNavigationTimeout(this._defaultContextNavigationTimeout);
-    await this._instrumentation.onDidCreateBrowserContext(context);
+    await this._instrumentation.runAfterCreateBrowserContext(context);
   }
   async _willCloseContext(context) {
     this._contexts.delete(context);
-    await this._instrumentation.onWillCloseBrowserContext(context);
+    await this._instrumentation.runBeforeCloseBrowserContext(context);
   }
 }
 exports.BrowserType = BrowserType;

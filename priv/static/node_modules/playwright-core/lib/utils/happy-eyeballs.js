@@ -3,14 +3,19 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.createConnectionAsync = createConnectionAsync;
 exports.createSocket = createSocket;
+exports.createTLSSocket = createTLSSocket;
 exports.httpsHappyEyeballsAgent = exports.httpHappyEyeballsAgent = void 0;
+exports.timingForSocket = timingForSocket;
 var dns = _interopRequireWildcard(require("dns"));
 var http = _interopRequireWildcard(require("http"));
 var https = _interopRequireWildcard(require("https"));
 var net = _interopRequireWildcard(require("net"));
 var tls = _interopRequireWildcard(require("tls"));
 var _manualPromise = require("./manualPromise");
+var _debug = require("./debug");
+var _time = require("./time");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
@@ -34,6 +39,8 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 
 // Same as in Chromium (https://source.chromium.org/chromium/chromium/src/+/5666ff4f5077a7e2f72902f3a95f5d553ea0d88d:net/socket/transport_connect_job.cc;l=102)
 const connectionAttemptDelayMs = 300;
+const kDNSLookupAt = Symbol('kDNSLookupAt');
+const kTCPConnectionAt = Symbol('kTCPConnectionAt');
 class HttpHappyEyeballsAgent extends http.Agent {
   createConnection(options, oncreate) {
     // There is no ambiguity in case of IP address.
@@ -48,8 +55,14 @@ class HttpsHappyEyeballsAgent extends https.Agent {
     createConnectionAsync(options, oncreate, /* useTLS */true).catch(err => oncreate === null || oncreate === void 0 ? void 0 : oncreate(err));
   }
 }
-const httpsHappyEyeballsAgent = exports.httpsHappyEyeballsAgent = new HttpsHappyEyeballsAgent();
-const httpHappyEyeballsAgent = exports.httpHappyEyeballsAgent = new HttpHappyEyeballsAgent();
+
+// These options are aligned with the default Node.js globalAgent options.
+const httpsHappyEyeballsAgent = exports.httpsHappyEyeballsAgent = new HttpsHappyEyeballsAgent({
+  keepAlive: true
+});
+const httpHappyEyeballsAgent = exports.httpHappyEyeballsAgent = new HttpHappyEyeballsAgent({
+  keepAlive: true
+});
 async function createSocket(host, port) {
   return new Promise((resolve, reject) => {
     if (net.isIP(host)) {
@@ -70,10 +83,29 @@ async function createSocket(host, port) {
     }
   });
 }
+async function createTLSSocket(options) {
+  return new Promise((resolve, reject) => {
+    (0, _debug.assert)(options.host, 'host is required');
+    if (net.isIP(options.host)) {
+      const socket = tls.connect(options);
+      socket.on('secureConnect', () => resolve(socket));
+      socket.on('error', error => reject(error));
+    } else {
+      createConnectionAsync(options, (err, socket) => {
+        if (err) reject(err);
+        if (socket) {
+          socket.on('secureConnect', () => resolve(socket));
+          socket.on('error', error => reject(error));
+        }
+      }, true).catch(err => reject(err));
+    }
+  });
+}
 async function createConnectionAsync(options, oncreate, useTLS) {
   const lookup = options.__testHookLookup || lookupAddresses;
   const hostname = clientRequestArgsToHostName(options);
   const addresses = await lookup(hostname);
+  const dnsLookupAt = (0, _time.monotonicTime)();
   const sockets = new Set();
   let firstError;
   let errorCount = 0;
@@ -98,10 +130,12 @@ async function createConnectionAsync(options, oncreate, useTLS) {
       port: options.port,
       host: address
     });
+    socket[kDNSLookupAt] = dnsLookupAt;
 
     // Each socket may fire only one of 'connect', 'timeout' or 'error' events.
     // None of these events are fired after socket.destroy() is called.
     socket.on('connect', () => {
+      socket[kTCPConnectionAt] = (0, _time.monotonicTime)();
       connected.resolve();
       oncreate === null || oncreate === void 0 || oncreate(null, socket);
       // TODO: Cache the result?
@@ -151,4 +185,10 @@ function clientRequestArgsToHostName(options) {
   if (options.hostname) return options.hostname;
   if (options.host) return options.host;
   throw new Error('Either options.hostname or options.host must be provided');
+}
+function timingForSocket(socket) {
+  return {
+    dnsLookupAt: socket[kDNSLookupAt],
+    tcpConnectionAt: socket[kTCPConnectionAt]
+  };
 }

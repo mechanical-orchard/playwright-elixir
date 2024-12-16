@@ -9,6 +9,7 @@ var _utils = require("../../utils");
 var _browser = require("../browser");
 var _browserContext = require("../browserContext");
 var network = _interopRequireWildcard(require("../network"));
+var _page = require("../page");
 var _ffConnection = require("./ffConnection");
 var _ffPage = require("./ffPage");
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
@@ -52,7 +53,8 @@ class FFBrowser extends _browser.Browser {
       browser._defaultContext = new FFBrowserContext(browser, undefined, options.persistent);
       promises.push(browser._defaultContext._initialize());
     }
-    if (options.proxy) promises.push(browser.session.send('Browser.setBrowserProxy', toJugglerProxyOptions(options.proxy)));
+    const proxy = options.originalLaunchOptions.proxyOverride || options.proxy;
+    if (proxy) promises.push(browser.session.send('Browser.setBrowserProxy', toJugglerProxyOptions(proxy)));
     await Promise.all(promises);
     return browser;
   }
@@ -165,7 +167,11 @@ class FFBrowserContext extends _browserContext.BrowserContext {
   async _initialize() {
     (0, _utils.assert)(!this._ffPages().length);
     const browserContextId = this._browserContextId;
-    const promises = [super._initialize()];
+    const promises = [super._initialize(), this._browser.session.send('Browser.addBinding', {
+      browserContextId: this._browserContextId,
+      name: _page.PageBinding.kPlaywrightBinding,
+      script: ''
+    })];
     if (this._options.acceptDownloads !== 'internal-browser-default') {
       promises.push(this._browser.session.send('Browser.setDownloadOptions', {
         browserContextId,
@@ -200,7 +206,7 @@ class FFBrowserContext extends _browserContext.BrowserContext {
       browserContextId,
       bypassCSP: true
     }));
-    if (this._options.ignoreHTTPSErrors) promises.push(this._browser.session.send('Browser.setIgnoreHTTPSErrors', {
+    if (this._options.ignoreHTTPSErrors || this._options.internalIgnoreHTTPSErrors) promises.push(this._browser.session.send('Browser.setIgnoreHTTPSErrors', {
       browserContextId,
       ignoreHTTPSErrors: true
     }));
@@ -250,10 +256,11 @@ class FFBrowserContext extends _browserContext.BrowserContext {
         });
       }));
     }
-    if (this._options.proxy) {
+    const proxy = this._options.proxyOverride || this._options.proxy;
+    if (proxy) {
       promises.push(this._browser.session.send('Browser.setContextProxy', {
         browserContextId: this._browserContextId,
-        ...toJugglerProxyOptions(this._options.proxy)
+        ...toJugglerProxyOptions(proxy)
       }));
     }
     await Promise.all(promises);
@@ -356,36 +363,39 @@ class FFBrowserContext extends _browserContext.BrowserContext {
   }
   async doSetHTTPCredentials(httpCredentials) {
     this._options.httpCredentials = httpCredentials;
+    let credentials = null;
+    if (httpCredentials) {
+      const {
+        username,
+        password,
+        origin
+      } = httpCredentials;
+      credentials = {
+        username,
+        password,
+        origin
+      };
+    }
     await this._browser.session.send('Browser.setHTTPCredentials', {
       browserContextId: this._browserContextId,
-      credentials: httpCredentials || null
+      credentials
     });
   }
-  async doAddInitScript(source) {
+  async doAddInitScript(initScript) {
+    await this._updateInitScripts();
+  }
+  async doRemoveNonInternalInitScripts() {
+    await this._updateInitScripts();
+  }
+  async _updateInitScripts() {
+    const bindingScripts = [...this._pageBindings.values()].map(binding => binding.initScript.source);
+    const initScripts = this.initScripts.map(script => script.source);
     await this._browser.session.send('Browser.setInitScripts', {
       browserContextId: this._browserContextId,
-      scripts: this.initScripts.map(script => ({
+      scripts: [...bindingScripts, ...initScripts].map(script => ({
         script
       }))
     });
-  }
-  async doRemoveInitScripts() {
-    await this._browser.session.send('Browser.setInitScripts', {
-      browserContextId: this._browserContextId,
-      scripts: []
-    });
-  }
-  async doExposeBinding(binding) {
-    await this._browser.session.send('Browser.addBinding', {
-      browserContextId: this._browserContextId,
-      name: binding.name,
-      script: binding.source
-    });
-  }
-  async doRemoveExposedBindings() {
-    // TODO: implement me.
-    // This is not a critical problem, what ends up happening is
-    // an old binding will be restored upon page reload and will point nowhere.
   }
   async doUpdateRequestInterception() {
     await Promise.all([this._browser.session.send('Browser.setRequestInterception', {

@@ -7,8 +7,8 @@ exports.BrowserContext = void 0;
 exports.assertBrowserContextIsNotOwned = assertBrowserContextIsNotOwned;
 exports.normalizeProxySettings = normalizeProxySettings;
 exports.validateBrowserContextOptions = validateBrowserContextOptions;
+exports.verifyClientCertificates = verifyClientCertificates;
 exports.verifyGeolocation = verifyGeolocation;
-var os = _interopRequireWildcard(require("os"));
 var _timeoutSettings = require("../common/timeoutSettings");
 var _utils = require("../utils");
 var _fileUtils = require("../utils/fileUtils");
@@ -24,6 +24,8 @@ var _harRecorder = require("./har/harRecorder");
 var _recorder = require("./recorder");
 var consoleApiSource = _interopRequireWildcard(require("../generated/consoleApiSource"));
 var _fetch = require("./fetch");
+var _clock = require("./clock");
+var _recorderApp = require("./recorder/recorderApp");
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
 function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
@@ -72,6 +74,8 @@ class BrowserContext extends _instrumentation.SdkObject {
     this._routesInFlight = new Set();
     this._debugger = void 0;
     this._closeReason = void 0;
+    this.clock = void 0;
+    this._clientCertificatesProxy = void 0;
     this.attribution.context = this;
     this._browser = browser;
     this._options = options;
@@ -81,6 +85,7 @@ class BrowserContext extends _instrumentation.SdkObject {
     this.fetchRequest = new _fetch.BrowserContextAPIRequestContext(this);
     if (this._options.recordHar) this._harRecorders.set('', new _harRecorder.HarRecorder(this, null, this._options.recordHar));
     this.tracing = new _tracing.Tracing(this, browser.options.tracesDir);
+    this.clock = new _clock.Clock(this);
   }
   isPersistentContext() {
     return this._isPersistentContext;
@@ -97,17 +102,17 @@ class BrowserContext extends _instrumentation.SdkObject {
     this._debugger = new _debugger.Debugger(this);
 
     // When PWDEBUG=1, show inspector for each context.
-    if ((0, _utils.debugMode)() === 'inspector') await _recorder.Recorder.show(this, {
+    if ((0, _utils.debugMode)() === 'inspector') await _recorder.Recorder.show('actions', this, _recorderApp.RecorderApp.factory(this), {
       pauseOnNextStatement: true
     });
 
     // When paused, show inspector.
-    if (this._debugger.isPaused()) _recorder.Recorder.showInspector(this);
+    if (this._debugger.isPaused()) _recorder.Recorder.showInspectorNoReply(this, _recorderApp.RecorderApp.factory(this));
     this._debugger.on(_debugger.Debugger.Events.PausedStateChanged, () => {
-      _recorder.Recorder.showInspector(this);
+      if (this._debugger.isPaused()) _recorder.Recorder.showInspectorNoReply(this, _recorderApp.RecorderApp.factory(this));
     });
     if ((0, _utils.debugMode)() === 'console') await this.extendInjectedScript(consoleApiSource.source);
-    if (this._options.serviceWorkers === 'block') await this.addInitScript(`\nnavigator.serviceWorker.register = async () => { console.warn('Service Worker registration blocked by Playwright'); };\n`);
+    if (this._options.serviceWorkers === 'block') await this.addInitScript(`\nif (navigator.serviceWorker) navigator.serviceWorker.register = async () => { console.warn('Service Worker registration blocked by Playwright'); };\n`);
     if (this._options.permissions) await this.grantPermissions(this._options.permissions);
   }
   debugger() {
@@ -168,6 +173,7 @@ class BrowserContext extends _instrumentation.SdkObject {
     await this._resetStorage();
     await this._removeExposedBindings();
     await this._removeInitScripts();
+    this.clock.markAsUninstalled();
     // TODO: following can be optimized to not perform noops.
     if (this._options.permissions) await this.grantPermissions(this._options.permissions);else await this.clearPermissions();
     await this.setExtraHTTPHeaders(this._options.extraHTTPHeaders || []);
@@ -183,11 +189,13 @@ class BrowserContext extends _instrumentation.SdkObject {
     this._didCloseInternal();
   }
   _didCloseInternal() {
+    var _this$_clientCertific;
     if (this._closedStatus === 'closed') {
       // We can come here twice if we close browser context and browser
       // at the same time.
       return;
     }
+    (_this$_clientCertific = this._clientCertificatesProxy) === null || _this$_clientCertific === void 0 || _this$_clientCertific.close().catch(() => {});
     this.tracing.abort();
     if (this._isPersistentContext) this.onClosePersistent();
     this._closePromiseFulfill(new Error('Context closed'));
@@ -226,13 +234,14 @@ class BrowserContext extends _instrumentation.SdkObject {
     }
     const binding = new _page6.PageBinding(name, playwrightBinding, needsHandle);
     this._pageBindings.set(name, binding);
-    await this.doExposeBinding(binding);
+    await this.doAddInitScript(binding.initScript);
+    const frames = this.pages().map(page => page.frames()).flat();
+    await Promise.all(frames.map(frame => frame.evaluateExpression(binding.initScript.source).catch(e => {})));
   }
   async _removeExposedBindings() {
-    for (const key of this._pageBindings.keys()) {
-      if (!key.startsWith('__pw')) this._pageBindings.delete(key);
+    for (const [key, binding] of this._pageBindings) {
+      if (!binding.internal) this._pageBindings.delete(key);
     }
-    await this.doRemoveExposedBindings();
   }
   async grantPermissions(permissions, origin) {
     let resolvedOrigin = '*';
@@ -310,13 +319,14 @@ class BrowserContext extends _instrumentation.SdkObject {
       password: password || ''
     };
   }
-  async addInitScript(script) {
-    this.initScripts.push(script);
-    await this.doAddInitScript(script);
+  async addInitScript(source) {
+    const initScript = new _page6.InitScript(source);
+    this.initScripts.push(initScript);
+    await this.doAddInitScript(initScript);
   }
   async _removeInitScripts() {
-    this.initScripts.splice(0, this.initScripts.length);
-    await this.doRemoveInitScripts();
+    this.initScripts = this.initScripts.filter(script => script.internal);
+    await this.doRemoveNonInternalInitScripts();
   }
   async setRequestInterceptor(handler) {
     this._requestInterceptor = handler;
@@ -396,7 +406,7 @@ class BrowserContext extends _instrumentation.SdkObject {
       try {
         const storage = await page.mainFrame().nonStallingEvaluateInExistingContext(`({
           localStorage: Object.keys(localStorage).map(name => ({ name, value: localStorage.getItem(name) })),
-        })`, false, 'utility');
+        })`, 'utility');
         if (storage.localStorage.length) result.origins.push({
           origin,
           localStorage: storage.localStorage
@@ -413,8 +423,7 @@ class BrowserContext extends _instrumentation.SdkObject {
       const page = await this.newPage(internalMetadata);
       await page._setServerRequestInterceptor(handler => {
         handler.fulfill({
-          body: '<html></html>',
-          requestUrl: handler.request().url()
+          body: '<html></html>'
         }).catch(() => {});
         return true;
       });
@@ -452,8 +461,7 @@ class BrowserContext extends _instrumentation.SdkObject {
     }));
     await page._setServerRequestInterceptor(handler => {
       handler.fulfill({
-        body: '<html></html>',
-        requestUrl: handler.request().url()
+        body: '<html></html>'
       }).catch(() => {});
       return true;
     });
@@ -483,8 +491,7 @@ class BrowserContext extends _instrumentation.SdkObject {
         const page = await this.newPage(internalMetadata);
         await page._setServerRequestInterceptor(handler => {
           handler.fulfill({
-            body: '<html></html>',
-            requestUrl: handler.request().url()
+            body: '<html></html>'
           }).catch(() => {});
           return true;
         });
@@ -514,6 +521,9 @@ class BrowserContext extends _instrumentation.SdkObject {
     };
     this.on(BrowserContext.Events.Page, installInPage);
     return Promise.all(this.pages().map(installInPage));
+  }
+  async safeNonStallingEvaluateInAllFrames(expression, world, options = {}) {
+    await Promise.all(this.pages().map(page => page.safeNonStallingEvaluateInAllFrames(expression, world, options)));
   }
   async _harStart(page, options) {
     const harId = (0, _utils.createGuid)();
@@ -562,7 +572,11 @@ function assertBrowserContextIsNotOwned(context) {
 function validateBrowserContextOptions(options, browserOptions) {
   if (options.noDefaultViewport && options.deviceScaleFactor !== undefined) throw new Error(`"deviceScaleFactor" option is not supported with null "viewport"`);
   if (options.noDefaultViewport && !!options.isMobile) throw new Error(`"isMobile" option is not supported with null "viewport"`);
-  if (options.acceptDownloads === undefined) options.acceptDownloads = 'accept';
+  if (options.acceptDownloads === undefined && browserOptions.name !== 'electron') options.acceptDownloads = 'accept';
+  // Electron requires explicit acceptDownloads: true since we wait for
+  // https://github.com/electron/electron/pull/41718 to be widely shipped.
+  // In 6-12 months, we can remove this check.
+  else if (options.acceptDownloads === undefined && browserOptions.name === 'electron') options.acceptDownloads = 'internal-browser-default';
   if (!options.viewport && !options.noDefaultViewport) options.viewport = {
     width: 1280,
     height: 720
@@ -587,10 +601,7 @@ function validateBrowserContextOptions(options, browserOptions) {
     options.recordVideo.size.width &= ~1;
     options.recordVideo.size.height &= ~1;
   }
-  if (options.proxy) {
-    if (!browserOptions.proxy && browserOptions.isChromium && os.platform() === 'win32') throw new Error(`Browser needs to be launched with the global proxy. If all contexts override the proxy, global proxy will be never used and can be any string, for example "launch({ proxy: { server: 'http://per-context' } })"`);
-    options.proxy = normalizeProxySettings(options.proxy);
-  }
+  if (options.proxy) options.proxy = normalizeProxySettings(options.proxy);
   verifyGeolocation(options.geolocation);
 }
 function verifyGeolocation(geolocation) {
@@ -604,6 +615,16 @@ function verifyGeolocation(geolocation) {
   if (longitude < -180 || longitude > 180) throw new Error(`geolocation.longitude: precondition -180 <= LONGITUDE <= 180 failed.`);
   if (latitude < -90 || latitude > 90) throw new Error(`geolocation.latitude: precondition -90 <= LATITUDE <= 90 failed.`);
   if (accuracy < 0) throw new Error(`geolocation.accuracy: precondition 0 <= ACCURACY failed.`);
+}
+function verifyClientCertificates(clientCertificates) {
+  if (!clientCertificates) return;
+  for (const cert of clientCertificates) {
+    if (!cert.origin) throw new Error(`clientCertificates.origin is required`);
+    if (!cert.cert && !cert.key && !cert.passphrase && !cert.pfx) throw new Error('None of cert, key, passphrase or pfx is specified');
+    if (cert.cert && !cert.key) throw new Error('cert is specified without key');
+    if (!cert.cert && cert.key) throw new Error('key is specified without cert');
+    if (cert.pfx && (cert.cert || cert.key)) throw new Error('pfx is specified together with cert, key or passphrase');
+  }
 }
 function normalizeProxySettings(proxy) {
   let {

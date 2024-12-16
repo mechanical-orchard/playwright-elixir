@@ -33,6 +33,8 @@ class Playwright extends _channelOwner.ChannelOwner {
     super(parent, type, guid, initializer);
     this._android = void 0;
     this._electron = void 0;
+    this._bidiChromium = void 0;
+    this._bidiFirefox = void 0;
     this.chromium = void 0;
     this.firefox = void 0;
     this.webkit = void 0;
@@ -49,6 +51,10 @@ class Playwright extends _channelOwner.ChannelOwner {
     this.webkit._playwright = this;
     this._android = _android.Android.from(initializer.android);
     this._electron = _electron.Electron.from(initializer.electron);
+    this._bidiChromium = _browserType.BrowserType.from(initializer.bidiChromium);
+    this._bidiChromium._playwright = this;
+    this._bidiFirefox = _browserType.BrowserType.from(initializer.bidiFirefox);
+    this._bidiFirefox._playwright = this;
     this.devices = (_this$_connection$loc = (_this$_connection$loc2 = this._connection.localUtils()) === null || _this$_connection$loc2 === void 0 ? void 0 : _this$_connection$loc2.devices) !== null && _this$_connection$loc !== void 0 ? _this$_connection$loc : {};
     this.selectors = new _selectors.Selectors();
     this.errors = {
