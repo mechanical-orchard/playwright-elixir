@@ -56,7 +56,7 @@ defmodule Playwright.MixProject do
       {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
       {:playwright_assets, "1.49.1", only: [:test]},
       {:recase, "~> 0.7"},
-      {:uuid, "~> 1.1"}
+      {:elixir_uuid, "~> 1.2"}
     ]
   end
 
