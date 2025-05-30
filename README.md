@@ -13,7 +13,7 @@ The package can be installed by adding `playwright` to your list of dependencies
 ```elixir
 def deps do
   [
-    {:playwright, "~> 1.49.1-alpha.1"}
+    {:playwright, "~> 1.49.1-alpha.2"}
   ]
 end
 ```
@@ -68,6 +68,6 @@ This project aims to track the release versioning found in [Playwright proper](h
 
 1. Update the version in `mix.exs`
    a. Search for and update the version anywhere it appears in the repo, such as this README
-2. `git tag -a v${version_number}` such that the tag look like `v1.44.0-alpha.3` or `v1.44.0`
+2. `git tag -a v${version_number}` such that the tag look like `v1.49.1-alpha.2` or `v1.49.1`
 3. `git push --tags`
 4. `mix hex.publish`
