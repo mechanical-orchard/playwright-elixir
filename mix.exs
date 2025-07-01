@@ -49,7 +49,7 @@ defmodule Playwright.MixProject do
       {:cowlib, "~> 2.7.0"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:esbuild, "~> 0.8.1", runtime: Mix.env() == :dev},
+      {:esbuild, "~> 0.10.0", runtime: Mix.env() == :dev},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false},
       {:gun, "~> 1.3.3"},
       {:jason, "~> 1.4"},
