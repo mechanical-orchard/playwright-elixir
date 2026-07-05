@@ -1,53 +1,64 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var bidiSerializer_exports = {};
+__export(bidiSerializer_exports, {
+  BidiSerializer: () => BidiSerializer,
+  isDate: () => isDate,
+  isPlainObject: () => isPlainObject,
+  isRegExp: () => isRegExp
 });
-exports.isRegExp = exports.isPlainObject = exports.isDate = exports.BidiSerializer = void 0;
+module.exports = __toCommonJS(bidiSerializer_exports);
 /**
  * @license
  * Copyright 2024 Google Inc.
  * Modifications copyright (c) Microsoft Corporation.
  * SPDX-License-Identifier: Apache-2.0
  */
-
-/* eslint-disable curly, indent */
-
-/**
- * @internal
- */
-class UnserializableError extends Error {}
-
-/**
- * @internal
- */
+class UnserializableError extends Error {
+}
 class BidiSerializer {
   static serialize(arg) {
     switch (typeof arg) {
-      case 'symbol':
-      case 'function':
+      case "symbol":
+      case "function":
         throw new UnserializableError(`Unable to serializable ${typeof arg}`);
-      case 'object':
+      case "object":
         return BidiSerializer._serializeObject(arg);
-      case 'undefined':
+      case "undefined":
         return {
-          type: 'undefined'
+          type: "undefined"
         };
-      case 'number':
+      case "number":
         return BidiSerializer._serializeNumber(arg);
-      case 'bigint':
+      case "bigint":
         return {
-          type: 'bigint',
+          type: "bigint",
           value: arg.toString()
         };
-      case 'string':
+      case "string":
         return {
-          type: 'string',
+          type: "string",
           value: arg
         };
-      case 'boolean':
+      case "boolean":
         return {
-          type: 'boolean',
+          type: "boolean",
           value: arg
         };
     }
@@ -55,40 +66,40 @@ class BidiSerializer {
   static _serializeNumber(arg) {
     let value;
     if (Object.is(arg, -0)) {
-      value = '-0';
+      value = "-0";
     } else if (Object.is(arg, Infinity)) {
-      value = 'Infinity';
+      value = "Infinity";
     } else if (Object.is(arg, -Infinity)) {
-      value = '-Infinity';
+      value = "-Infinity";
     } else if (Object.is(arg, NaN)) {
-      value = 'NaN';
+      value = "NaN";
     } else {
       value = arg;
     }
     return {
-      type: 'number',
+      type: "number",
       value
     };
   }
   static _serializeObject(arg) {
     if (arg === null) {
       return {
-        type: 'null'
+        type: "null"
       };
     } else if (Array.isArray(arg)) {
-      const parsedArray = arg.map(subArg => {
+      const parsedArray = arg.map((subArg) => {
         return BidiSerializer.serialize(subArg);
       });
       return {
-        type: 'array',
+        type: "array",
         value: parsedArray
       };
     } else if (isPlainObject(arg)) {
       try {
         JSON.stringify(arg);
       } catch (error) {
-        if (error instanceof TypeError && error.message.startsWith('Converting circular structure to JSON')) {
-          error.message += ' Recursive objects are not allowed.';
+        if (error instanceof TypeError && error.message.startsWith("Converting circular structure to JSON")) {
+          error.message += " Recursive objects are not allowed.";
         }
         throw error;
       }
@@ -97,12 +108,12 @@ class BidiSerializer {
         parsedObject.push([BidiSerializer.serialize(key), BidiSerializer.serialize(arg[key])]);
       }
       return {
-        type: 'object',
+        type: "object",
         value: parsedObject
       };
     } else if (isRegExp(arg)) {
       return {
-        type: 'regexp',
+        type: "regexp",
         value: {
           pattern: arg.source,
           flags: arg.flags
@@ -110,35 +121,28 @@ class BidiSerializer {
       };
     } else if (isDate(arg)) {
       return {
-        type: 'date',
+        type: "date",
         value: arg.toISOString()
       };
     }
-    throw new UnserializableError('Custom object serialization not possible. Use plain objects instead.');
+    throw new UnserializableError(
+      "Custom object serialization not possible. Use plain objects instead."
+    );
   }
 }
-
-/**
- * @internal
- */
-exports.BidiSerializer = BidiSerializer;
-const isPlainObject = obj => {
-  return typeof obj === 'object' && (obj === null || obj === void 0 ? void 0 : obj.constructor) === Object;
+const isPlainObject = (obj) => {
+  return typeof obj === "object" && obj?.constructor === Object;
 };
-
-/**
- * @internal
- */
-exports.isPlainObject = isPlainObject;
-const isRegExp = obj => {
-  return typeof obj === 'object' && (obj === null || obj === void 0 ? void 0 : obj.constructor) === RegExp;
+const isRegExp = (obj) => {
+  return typeof obj === "object" && obj?.constructor === RegExp;
 };
-
-/**
- * @internal
- */
-exports.isRegExp = isRegExp;
-const isDate = obj => {
-  return typeof obj === 'object' && (obj === null || obj === void 0 ? void 0 : obj.constructor) === Date;
+const isDate = (obj) => {
+  return typeof obj === "object" && obj?.constructor === Date;
 };
-exports.isDate = isDate;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  BidiSerializer,
+  isDate,
+  isPlainObject,
+  isRegExp
+});

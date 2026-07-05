@@ -29,7 +29,7 @@ defmodule Playwright.BrowserContext do
   The second argument is the event type.
 
   The third argument is a callback function that will be executed when the
-  event fires, and is passed an instance of `Playwright.SDK.Channel.Event`.
+  event fires, and is passed an event struct containing the event details.
 
   ### Details for `expect_event/5`
 
@@ -60,17 +60,6 @@ defmodule Playwright.BrowserContext do
   ### Event types
 
   The `expect_event/5` and `on/3` functions support the following event types:
-
-    - `:background_page`
-
-      Emitted when a new background page is created in the context. The event
-      target is a `Playwright.Page`.
-
-          ...
-
-      > NOTE:
-      >
-      > - Only works with Chromium browser's persistent context.
 
     - `:close`
 
@@ -160,13 +149,15 @@ defmodule Playwright.BrowserContext do
   """
 
   use Playwright.SDK.ChannelOwner
-  alias Playwright.{BrowserContext, Frame, Page}
+  alias Playwright.{BrowserContext, Frame, Page, Worker}
   alias Playwright.SDK.{Channel, ChannelOwner, Helpers}
 
   @property :bindings
   @property :browser
   @property :owner_page
   @property :routes
+  @property :tracing
+  @property :websocket_routes
 
   @typedoc "Recognized cookie fields"
   @type cookie :: %{
@@ -178,13 +169,13 @@ defmodule Playwright.BrowserContext do
           expires: float,
           httpOnly: boolean,
           secure: boolean,
-          sameSite: String.t()
+          sameSite: String.t(),
+          partitionKey: String.t()
         }
 
   @typedoc "Supported events"
   @type event ::
-          :background_page
-          | :close
+          :close
           | :page
           | :request
           | :request_failed
@@ -215,7 +206,12 @@ defmodule Playwright.BrowserContext do
       # NOTE: will patch here
     end)
 
-    {:ok, %{context | bindings: %{}, browser: context.parent, routes: []}}
+    Channel.bind(session, {:guid, context.guid}, :web_socket_route, fn %{params: params, target: target} ->
+      on_web_socket_route(target, params)
+      :ok
+    end)
+
+    {:ok, %{context | bindings: %{}, browser: context.parent, routes: [], websocket_routes: []}}
   end
 
   # API
@@ -304,11 +300,9 @@ defmodule Playwright.BrowserContext do
     params = %{source: script}
 
     case Channel.post(session, {:guid, context.guid}, :add_init_script, params) do
-      {:ok, _} ->
-        :ok
-
-      {:error, error} ->
-        {:error, error}
+      {:ok, _} -> :ok
+      {:error, error} -> {:error, error}
+      %{guid: _} -> :ok
     end
   end
 
@@ -318,8 +312,20 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec background_pages(t()) :: [Playwright.Page.t()]
-  # def background_pages(context)
+  @doc """
+  Returns all background pages in the context.
+
+  This only works with Chromium persistent contexts.
+
+  ## Returns
+
+  - `[Page.t()]`
+  """
+  @doc deprecated: "backgroundPage event was removed in Playwright 1.57"
+  @spec background_pages(t()) :: [Page.t()]
+  def background_pages(%BrowserContext{}) do
+    []
+  end
 
   # @spec browser(t()) :: Playwright.Browser.t()
   # def browser(context)
@@ -386,18 +392,18 @@ defmodule Playwright.BrowserContext do
   predicate function.
 
   Returns when the predicate returns a truthy value. Throws an error if the
-  context closes before the event is fired. Returns a `Playwright.SDK.Channel.Event`.
+  context closes before the event is fired. Returns a channel event struct.
 
   ## Arguments
 
   - `event`: Event name; the same as those passed to `Playwright.BrowserContext.on/3`
-  - `predicate`: Receives the `Playwright.SDK.Channel.Event` and resolves to a
+  - `predicate`: Receives the channel event and resolves to a
     "truthy" value when the waiting should resolve.
   - `options`:
     - `predicate`: ...
     - `timeout`: The maximum time to wait in milliseconds. Defaults to 30000
       (30 seconds). Pass 0 to disable timeout. The default value can be changed
-      via `Playwright.BrowserContext.set_default_timeout/2`.
+      via BrowserContext timeout settings.
 
   ## Example
 
@@ -416,7 +422,7 @@ defmodule Playwright.BrowserContext do
   the `Playwright.BrowserContext`.
 
   If `predicate` is provided, it passes the `Playwright.Page` value into the
-  predicate function, wrapped in `Playwright.SDK.Channel.Event`, and waits for
+  predicate function, wrapped in a channel event struct, and waits for
   `predicate/1` to return a "truthy" value. Throws an error if the context
   closes before new `Playwright.Page` is created.
 
@@ -428,10 +434,9 @@ defmodule Playwright.BrowserContext do
     - `predicate`: ...
     - `timeout`: The maximum time to wait in milliseconds. Defaults to 30000
       (30 seconds). Pass 0 to disable timeout. The default value can be changed
-      via `Playwright.BrowserContext.set_default_timeout/2`.
+      via BrowserContext timeout settings.
   """
-  # Temporarily disable spec:
-  # @spec expect_page(t(), map(), function()) :: Playwright.SDK.Channel.Event.t()
+  # Temporarily disable spec (channel event type is internal)
   def expect_page(context, options \\ %{}, trigger \\ nil) do
     expect_event(context, :page, options, trigger)
   end
@@ -476,13 +481,13 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
-  @spec grant_permissions(t(), [String.t()], options()) :: :ok | {:error, Channel.Error.t()}
+  @spec grant_permissions(t(), [String.t()], options()) :: :ok | {:error, term()}
   def grant_permissions(%BrowserContext{session: session} = context, permissions, options \\ %{}) do
     params = Map.merge(%{permissions: permissions}, options)
     Channel.post(session, {:guid, context.guid}, :grant_permissions, params)
   end
 
-  @spec new_cdp_session(t(), Frame.t() | Page.t()) :: Playwright.CDPSession.t()
+  @spec new_cdp_session(t(), Frame.t() | Page.t()) :: struct()
   def new_cdp_session(context, owner)
 
   def new_cdp_session(%BrowserContext{session: session} = context, %Frame{} = frame) do
@@ -533,7 +538,7 @@ defmodule Playwright.BrowserContext do
     Channel.list(context.session, {:guid, context.guid}, "Page")
   end
 
-  @spec route(t(), binary(), function(), map()) :: :ok
+  @spec route(t(), binary() | Regex.t(), function(), map()) :: t() | {:error, term()}
   def route(context, pattern, handler, options \\ %{})
 
   def route(%BrowserContext{session: session} = context, pattern, handler, _options) do
@@ -554,30 +559,202 @@ defmodule Playwright.BrowserContext do
   # @spec route_from_har(t(), binary(), map()) :: :ok
   # def route(context, har, options \\ %{})
 
-  # ???
-  # @spec service_workers(t()) :: [Playwright.Worker.t()]
-  # def service_workers(context)
+  @doc """
+  Routes WebSocket connections matching the URL pattern to the handler.
 
-  # test_navigation.py
-  # @spec set_default_navigation_timeout(t(), number()) :: :ok
-  # def set_default_navigation_timeout(context, timeout)
+  This applies to all pages within the context.
 
-  # test_navigation.py
-  # @spec set_default_timeout(t(), number()) :: :ok
-  # def set_default_timeout(context, timeout)
+  ## Example
 
-  # test_interception.py
-  # test_network.py
-  # @spec set_extra_http_headers(t(), headers()) :: :ok
-  # def set_extra_http_headers(context, headers)
+      BrowserContext.route_web_socket(context, "**/ws", fn ws ->
+        server = WebSocketRoute.connect_to_server(ws)
 
-  # test_geolocation.py
-  # @spec set_geolocation(t(), geolocation()) :: :ok
-  # def set_geolocation(context, geolocation)
+        WebSocketRoute.on_message(ws, fn msg ->
+          IO.puts("Page -> Server: \#{msg}")
+          WebSocketRoute.Server.send(server, msg)
+        end)
 
-  # ???
-  # @spec set_http_credentials(t(), http_credentials()) :: :ok
-  # def set_http_credentials(context, http_credentials)
+        WebSocketRoute.Server.on_message(server, fn msg ->
+          IO.puts("Server -> Page: \#{msg}")
+          WebSocketRoute.send(ws, msg)
+        end)
+      end)
+  """
+  @spec route_web_socket(t(), binary() | Regex.t(), (Playwright.WebSocketRoute.t() -> any())) ::
+          t() | {:error, term()}
+  def route_web_socket(%BrowserContext{session: session} = context, pattern, handler)
+      when is_function(handler, 1) do
+    with_latest(context, fn context ->
+      matcher = Helpers.URLMatcher.new(pattern)
+      ws_handler = Helpers.WebSocketRouteHandler.new(matcher, handler)
+
+      websocket_routes = [ws_handler | context.websocket_routes]
+      patterns = Helpers.WebSocketRouteHandler.prepare(websocket_routes)
+
+      Channel.patch(session, {:guid, context.guid}, %{websocket_routes: websocket_routes})
+      Channel.post(session, {:guid, context.guid}, :set_web_socket_interception_patterns, %{patterns: patterns})
+    end)
+  end
+
+  @doc """
+  Returns all service workers in the context.
+
+  ## Returns
+
+  - `[Worker.t()]`
+
+  ## Note
+
+  Currently returns an empty list. Full tracking of service workers
+  via events is a future enhancement.
+  """
+  @spec service_workers(t()) :: [Worker.t()]
+  def service_workers(%BrowserContext{}) do
+    []
+  end
+
+  @doc """
+  Sets the default timeout for all context operations.
+
+  This setting will change the default maximum time for all the methods
+  accepting a `timeout` option.
+
+  ## Arguments
+
+  | key/name  | type       | description                      |
+  | --------- | ---------- | -------------------------------- |
+  | `timeout` | `number()` | Maximum time in milliseconds.    |
+
+  ## Returns
+
+  - `:ok`
+
+  ## Example
+
+      BrowserContext.set_default_timeout(context, 60_000)  # 60 seconds
+  """
+  @spec set_default_timeout(t(), number()) :: :ok
+  def set_default_timeout(%BrowserContext{session: session, guid: guid}, timeout) do
+    Channel.post(session, {:guid, guid}, :set_default_timeout_no_reply, %{timeout: timeout})
+    :ok
+  end
+
+  @doc """
+  Sets the default timeout for navigation operations.
+
+  This setting will change the default maximum navigation time for the
+  following methods and related shortcuts on page: `goto`, `go_back`,
+  `go_forward`, `reload`, `wait_for_navigation`.
+
+  ## Arguments
+
+  | key/name  | type       | description                      |
+  | --------- | ---------- | -------------------------------- |
+  | `timeout` | `number()` | Maximum time in milliseconds.    |
+
+  ## Returns
+
+  - `:ok`
+
+  ## Example
+
+      BrowserContext.set_default_navigation_timeout(context, 90_000)  # 90 seconds
+  """
+  @spec set_default_navigation_timeout(t(), number()) :: :ok
+  def set_default_navigation_timeout(%BrowserContext{session: session, guid: guid}, timeout) do
+    Channel.post(session, {:guid, guid}, :set_default_navigation_timeout_no_reply, %{timeout: timeout})
+    :ok
+  end
+
+  @doc """
+  Sets extra HTTP headers to be sent with every request.
+
+  These headers will be sent with every request initiated by any page in
+  the context. Headers set with `Page.set_extra_http_headers/2` take
+  precedence over headers set with this method.
+
+  ## Arguments
+
+  | key/name  | type     | description                                |
+  | --------- | -------- | ------------------------------------------ |
+  | `headers` | `map()`  | Map of header names to values.             |
+
+  ## Returns
+
+  - `:ok`
+
+  ## Example
+
+      BrowserContext.set_extra_http_headers(context, %{
+        "Authorization" => "Bearer token123",
+        "X-Custom-Header" => "value"
+      })
+  """
+  @spec set_extra_http_headers(t(), map()) :: :ok
+  def set_extra_http_headers(%BrowserContext{session: session, guid: guid}, headers) when is_map(headers) do
+    header_list = Enum.map(headers, fn {name, value} -> %{name: to_string(name), value: value} end)
+    Channel.post(session, {:guid, guid}, :set_extra_http_headers, %{headers: header_list})
+    :ok
+  end
+
+  @doc """
+  Sets the geolocation for this browser context.
+
+  All pages in this context will use the overridden geolocation.
+
+  ## Parameters
+
+  - `geolocation` - A map with `:latitude`, `:longitude`, and optional `:accuracy`.
+    - `:latitude` - Latitude between -90 and 90
+    - `:longitude` - Longitude between -180 and 180
+    - `:accuracy` - Non-negative accuracy in meters (default: 0)
+
+  ## Examples
+
+      # Set geolocation to San Francisco
+      BrowserContext.set_geolocation(context, %{latitude: 37.7749, longitude: -122.4194})
+
+      # With accuracy
+      BrowserContext.set_geolocation(context, %{latitude: 37.7749, longitude: -122.4194, accuracy: 100})
+
+  ## Note
+
+  Consider also granting the 'geolocation' permission:
+
+      BrowserContext.grant_permissions(context, ["geolocation"])
+  """
+  @spec set_geolocation(t(), map()) :: :ok
+  def set_geolocation(%BrowserContext{session: session} = context, geolocation) do
+    Channel.post(session, {:guid, context.guid}, :set_geolocation, %{geolocation: geolocation})
+  end
+
+  @doc """
+  Sets HTTP authentication credentials for requests.
+
+  Pass `nil` to disable authentication.
+
+  ## Arguments
+
+  | key/name      | type                                               | description                     |
+  | ------------- | -------------------------------------------------- | ------------------------------- |
+  | `credentials` | `%{username: binary(), password: binary()} \| nil` | Credentials or nil to disable.  |
+
+  ## Returns
+
+  - `:ok`
+
+  ## Example
+
+      BrowserContext.set_http_credentials(context, %{username: "user", password: "pass"})
+      # Later, to disable:
+      BrowserContext.set_http_credentials(context, nil)
+  """
+  @spec set_http_credentials(t(), %{username: binary(), password: binary()} | nil) :: :ok
+  def set_http_credentials(%BrowserContext{session: session, guid: guid}, credentials) do
+    params = %{httpCredentials: credentials}
+    Channel.post(session, {:guid, guid}, :set_http_credentials, params)
+    :ok
+  end
 
   # ---
 
@@ -588,12 +765,53 @@ defmodule Playwright.BrowserContext do
 
   # ---
 
-  # @spec storage_state(t(), String.t()) :: {:ok, storage_state()}
-  # def storage_state(context, path \\ nil)
+  @doc """
+  Returns storage state for this browser context, contains current cookies and local storage snapshot.
+
+  ## Options
+
+  - `:path` - Optional path to save the storage state as JSON file.
+
+  ## Examples
+
+      # Get storage state as map
+      state = BrowserContext.storage_state(context)
+
+      # Save to file
+      state = BrowserContext.storage_state(context, path: "/tmp/auth.json")
+
+  ## Returns
+
+  A map with `:cookies` and `:origins` keys.
+  """
+  @spec storage_state(t(), keyword()) :: map() | {:error, term()}
+  def storage_state(%BrowserContext{session: session} = context, options \\ []) do
+    params =
+      case Keyword.get(options, :indexed_db) do
+        nil -> %{}
+        val -> %{indexedDB: val}
+      end
+
+    case Channel.post(session, {:guid, context.guid}, :storage_state, params) do
+      {:error, _} = error ->
+        error
+
+      state when is_map(state) ->
+        case Keyword.get(options, :path) do
+          nil ->
+            state
+
+          path ->
+            json = Jason.encode!(state, pretty: true)
+            File.write!(path, json)
+            state
+        end
+    end
+  end
 
   # ---
 
-  @spec unroute(t(), binary(), function() | nil) :: :ok
+  @spec unroute(t(), binary() | Regex.t(), function() | nil) :: t() | {:error, term()}
   def unroute(%BrowserContext{session: session} = context, pattern, callback \\ nil) do
     with_latest(context, fn context ->
       remaining =
@@ -606,8 +824,41 @@ defmodule Playwright.BrowserContext do
     end)
   end
 
-  # @spec unroute_all(t(), map()) :: :ok
-  # def unroute_all(context, options \\ %{})
+  @doc """
+  Removes all routes registered with `route/4`.
+
+  ## Options
+
+  | key/name   | type       | description                                      |
+  | ---------- | ---------- | ------------------------------------------------ |
+  | `:behavior`| `binary()` | How to handle in-flight requests. One of:        |
+  |            |            | `"default"` - abort in-flight requests           |
+  |            |            | `"wait"` - wait for in-flight handlers           |
+  |            |            | `"ignoreErrors"` - ignore handler errors         |
+
+  ## Returns
+
+  - `:ok`
+
+  ## Example
+
+      # Add a route
+      BrowserContext.route(context, "**/*", fn route -> Route.abort(route) end)
+
+      # Later, remove all routes
+      BrowserContext.unroute_all(context)
+
+      # Or wait for in-flight handlers to complete
+      BrowserContext.unroute_all(context, %{behavior: "wait"})
+  """
+  @spec unroute_all(t(), map()) :: :ok
+  def unroute_all(%BrowserContext{session: session, guid: guid}, options \\ %{}) do
+    params = if options[:behavior], do: %{behavior: options[:behavior]}, else: %{}
+    Channel.post(session, {:guid, guid}, :unroute_all, params)
+    Channel.patch(session, {:guid, guid}, %{routes: []})
+    Channel.post(session, {:guid, guid}, :set_network_interception_patterns, %{patterns: []})
+    :ok
+  end
 
   # @spec wait_for_event(t(), binary(), map()) :: map()
   # def wait_for_event(context, event, options \\ %{})
@@ -646,5 +897,26 @@ defmodule Playwright.BrowserContext do
         {:cont, [handler | acc]}
       end
     end)
+  end
+
+  defp on_web_socket_route(context, %{webSocketRoute: ws_route}) do
+    # ws_route is already hydrated by Event.new
+    handle_web_socket_route(context, ws_route)
+  end
+
+  @doc false
+  # Called by Page when it has no matching handler
+  def handle_web_socket_route(context, ws_route) do
+    handler =
+      Enum.find(context.websocket_routes, fn h ->
+        Helpers.WebSocketRouteHandler.matches(h, ws_route.url)
+      end)
+
+    if handler do
+      Helpers.WebSocketRouteHandler.handle(handler, ws_route)
+    else
+      # No handler, connect through
+      Playwright.WebSocketRoute.connect_to_server(ws_route)
+    end
   end
 end

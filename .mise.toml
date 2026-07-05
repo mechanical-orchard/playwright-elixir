@@ -1,0 +1,4 @@
+[tools]
+elixir = "1.18.4-otp-27"
+erlang = "27.3.4.6"
+nodejs = "22.21.1"

@@ -1,77 +1,77 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var errors_exports = {};
+__export(errors_exports, {
+  TargetClosedError: () => TargetClosedError,
+  TimeoutError: () => TimeoutError,
+  isTargetClosedError: () => isTargetClosedError,
+  parseError: () => parseError,
+  serializeError: () => serializeError
 });
-exports.TimeoutError = exports.TargetClosedError = void 0;
-exports.isTargetClosedError = isTargetClosedError;
-exports.parseError = parseError;
-exports.serializeError = serializeError;
-var _utils = require("../utils");
-var _serializers = require("../protocol/serializers");
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(errors_exports);
+var import_serializers = require("../protocol/serializers");
+var import_rtti = require("../utils/isomorphic/rtti");
 class TimeoutError extends Error {
   constructor(message) {
     super(message);
-    this.name = 'TimeoutError';
+    this.name = "TimeoutError";
   }
 }
-exports.TimeoutError = TimeoutError;
 class TargetClosedError extends Error {
   constructor(cause) {
-    super(cause || 'Target page, context or browser has been closed');
+    super(cause || "Target page, context or browser has been closed");
   }
 }
-exports.TargetClosedError = TargetClosedError;
 function isTargetClosedError(error) {
   return error instanceof TargetClosedError;
 }
 function serializeError(e) {
-  if ((0, _utils.isError)(e)) return {
-    error: {
-      message: e.message,
-      stack: e.stack,
-      name: e.name
-    }
-  };
-  return {
-    value: (0, _serializers.serializeValue)(e, value => ({
-      fallThrough: value
-    }))
-  };
+  if ((0, import_rtti.isError)(e))
+    return { error: { message: e.message, stack: e.stack, name: e.name } };
+  return { value: (0, import_serializers.serializeValue)(e, (value) => ({ fallThrough: value })) };
 }
 function parseError(error) {
   if (!error.error) {
-    if (error.value === undefined) throw new Error('Serialized error must have either an error or a value');
-    return (0, _serializers.parseSerializedValue)(error.value, undefined);
+    if (error.value === void 0)
+      throw new Error("Serialized error must have either an error or a value");
+    return (0, import_serializers.parseSerializedValue)(error.value, void 0);
   }
-  if (error.error.name === 'TimeoutError') {
-    const e = new TimeoutError(error.error.message);
-    e.stack = error.error.stack || '';
-    return e;
+  if (error.error.name === "TimeoutError") {
+    const e2 = new TimeoutError(error.error.message);
+    e2.stack = error.error.stack || "";
+    return e2;
   }
-  if (error.error.name === 'TargetClosedError') {
-    const e = new TargetClosedError(error.error.message);
-    e.stack = error.error.stack || '';
-    return e;
+  if (error.error.name === "TargetClosedError") {
+    const e2 = new TargetClosedError(error.error.message);
+    e2.stack = error.error.stack || "";
+    return e2;
   }
   const e = new Error(error.error.message);
-  e.stack = error.error.stack || '';
+  e.stack = error.error.stack || "";
   e.name = error.error.name;
   return e;
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  TargetClosedError,
+  TimeoutError,
+  isTargetClosedError,
+  parseError,
+  serializeError
+});

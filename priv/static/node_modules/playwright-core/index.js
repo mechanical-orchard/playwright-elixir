@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const minimumMajorNodeVersion = 14;
+const minimumMajorNodeVersion = 18;
 const currentNodeVersion = process.versions.node;
 const semver = currentNodeVersion.split('.');
 const [major] = [+semver[0]];
 
 if (major < minimumMajorNodeVersion) {
-  // eslint-disable-next-line no-console
   console.error(
       'You are running Node.js ' +
       currentNodeVersion +

@@ -1,48 +1,53 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var outofprocess_exports = {};
+__export(outofprocess_exports, {
+  start: () => start
 });
-exports.start = start;
-var _connection = require("./client/connection");
-var _transport = require("./protocol/transport");
-var childProcess = _interopRequireWildcard(require("child_process"));
-var path = _interopRequireWildcard(require("path"));
-var _manualPromise = require("./utils/manualPromise");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(outofprocess_exports);
+var childProcess = __toESM(require("child_process"));
+var import_path = __toESM(require("path"));
+var import_connection = require("./client/connection");
+var import_pipeTransport = require("./server/utils/pipeTransport");
+var import_manualPromise = require("./utils/isomorphic/manualPromise");
+var import_nodePlatform = require("./server/utils/nodePlatform");
 async function start(env = {}) {
   const client = new PlaywrightClient(env);
   const playwright = await client._playwright;
   playwright.driverProcess = client._driverProcess;
-  return {
-    playwright,
-    stop: () => client.stop()
-  };
+  return { playwright, stop: () => client.stop() };
 }
 class PlaywrightClient {
   constructor(env) {
-    this._playwright = void 0;
-    this._driverProcess = void 0;
-    this._closePromise = new _manualPromise.ManualPromise();
-    this._driverProcess = childProcess.fork(path.join(__dirname, '..', 'cli.js'), ['run-driver'], {
-      stdio: 'pipe',
+    this._closePromise = new import_manualPromise.ManualPromise();
+    this._driverProcess = childProcess.fork(import_path.default.join(__dirname, "..", "cli.js"), ["run-driver"], {
+      stdio: "pipe",
       detached: true,
       env: {
         ...process.env,
@@ -50,11 +55,11 @@ class PlaywrightClient {
       }
     });
     this._driverProcess.unref();
-    this._driverProcess.stderr.on('data', data => process.stderr.write(data));
-    const connection = new _connection.Connection(undefined, undefined);
-    const transport = new _transport.PipeTransport(this._driverProcess.stdin, this._driverProcess.stdout);
-    connection.onmessage = message => transport.send(JSON.stringify(message));
-    transport.onmessage = message => connection.dispatch(JSON.parse(message));
+    this._driverProcess.stderr.on("data", (data) => process.stderr.write(data));
+    const connection = new import_connection.Connection(import_nodePlatform.nodePlatform);
+    const transport = new import_pipeTransport.PipeTransport(this._driverProcess.stdin, this._driverProcess.stdout);
+    connection.onmessage = (message) => transport.send(JSON.stringify(message));
+    transport.onmessage = (message) => connection.dispatch(JSON.parse(message));
     transport.onclose = () => this._closePromise.resolve();
     this._playwright = connection.initializePlaywright();
   }
@@ -65,3 +70,7 @@ class PlaywrightClient {
     await this._closePromise;
   }
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  start
+});

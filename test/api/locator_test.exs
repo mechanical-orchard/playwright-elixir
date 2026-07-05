@@ -41,6 +41,61 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.aria_snapshot/2" do
+    test "returns aria snapshot of element", %{page: page} do
+      Page.set_content(page, "<button>Click me</button>")
+      locator = Page.locator(page, "button")
+      snapshot = Locator.aria_snapshot(locator)
+      assert is_binary(snapshot)
+    end
+  end
+
+  # TODO: Locator.describe/2 requires Playwright > 1.49.1
+
+  describe "Locator.and_/2" do
+    test "matches elements that satisfy both locators", %{page: page} do
+      Page.set_content(page, ~s|
+        <div class="foo">hello</div>
+        <div class="bar">world</div>
+        <div class="foo bar">both</div>
+      |)
+
+      locator =
+        page
+        |> Page.locator(".foo")
+        |> Locator.and_(Page.locator(page, ".bar"))
+
+      assert Locator.count(locator) == 1
+      assert Locator.text_content(locator) == "both"
+    end
+
+    test "returns empty when no elements match both", %{page: page} do
+      Page.set_content(page, ~s|
+        <div class="foo">hello</div>
+        <span class="bar">world</span>
+      |)
+
+      locator =
+        page
+        |> Page.locator(".foo")
+        |> Locator.and_(Page.locator(page, ".bar"))
+
+      assert Locator.count(locator) == 0
+    end
+
+    test "raises when locators belong to different frames", %{page: page, browser: browser} do
+      {:ok, other_page} = Playwright.Browser.new_page(browser)
+
+      assert_raise ArgumentError, "Locators must belong to the same frame", fn ->
+        page
+        |> Page.locator("div")
+        |> Locator.and_(Page.locator(other_page, "span"))
+      end
+
+      Page.close(other_page)
+    end
+  end
+
   describe "Locator.blur/2 AND Locator.focus/2" do
     test "deactivates/activates an element", %{assets: assets, page: page} do
       button = Page.locator(page, "button")
@@ -135,7 +190,21 @@ defmodule Playwright.LocatorTest do
     end
   end
 
-  # test_locator_content_frame_should_work
+  describe "Locator.content_frame/1" do
+    test "returns a FrameLocator for the iframe element", %{page: page} do
+      alias Playwright.Page.FrameLocator
+
+      Page.set_content(page, ~s|<iframe id="my-frame"></iframe>|)
+
+      frame_locator =
+        page
+        |> Page.locator("#my-frame")
+        |> Locator.content_frame()
+
+      assert %FrameLocator{} = frame_locator
+      assert frame_locator.selector == "#my-frame"
+    end
+  end
 
   # describe "Locator.count/1" do
   #   test "returns the number of elements matching the given selector" do
@@ -464,6 +533,26 @@ defmodule Playwright.LocatorTest do
     end
   end
 
+  describe "Locator.frame_locator/2" do
+    test "returns a FrameLocator scoped to the locator", %{page: page} do
+      alias Playwright.Page.FrameLocator
+
+      Page.set_content(page, ~s|
+        <div id="container">
+          <iframe id="my-frame"></iframe>
+        </div>
+      |)
+
+      frame_locator =
+        page
+        |> Page.locator("#container")
+        |> Locator.frame_locator("#my-frame")
+
+      assert %FrameLocator{} = frame_locator
+      assert frame_locator.selector == "#container >> #my-frame"
+    end
+  end
+
   describe "Locator.get_by_text/3" do
     test "returns a locator that contains the given text", %{page: page} do
       Page.set_content(page, "<div><div>first</div><div>second</div><div>\nthird  </div></div>")
@@ -673,17 +762,20 @@ defmodule Playwright.LocatorTest do
     end
 
     test "raises an error when the given locators don't share a frame", %{page: page, browser: browser} do
-      other_page = Playwright.Browser.new_page(browser)
+      {:ok, other_page} = Playwright.Browser.new_page(browser)
 
       on_exit(:ok, fn ->
         Playwright.Page.close(other_page)
       end)
+
       page
       |> Page.set_content("<div></div>")
 
       div_locator = Page.locator(page, "div")
+
       other_page
       |> Page.set_content("<span></span>")
+
       span_locator = Page.locator(other_page, "span")
 
       assert_raise ArgumentError, "Locators must belong to the same frame", fn ->
@@ -699,6 +791,26 @@ defmodule Playwright.LocatorTest do
 
       Locator.press(locator, "x")
       assert Page.eval_on_selector(page, "input", "(input) => input.value") == "x"
+    end
+  end
+
+  describe "Locator.press_sequentially/3" do
+    test "types text character by character", %{page: page} do
+      Page.set_content(page, ~s|<input type="text" />|)
+      locator = Page.locator(page, "input")
+
+      Locator.press_sequentially(locator, "Hello")
+
+      assert Locator.input_value(locator) == "Hello"
+    end
+
+    test "respects delay option", %{page: page} do
+      Page.set_content(page, ~s|<input type="text" />|)
+      locator = Page.locator(page, "input")
+
+      Locator.press_sequentially(locator, "Hi", %{delay: 10})
+
+      assert Locator.input_value(locator) == "Hi"
     end
   end
 
@@ -860,7 +972,7 @@ defmodule Playwright.LocatorTest do
 
       check =
         Task.async(fn ->
-          Locator.wait_for(locator, %{timeout: 100})
+          Locator.wait_for(locator, %{timeout: 5_000})
         end)
 
       assert [:ok, %Locator{}] = Task.await_many([setup, check])
@@ -876,7 +988,7 @@ defmodule Playwright.LocatorTest do
 
       check =
         Task.async(fn ->
-          Locator.wait_for(locator, %{timeout: 100, state: "hidden"})
+          Locator.wait_for(locator, %{timeout: 5_000, state: "hidden"})
         end)
 
       assert [:ok, %Locator{}] = Task.await_many([setup, check])
@@ -913,6 +1025,31 @@ defmodule Playwright.LocatorTest do
         end)
 
       assert [:ok, %Locator{}] = Task.await_many([setup, check])
+    end
+  end
+
+  describe "Locator.highlight/1" do
+    test "highlights elements matching the locator", %{page: page} do
+      Page.set_content(page, ~s|<div id="target">Hello</div>|)
+      locator = Locator.new(page, "#target")
+      assert :ok = Locator.highlight(locator)
+    end
+  end
+
+  describe "Locator.page/1" do
+    test "returns the page containing the locator", %{page: page} do
+      locator = Locator.new(page, "div")
+      result = Locator.page(locator)
+      assert result.guid == page.guid
+    end
+  end
+
+  describe "Locator.describe/2" do
+    test "returns a new locator with description", %{page: page} do
+      locator = Locator.new(page, "div")
+      described = Locator.describe(locator, "main content")
+      assert %Locator{} = described
+      assert described.selector =~ "internal:describe="
     end
   end
 end

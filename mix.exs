@@ -17,10 +17,10 @@ defmodule Playwright.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       homepage_url: @source_url,
       package: package(),
-      preferred_cli_env: [credo: :test, dialyzer: :test, docs: :docs],
+      preferred_cli_env: [credo: :test, dialyzer: :test, docs: :docs, precommit: :test],
       source_url: @source_url,
       start_permanent: Mix.env() == :prod,
-      version: "1.49.1-alpha.2"
+      version: "1.59.1-beta.1"
     ]
   end
 
@@ -46,16 +46,16 @@ defmodule Playwright.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cowlib, "~> 2.7.0"},
-      {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.1", only: [:dev, :test], runtime: false},
-      {:esbuild, "~> 0.8.1", runtime: Mix.env() == :dev},
-      {:ex_doc, "~> 0.34", only: :dev, runtime: false},
-      {:gun, "~> 1.3.3"},
+      {:castore, "~> 1.0"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:esbuild, "~> 0.10", runtime: Mix.env() == :dev},
+      {:ex_doc, "~> 0.39", only: :dev, runtime: false},
       {:jason, "~> 1.4"},
-      {:mix_audit, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:playwright_assets, "1.49.1", only: [:test]},
-      {:recase, "~> 0.7"},
+      {:mint_web_socket, "~> 1.0"},
+      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false},
+      {:playwright_assets, github: "tristanperalta/playwright-assets", only: [:test]},
+      {:recase, "~> 0.9"},
       {:elixir_uuid, "~> 1.2"}
     ]
   end
@@ -84,6 +84,8 @@ defmodule Playwright.MixProject do
         "man/guides/browsers.md": [filename: "guides-browsers"],
         "man/guides/chrome-extensions.md": [filename: "guides-chrome-extensions"],
         "man/guides/command-line-tools.md": [filename: "guides-command-line-tools"],
+        "man/guides/contributing.md": [filename: "guides-contributing"],
+        "man/guides/feature_parity.md": [filename: "guides-feature-parity"],
         "man/guides/dialogs.md": [filename: "guides-dialogs"],
         "man/guides/downloads.md": [filename: "guides-downloads"],
         "man/guides/emulation.md": [filename: "guides-emulation"],
@@ -121,13 +123,11 @@ defmodule Playwright.MixProject do
           Playwright.Locator,
           Playwright.Page,
           Playwright.JSHandle,
-          Playwright.Page.Accessibility,
           Playwright.Page.Locator,
           Playwright.RemoteBrowser,
           Playwright.Request,
           Playwright.Response,
           Playwright.Route,
-          Playwright.Selectors,
           Playwright.WebSocket,
           Playwright.Worker
         ],
@@ -159,6 +159,13 @@ defmodule Playwright.MixProject do
     [
       "assets.build": [
         "cmd echo 'NOT IMPLEMENTED'"
+      ],
+      precommit: [
+        "compile --warnings-as-errors",
+        "format --check-formatted",
+        "credo --strict",
+        "dialyzer",
+        "test"
       ]
     ]
   end

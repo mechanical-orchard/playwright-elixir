@@ -239,20 +239,20 @@ defmodule Playwright.SDK.Config do
 
   @doc false
   @spec connect_options() :: connect_options
-  def connect_options() do
+  def connect_options do
     config_for(ConnectOptions, %Types.ConnectOptions{}) || %{}
   end
 
   @doc false
   @spec launch_options() :: map()
-  def launch_options() do
+  def launch_options do
     config_for(LaunchOptions, %Types.LaunchOptions{}) || %{}
     # |> clean()
   end
 
   @doc false
   @spec playwright_test() :: Types.PlaywrightTest
-  def playwright_test() do
+  def playwright_test do
     config_for(PlaywrightTest, %Types.PlaywrightTest{})
     # |> Map.from_struct()
   end

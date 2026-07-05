@@ -21,7 +21,7 @@ defmodule Playwright.BrowserContextTest do
     test "creates and binds a new context", %{browser: browser} do
       assert Browser.contexts(browser) == []
 
-      page = Browser.new_page(browser)
+      {:ok, page} = Browser.new_page(browser)
       assert [%BrowserContext{} = context] = Browser.contexts(browser)
       assert context.browser == browser
 
@@ -272,6 +272,42 @@ defmodule Playwright.BrowserContextTest do
     end
   end
 
+  describe "BrowserContext.set_default_timeout/2" do
+    test "sets the default timeout", %{page: page} do
+      context = Page.context(page)
+      assert :ok = BrowserContext.set_default_timeout(context, 30_000)
+    end
+  end
+
+  describe "BrowserContext.set_default_navigation_timeout/2" do
+    test "sets the default navigation timeout", %{page: page} do
+      context = Page.context(page)
+      assert :ok = BrowserContext.set_default_navigation_timeout(context, 60_000)
+    end
+  end
+
+  describe "BrowserContext.set_extra_http_headers/2" do
+    test "sets extra HTTP headers", %{page: page} do
+      context = Page.context(page)
+      assert :ok = BrowserContext.set_extra_http_headers(context, %{"X-Custom" => "value"})
+    end
+
+    test "clears headers with empty map", %{page: page} do
+      context = Page.context(page)
+      BrowserContext.set_extra_http_headers(context, %{"X-Custom" => "value"})
+      assert :ok = BrowserContext.set_extra_http_headers(context, %{})
+    end
+  end
+
+  describe "BrowserContext.set_http_credentials/2" do
+    test "sets and clears credentials", %{browser: browser} do
+      context = Browser.new_context(browser)
+      assert :ok = BrowserContext.set_http_credentials(context, %{username: "user", password: "pass"})
+      assert :ok = BrowserContext.set_http_credentials(context, nil)
+      BrowserContext.close(context)
+    end
+  end
+
   describe "User Agent" do
     test "can be set via new_context", %{browser: browser} do
       context = Browser.new_context(browser, %{"userAgent" => "Mozzies"})
@@ -283,11 +319,25 @@ defmodule Playwright.BrowserContextTest do
     end
 
     test "can be set via new_page", %{browser: browser} do
-      page = Browser.new_page(browser, %{"userAgent" => "Mozzies"})
+      {:ok, page} = Browser.new_page(browser, %{"userAgent" => "Mozzies"})
 
       assert Page.evaluate(page, "window.navigator.userAgent") == "Mozzies"
 
       Page.close(page)
+    end
+  end
+
+  describe "BrowserContext.background_pages/1" do
+    test "returns a list", %{page: page} do
+      context = Page.context(page)
+      assert [] = BrowserContext.background_pages(context)
+    end
+  end
+
+  describe "BrowserContext.service_workers/1" do
+    test "returns a list", %{page: page} do
+      context = Page.context(page)
+      assert is_list(BrowserContext.service_workers(context))
     end
   end
 end

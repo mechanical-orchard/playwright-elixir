@@ -1,54 +1,50 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var jsonPipeDispatcher_exports = {};
+__export(jsonPipeDispatcher_exports, {
+  JsonPipeDispatcher: () => JsonPipeDispatcher
 });
-exports.JsonPipeDispatcher = void 0;
-var _dispatcher = require("./dispatcher");
-var _utils = require("../../utils");
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the 'License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-class JsonPipeDispatcher extends _dispatcher.Dispatcher {
+module.exports = __toCommonJS(jsonPipeDispatcher_exports);
+var import_dispatcher = require("./dispatcher");
+var import_instrumentation = require("../instrumentation");
+class JsonPipeDispatcher extends import_dispatcher.Dispatcher {
   constructor(scope) {
-    super(scope, {
-      guid: 'jsonPipe@' + (0, _utils.createGuid)()
-    }, 'JsonPipe', {});
+    super(scope, new import_instrumentation.SdkObject(scope._object, "jsonPipe"), "JsonPipe", {});
     this._type_JsonPipe = true;
   }
-  async send(params) {
-    this.emit('message', params.message);
+  async send(params, progress) {
+    this.emit("message", params.message);
   }
-  async close() {
-    this.emit('close');
+  async close(params, progress) {
+    this.emit("close");
     if (!this._disposed) {
-      this._dispatchEvent('closed', {});
+      this._dispatchEvent("closed", {});
       this._dispose();
     }
   }
   dispatch(message) {
-    if (!this._disposed) this._dispatchEvent('message', {
-      message
-    });
+    if (!this._disposed)
+      this._dispatchEvent("message", { message });
   }
   wasClosed(reason) {
     if (!this._disposed) {
-      this._dispatchEvent('closed', {
-        reason
-      });
+      this._dispatchEvent("closed", { reason });
       this._dispose();
     }
   }
@@ -56,4 +52,7 @@ class JsonPipeDispatcher extends _dispatcher.Dispatcher {
     this._dispose();
   }
 }
-exports.JsonPipeDispatcher = JsonPipeDispatcher;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  JsonPipeDispatcher
+});

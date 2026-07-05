@@ -1,32 +1,42 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var crInput_exports = {};
+__export(crInput_exports, {
+  RawKeyboardImpl: () => RawKeyboardImpl,
+  RawMouseImpl: () => RawMouseImpl,
+  RawTouchscreenImpl: () => RawTouchscreenImpl
 });
-exports.RawTouchscreenImpl = exports.RawMouseImpl = exports.RawKeyboardImpl = void 0;
-var input = _interopRequireWildcard(require("../input"));
-var _macEditingCommands = require("../macEditingCommands");
-var _utils = require("../../utils");
-var _crProtocolHelper = require("./crProtocolHelper");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-/**
- * Copyright 2017 Google Inc. All rights reserved.
- * Modifications copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the 'License');
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(crInput_exports);
+var import_utils = require("../../utils");
+var input = __toESM(require("../input"));
+var import_macEditingCommands = require("../macEditingCommands");
+var import_crProtocolHelper = require("./crProtocolHelper");
 class RawKeyboardImpl {
   constructor(_client, _isMac, _dragManger) {
     this._client = _client;
@@ -34,27 +44,30 @@ class RawKeyboardImpl {
     this._dragManger = _dragManger;
   }
   _commandsForCode(code, modifiers) {
-    if (!this._isMac) return [];
+    if (!this._isMac)
+      return [];
     const parts = [];
-    for (const modifier of ['Shift', 'Control', 'Alt', 'Meta']) {
-      if (modifiers.has(modifier)) parts.push(modifier);
+    for (const modifier of ["Shift", "Control", "Alt", "Meta"]) {
+      if (modifiers.has(modifier))
+        parts.push(modifier);
     }
     parts.push(code);
-    const shortcut = parts.join('+');
-    let commands = _macEditingCommands.macEditingCommands[shortcut] || [];
-    if ((0, _utils.isString)(commands)) commands = [commands];
-    // Commands that insert text are not supported
-    commands = commands.filter(x => !x.startsWith('insert'));
-    // remove the trailing : to match the Chromium command names.
-    return commands.map(c => c.substring(0, c.length - 1));
+    const shortcut = parts.join("+");
+    let commands = import_macEditingCommands.macEditingCommands[shortcut] || [];
+    if ((0, import_utils.isString)(commands))
+      commands = [commands];
+    commands = commands.filter((x) => !x.startsWith("insert"));
+    return commands.map((c) => c.substring(0, c.length - 1));
   }
-  async keydown(modifiers, code, keyCode, keyCodeWithoutLocation, key, location, autoRepeat, text) {
-    if (code === 'Escape' && (await this._dragManger.cancelDrag())) return;
+  async keydown(progress, modifiers, keyName, description, autoRepeat) {
+    const { code, key, location, text } = description;
+    if (code === "Escape" && await progress.race(this._dragManger.cancelDrag()))
+      return;
     const commands = this._commandsForCode(code, modifiers);
-    await this._client.send('Input.dispatchKeyEvent', {
-      type: text ? 'keyDown' : 'rawKeyDown',
-      modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers),
-      windowsVirtualKeyCode: keyCodeWithoutLocation,
+    await progress.race(this._client.send("Input.dispatchKeyEvent", {
+      type: text ? "keyDown" : "rawKeyDown",
+      modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
+      windowsVirtualKeyCode: description.keyCodeWithoutLocation,
       code,
       commands,
       key,
@@ -63,109 +76,112 @@ class RawKeyboardImpl {
       autoRepeat,
       location,
       isKeypad: location === input.keypadLocation
-    });
+    }));
   }
-  async keyup(modifiers, code, keyCode, keyCodeWithoutLocation, key, location) {
-    await this._client.send('Input.dispatchKeyEvent', {
-      type: 'keyUp',
-      modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers),
+  async keyup(progress, modifiers, keyName, description) {
+    const { code, key, location } = description;
+    await progress.race(this._client.send("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
       key,
-      windowsVirtualKeyCode: keyCodeWithoutLocation,
+      windowsVirtualKeyCode: description.keyCodeWithoutLocation,
       code,
       location
-    });
+    }));
   }
-  async sendText(text) {
-    await this._client.send('Input.insertText', {
-      text
-    });
+  async sendText(progress, text) {
+    await progress.race(this._client.send("Input.insertText", { text }));
   }
 }
-exports.RawKeyboardImpl = RawKeyboardImpl;
 class RawMouseImpl {
   constructor(page, client, dragManager) {
-    this._client = void 0;
-    this._page = void 0;
-    this._dragManager = void 0;
     this._page = page;
     this._client = client;
     this._dragManager = dragManager;
   }
-  async move(x, y, button, buttons, modifiers, forClick) {
+  async move(progress, x, y, button, buttons, modifiers, forClick) {
     const actualMove = async () => {
-      await this._client.send('Input.dispatchMouseEvent', {
-        type: 'mouseMoved',
+      await progress.race(this._client.send("Input.dispatchMouseEvent", {
+        type: "mouseMoved",
         button,
-        buttons: (0, _crProtocolHelper.toButtonsMask)(buttons),
+        buttons: (0, import_crProtocolHelper.toButtonsMask)(buttons),
         x,
         y,
-        modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers)
-      });
+        modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
+        force: buttons.size > 0 ? 0.5 : 0
+      }));
     };
     if (forClick) {
-      // Avoid extra protocol calls related to drag and drop, because click relies on
-      // move-down-up protocol commands being sent synchronously.
-      return actualMove();
-    }
-    await this._dragManager.interceptDragCausedByMove(x, y, button, buttons, modifiers, actualMove);
-  }
-  async down(x, y, button, buttons, modifiers, clickCount) {
-    if (this._dragManager.isDragging()) return;
-    await this._client.send('Input.dispatchMouseEvent', {
-      type: 'mousePressed',
-      button,
-      buttons: (0, _crProtocolHelper.toButtonsMask)(buttons),
-      x,
-      y,
-      modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers),
-      clickCount
-    });
-  }
-  async up(x, y, button, buttons, modifiers, clickCount) {
-    if (this._dragManager.isDragging()) {
-      await this._dragManager.drop(x, y, modifiers);
+      await actualMove();
       return;
     }
-    await this._client.send('Input.dispatchMouseEvent', {
-      type: 'mouseReleased',
-      button,
-      buttons: (0, _crProtocolHelper.toButtonsMask)(buttons),
-      x,
-      y,
-      modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers),
-      clickCount
-    });
+    await this._dragManager.interceptDragCausedByMove(progress, x, y, button, buttons, modifiers, actualMove);
   }
-  async wheel(x, y, buttons, modifiers, deltaX, deltaY) {
-    await this._client.send('Input.dispatchMouseEvent', {
-      type: 'mouseWheel',
+  async down(progress, x, y, button, buttons, modifiers, clickCount) {
+    if (this._dragManager.isDragging())
+      return;
+    await progress.race(this._client.send("Input.dispatchMouseEvent", {
+      type: "mousePressed",
+      button,
+      buttons: (0, import_crProtocolHelper.toButtonsMask)(buttons),
       x,
       y,
-      modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers),
+      modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
+      clickCount,
+      force: buttons.size > 0 ? 0.5 : 0
+    }));
+  }
+  async up(progress, x, y, button, buttons, modifiers, clickCount) {
+    if (this._dragManager.isDragging()) {
+      await this._dragManager.drop(progress, x, y, modifiers);
+      return;
+    }
+    await progress.race(this._client.send("Input.dispatchMouseEvent", {
+      type: "mouseReleased",
+      button,
+      buttons: (0, import_crProtocolHelper.toButtonsMask)(buttons),
+      x,
+      y,
+      modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
+      clickCount
+    }));
+  }
+  async wheel(progress, x, y, buttons, modifiers, deltaX, deltaY) {
+    await progress.race(this._client.send("Input.dispatchMouseEvent", {
+      type: "mouseWheel",
+      x,
+      y,
+      modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
       deltaX,
       deltaY
-    });
+    }));
   }
 }
-exports.RawMouseImpl = RawMouseImpl;
 class RawTouchscreenImpl {
   constructor(client) {
-    this._client = void 0;
     this._client = client;
   }
-  async tap(x, y, modifiers) {
-    await Promise.all([this._client.send('Input.dispatchTouchEvent', {
-      type: 'touchStart',
-      modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers),
-      touchPoints: [{
-        x,
-        y
-      }]
-    }), this._client.send('Input.dispatchTouchEvent', {
-      type: 'touchEnd',
-      modifiers: (0, _crProtocolHelper.toModifiersMask)(modifiers),
-      touchPoints: []
-    })]);
+  async tap(progress, x, y, modifiers) {
+    await progress.race(Promise.all([
+      this._client.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
+        touchPoints: [{
+          x,
+          y
+        }]
+      }),
+      this._client.send("Input.dispatchTouchEvent", {
+        type: "touchEnd",
+        modifiers: (0, import_crProtocolHelper.toModifiersMask)(modifiers),
+        touchPoints: []
+      })
+    ]));
   }
 }
-exports.RawTouchscreenImpl = RawTouchscreenImpl;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  RawKeyboardImpl,
+  RawMouseImpl,
+  RawTouchscreenImpl
+});

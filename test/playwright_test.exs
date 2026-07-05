@@ -6,9 +6,8 @@ defmodule Playwright.PlaywrightTest do
   describe "Playwright.connect/2" do
     @tag :ws
     test "with :chromium" do
-      with {:ok, browser} <- Playwright.connect(:chromium) do
-        page = Browser.new_page(browser)
-
+      with {:ok, browser} <- Playwright.connect(:chromium),
+           {:ok, page} <- Browser.new_page(browser) do
         assert page
                |> Page.goto("https://www.whatsmybrowser.org")
                |> Response.ok()
@@ -19,9 +18,8 @@ defmodule Playwright.PlaywrightTest do
 
     @tag :ws
     test "with :firefox" do
-      with {:ok, browser} <- Playwright.connect(:firefox) do
-        page = Browser.new_page(browser)
-
+      with {:ok, browser} <- Playwright.connect(:firefox),
+           {:ok, page} <- Browser.new_page(browser) do
         assert page
                |> Page.goto("https://www.whatsmybrowser.org")
                |> Response.ok()
@@ -32,9 +30,8 @@ defmodule Playwright.PlaywrightTest do
 
     @tag :ws
     test "with :webkit" do
-      with {:ok, browser} <- Playwright.connect(:webkit) do
-        page = Browser.new_page(browser)
-
+      with {:ok, browser} <- Playwright.connect(:webkit),
+           {:ok, page} <- Browser.new_page(browser) do
         assert page
                |> Page.goto("https://www.whatsmybrowser.org")
                |> Response.ok()
@@ -47,9 +44,9 @@ defmodule Playwright.PlaywrightTest do
   describe "Playwright.launch/2" do
     test "launches and returns an instance of the requested Browser" do
       {:ok, browser} = Playwright.launch(:chromium)
+      {:ok, page} = Browser.new_page(browser)
 
-      assert browser
-             |> Browser.new_page()
+      assert page
              |> Page.goto("http://example.com")
              |> Response.ok()
     end
@@ -57,8 +54,9 @@ defmodule Playwright.PlaywrightTest do
 
   describe "PlaywrightTest.Case context" do
     test "using `:browser`", %{browser: browser} do
-      assert browser
-             |> Browser.new_page()
+      {:ok, page} = Browser.new_page(browser)
+
+      assert page
              |> Page.goto("http://example.com")
              |> Response.ok()
     end

@@ -1,80 +1,79 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var bidiOverCdp_exports = {};
+__export(bidiOverCdp_exports, {
+  connectBidiOverCdp: () => connectBidiOverCdp
 });
-exports.connectBidiOverCdp = connectBidiOverCdp;
-var bidiMapper = _interopRequireWildcard(require("chromium-bidi/lib/cjs/bidiMapper/BidiMapper"));
-var bidiCdpConnection = _interopRequireWildcard(require("chromium-bidi/lib/cjs/cdp/CdpConnection"));
-var _debugLogger = require("../../utils/debugLogger");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the 'License');
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an 'AS IS' BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(bidiOverCdp_exports);
+var bidiMapper = __toESM(require("chromium-bidi/lib/cjs/bidiMapper/BidiMapper"));
+var bidiCdpConnection = __toESM(require("chromium-bidi/lib/cjs/cdp/CdpConnection"));
+var import_debugLogger = require("../utils/debugLogger");
 const bidiServerLogger = (prefix, ...args) => {
-  _debugLogger.debugLogger.log(prefix, args);
+  import_debugLogger.debugLogger.log(prefix, args);
 };
 async function connectBidiOverCdp(cdp) {
-  let server = undefined;
+  let server = void 0;
   const bidiTransport = new BidiTransportImpl();
-  const bidiConnection = new BidiConnection(bidiTransport, () => {
-    var _server;
-    return (_server = server) === null || _server === void 0 ? void 0 : _server.close();
-  });
+  const bidiConnection = new BidiConnection(bidiTransport, () => server?.close());
   const cdpTransportImpl = new CdpTransportImpl(cdp);
   const cdpConnection = new bidiCdpConnection.MapperCdpConnection(cdpTransportImpl, bidiServerLogger);
-  // Make sure onclose event is propagated.
-  cdp.onclose = () => {
-    var _bidiConnection$onclo;
-    return (_bidiConnection$onclo = bidiConnection.onclose) === null || _bidiConnection$onclo === void 0 ? void 0 : _bidiConnection$onclo.call(bidiConnection);
-  };
-  server = await bidiMapper.BidiServer.createAndStart(bidiTransport, cdpConnection, await cdpConnection.createBrowserSession(), /* selfTargetId= */'', undefined, bidiServerLogger);
+  cdp.onclose = () => bidiConnection.onclose?.();
+  server = await bidiMapper.BidiServer.createAndStart(
+    bidiTransport,
+    cdpConnection,
+    await cdpConnection.createBrowserSession(),
+    /* selfTargetId= */
+    "",
+    void 0,
+    bidiServerLogger
+  );
   return bidiConnection;
 }
 class BidiTransportImpl {
-  constructor() {
-    this._handler = void 0;
-    this._bidiConnection = void 0;
-  }
   setOnMessage(handler) {
     this._handler = handler;
   }
   sendMessage(message) {
-    var _this$_bidiConnection, _this$_bidiConnection2;
-    return (_this$_bidiConnection = (_this$_bidiConnection2 = this._bidiConnection).onmessage) === null || _this$_bidiConnection === void 0 ? void 0 : _this$_bidiConnection.call(_this$_bidiConnection2, message);
+    return this._bidiConnection.onmessage?.(message);
   }
   close() {
-    var _this$_bidiConnection3, _this$_bidiConnection4;
-    (_this$_bidiConnection3 = (_this$_bidiConnection4 = this._bidiConnection).onclose) === null || _this$_bidiConnection3 === void 0 || _this$_bidiConnection3.call(_this$_bidiConnection4);
+    this._bidiConnection.onclose?.();
   }
 }
 class BidiConnection {
   constructor(bidiTransport, closeCallback) {
-    this._bidiTransport = void 0;
-    this._closeCallback = void 0;
-    this.onmessage = void 0;
-    this.onclose = void 0;
     this._bidiTransport = bidiTransport;
     this._bidiTransport._bidiConnection = this;
     this._closeCallback = closeCallback;
   }
   send(s) {
-    var _this$_bidiTransport$, _this$_bidiTransport;
-    (_this$_bidiTransport$ = (_this$_bidiTransport = this._bidiTransport)._handler) === null || _this$_bidiTransport$ === void 0 || _this$_bidiTransport$.call(_this$_bidiTransport, s);
+    this._bidiTransport._handler?.(s);
   }
   close() {
     this._closeCallback();
@@ -82,13 +81,9 @@ class BidiConnection {
 }
 class CdpTransportImpl {
   constructor(connection) {
-    this._connection = void 0;
-    this._handler = void 0;
-    this._bidiConnection = void 0;
     this._connection = connection;
-    this._connection.onmessage = message => {
-      var _this$_handler;
-      (_this$_handler = this._handler) === null || _this$_handler === void 0 || _this$_handler.call(this, JSON.stringify(message));
+    this._connection.onmessage = (message) => {
+      this._handler?.(JSON.stringify(message));
     };
   }
   setOnMessage(handler) {
@@ -101,3 +96,7 @@ class CdpTransportImpl {
     this._connection.close();
   }
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  connectBidiOverCdp
+});

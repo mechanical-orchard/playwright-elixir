@@ -1,107 +1,108 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var playwrightDispatcher_exports = {};
+__export(playwrightDispatcher_exports, {
+  PlaywrightDispatcher: () => PlaywrightDispatcher
 });
-exports.PlaywrightDispatcher = void 0;
-var _fetch = require("../fetch");
-var _socksProxy = require("../../common/socksProxy");
-var _androidDispatcher = require("./androidDispatcher");
-var _browserTypeDispatcher = require("./browserTypeDispatcher");
-var _dispatcher = require("./dispatcher");
-var _electronDispatcher = require("./electronDispatcher");
-var _localUtilsDispatcher = require("./localUtilsDispatcher");
-var _networkDispatchers = require("./networkDispatchers");
-var _selectorsDispatcher = require("./selectorsDispatcher");
-var _browserDispatcher = require("./browserDispatcher");
-var _utils = require("../../utils");
-var _eventsHelper = require("../../utils/eventsHelper");
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the 'License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-class PlaywrightDispatcher extends _dispatcher.Dispatcher {
-  constructor(scope, playwright, socksProxy, preLaunchedBrowser, prelaunchedAndroidDevice) {
-    const browserDispatcher = preLaunchedBrowser ? new _browserDispatcher.ConnectedBrowserDispatcher(scope, preLaunchedBrowser) : undefined;
-    const android = new _androidDispatcher.AndroidDispatcher(scope, playwright.android);
-    const prelaunchedAndroidDeviceDispatcher = prelaunchedAndroidDevice ? new _androidDispatcher.AndroidDeviceDispatcher(android, prelaunchedAndroidDevice) : undefined;
-    super(scope, playwright, 'Playwright', {
-      chromium: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.chromium),
-      firefox: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.firefox),
-      webkit: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.webkit),
-      bidiChromium: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.bidiChromium),
-      bidiFirefox: new _browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.bidiFirefox),
+module.exports = __toCommonJS(playwrightDispatcher_exports);
+var import_socksProxy = require("../utils/socksProxy");
+var import_fetch = require("../fetch");
+var import_androidDispatcher = require("./androidDispatcher");
+var import_androidDispatcher2 = require("./androidDispatcher");
+var import_browserDispatcher = require("./browserDispatcher");
+var import_browserTypeDispatcher = require("./browserTypeDispatcher");
+var import_dispatcher = require("./dispatcher");
+var import_electronDispatcher = require("./electronDispatcher");
+var import_localUtilsDispatcher = require("./localUtilsDispatcher");
+var import_networkDispatchers = require("./networkDispatchers");
+var import_instrumentation = require("../instrumentation");
+var import_eventsHelper = require("../utils/eventsHelper");
+class PlaywrightDispatcher extends import_dispatcher.Dispatcher {
+  constructor(scope, playwright, options = {}) {
+    const denyLaunch = options.denyLaunch ?? false;
+    const chromium = new import_browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.chromium, denyLaunch);
+    const firefox = new import_browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.firefox, denyLaunch);
+    const webkit = new import_browserTypeDispatcher.BrowserTypeDispatcher(scope, playwright.webkit, denyLaunch);
+    const android = new import_androidDispatcher.AndroidDispatcher(scope, playwright.android);
+    const initializer = {
+      chromium,
+      firefox,
+      webkit,
       android,
-      electron: new _electronDispatcher.ElectronDispatcher(scope, playwright.electron),
-      utils: playwright.options.isServer ? undefined : new _localUtilsDispatcher.LocalUtilsDispatcher(scope, playwright),
-      selectors: new _selectorsDispatcher.SelectorsDispatcher(scope, (browserDispatcher === null || browserDispatcher === void 0 ? void 0 : browserDispatcher.selectors) || playwright.selectors),
-      preLaunchedBrowser: browserDispatcher,
-      preConnectedAndroidDevice: prelaunchedAndroidDeviceDispatcher,
-      socksSupport: socksProxy ? new SocksSupportDispatcher(scope, socksProxy) : undefined
-    });
-    this._type_Playwright = void 0;
-    this._browserDispatcher = void 0;
+      electron: new import_electronDispatcher.ElectronDispatcher(scope, playwright.electron, denyLaunch),
+      utils: playwright.options.isServer ? void 0 : new import_localUtilsDispatcher.LocalUtilsDispatcher(scope, playwright),
+      socksSupport: options.socksProxy ? new SocksSupportDispatcher(scope, playwright, options.socksProxy) : void 0
+    };
+    let browserDispatcher;
+    if (options.preLaunchedBrowser) {
+      const browserTypeDispatcher = initializer[options.preLaunchedBrowser.options.name];
+      browserDispatcher = new import_browserDispatcher.BrowserDispatcher(browserTypeDispatcher, options.preLaunchedBrowser, {
+        ignoreStopAndKill: true,
+        isolateContexts: !options.sharedBrowser
+      });
+      initializer.preLaunchedBrowser = browserDispatcher;
+    }
+    if (options.preLaunchedAndroidDevice)
+      initializer.preConnectedAndroidDevice = new import_androidDispatcher2.AndroidDeviceDispatcher(android, options.preLaunchedAndroidDevice);
+    super(scope, playwright, "Playwright", initializer);
     this._type_Playwright = true;
     this._browserDispatcher = browserDispatcher;
   }
-  async newRequest(params) {
-    const request = new _fetch.GlobalAPIRequestContext(this._object, params);
-    return {
-      request: _networkDispatchers.APIRequestContextDispatcher.from(this.parentScope(), request)
-    };
+  async newRequest(params, progress) {
+    const request = new import_fetch.GlobalAPIRequestContext(this._object, params);
+    return { request: import_networkDispatchers.APIRequestContextDispatcher.from(this.parentScope(), request) };
   }
   async cleanup() {
-    var _this$_browserDispatc;
-    // Cleanup contexts upon disconnect.
-    await ((_this$_browserDispatc = this._browserDispatcher) === null || _this$_browserDispatc === void 0 ? void 0 : _this$_browserDispatc.cleanupContexts());
+    await this._browserDispatcher?.cleanupContexts();
   }
 }
-exports.PlaywrightDispatcher = PlaywrightDispatcher;
-class SocksSupportDispatcher extends _dispatcher.Dispatcher {
-  constructor(scope, socksProxy) {
-    super(scope, {
-      guid: 'socksSupport@' + (0, _utils.createGuid)()
-    }, 'SocksSupport', {});
-    this._type_SocksSupport = void 0;
-    this._socksProxy = void 0;
-    this._socksListeners = void 0;
+class SocksSupportDispatcher extends import_dispatcher.Dispatcher {
+  constructor(scope, parent, socksProxy) {
+    super(scope, new import_instrumentation.SdkObject(parent, "socksSupport"), "SocksSupport", {});
     this._type_SocksSupport = true;
     this._socksProxy = socksProxy;
-    this._socksListeners = [_eventsHelper.eventsHelper.addEventListener(socksProxy, _socksProxy.SocksProxy.Events.SocksRequested, payload => this._dispatchEvent('socksRequested', payload)), _eventsHelper.eventsHelper.addEventListener(socksProxy, _socksProxy.SocksProxy.Events.SocksData, payload => this._dispatchEvent('socksData', payload)), _eventsHelper.eventsHelper.addEventListener(socksProxy, _socksProxy.SocksProxy.Events.SocksClosed, payload => this._dispatchEvent('socksClosed', payload))];
+    this._socksListeners = [
+      import_eventsHelper.eventsHelper.addEventListener(socksProxy, import_socksProxy.SocksProxy.Events.SocksRequested, (payload) => this._dispatchEvent("socksRequested", payload)),
+      import_eventsHelper.eventsHelper.addEventListener(socksProxy, import_socksProxy.SocksProxy.Events.SocksData, (payload) => this._dispatchEvent("socksData", payload)),
+      import_eventsHelper.eventsHelper.addEventListener(socksProxy, import_socksProxy.SocksProxy.Events.SocksClosed, (payload) => this._dispatchEvent("socksClosed", payload))
+    ];
   }
-  async socksConnected(params) {
-    var _this$_socksProxy;
-    (_this$_socksProxy = this._socksProxy) === null || _this$_socksProxy === void 0 || _this$_socksProxy.socketConnected(params);
+  async socksConnected(params, progress) {
+    this._socksProxy?.socketConnected(params);
   }
-  async socksFailed(params) {
-    var _this$_socksProxy2;
-    (_this$_socksProxy2 = this._socksProxy) === null || _this$_socksProxy2 === void 0 || _this$_socksProxy2.socketFailed(params);
+  async socksFailed(params, progress) {
+    this._socksProxy?.socketFailed(params);
   }
-  async socksData(params) {
-    var _this$_socksProxy3;
-    (_this$_socksProxy3 = this._socksProxy) === null || _this$_socksProxy3 === void 0 || _this$_socksProxy3.sendSocketData(params);
+  async socksData(params, progress) {
+    this._socksProxy?.sendSocketData(params);
   }
-  async socksError(params) {
-    var _this$_socksProxy4;
-    (_this$_socksProxy4 = this._socksProxy) === null || _this$_socksProxy4 === void 0 || _this$_socksProxy4.sendSocketError(params);
+  async socksError(params, progress) {
+    this._socksProxy?.sendSocketError(params);
   }
-  async socksEnd(params) {
-    var _this$_socksProxy5;
-    (_this$_socksProxy5 = this._socksProxy) === null || _this$_socksProxy5 === void 0 || _this$_socksProxy5.sendSocketEnd(params);
+  async socksEnd(params, progress) {
+    this._socksProxy?.sendSocketEnd(params);
   }
   _onDispose() {
-    _eventsHelper.eventsHelper.removeEventListeners(this._socksListeners);
+    import_eventsHelper.eventsHelper.removeEventListeners(this._socksListeners);
   }
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  PlaywrightDispatcher
+});

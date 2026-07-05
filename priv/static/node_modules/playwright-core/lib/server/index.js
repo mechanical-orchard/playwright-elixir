@@ -1,108 +1,58 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-Object.defineProperty(exports, "DispatcherConnection", {
-  enumerable: true,
-  get: function () {
-    return _dispatcher.DispatcherConnection;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
   }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var server_exports = {};
+__export(server_exports, {
+  DispatcherConnection: () => import_dispatcher.DispatcherConnection,
+  PlaywrightDispatcher: () => import_playwrightDispatcher.PlaywrightDispatcher,
+  Registry: () => import_registry.Registry,
+  RootDispatcher: () => import_dispatcher.RootDispatcher,
+  createPlaywright: () => import_playwright.createPlaywright,
+  installBrowsersForNpmInstall: () => import_registry.installBrowsersForNpmInstall,
+  installRootRedirect: () => import_traceViewer.installRootRedirect,
+  openTraceInBrowser: () => import_traceViewer.openTraceInBrowser,
+  openTraceViewerApp: () => import_traceViewer.openTraceViewerApp,
+  registry: () => import_registry.registry,
+  registryDirectory: () => import_registry.registryDirectory,
+  runTraceViewerApp: () => import_traceViewer.runTraceViewerApp,
+  startTraceViewerServer: () => import_traceViewer.startTraceViewerServer,
+  writeDockerVersion: () => import_registry.writeDockerVersion
 });
-Object.defineProperty(exports, "PlaywrightDispatcher", {
-  enumerable: true,
-  get: function () {
-    return _playwrightDispatcher.PlaywrightDispatcher;
-  }
+module.exports = __toCommonJS(server_exports);
+var import_registry = require("./registry");
+var import_dispatcher = require("./dispatchers/dispatcher");
+var import_playwrightDispatcher = require("./dispatchers/playwrightDispatcher");
+var import_playwright = require("./playwright");
+var import_traceViewer = require("./trace/viewer/traceViewer");
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  DispatcherConnection,
+  PlaywrightDispatcher,
+  Registry,
+  RootDispatcher,
+  createPlaywright,
+  installBrowsersForNpmInstall,
+  installRootRedirect,
+  openTraceInBrowser,
+  openTraceViewerApp,
+  registry,
+  registryDirectory,
+  runTraceViewerApp,
+  startTraceViewerServer,
+  writeDockerVersion
 });
-Object.defineProperty(exports, "Registry", {
-  enumerable: true,
-  get: function () {
-    return _registry.Registry;
-  }
-});
-Object.defineProperty(exports, "RootDispatcher", {
-  enumerable: true,
-  get: function () {
-    return _dispatcher.RootDispatcher;
-  }
-});
-Object.defineProperty(exports, "SocksProxy", {
-  enumerable: true,
-  get: function () {
-    return _socksProxy.SocksProxy;
-  }
-});
-Object.defineProperty(exports, "createPlaywright", {
-  enumerable: true,
-  get: function () {
-    return _playwright.createPlaywright;
-  }
-});
-Object.defineProperty(exports, "installBrowsersForNpmInstall", {
-  enumerable: true,
-  get: function () {
-    return _registry.installBrowsersForNpmInstall;
-  }
-});
-Object.defineProperty(exports, "installRootRedirect", {
-  enumerable: true,
-  get: function () {
-    return _traceViewer.installRootRedirect;
-  }
-});
-Object.defineProperty(exports, "openTraceInBrowser", {
-  enumerable: true,
-  get: function () {
-    return _traceViewer.openTraceInBrowser;
-  }
-});
-Object.defineProperty(exports, "openTraceViewerApp", {
-  enumerable: true,
-  get: function () {
-    return _traceViewer.openTraceViewerApp;
-  }
-});
-Object.defineProperty(exports, "registry", {
-  enumerable: true,
-  get: function () {
-    return _registry.registry;
-  }
-});
-Object.defineProperty(exports, "registryDirectory", {
-  enumerable: true,
-  get: function () {
-    return _registry.registryDirectory;
-  }
-});
-Object.defineProperty(exports, "runTraceViewerApp", {
-  enumerable: true,
-  get: function () {
-    return _traceViewer.runTraceViewerApp;
-  }
-});
-Object.defineProperty(exports, "serverSideCallMetadata", {
-  enumerable: true,
-  get: function () {
-    return _instrumentation.serverSideCallMetadata;
-  }
-});
-Object.defineProperty(exports, "startTraceViewerServer", {
-  enumerable: true,
-  get: function () {
-    return _traceViewer.startTraceViewerServer;
-  }
-});
-Object.defineProperty(exports, "writeDockerVersion", {
-  enumerable: true,
-  get: function () {
-    return _registry.writeDockerVersion;
-  }
-});
-var _registry = require("./registry");
-var _dispatcher = require("./dispatchers/dispatcher");
-var _playwrightDispatcher = require("./dispatchers/playwrightDispatcher");
-var _playwright = require("./playwright");
-var _traceViewer = require("./trace/viewer/traceViewer");
-var _instrumentation = require("./instrumentation");
-var _socksProxy = require("../common/socksProxy");

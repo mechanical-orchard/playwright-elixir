@@ -3,6 +3,10 @@ defmodule Playwright.SDK.Helpers.Serialization do
   require Logger
   import Playwright.SDK.Extra.Map
 
+  def deserialize({:error, _} = error) do
+    error
+  end
+
   def deserialize(:ok) do
     Logger.warning("Received `Playwright.SDK.Helpers.Serialization.deserialize/1` with `:ok`. It's unclear why this is happening")
     :ok
@@ -35,6 +39,9 @@ defmodule Playwright.SDK.Helpers.Serialization do
 
       %{s: string} ->
         string
+
+      %{ta: %{b: binary, k: kind}} ->
+        %{binary: binary, kind: kind}
 
       %{v: "null"} ->
         nil
@@ -75,8 +82,8 @@ defmodule Playwright.SDK.Helpers.Serialization do
 
   require Logger
 
-  def serialize(value, _handles, _depth) when is_float(value) do
-    Logger.error("not implemented: `serialize` for float: #{inspect(value)}")
+  def serialize(value, handles, _depth) when is_float(value) do
+    {%{n: value}, handles}
   end
 
   def serialize(value, handles, _depth) when is_integer(value) do

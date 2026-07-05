@@ -39,3 +39,4 @@ playwright-*.tar
 .vscode
 *.iml
 /.idea/
+.claude/

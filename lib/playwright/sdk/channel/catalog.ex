@@ -3,11 +3,10 @@ defmodule Playwright.SDK.Channel.Catalog do
   Provides storage and management of ChannelOwner instances.
 
   `Catalog` implements `GenServer` to maintain state, while domain logic is
-  expected to be handled within caller modules such as `Playwright.SDK.Channel`.
+  expected to be handled within caller modules such as the Channel module.
   """
   use GenServer
   import Playwright.SDK.Helpers.ErrorHandling
-  alias Playwright.SDK.Channel
 
   defstruct [:awaiting, :storage]
 
@@ -74,7 +73,7 @@ defmodule Playwright.SDK.Channel.Catalog do
   | `guid`     | param  | `binary()` | GUID to look up |
   | `:timeout` | option | `float()`  | Maximum time to wait, in milliseconds. Defaults to `30_000` (30 seconds). |
   """
-  @spec get(pid(), binary(), map()) :: struct() | {:error, Channel.Error.t()}
+  @spec get(pid(), binary(), map()) :: struct() | {:error, term()}
   def get(catalog, guid, options \\ %{}) do
     with_timeout(options, fn timeout ->
       GenServer.call(catalog, {:get, {:guid, guid}}, timeout)

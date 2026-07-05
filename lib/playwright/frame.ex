@@ -1,8 +1,7 @@
 defmodule Playwright.Frame do
   @moduledoc """
   At any point of time, `Playwright.Page` exposes its current frame tree via
-  the `Playwright.Page.main_frame/1` and `Playwright.Frame.child_frames/1`
-  functions.
+  the page's main frame and frame child frames functions.
 
   A `Frame` instance lifecycle is governed by three events, dispatched on the
   `Playwright.Page` resource:
@@ -19,6 +18,8 @@ defmodule Playwright.Frame do
   alias Playwright.SDK.{ChannelOwner, Helpers}
 
   @property :load_states
+  @property :name
+  @property :parent_frame
   @property :url
 
   @type evaluation_argument :: any()
@@ -45,7 +46,7 @@ defmodule Playwright.Frame do
     end)
 
     Channel.bind(session, {:guid, frame.guid}, :navigated, fn event ->
-      {:patch, %{event.target | url: event.params.url}}
+      {:patch, %{event.target | url: event.params.url, name: event.params.name || ""}}
     end)
 
     {:ok, frame}
@@ -56,11 +57,74 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec add_script_tag(Frame.t(), options()) :: ElementHandle.t()
-  # def add_script_tag(frame, options \\ %{})
+  @doc """
+  Adds a `<script>` tag into the page with the desired URL or content.
 
-  # @spec add_style_tag(Frame.t(), options()) :: ElementHandle.t()
-  # def add_style_tag(frame, options \\ %{})
+  ## Arguments
+
+  | key/name   | type       | description                                |
+  | ---------- | ---------- | ------------------------------------------ |
+  | `:url`     | `binary()` | URL of the script to add.                  |
+  | `:content` | `binary()` | Raw JavaScript content to inject.          |
+  | `:type`    | `binary()` | Script type, e.g. "module".                |
+
+  ## Returns
+
+  - `ElementHandle.t()` - Handle to the added script element.
+
+  ## Example
+
+      Frame.add_script_tag(frame, %{url: "https://example.com/script.js"})
+      Frame.add_script_tag(frame, %{content: "console.log('Hello!')"})
+  """
+  @spec add_script_tag(t(), map()) :: ElementHandle.t()
+  def add_script_tag(%Frame{session: session, guid: guid}, options \\ %{}) do
+    Channel.post(session, {:guid, guid}, :add_script_tag, options)
+  end
+
+  @doc """
+  Adds a `<style>` or `<link rel="stylesheet">` tag into the page.
+
+  ## Arguments
+
+  | key/name   | type       | description                                |
+  | ---------- | ---------- | ------------------------------------------ |
+  | `:url`     | `binary()` | URL of the stylesheet to add.              |
+  | `:content` | `binary()` | Raw CSS content to inject.                 |
+
+  ## Returns
+
+  - `ElementHandle.t()` - Handle to the added style element.
+
+  ## Example
+
+      Frame.add_style_tag(frame, %{url: "https://example.com/style.css"})
+      Frame.add_style_tag(frame, %{content: "body { background: red; }"})
+  """
+  @spec add_style_tag(t(), map()) :: ElementHandle.t()
+  def add_style_tag(%Frame{session: session, guid: guid}, options \\ %{}) do
+    Channel.post(session, {:guid, guid}, :add_style_tag, options)
+  end
+
+  @doc """
+  Captures the ARIA accessibility snapshot of elements matching selector.
+
+  ## Arguments
+
+  | key/name   | type       | description                    |
+  | ---------- | ---------- | ------------------------------ |
+  | `selector` | `binary()` | Selector to query.             |
+  | `:timeout` | `number()` | Timeout in milliseconds.       |
+
+  ## Returns
+
+  - `binary()` - ARIA snapshot string.
+  """
+  @spec aria_snapshot(t(), binary(), map()) :: binary()
+  def aria_snapshot(%Frame{session: session, guid: guid}, selector, options \\ %{}) do
+    params = Map.merge(options, %{selector: selector})
+    Channel.post(session, {:guid, guid}, :aria_snapshot, params)
+  end
 
   # ---
 
@@ -79,8 +143,19 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec child_frames(Frame.t()) :: [Frame.t()]
-  # def child_frames(frame)
+  @doc """
+  Returns child frames.
+  """
+  @spec child_frames(t()) :: [t()]
+  def child_frames(%Frame{session: session, guid: guid} = frame) do
+    %Playwright.Page{} = page = page(frame)
+
+    Channel.list(session, {:guid, page.guid}, "Frame")
+    |> Enum.filter(fn f ->
+      pf = parent_frame(f)
+      pf != nil && pf.guid == guid
+    end)
+  end
 
   # ---
 
@@ -101,6 +176,10 @@ defmodule Playwright.Frame do
   When all steps combined have not finished during the specified
   `option: timeout`, `/click/3` raises a `TimeoutError`. Passing zero for
   `option: timeout` disables this.
+
+  ## Options
+
+    - `:steps` - Number of intermediate mouse move events. `(default: 1)`
   """
   @spec click(t(), binary(), options()) :: :ok
   def click(owner, selector, options \\ %{})
@@ -181,7 +260,8 @@ defmodule Playwright.Frame do
   | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:position`      | option | `%{x: x, y: y}`                   | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
   | `:strict`        | option | `boolean()`                       | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
+  | `:steps`         | option | `number()`                        | Number of intermediate mouse move events. `(default: 1)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
   @spec dblclick(Frame.t(), binary(), options()) :: :ok
@@ -250,7 +330,7 @@ defmodule Playwright.Frame do
   | `type`           | param  | `atom()` or `binary()`  | DOM event type: `:click`, `:dragstart`, etc. |
   | `event_init`     | param  | `evaluation_argument()` | Optional event-specific initialization properties. |
   | `:strict`        | option | `boolean()`             | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout`       | option | `number()`              | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout`       | option | `number()`              | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
   """
   @spec dispatch_event(Frame.t(), binary(), binary(), evaluation_argument(), options()) :: :ok
   def dispatch_event(frame, selector, type, event_init \\ nil, options \\ %{})
@@ -273,6 +353,28 @@ defmodule Playwright.Frame do
 
   # ---
 
+  @doc """
+  Drags the source element towards the target element and drops it.
+
+  ## Options
+
+    - `:force` - Bypass actionability checks. Defaults to `false`.
+    - `:trial` - Perform the drag without dropping. Useful for testing.
+    - `:steps` - Number of intermediate mouse positions. More steps = smoother drag.
+      Helpful for JS libraries (like SortableJS) that rely on mousemove events.
+    - `:source_position` - `%{x: n, y: n}` - Click position relative to source.
+    - `:target_position` - `%{x: n, y: n}` - Drop position relative to target.
+    - `:strict` - Throw if selector matches multiple elements.
+    - `:timeout` - Maximum time in milliseconds.
+
+  ## Example
+
+      # For libraries like SortableJS that need mouse events:
+      Frame.drag_and_drop(frame, "#item1", "#item2", %{
+        force: true,
+        steps: 20
+      })
+  """
   @spec drag_and_drop(Frame.t(), binary(), binary(), options()) :: Frame.t()
   def drag_and_drop(frame, source, target, options \\ %{}) do
     params = Map.merge(%{source: source, target: target}, options)
@@ -382,7 +484,7 @@ defmodule Playwright.Frame do
   | `:force`         | option | `boolean()`                       | Whether to bypass the actionability checks. `(default: false)` |
   | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:strict`        | option | `boolean()`                       | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
   """
   @spec fill(t(), binary(), binary(), options()) :: :ok
   def fill(%Frame{session: session} = frame, selector, value, options \\ %{}) do
@@ -407,7 +509,7 @@ defmodule Playwright.Frame do
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:strict`  | option | `boolean()` | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
   """
   @spec focus(t(), binary(), options()) :: :ok
   def focus(%Frame{session: session} = frame, selector, options \\ %{}) do
@@ -415,11 +517,45 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :focus, params)
   end
 
-  # @spec frame_element(Frame.t()) :: ElementHandle.t()
-  # def frame_element(frame)
+  @doc """
+  Returns the frame element (iframe or frame) for this frame.
 
-  # @spec frame_locator(Frame.t(), binary()) :: FrameLocator.t()
-  # def frame_locator(frame, selector)
+  Returns the element handle pointing to the iframe/frame element
+  that hosts this frame in the parent document.
+
+  ## Returns
+
+  - `ElementHandle.t()` - The frame element
+  - `{:error, term()}` - If the frame is detached or is the main frame
+  """
+  @spec frame_element(t()) :: ElementHandle.t() | {:error, term()}
+  def frame_element(%Frame{session: session} = frame) do
+    case Channel.post(session, {:guid, frame.guid}, :frame_element) do
+      %ElementHandle{} = element ->
+        element
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  @doc """
+  Returns a FrameLocator for a frame within this frame.
+
+  When working with iframes, you can create a frame locator that will enter the iframe
+  and allow locating elements in that iframe.
+
+  ## Example
+
+      frame
+      |> Frame.frame_locator("#my-frame")
+      |> FrameLocator.get_by_role("button", name: "Submit")
+      |> Locator.click()
+  """
+  @spec frame_locator(t(), binary()) :: Playwright.Page.FrameLocator.t()
+  def frame_locator(%Frame{} = frame, selector) do
+    Playwright.Page.FrameLocator.new(frame, selector)
+  end
 
   # ---
 
@@ -438,20 +574,87 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :get_attribute, params)
   end
 
-  # @spec get_by_alt_text(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_alt_text(frame, text, options \\ %{})
+  @doc """
+  Allows locating elements by their alt text.
 
-  # @spec get_by_label(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_label(frame, text, options \\ %{})
+  ## Arguments
 
-  # @spec get_by_placeholder(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_placeholder(frame, text, options \\ %{})
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Alt text to locate. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match. Default to false. |
+  """
+  @spec get_by_alt_text(t(), binary(), %{optional(:exact) => boolean()}) :: Playwright.Locator.t()
+  def get_by_alt_text(frame, text, options \\ %{}) when is_binary(text) do
+    locator(frame, Locator.get_by_alt_text_selector(text, options))
+  end
 
-  # @spec get_by_role(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_role(frame, text, options \\ %{})
+  @doc """
+  Allows locating elements by their associated label text.
 
-  # @spec get_by_test_id(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_test_id(frame, text, options \\ %{})
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Label text to locate. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match. Default to false. |
+  """
+  @spec get_by_label(t(), binary(), %{optional(:exact) => boolean()}) :: Playwright.Locator.t()
+  def get_by_label(frame, text, options \\ %{}) when is_binary(text) do
+    locator(frame, Locator.get_by_label_selector(text, options))
+  end
+
+  @doc """
+  Allows locating input elements by their placeholder text.
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Placeholder text to locate. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match. Default to false. |
+  """
+  @spec get_by_placeholder(t(), binary(), %{optional(:exact) => boolean()}) :: Playwright.Locator.t()
+  def get_by_placeholder(frame, text, options \\ %{}) when is_binary(text) do
+    locator(frame, Locator.get_by_placeholder_selector(text, options))
+  end
+
+  @doc """
+  Allows locating elements by ARIA role.
+
+  ## Arguments
+
+  | key/name         | type   |            | description |
+  | ---------------- | ------ | ---------- | ----------- |
+  | `role`           | param  | `binary()` | ARIA role (e.g., "button", "heading"). |
+  | `:name`          | option | `binary()` | Filter by accessible name. |
+  | `:exact`         | option | `boolean()`| Exact name match. Default to false. |
+  | `:checked`       | option | `boolean()`| Filter by checked state. |
+  | `:disabled`      | option | `boolean()`| Filter by disabled state. |
+  | `:expanded`      | option | `boolean()`| Filter by expanded state. |
+  | `:include_hidden`| option | `boolean()`| Include hidden elements. |
+  | `:level`         | option | `integer()`| Heading level (1-6). |
+  | `:pressed`       | option | `boolean()`| Filter by pressed state. |
+  | `:selected`      | option | `boolean()`| Filter by selected state. |
+  """
+  @spec get_by_role(t(), binary(), map()) :: Playwright.Locator.t()
+  def get_by_role(frame, role, options \\ %{}) when is_binary(role) do
+    locator(frame, Locator.get_by_role_selector(role, options))
+  end
+
+  @doc """
+  Allows locating elements by their test id attribute (data-testid by default).
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `test_id`  | param  | `binary()` | The test id to locate. |
+  """
+  @spec get_by_test_id(t(), binary()) :: Playwright.Locator.t()
+  def get_by_test_id(frame, test_id) when is_binary(test_id) do
+    locator(frame, Locator.get_by_test_id_selector(test_id))
+  end
 
   @doc """
   Allows locating elements that contain given text.
@@ -468,8 +671,20 @@ defmodule Playwright.Frame do
     locator(frame, Locator.get_by_text_selector(text, options))
   end
 
-  # @spec get_by_title(Frame.t(), binary(), options()) :: Playwright.Locator.t() | nil
-  # def get_by_title(frame, text, options \\ %{})
+  @doc """
+  Allows locating elements by their title attribute.
+
+  ## Arguments
+
+  | key/name   | type   |            | description |
+  | ---------- | ------ | ---------- | ----------- |
+  | `text`     | param  | `binary()` | Title text to locate. |
+  | `:exact`   | option | `boolean()`| Whether to find an exact match. Default to false. |
+  """
+  @spec get_by_title(t(), binary(), %{optional(:exact) => boolean()}) :: Playwright.Locator.t()
+  def get_by_title(frame, text, options \\ %{}) when is_binary(text) do
+    locator(frame, Locator.get_by_title_selector(text, options))
+  end
 
   @doc """
   !!!
@@ -480,6 +695,27 @@ defmodule Playwright.Frame do
   def goto(%Frame{session: session} = frame, url, options) do
     params = Map.merge(options, %{url: url})
     Channel.post(session, {:guid, frame.guid}, :goto, params)
+  end
+
+  @doc """
+  Highlights the element(s) matching the selector.
+
+  This is useful for debugging to visually see which elements match a selector.
+
+  ## Arguments
+
+  | key/name   | type      |            | description                        |
+  | ---------- | --------- | ---------- | ---------------------------------- |
+  | `selector` | param     | `binary()` | A selector to highlight elements.  |
+
+  ## Returns
+
+  - `:ok`
+  """
+  @spec highlight(t(), binary()) :: :ok
+  def highlight(%Frame{session: session, guid: guid}, selector) do
+    Channel.post(session, {:guid, guid}, :highlight, %{selector: selector})
+    :ok
   end
 
   @doc """
@@ -515,7 +751,7 @@ defmodule Playwright.Frame do
   | `:no_wait_after` | option | `boolean()`                       | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:position`      | option | `%{x: x, y: y}`                   | A point to use relative to the top-left corner of element padding box. If not specified, uses some visible point of the element. |
   | `:strict`        | option | `boolean()`                       | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout`       | option | `number()`                        | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
   | `:trial`         | option | `boolean()`                       | When set, this call only performs the actionability checks and skips the action. Useful to wait until the element is ready for the action without performing it. `(default: false)` |
   """
   @spec hover(Frame.t(), binary(), options()) :: :ok
@@ -548,8 +784,17 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :is_checked, params)
   end
 
-  # @spec is_detached(Frame.t(), binary(), options()) :: boolean()
-  # def is_detached(frame, selector, options \\ %{})
+  @doc """
+  Returns whether the frame is detached.
+
+  A frame is detached when its parent page navigates away or the frame
+  is removed from the DOM.
+  """
+  @spec is_detached(t()) :: boolean()
+  def is_detached(%Frame{session: session, guid: guid}) do
+    Channel.find(session, {:guid, guid})
+    |> Map.get(:detached, false)
+  end
 
   @spec is_disabled(Frame.t(), binary(), options()) :: boolean()
   def is_disabled(%Frame{session: session} = frame, selector, options \\ %{}) do
@@ -588,18 +833,27 @@ defmodule Playwright.Frame do
     Playwright.Locator.new(frame, selector)
   end
 
-  # @spec name(Frame.t()) :: binary()
-  # def name(frame)
+  # name/1 is auto-generated by @property :name
 
-  # @spec page(Frame.t()) :: Page.t()
-  # def page(frame)
+  @doc """
+  Returns the page containing this frame.
 
-  # @spec parent_frame(Frame.t()) :: Frame.t()
-  # def parent_frame(frame)
+  Every frame belongs to a page.
+  """
+  @spec page(t()) :: Playwright.Page.t()
+  # Child frames are stored with their page as the catalog parent; main
+  # frames with the browser context, in which case the page is found by its
+  # `main_frame` reference.
+  def page(%Frame{parent: %Playwright.Page{} = page}) do
+    page
+  end
 
-  # ??? is it `parent_frame` now, instead?
-  # @spec parent_page(Frame.t()) :: Frame.t()
-  # def parent_page(frame)
+  def page(%Frame{session: session, guid: guid, parent: context}) do
+    Channel.list(session, {:guid, context.guid}, "Page")
+    |> Enum.find(fn page -> page.main_frame.guid == guid end)
+  end
+
+  # parent_frame/1 is auto-generated by @property :parent_frame
 
   # ---
 
@@ -643,7 +897,7 @@ defmodule Playwright.Frame do
   | `:delay`         | option | `number() `  | Time to wait between keydown and keyup in milliseconds. `(default: 0)` |
   | `:no_wait_after` | option | `boolean()`  | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:strict`        | option | `boolean()`  | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout`       | option | `number()`   | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout`       | option | `number()`   | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
   """
   @spec press(t(), binary(), binary(), options()) :: :ok
   def press(%Frame{session: session} = frame, selector, key, options \\ %{}) do
@@ -755,7 +1009,7 @@ defmodule Playwright.Frame do
   | `:force`         | option | `boolean()`     | Whether to bypass the actionability checks. `(default: false)` |
   | `:no_wait_after` | option | `boolean()`     | Actions that initiate navigations are waiting for these navigations to happen and for pages to start loading. You can opt out of waiting via setting this flag. You would only need this option in the exceptional cases such as navigating to inaccessible pages. `(default: false)` |
   | `:strict`        | option | `boolean()`     | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout`       | option | `number()`      | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
 
   ### On `values`
 
@@ -779,8 +1033,28 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec set_checked(Frame.t(), boolean(), options()) :: :ok
-  # def set_checked(frame, checked, options \\ %{})
+  @doc """
+  Sets the checked state of a checkbox or radio element.
+
+  ## Arguments
+
+  | key/name   | type   |             | description                          |
+  | ---------- | ------ | ----------- | ------------------------------------ |
+  | `selector` | param  | `binary()`  | Selector to search for the element.  |
+  | `checked`  | param  | `boolean()` | Whether to check or uncheck.         |
+
+  ## Returns
+
+  - `:ok`
+  """
+  @spec set_checked(t(), binary(), boolean(), options()) :: :ok
+  def set_checked(%Frame{} = frame, selector, checked, options \\ %{}) do
+    if checked do
+      check(frame, selector, options)
+    else
+      uncheck(frame, selector, options)
+    end
+  end
 
   # ---
 
@@ -794,7 +1068,7 @@ defmodule Playwright.Frame do
   | key/name | type   |             | description |
   | ---------- | ------ | ----------- | ----------- |
   | `html`     | param  | `binary()`  | HTML markup to assign to the page. |
-  | `:timeout` | option | `number()`  | Maximum operation time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_navigation_timeout/2`, `Playwright.BrowserContext.set_default_timeout/2`, `Playwright.Page.set_default_navigation_timeout/2` or `Playwright.Page.set_default_timeout/` functions. `(default: 30 seconds)` |
+  | `:timeout` | option | `number()`  | Maximum operation time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
   """
   @spec set_content(t(), binary(), options()) :: :ok
   def set_content(%Frame{session: session} = frame, html, options \\ %{}) do
@@ -842,7 +1116,7 @@ defmodule Playwright.Frame do
   | ---------- | ------ | ----------- | ----------- |
   | `selector` | param  | `binary()`  | A selector to search for an element. If there are multiple elements satisfying the selector, the first will be used. See "working with selectors (guide)" for more details. |
   | `:strict`  | option | `boolean()` | When true, the call requires selector to resolve to a single element. If given selector resolves to more then one element, the call throws an exception. |
-  | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed by using the `Playwright.BrowserContext.set_default_timeout/2` or `Playwright.Page.set_default_timeout/2` functions. `(default: 30 seconds)` |
+  | `:timeout` | option | `number()`  | Maximum time in milliseconds. Pass `0` to disable timeout. The default value can be changed via BrowserContext or Page timeout settings. `(default: 30 seconds)` |
   """
   @spec text_content(t(), binary(), map()) :: binary() | nil
   def text_content(%Frame{session: session} = frame, selector, options \\ %{}) do
@@ -861,6 +1135,7 @@ defmodule Playwright.Frame do
     Channel.post(session, {:guid, frame.guid}, :title)
   end
 
+  @doc deprecated: "Use Frame.fill/3 instead"
   @spec type(Frame.t(), binary(), binary(), options()) :: :ok
   def type(%Frame{session: session} = frame, selector, text, options \\ %{}) do
     params = Map.merge(%{selector: selector, text: text}, options)
@@ -901,15 +1176,28 @@ defmodule Playwright.Frame do
   @spec wait_for_load_state(Frame.t(), binary(), options()) :: Frame.t()
   def wait_for_load_state(frame, state \\ "load", options \\ %{})
 
-  def wait_for_load_state(%Frame{session: session} = frame, state, _options)
+  def wait_for_load_state(%Frame{session: session} = frame, state, options)
       when is_binary(state)
       when state in ["load", "domcontentloaded", "networkidle", "commit"] do
     if Enum.member?(frame.load_states, state) do
       frame
     else
-      # e = Channel.wait_for(frame, :loadstate)
-      {:ok, e} = Channel.wait(session, {:guid, frame.guid}, :loadstate)
-      e.target
+      # Predicate fetches fresh frame to check if state has been added
+      # (bind handler updates frame.load_states on loadstate events)
+      predicate = fn _resource, _event ->
+        fresh_frame = Channel.find(session, {:guid, frame.guid})
+        Enum.member?(fresh_frame.load_states, state)
+      end
+
+      wait_options = Map.merge(%{predicate: predicate}, options)
+
+      case Channel.wait(session, {:guid, frame.guid}, :loadstate, wait_options) do
+        %Playwright.SDK.Channel.Event{} = _e ->
+          Channel.find(session, {:guid, frame.guid})
+
+        {:error, _} = error ->
+          error
+      end
     end
   end
 
@@ -923,8 +1211,87 @@ defmodule Playwright.Frame do
 
   # ---
 
-  # @spec wait_for_navigation(Frame.t(), options()) :: :ok
-  # def wait_for_navigation(frame, options \\ %{})
+  @doc """
+  Waits for the frame to navigate to a new URL.
+
+  Returns when the frame navigates and reaches the required load state.
+  This resolves when the frame navigates to a new URL or reloads.
+
+  ## Options
+
+  - `:timeout` - Maximum time in milliseconds. Defaults to 30000 (30 seconds).
+  - `:wait_until` - When to consider navigation succeeded. Defaults to `"load"`.
+    - `"load"` - wait for the load event
+    - `"domcontentloaded"` - wait for DOMContentLoaded event
+    - `"networkidle"` - wait until no network connections for 500ms
+    - `"commit"` - wait for network response and document started loading
+  - `:url` - URL pattern to wait for. Can be:
+    - A string with glob pattern (e.g., `"**/login"`)
+    - A regex (e.g., `~r/\\/login$/`)
+    - A function that receives URL and returns boolean
+
+  ## Examples
+
+      # With a trigger function (recommended)
+      Frame.wait_for_navigation(frame, fn -> Page.click(page, "a") end)
+
+      # With options and trigger
+      Frame.wait_for_navigation(frame, %{url: "**/success"}, fn -> Page.click(page, "a") end)
+
+  ## Returns
+
+  - `Frame.t()` - The frame after navigation
+  - `{:error, term()}` - If timeout occurs or navigation fails
+  """
+  @spec wait_for_navigation(t(), options() | function(), function() | nil) :: t() | {:error, term()}
+  def wait_for_navigation(frame, options_or_trigger \\ %{}, trigger \\ nil)
+
+  def wait_for_navigation(%Frame{} = frame, trigger, nil) when is_function(trigger) do
+    wait_for_navigation(frame, %{}, trigger)
+  end
+
+  def wait_for_navigation(%Frame{session: session} = frame, options, trigger) when is_map(options) do
+    alias Playwright.SDK.Helpers.URLMatcher
+
+    timeout = Map.get(options, :timeout, 30_000)
+    wait_until = Map.get(options, :wait_until, "load")
+    url_pattern = Map.get(options, :url)
+
+    predicate = build_navigation_predicate(url_pattern)
+
+    wait_options = %{timeout: timeout}
+    wait_options = if predicate, do: Map.put(wait_options, :predicate, predicate), else: wait_options
+
+    case Channel.wait(session, {:guid, frame.guid}, :navigated, wait_options, trigger) do
+      %Playwright.SDK.Channel.Event{} = event ->
+        case Map.get(event.params, :error) do
+          nil ->
+            fresh_frame = Channel.find(session, {:guid, frame.guid})
+            wait_for_load_state(fresh_frame, wait_until, %{timeout: timeout})
+
+          error_message ->
+            {:error, %Playwright.SDK.Channel.Error{type: "NavigationError", message: error_message}}
+        end
+
+      {:error, _} = error ->
+        error
+    end
+  end
+
+  defp build_navigation_predicate(nil), do: nil
+
+  defp build_navigation_predicate(url_pattern) do
+    alias Playwright.SDK.Helpers.URLMatcher
+    matcher = URLMatcher.new(url_pattern)
+
+    fn _resource, event ->
+      if Map.get(event.params, :error) do
+        true
+      else
+        URLMatcher.matches(matcher, Map.get(event.params, :url, ""))
+      end
+    end
+  end
 
   # ---
 
@@ -933,7 +1300,7 @@ defmodule Playwright.Frame do
 
   FIXME: the following is NOT TRUE... Returns `nil` if waiting for a hidden or detached element.
   """
-  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | {:error, Channel.Error.t()}
+  @spec wait_for_selector(t(), binary(), map()) :: ElementHandle.t() | {:error, term()}
   def wait_for_selector(%Frame{session: session} = frame, selector, options \\ %{}) do
     Channel.post(session, {:guid, frame.guid}, :wait_for_selector, Map.merge(%{selector: selector}, options))
   end
@@ -943,8 +1310,73 @@ defmodule Playwright.Frame do
   # @spec wait_for_timeout(Frame.t(), number()) :: :ok
   # def wait_for_timeout(frame, timeout)
 
-  # @spec wait_for_url(Frame.t(), binary(), options()) :: :ok
-  # def wait_for_url(frame, url, options \\ %{})
+  @doc """
+  Wait until the frame URL matches the given pattern.
+
+  The pattern can be:
+  - A string with glob patterns (e.g., `"**/login"`)
+  - A regex (e.g., `~r/\\/login$/`)
+  - A function that receives URL and returns boolean
+
+  ## Options
+
+  - `:timeout` - Maximum time in milliseconds. Defaults to 30000 (30 seconds).
+  - `:wait_until` - When to consider navigation succeeded. Defaults to `"load"`.
+
+  ## Examples
+
+      Frame.wait_for_url(frame, "**/login")
+      Frame.wait_for_url(frame, ~r/\\/dashboard$/)
+      Frame.wait_for_url(frame, fn url -> String.contains?(url, "success") end)
+
+  ## Returns
+
+  - `Frame.t()` - The frame after URL matches
+  - `{:error, term()}` - If timeout occurs
+  """
+  @spec wait_for_url(t(), binary() | Regex.t() | function(), options()) :: t() | {:error, term()}
+  def wait_for_url(%Frame{} = frame, url_pattern, options \\ %{}) do
+    alias Playwright.SDK.Helpers.URLMatcher
+
+    matcher = URLMatcher.new(url_pattern)
+    current_url = url(frame)
+
+    if URLMatcher.matches(matcher, current_url) do
+      # URL already matches, just wait for load state
+      wait_until = Map.get(options, :wait_until, "load")
+      wait_for_load_state(frame, wait_until, options)
+    else
+      # Poll for URL change
+      timeout = Map.get(options, :timeout, 30_000)
+      poll_interval = 100
+      deadline = System.monotonic_time(:millisecond) + timeout
+
+      wait_for_url_loop(frame, matcher, deadline, poll_interval, options)
+    end
+  end
+
+  defp wait_for_url_loop(frame, matcher, deadline, poll_interval, options) do
+    alias Playwright.SDK.Channel
+    alias Playwright.SDK.Helpers.URLMatcher
+
+    # Get fresh frame state
+    fresh_frame = Channel.find(frame.session, {:guid, frame.guid})
+    current_url = url(fresh_frame)
+
+    cond do
+      URLMatcher.matches(matcher, current_url) ->
+        # URL matches, wait for load state and return
+        wait_until = Map.get(options, :wait_until, "load")
+        wait_for_load_state(fresh_frame, wait_until, options)
+
+      System.monotonic_time(:millisecond) > deadline ->
+        {:error, %Playwright.SDK.Channel.Error{type: "TimeoutError", message: "Timeout waiting for URL to match pattern"}}
+
+      true ->
+        Process.sleep(poll_interval)
+        wait_for_url_loop(frame, matcher, deadline, poll_interval, options)
+    end
+  end
 
   # ---
 
@@ -996,26 +1428,16 @@ defmodule Playwright.Frame do
     select_option_values([values])
   end
 
+  defp select_option_values([]) do
+    %{}
+  end
+
+  defp select_option_values([%ElementHandle{} | _] = values) do
+    %{elements: Enum.map(values, &select_option_value/1)}
+  end
+
   defp select_option_values(values) when is_list(values) do
-    if Enum.empty?(values) do
-      %{}
-    else
-      if is_struct(List.first(values), ElementHandle) do
-        elements =
-          Enum.into(values, [], fn value ->
-            select_option_value(value)
-          end)
-
-        %{elements: elements}
-      else
-        options =
-          Enum.into(values, [], fn value ->
-            select_option_value(value)
-          end)
-
-        %{options: options}
-      end
-    end
+    %{options: Enum.map(values, &select_option_value/1)}
   end
 
   defp select_option_value(value) when is_binary(value) do

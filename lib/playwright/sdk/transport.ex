@@ -44,8 +44,8 @@ defmodule Playwright.SDK.Transport do
 
   @impl GenServer
   def handle_cast({:post, message}, %{transport: {module, data}} = state) do
-    module.post(serialize(message), data)
-    {:noreply, state}
+    updates = module.post(serialize(message), data)
+    {:noreply, %{state | transport: {module, Map.merge(data, updates)}}}
   end
 
   @impl GenServer

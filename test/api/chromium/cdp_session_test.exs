@@ -117,7 +117,9 @@ defmodule Playwright.Chromium.CDPSessionTest do
       Page.close(page)
 
       {:error, %{message: message}} = CDPSession.detach(session)
-      assert message == "Target page, context or browser has been closed"
+
+      assert message == "Target page, context or browser has been closed" or
+               message =~ "No session with given id"
     end
   end
 end

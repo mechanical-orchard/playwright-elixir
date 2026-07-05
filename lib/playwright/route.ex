@@ -11,8 +11,31 @@ defmodule Playwright.Route do
 
   # ---
 
-  # @spec abort(t(), binary()) :: :ok
-  # def abort(route, error_code \\ nil)
+  @doc """
+  Aborts the route's request.
+
+  ## Arguments
+
+  | key/name     | type       | description                                      |
+  | ------------ | ---------- | ------------------------------------------------ |
+  | `error_code` | `binary()` | Optional error code (e.g., "aborted", "failed"). |
+
+  ## Returns
+
+  - `:ok`
+
+  ## Example
+
+      Page.route(page, "**/*.png", fn route, _request ->
+        Route.abort(route)
+      end)
+  """
+  @spec abort(t(), binary() | nil) :: :ok
+  def abort(%Route{session: session, guid: guid}, error_code \\ nil) do
+    params = if error_code, do: %{errorCode: error_code}, else: %{}
+    Channel.post(session, {:guid, guid}, :abort, params)
+    :ok
+  end
 
   # ---
 

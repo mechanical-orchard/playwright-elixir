@@ -18,6 +18,7 @@ defmodule Playwright do
   """
 
   use Playwright.SDK.ChannelOwner
+  alias Playwright.SDK.Channel
   alias Playwright.SDK.Config
 
   @property :chromium
@@ -48,14 +49,26 @@ defmodule Playwright do
   | key/name  | typ   |             | description |
   | ----------| ----- | ----------- | ----------- |
   | `client`  | param | `client()`  | The type of client (browser) to launch. |
-  | `options` | param | `options()` | `Playwright.SDK.Config.connect_options()` |
+  | `options` | param | `options()` | Connection options (see Config module) |
   """
-  @spec launch(client(), Config.connect_options() | map()) :: {:ok, Playwright.Browser.t()}
-  def connect(client, options \\ %{}) do
-    options = Map.merge(Config.connect_options(), options)
+  @spec connect(client(), map()) :: {:ok, Playwright.Browser.t()}
+  def connect(client, options \\ %{})
+      when is_atom(client) and client in [:chromium, :firefox, :webkit] do
+    options =
+      Config.connect_options()
+      |> Map.merge(options)
+      |> Map.put(:browser, client)
+
     {:ok, session} = new_session(Playwright.SDK.Transport.WebSocket, options)
-    {:ok, browser} = new_browser(session, client, options)
-    {:ok, browser}
+
+    # The session shuts down if the server reports a connection-level error
+    # (e.g., it fails to launch the requested browser), in which case the
+    # lookup of the pre-launched browser exits with `:noproc`.
+    try do
+      {:ok, connected_browser(session)}
+    catch
+      :exit, reason -> {:error, {:connect, client, reason}}
+    end
   end
 
   @doc """
@@ -70,9 +83,9 @@ defmodule Playwright do
   | key/name  | typ   |             | description |
   | ----------| ----- | ----------- | ----------- |
   | `client`  | param | `client()`  | The type of client (browser) to launch. |
-  | `options` | param | `options()` | `Playwright.SDK.Config.launch_options()` |
+  | `options` | param | `options()` | Launch options (see Config module) |
   """
-  @spec launch(client(), Config.launch_options() | map()) :: {:ok, Playwright.Browser.t()}
+  @spec launch(client(), map()) :: {:ok, Playwright.Browser.t()}
   def launch(client, options \\ %{}) do
     options = Map.merge(Config.launch_options(), options)
     {:ok, session} = new_session(Playwright.SDK.Transport.Driver, options)
@@ -85,10 +98,19 @@ defmodule Playwright do
 
   defp new_browser(session, client, options)
        when is_atom(client) and client in [:chromium, :firefox, :webkit] do
-    with play <- Playwright.SDK.Channel.find(session, {:guid, "Playwright"}),
+    with play <- Channel.find(session, {:guid, "Playwright"}),
          guid <- Map.get(play, client)[:guid] do
-      {:ok, Playwright.SDK.Channel.post(session, {:guid, guid}, :launch, options)}
+      {:ok, Channel.post(session, {:guid, guid}, :launch, options)}
     end
+  end
+
+  # The server pre-launches a browser for the connection (selected via the
+  # "x-playwright-browser" upgrade header) and does not allow launching more,
+  # so attach to that browser rather than posting a launch request.
+  defp connected_browser(session) do
+    playwright = Channel.find(session, {:guid, "Playwright"})
+    %{guid: guid} = playwright.initializer.preLaunchedBrowser
+    Channel.find(session, {:guid, guid})
   end
 
   defp new_session(transport, args) do

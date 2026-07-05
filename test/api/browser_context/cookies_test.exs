@@ -4,7 +4,7 @@ defmodule Playwright.BrowserContext.CookiesTest do
 
   describe "BrowserContext.cookies/1" do
     test "retrieves no cookies from a pristine context", %{page: page} do
-      cookies = BrowserContext.cookies(page.owned_context)
+      cookies = BrowserContext.cookies(Page.owned_context(page))
       assert cookies == []
     end
 

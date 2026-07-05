@@ -18,8 +18,8 @@ jobs:
     - name: Set up Elixir
       uses: erlef/setup-beam@v1
       with:
-        elixir-version: '1.16.2'
-        otp-version: '26.2.5'
+        elixir-version: '1.18.4'
+        otp-version: '27.3.4.6'
     - name: Install Elixir dependencies
       run: mix deps.get
     - name: Install Playwright dependencies (e.g., browsers)

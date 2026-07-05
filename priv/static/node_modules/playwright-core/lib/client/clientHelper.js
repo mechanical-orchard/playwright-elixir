@@ -1,57 +1,64 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var clientHelper_exports = {};
+__export(clientHelper_exports, {
+  addSourceUrlToScript: () => addSourceUrlToScript,
+  envObjectToArray: () => envObjectToArray,
+  evaluationScript: () => evaluationScript
 });
-exports.addSourceUrlToScript = addSourceUrlToScript;
-exports.envObjectToArray = envObjectToArray;
-exports.evaluationScript = evaluationScript;
-var _fs = _interopRequireDefault(require("fs"));
-var _utils = require("../utils");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-/**
- * Copyright 2017 Google Inc. All rights reserved.
- * Modifications copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(clientHelper_exports);
+var import_rtti = require("../utils/isomorphic/rtti");
 function envObjectToArray(env) {
   const result = [];
   for (const name in env) {
-    if (!Object.is(env[name], undefined)) result.push({
-      name,
-      value: String(env[name])
-    });
+    if (!Object.is(env[name], void 0))
+      result.push({ name, value: String(env[name]) });
   }
   return result;
 }
-async function evaluationScript(fun, arg, addSourceUrl = true) {
-  if (typeof fun === 'function') {
+async function evaluationScript(platform, fun, arg, addSourceUrl = true) {
+  if (typeof fun === "function") {
     const source = fun.toString();
-    const argString = Object.is(arg, undefined) ? 'undefined' : JSON.stringify(arg);
+    const argString = Object.is(arg, void 0) ? "undefined" : JSON.stringify(arg);
     return `(${source})(${argString})`;
   }
-  if (arg !== undefined) throw new Error('Cannot evaluate a string with arguments');
-  if ((0, _utils.isString)(fun)) return fun;
-  if (fun.content !== undefined) return fun.content;
-  if (fun.path !== undefined) {
-    let source = await _fs.default.promises.readFile(fun.path, 'utf8');
-    if (addSourceUrl) source = addSourceUrlToScript(source, fun.path);
+  if (arg !== void 0)
+    throw new Error("Cannot evaluate a string with arguments");
+  if ((0, import_rtti.isString)(fun))
+    return fun;
+  if (fun.content !== void 0)
+    return fun.content;
+  if (fun.path !== void 0) {
+    let source = await platform.fs().promises.readFile(fun.path, "utf8");
+    if (addSourceUrl)
+      source = addSourceUrlToScript(source, fun.path);
     return source;
   }
-  throw new Error('Either path or content property must be present');
+  throw new Error("Either path or content property must be present");
 }
 function addSourceUrlToScript(source, path) {
-  return `${source}\n//# sourceURL=${path.replace(/\n/g, '')}`;
+  return `${source}
+//# sourceURL=${path.replace(/\n/g, "")}`;
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  addSourceUrlToScript,
+  envObjectToArray,
+  evaluationScript
+});

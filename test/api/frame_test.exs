@@ -21,4 +21,20 @@ defmodule Playwright.FrameTest do
                "<div>first</div>"
     end
   end
+
+  describe "Frame.highlight/2" do
+    test "highlights elements matching the selector", %{page: page} do
+      Page.set_content(page, ~s|<div id="target">Hello</div>|)
+      frame = Page.main_frame(page)
+      assert :ok = Frame.highlight(frame, "#target")
+    end
+  end
+
+  describe "Frame.page/1" do
+    test "returns the page containing the frame", %{page: page} do
+      frame = Page.main_frame(page)
+      result = Frame.page(frame)
+      assert result.guid == page.guid
+    end
+  end
 end

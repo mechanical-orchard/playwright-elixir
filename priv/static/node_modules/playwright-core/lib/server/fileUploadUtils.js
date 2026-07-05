@@ -1,75 +1,84 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var fileUploadUtils_exports = {};
+__export(fileUploadUtils_exports, {
+  fileUploadSizeLimit: () => fileUploadSizeLimit,
+  prepareFilesForUpload: () => prepareFilesForUpload
 });
-exports.prepareFilesForUpload = prepareFilesForUpload;
-var _fs = _interopRequireDefault(require("fs"));
-var _path = _interopRequireDefault(require("path"));
-var _utils = require("../utils");
-var _utilsBundle = require("../utilsBundle");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(fileUploadUtils_exports);
+var import_fs = __toESM(require("fs"));
+var import_path = __toESM(require("path"));
+var import_assert = require("../utils/isomorphic/assert");
+var import_utilsBundle = require("../utilsBundle");
+const fileUploadSizeLimit = 50 * 1024 * 1024;
 async function filesExceedUploadLimit(files) {
-  const sizes = await Promise.all(files.map(async file => (await _fs.default.promises.stat(file)).size));
-  return sizes.reduce((total, size) => total + size, 0) >= _utils.fileUploadSizeLimit;
+  const sizes = await Promise.all(files.map(async (file) => (await import_fs.default.promises.stat(file)).size));
+  return sizes.reduce((total, size) => total + size, 0) >= fileUploadSizeLimit;
 }
 async function prepareFilesForUpload(frame, params) {
-  var _fileBuffers;
-  const {
-    payloads,
-    streams,
-    directoryStream
-  } = params;
-  let {
-    localPaths,
-    localDirectory
-  } = params;
-  if ([payloads, localPaths, localDirectory, streams, directoryStream].filter(Boolean).length !== 1) throw new Error('Exactly one of payloads, localPaths and streams must be provided');
-  if (streams) localPaths = streams.map(c => c.path());
-  if (directoryStream) localDirectory = directoryStream.path();
+  const { payloads, streams, directoryStream } = params;
+  let { localPaths, localDirectory } = params;
+  if ([payloads, localPaths, localDirectory, streams, directoryStream].filter(Boolean).length !== 1)
+    throw new Error("Exactly one of payloads, localPaths and streams must be provided");
+  if (streams)
+    localPaths = streams.map((c) => c.path());
+  if (directoryStream)
+    localDirectory = directoryStream.path();
   if (localPaths) {
-    for (const p of localPaths) (0, _utils.assert)(_path.default.isAbsolute(p) && _path.default.resolve(p) === p, 'Paths provided to localPaths must be absolute and fully resolved.');
+    for (const p of localPaths)
+      (0, import_assert.assert)(import_path.default.isAbsolute(p) && import_path.default.resolve(p) === p, "Paths provided to localPaths must be absolute and fully resolved.");
   }
   let fileBuffers = payloads;
-  if (!frame._page._browserContext._browser._isCollocatedWithServer) {
-    // If the browser is on a different machine read files into buffers.
+  if (!frame._page.browserContext._browser._isCollocatedWithServer) {
     if (localPaths) {
-      if (await filesExceedUploadLimit(localPaths)) throw new Error('Cannot transfer files larger than 50Mb to a browser not co-located with the server');
-      fileBuffers = await Promise.all(localPaths.map(async item => {
+      if (await filesExceedUploadLimit(localPaths))
+        throw new Error("Cannot transfer files larger than 50Mb to a browser not co-located with the server");
+      fileBuffers = await Promise.all(localPaths.map(async (item) => {
         return {
-          name: _path.default.basename(item),
-          buffer: await _fs.default.promises.readFile(item),
-          lastModifiedMs: (await _fs.default.promises.stat(item)).mtimeMs
+          name: import_path.default.basename(item),
+          buffer: await import_fs.default.promises.readFile(item),
+          lastModifiedMs: (await import_fs.default.promises.stat(item)).mtimeMs
         };
       }));
-      localPaths = undefined;
+      localPaths = void 0;
     }
   }
-  const filePayloads = (_fileBuffers = fileBuffers) === null || _fileBuffers === void 0 ? void 0 : _fileBuffers.map(payload => ({
+  const filePayloads = fileBuffers?.map((payload) => ({
     name: payload.name,
-    mimeType: payload.mimeType || _utilsBundle.mime.getType(payload.name) || 'application/octet-stream',
-    buffer: payload.buffer.toString('base64'),
+    mimeType: payload.mimeType || import_utilsBundle.mime.getType(payload.name) || "application/octet-stream",
+    buffer: payload.buffer.toString("base64"),
     lastModifiedMs: payload.lastModifiedMs
   }));
-  return {
-    localPaths,
-    localDirectory,
-    filePayloads
-  };
+  return { localPaths, localDirectory, filePayloads };
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  fileUploadSizeLimit,
+  prepareFilesForUpload
+});

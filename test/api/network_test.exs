@@ -1,6 +1,6 @@
 defmodule Playwright.NetworkTest do
   use Playwright.TestCase, async: true
-  alias Playwright.Page
+  alias Playwright.{Page, Route}
 
   describe "Page network events" do
     test "events are fired in the proper order", %{assets: assets, page: page} do
@@ -40,6 +40,24 @@ defmodule Playwright.NetworkTest do
       Page.goto(page, url)
       assert_next_receive({:request, %Page{}})
       assert_next_receive({:response, %Page{}})
+    end
+  end
+
+  describe "Route.abort/2" do
+    test "aborts the request", %{assets: assets, page: page} do
+      Page.route(page, "**/empty.html", fn route, _request ->
+        Route.abort(route)
+      end)
+
+      assert {:error, _} = Page.goto(page, assets.empty)
+    end
+
+    test "aborts with error code", %{assets: assets, page: page} do
+      Page.route(page, "**/empty.html", fn route, _request ->
+        Route.abort(route, "failed")
+      end)
+
+      assert {:error, _} = Page.goto(page, assets.empty)
     end
   end
 end

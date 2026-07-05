@@ -1,24 +1,28 @@
 defmodule Playwright.Worker do
   @moduledoc """
-  ...
+  The Worker class represents a [WebWorker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API).
   """
   use Playwright.SDK.ChannelOwner
 
-  # @spec evaluate(Worker.t(), function() | binary(), EvaluationArgument.t()) :: Serializable.t()
-  # def evaluate(worker, page_function, arg \\ nil)
+  @property :is_closed
+  @property :url
 
-  # @spec evaluate_handle(Worker.t(), function() | binary(), EvaluationArgument.t()) :: JSHandle.t()
-  # def evaluate_handle(worker, page_function, arg \\ nil)
+  def init(%{session: session} = worker, _initializer) do
+    Channel.bind(session, {:guid, worker.guid}, :close, fn event ->
+      {:patch, %{event.target | is_closed: true}}
+    end)
 
-  # @spec expect_event(t(), binary(), function(), options()) :: map()
-  # def expect_event(worker, event, predicate \\ nil, options \\ %{})
-  # ...delegate wait_for_event -> expect_event
+    {:ok, worker}
+  end
 
-  # on(...):
-  #   - close
-  # @spec on(t(), binary(), function()) :: nil
-  # def on(worker, event, callback)
+  @doc """
+  Registers a callback for the given event.
 
-  # @spec url(Worker.t()) :: binary()
-  # def url(worker)
+  Supported events: `:close`, `:console`.
+  """
+  @spec on(t(), atom(), function()) :: t()
+  def on(%{session: session} = worker, event, callback) do
+    Channel.bind(session, {:guid, worker.guid}, event, callback)
+    worker
+  end
 end

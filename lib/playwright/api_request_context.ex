@@ -41,7 +41,7 @@ defmodule Playwright.APIRequestContext do
   # @spec patch(t(), binary(), options()) :: APIResponse.t()
   # def patch(context, url, options \\ %{})
 
-  @spec post(t(), binary(), fetch_options()) :: Playwright.APIResponse.t()
+  @spec post(t(), binary(), fetch_options()) :: struct()
   def post(%APIRequestContext{session: session} = context, url, options \\ %{}) do
     Channel.post(
       session,
@@ -64,7 +64,7 @@ defmodule Playwright.APIRequestContext do
   # def storage_state(context, options \\ %{})
 
   # TODO: move to `APIResponse.body`, probably.
-  @spec body(t(), Playwright.APIResponse.t()) :: any()
+  @spec body(t(), struct()) :: any()
   def body(%APIRequestContext{session: session} = context, response) do
     Channel.post(session, {:guid, context.guid}, :fetch_response_body, %{
       fetchUid: response.fetchUid

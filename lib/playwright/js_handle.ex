@@ -8,9 +8,8 @@ defmodule Playwright.JSHandle do
       handle = Page.evaluate_handle(page, "() => window")
 
   `JSHandle` prevents the referenced JavaScript object from being garbage
-  collected unless the handle is disposed with `Playwright.JSHandle.dispose/1`.
-  `JSHandles` are auto-disposed when their origin frame gets navigated or the
-  parent context gets destroyed.
+  collected unless the handle is disposed. `JSHandles` are auto-disposed when
+  their origin frame gets navigated or the parent context gets destroyed.
 
   `JSHandle` instances can be used as arguments to:
 

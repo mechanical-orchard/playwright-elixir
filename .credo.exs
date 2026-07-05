@@ -103,7 +103,8 @@
         {Credo.Check.Readability.ModuleNames, []},
         {Credo.Check.Readability.ParenthesesInCondition, []},
         {Credo.Check.Readability.ParenthesesOnZeroArityDefs, []},
-        {Credo.Check.Readability.PredicateFunctionNames, []},
+        # Disabled: is_* functions match Playwright's JavaScript API for consistency
+        {Credo.Check.Readability.PredicateFunctionNames, false},
         {Credo.Check.Readability.PreferImplicitTry, []},
         {Credo.Check.Readability.RedundantBlankLines, []},
         {Credo.Check.Readability.Semicolons, []},

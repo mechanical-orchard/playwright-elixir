@@ -77,8 +77,29 @@ defmodule Playwright.SDK.Channel.Response do
     value
   end
 
+  defp parse([{:pdf, value}], _catalog) do
+    value
+  end
+
+  defp parse([{:snapshot, value}], _catalog) do
+    value
+  end
+
+  defp parse([{:traceName, value}], _catalog) do
+    %{traceName: value}
+  end
+
   defp parse([{:cookies, cookies}], _catalog) do
     cookies
+  end
+
+  # Storage state response: %{cookies: [...], origins: [...]}
+  defp parse([{:cookies, cookies}, {:origins, origins}], _catalog) do
+    %{cookies: cookies, origins: origins}
+  end
+
+  defp parse([{:origins, origins}, {:cookies, cookies}], _catalog) do
+    %{cookies: cookies, origins: origins}
   end
 
   defp parse([{:elements, value}], catalog) do
@@ -91,6 +112,27 @@ defmodule Playwright.SDK.Channel.Response do
 
   defp parse([{:values, values}], _catalog) do
     values
+  end
+
+  # Locator handler registration returns uid
+  defp parse([{:uid, uid}], _catalog) do
+    %{uid: uid}
+  end
+
+  defp parse([{:entries, entries}], _catalog) do
+    entries
+  end
+
+  defp parse([{:messages, messages}], _catalog) do
+    messages
+  end
+
+  defp parse([{:errors, errors}], _catalog) do
+    errors
+  end
+
+  defp parse([{:requests, requests}], catalog) do
+    Enum.map(requests, fn %{guid: guid} -> Channel.Catalog.get(catalog, guid) end)
   end
 
   defp parse([], _catalog) do

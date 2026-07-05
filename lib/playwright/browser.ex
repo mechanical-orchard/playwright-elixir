@@ -21,7 +21,7 @@ defmodule Playwright.Browser do
     - `:version`
   """
   use Playwright.SDK.ChannelOwner
-  alias Playwright.{Browser, BrowserContext, Page}
+  alias Playwright.{Browser, BrowserContext, BrowserType, CDPSession, Page}
   alias Playwright.SDK.{Channel, ChannelOwner, Extra}
 
   @property :name
@@ -44,8 +44,32 @@ defmodule Playwright.Browser do
   # API
   # ---------------------------------------------------------------------------
 
-  # @spec browser_type(t()) :: BrowserType.t()
-  # def browser_type(browser)
+  @doc """
+  Returns the BrowserType that was used to launch this browser.
+
+  ## Returns
+
+  - `BrowserType.t()`
+  """
+  @spec browser_type(t()) :: BrowserType.t()
+  def browser_type(%Browser{parent: parent}), do: parent
+
+  @doc """
+  Returns whether the browser is still connected.
+
+  Returns `false` after the browser has been closed.
+
+  ## Returns
+
+  - `boolean()`
+  """
+  @spec is_connected(t()) :: boolean()
+  def is_connected(%Browser{session: session, guid: guid}) do
+    case Channel.find(session, {:guid, guid}, %{timeout: 100}) do
+      %Browser{} -> true
+      {:error, _} -> false
+    end
+  end
 
   @doc """
   Closes the browser.
@@ -93,9 +117,6 @@ defmodule Playwright.Browser do
   def contexts(%Browser{} = browser) do
     Channel.list(browser.session, {:guid, browser.guid}, "BrowserContext")
   end
-
-  # @spec is_connected(BrowserContext.t()) :: boolean()
-  # def is_connected(browser)
 
   # @spec new_browser_cdp_session(BrowserContext.t()) :: Playwright.CDPSession.t()
   # def new_browser_cdp_session(browser)
@@ -146,33 +167,118 @@ defmodule Playwright.Browser do
   This is a convenience API function that should only be used for single-page
   scenarios and short snippets. Production code and testing frameworks should
   explicitly create via `Playwright.Browser.new_context/2` followed by
-  `Playwright.BrowserContext.new_page/2`, given the new context, to manage
+  `Playwright.BrowserContext.new_page/1`, given the new context, to manage
   resource lifecycles.
   """
-  @spec new_page(t(), options()) :: Page.t()
+  @spec new_page(t(), options()) :: {:ok, Page.t()} | {:error, term()}
   def new_page(browser, options \\ %{})
 
   def new_page(%Browser{session: session} = browser, options) do
-    context = new_context(browser, options)
-    page = BrowserContext.new_page(context)
-
-    # TODO: handle the following, for `page`:
-    # ** (KeyError) key :guid not found in: {:error, %Playwright.Channel.Error{message: "Target closed"}}
-
-    # establish co-dependency
-    Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
-    Channel.patch(session, {:guid, page.guid}, %{owned_context: context})
+    with context when is_struct(context) <- new_context(browser, options),
+         page when is_struct(page) <- BrowserContext.new_page(context) do
+      # establish co-dependency
+      Channel.patch(session, {:guid, context.guid}, %{owner_page: page})
+      Channel.patch(session, {:guid, page.guid}, %{owned_context: context})
+      {:ok, page}
+    end
   end
 
   # ---
 
-  # test_chromium_tracing.py
-  # @spec start_tracing(t(), Page.t(), options()) :: :ok
-  # def start_tracing(browser, page \\ nil, options \\ %{})
+  @doc """
+  Start tracing for Chromium browser.
 
-  # test_chromium_tracing.py
-  # @spec stop_tracing(t()) :: binary()
-  # def stop_tracing(browser)
+  Records a trace that can be viewed in Chrome DevTools or Playwright Trace Viewer.
+
+  ## Arguments
+
+  | key/name       | type          | description                              |
+  | -------------- | ------------- | ---------------------------------------- |
+  | `page`         | `Page.t()`    | Optional page to trace (default: all)    |
+  | `:screenshots` | `boolean()`   | Capture screenshots during trace         |
+  | `:categories`  | `[binary()]`  | Trace categories to record               |
+
+  ## Returns
+
+  - `:ok`
+
+  ## Example
+
+      Browser.start_tracing(browser)
+      # ... perform actions ...
+      trace = Browser.stop_tracing(browser)
+      File.write!("trace.json", trace)
+
+  ## Note
+
+  Only supported on Chromium browsers.
+  """
+  @spec start_tracing(t(), Page.t() | nil, options()) :: :ok
+  def start_tracing(%Browser{session: session, guid: guid}, page \\ nil, options \\ %{}) do
+    params = %{}
+    params = if page, do: Map.put(params, :page, %{guid: page.guid}), else: params
+    params = if options[:screenshots], do: Map.put(params, :screenshots, options[:screenshots]), else: params
+    params = if options[:categories], do: Map.put(params, :categories, options[:categories]), else: params
+
+    Channel.post(session, {:guid, guid}, :start_tracing, params)
+    :ok
+  end
+
+  @doc """
+  Stop tracing and return the trace data.
+
+  Returns the trace data as binary which can be saved to a file.
+
+  ## Returns
+
+  - `binary()` - Trace data (JSON format, save as .json file)
+
+  ## Example
+
+      Browser.start_tracing(browser, page, %{screenshots: true})
+      Page.goto(page, "https://example.com")
+      trace = Browser.stop_tracing(browser)
+      File.write!("trace.json", trace)
+  """
+  @spec stop_tracing(t()) :: binary()
+  def stop_tracing(%Browser{session: session, guid: guid}) do
+    artifact =
+      case Channel.post(session, {:guid, guid}, :stop_tracing, %{}) do
+        %{artifact: %{guid: artifact_guid}} ->
+          Channel.find(session, {:guid, artifact_guid})
+
+        %Playwright.Artifact{} = art ->
+          art
+      end
+
+    # Save to temp file, read contents, then clean up
+    temp_path = Path.join(System.tmp_dir!(), "pw_trace_#{:erlang.unique_integer([:positive])}.json")
+    Playwright.Artifact.save_as(artifact, temp_path)
+    data = File.read!(temp_path)
+    File.rm(temp_path)
+    Playwright.Artifact.delete(artifact)
+    data
+  end
+
+  @doc """
+  Creates a new CDP session attached to the browser.
+
+  This is Chromium-specific.
+
+  ## Returns
+
+  - `CDPSession.t()`
+
+  ## Example
+
+      session = Browser.new_browser_cdp_session(browser)
+      # Use CDP commands...
+      CDPSession.detach(session)
+  """
+  @spec new_browser_cdp_session(t()) :: CDPSession.t()
+  def new_browser_cdp_session(%Browser{session: session, guid: guid}) do
+    Channel.post(session, {:guid, guid}, "newBrowserCDPSession")
+  end
 
   # @spec version(BrowserContext.t()) :: binary
   # def version(browser)

@@ -16,7 +16,7 @@ defmodule Playwright.SDK.Channel do
 
   def list(session, {:guid, guid}, type) do
     Catalog.list(Session.catalog(session), %{
-      parent: guid,
+      parent: %{guid: guid},
       type: type
     })
   end
@@ -28,6 +28,7 @@ defmodule Playwright.SDK.Channel do
   end
 
   def post(session, {:guid, guid}, action, params \\ %{}) when is_binary(guid) when is_pid(session) do
+    params = Map.put_new(params, :timeout, 30_000)
     connection = Session.connection(session)
     message = Message.new(guid, action, params)
 
@@ -82,16 +83,16 @@ defmodule Playwright.SDK.Channel do
 
     if predicate do
       with_timeout(options, fn timeout ->
-        task =
-          Task.async(fn ->
-            evaluate(predicate, event.target, event)
-          end)
-
+        task = async_evaluate(predicate, event)
         Task.await(task, timeout)
       end)
     else
       event
     end
+  end
+
+  defp async_evaluate(predicate, event) do
+    Task.async(fn -> evaluate(predicate, event.target, event) end)
   end
 
   defp evaluate(predicate, resource, event) do

@@ -30,6 +30,7 @@ defmodule Playwright.SDK.Transport.Driver do
     length = byte_size(message)
     padding = <<length::utf32-little>>
     Port.command(port, padding <> message)
+    %{}
   end
 
   def parse({_port, {:data, data}}, %{buffer: buffer, remaining: remaining}) do

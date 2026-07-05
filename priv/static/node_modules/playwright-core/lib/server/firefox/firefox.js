@@ -1,99 +1,114 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var firefox_exports = {};
+__export(firefox_exports, {
+  Firefox: () => Firefox
 });
-exports.Firefox = void 0;
-var os = _interopRequireWildcard(require("os"));
-var _path = _interopRequireDefault(require("path"));
-var _ffBrowser = require("./ffBrowser");
-var _ffConnection = require("./ffConnection");
-var _browserType = require("../browserType");
-var _utils = require("../../utils");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-/**
- * Copyright 2017 Google Inc. All rights reserved.
- * Modifications copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-class Firefox extends _browserType.BrowserType {
-  constructor(parent) {
-    super(parent, 'firefox');
+module.exports = __toCommonJS(firefox_exports);
+var import_os = __toESM(require("os"));
+var import_path = __toESM(require("path"));
+var import_ffBrowser = require("./ffBrowser");
+var import_ffConnection = require("./ffConnection");
+var import_ascii = require("../utils/ascii");
+var import_browserType = require("../browserType");
+var import_manualPromise = require("../../utils/isomorphic/manualPromise");
+class Firefox extends import_browserType.BrowserType {
+  constructor(parent, bidiFirefox) {
+    super(parent, "firefox");
+    this._bidiFirefox = bidiFirefox;
+  }
+  launch(progress, options, protocolLogger) {
+    if (options.channel?.startsWith("moz-"))
+      return this._bidiFirefox.launch(progress, options, protocolLogger);
+    return super.launch(progress, options, protocolLogger);
+  }
+  async launchPersistentContext(progress, userDataDir, options) {
+    if (options.channel?.startsWith("moz-"))
+      return this._bidiFirefox.launchPersistentContext(progress, userDataDir, options);
+    return super.launchPersistentContext(progress, userDataDir, options);
   }
   connectToTransport(transport, options) {
-    return _ffBrowser.FFBrowser.connect(this.attribution.playwright, transport, options);
+    return import_ffBrowser.FFBrowser.connect(this.attribution.playwright, transport, options);
   }
-  doRewriteStartupLog(error) {
-    if (!error.logs) return error;
-    // https://github.com/microsoft/playwright/issues/6500
-    if (error.logs.includes(`as root in a regular user's session is not supported.`)) error.logs = '\n' + (0, _utils.wrapInASCIIBox)(`Firefox is unable to launch if the $HOME folder isn't owned by the current user.\nWorkaround: Set the HOME=/root environment variable${process.env.GITHUB_ACTION ? ' in your GitHub Actions workflow file' : ''} when running Playwright.`, 1);
-    if (error.logs.includes('no DISPLAY environment variable specified')) error.logs = '\n' + (0, _utils.wrapInASCIIBox)(_browserType.kNoXServerRunningError, 1);
-    return error;
+  doRewriteStartupLog(logs) {
+    if (logs.includes(`as root in a regular user's session is not supported.`))
+      logs = "\n" + (0, import_ascii.wrapInASCIIBox)(`Firefox is unable to launch if the $HOME folder isn't owned by the current user.
+Workaround: Set the HOME=/root environment variable${process.env.GITHUB_ACTION ? " in your GitHub Actions workflow file" : ""} when running Playwright.`, 1);
+    if (logs.includes("no DISPLAY environment variable specified"))
+      logs = "\n" + (0, import_ascii.wrapInASCIIBox)(import_browserType.kNoXServerRunningError, 1);
+    return logs;
   }
-  amendEnvironment(env, userDataDir, executable, browserArguments) {
-    if (!_path.default.isAbsolute(os.homedir())) throw new Error(`Cannot launch Firefox with relative home directory. Did you set ${os.platform() === 'win32' ? 'USERPROFILE' : 'HOME'} to a relative path?`);
-    if (os.platform() === 'linux') {
-      // Always remove SNAP_NAME and SNAP_INSTANCE_NAME env variables since they
-      // confuse Firefox: in our case, builds never come from SNAP.
-      // See https://github.com/microsoft/playwright/issues/20555
-      return {
-        ...env,
-        SNAP_NAME: undefined,
-        SNAP_INSTANCE_NAME: undefined
-      };
+  amendEnvironment(env) {
+    if (!import_path.default.isAbsolute(import_os.default.homedir()))
+      throw new Error(`Cannot launch Firefox with relative home directory. Did you set ${import_os.default.platform() === "win32" ? "USERPROFILE" : "HOME"} to a relative path?`);
+    if (import_os.default.platform() === "linux") {
+      return { ...env, SNAP_NAME: void 0, SNAP_INSTANCE_NAME: void 0 };
     }
     return env;
   }
   attemptToGracefullyCloseBrowser(transport) {
-    const message = {
-      method: 'Browser.close',
-      params: {},
-      id: _ffConnection.kBrowserCloseMessageId
-    };
+    const message = { method: "Browser.close", params: {}, id: import_ffConnection.kBrowserCloseMessageId };
     transport.send(message);
   }
-  defaultArgs(options, isPersistent, userDataDir) {
-    const {
-      args = [],
-      headless
-    } = options;
-    const userDataDirArg = args.find(arg => arg.startsWith('-profile') || arg.startsWith('--profile'));
-    if (userDataDirArg) throw this._createUserDataDirArgMisuseError('--profile');
-    if (args.find(arg => arg.startsWith('-juggler'))) throw new Error('Use the port parameter instead of -juggler argument');
-    const firefoxArguments = ['-no-remote'];
+  async defaultArgs(options, isPersistent, userDataDir) {
+    const { args = [], headless } = options;
+    const userDataDirArg = args.find((arg) => arg.startsWith("-profile") || arg.startsWith("--profile"));
+    if (userDataDirArg)
+      throw this._createUserDataDirArgMisuseError("--profile");
+    if (args.find((arg) => arg.startsWith("-juggler")))
+      throw new Error("Use the port parameter instead of -juggler argument");
+    const firefoxArguments = ["-no-remote"];
     if (headless) {
-      firefoxArguments.push('-headless');
+      firefoxArguments.push("-headless");
     } else {
-      firefoxArguments.push('-wait-for-browser');
-      firefoxArguments.push('-foreground');
+      firefoxArguments.push("-wait-for-browser");
+      firefoxArguments.push("-foreground");
     }
     firefoxArguments.push(`-profile`, userDataDir);
-    firefoxArguments.push('-juggler-pipe');
+    firefoxArguments.push("-juggler-pipe");
     firefoxArguments.push(...args);
-    if (isPersistent) firefoxArguments.push('about:blank');else firefoxArguments.push('-silent');
+    if (isPersistent)
+      firefoxArguments.push("about:blank");
+    else
+      firefoxArguments.push("-silent");
     return firefoxArguments;
   }
-  readyState(options) {
-    return new JugglerReadyState();
+  waitForReadyState(options, browserLogsCollector) {
+    const result = new import_manualPromise.ManualPromise();
+    browserLogsCollector.onMessage((message) => {
+      if (message.includes("Juggler listening to the pipe"))
+        result.resolve({});
+    });
+    return result;
   }
 }
-exports.Firefox = Firefox;
-class JugglerReadyState extends _browserType.BrowserReadyState {
-  onBrowserOutput(message) {
-    if (message.includes('Juggler listening to the pipe')) this._wsEndpoint.resolve(undefined);
-  }
-}
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  Firefox
+});

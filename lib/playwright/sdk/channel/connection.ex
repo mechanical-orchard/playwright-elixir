@@ -93,28 +93,33 @@ defmodule Playwright.SDK.Channel.Connection do
 
   @impl GenServer
   def handle_cast({:recv, response}, %{callbacks: callbacks, session: session} = state) do
-    update =
-      case response do
-        %{id: message_id} ->
-          source = {:message, message_id}
-          # must have a match
-          {from, callbacks} = Map.pop!(callbacks, source)
-          Channel.recv(session, {from, response})
-          %{state | callbacks: callbacks}
+    case response do
+      %{id: message_id} ->
+        source = {:message, message_id}
+        # must have a match
+        {from, callbacks} = Map.pop!(callbacks, source)
+        Channel.recv(session, {from, response})
+        {:noreply, %{state | callbacks: callbacks}}
 
-        %{guid: guid, method: method} ->
-          source = {as_atom(method), guid}
-          # might have a match
-          {from, callbacks} = Map.pop(callbacks, source)
-          Channel.recv(session, {from, response})
-          %{state | callbacks: callbacks}
+      %{guid: guid, method: method} ->
+        source = {as_atom(method), guid}
+        # might have a match
+        {from, callbacks} = Map.pop(callbacks, source)
+        Channel.recv(session, {from, response})
+        {:noreply, %{state | callbacks: callbacks}}
 
-        %{result: _result} ->
-          Channel.recv(session, {nil, response})
-          state
-      end
+      %{result: _result} ->
+        Channel.recv(session, {nil, response})
+        {:noreply, state}
 
-    {:noreply, update}
+      # A connection-level error (no `id` to route a reply by), e.g. failure
+      # to launch the pre-launched browser for a websocket session. The
+      # session cannot proceed; stop with `:shutdown` so the transient
+      # supervisor does not enter a restart loop.
+      %{error: error} ->
+        Logger.error("Connection error: #{inspect(error)}")
+        {:stop, {:shutdown, {:connection_error, error}}, state}
+    end
   end
 
   # private

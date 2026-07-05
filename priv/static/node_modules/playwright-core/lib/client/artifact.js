@@ -1,51 +1,48 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var artifact_exports = {};
+__export(artifact_exports, {
+  Artifact: () => Artifact
 });
-exports.Artifact = void 0;
-var fs = _interopRequireWildcard(require("fs"));
-var _stream = require("./stream");
-var _fileUtils = require("../utils/fileUtils");
-var _channelOwner = require("./channelOwner");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-class Artifact extends _channelOwner.ChannelOwner {
+module.exports = __toCommonJS(artifact_exports);
+var import_channelOwner = require("./channelOwner");
+var import_stream = require("./stream");
+var import_fileUtils = require("./fileUtils");
+class Artifact extends import_channelOwner.ChannelOwner {
   static from(channel) {
     return channel._object;
   }
   async pathAfterFinished() {
-    if (this._connection.isRemote()) throw new Error(`Path is not available when connecting remotely. Use saveAs() to save a local copy.`);
+    if (this._connection.isRemote())
+      throw new Error(`Path is not available when connecting remotely. Use saveAs() to save a local copy.`);
     return (await this._channel.pathAfterFinished()).value;
   }
   async saveAs(path) {
     if (!this._connection.isRemote()) {
-      await this._channel.saveAs({
-        path
-      });
+      await this._channel.saveAs({ path });
       return;
     }
     const result = await this._channel.saveAsStream();
-    const stream = _stream.Stream.from(result.stream);
-    await (0, _fileUtils.mkdirIfNeeded)(path);
+    const stream = import_stream.Stream.from(result.stream);
+    await (0, import_fileUtils.mkdirIfNeeded)(this._platform, path);
     await new Promise((resolve, reject) => {
-      stream.stream().pipe(fs.createWriteStream(path)).on('finish', resolve).on('error', reject);
+      stream.stream().pipe(this._platform.fs().createWriteStream(path)).on("finish", resolve).on("error", reject);
     });
   }
   async failure() {
@@ -53,20 +50,20 @@ class Artifact extends _channelOwner.ChannelOwner {
   }
   async createReadStream() {
     const result = await this._channel.stream();
-    const stream = _stream.Stream.from(result.stream);
+    const stream = import_stream.Stream.from(result.stream);
     return stream.stream();
   }
   async readIntoBuffer() {
     const stream = await this.createReadStream();
     return await new Promise((resolve, reject) => {
       const chunks = [];
-      stream.on('data', chunk => {
+      stream.on("data", (chunk) => {
         chunks.push(chunk);
       });
-      stream.on('end', () => {
+      stream.on("end", () => {
         resolve(Buffer.concat(chunks));
       });
-      stream.on('error', reject);
+      stream.on("error", reject);
     });
   }
   async cancel() {
@@ -76,4 +73,7 @@ class Artifact extends _channelOwner.ChannelOwner {
     return await this._channel.delete();
   }
 }
-exports.Artifact = Artifact;
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  Artifact
+});

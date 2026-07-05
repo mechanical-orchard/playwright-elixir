@@ -25,9 +25,7 @@ defmodule PlaywrightTest.Case do
         describe "features w/out `page` context" do
           @tag exclude: [:page]
           test "goes to a page", %{browser: browser} do
-            page =
-              browser
-              |> Playwright.Browser.new_page()
+            {:ok, page} = Playwright.Browser.new_page(browser)
 
             text =
               page
@@ -67,7 +65,7 @@ defmodule PlaywrightTest.Case do
             context
 
           false ->
-            page = Playwright.Browser.new_page(context.browser)
+            {:ok, page} = Playwright.Browser.new_page(context.browser)
 
             on_exit(:ok, fn ->
               Playwright.Page.close(page)

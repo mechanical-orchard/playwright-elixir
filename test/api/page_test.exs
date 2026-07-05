@@ -4,6 +4,43 @@ defmodule Playwright.PageTest do
   alias Playwright.SDK.Channel
   alias Playwright.SDK.Channel.{Error, Event}
 
+  describe "Page.check/3 and Page.uncheck/3" do
+    test "checks and unchecks a checkbox", %{page: page} do
+      Page.set_content(page, ~s|<input type="checkbox" id="agree" />|)
+
+      refute Page.is_checked(page, "#agree")
+
+      Page.check(page, "#agree")
+      assert Page.is_checked(page, "#agree")
+
+      Page.uncheck(page, "#agree")
+      refute Page.is_checked(page, "#agree")
+    end
+  end
+
+  describe "Page.set_checked/4" do
+    test "sets checkbox state based on boolean", %{page: page} do
+      Page.set_content(page, ~s|<input type="checkbox" id="agree" />|)
+
+      Page.set_checked(page, "#agree", true)
+      assert Page.is_checked(page, "#agree")
+
+      Page.set_checked(page, "#agree", false)
+      refute Page.is_checked(page, "#agree")
+    end
+  end
+
+  describe "Page.set_input_files/4" do
+    test "sets files on a file input", %{page: page} do
+      Page.set_content(page, ~s|<input type="file" id="upload" />|)
+
+      Page.set_input_files(page, "#upload", "test/support/fixtures/file-to-upload.txt")
+
+      filename = Page.eval_on_selector(page, "#upload", "e => e.files[0].name")
+      assert filename == "file-to-upload.txt"
+    end
+  end
+
   describe "Page.drag_and_drop/4" do
     test "returns 'subject'", %{assets: assets, page: page} do
       page |> Page.goto(assets.prefix <> "/drag-n-drop.html")
@@ -79,7 +116,7 @@ defmodule Playwright.PageTest do
   describe "Page.on/3" do
     @tag exclude: [:page]
     test "on :close (atom)", %{browser: browser} do
-      page = Browser.new_page(browser)
+      {:ok, page} = Browser.new_page(browser)
       this = self()
       guid = page.guid
 
@@ -93,7 +130,7 @@ defmodule Playwright.PageTest do
 
     @tag exclude: [:page]
     test "on 'close' (string)", %{browser: browser} do
-      page = Browser.new_page(browser)
+      {:ok, page} = Browser.new_page(browser)
       this = self()
       guid = page.guid
 
@@ -111,8 +148,8 @@ defmodule Playwright.PageTest do
     test "on 'close' of one Page does not affect another", %{browser: browser} do
       this = self()
 
-      %{guid: guid_one} = page_one = Browser.new_page(browser)
-      %{guid: guid_two} = page_two = Browser.new_page(browser)
+      {:ok, %{guid: guid_one} = page_one} = Browser.new_page(browser)
+      {:ok, %{guid: guid_two} = page_two} = Browser.new_page(browser)
 
       Page.on(page_one, "close", fn %{target: target} ->
         send(this, target.guid)
@@ -351,7 +388,7 @@ defmodule Playwright.PageTest do
   describe "Page.close/1" do
     @tag without: [:page]
     test "removes the Page", %{browser: browser} do
-      page = Browser.new_page(browser)
+      {:ok, page} = Browser.new_page(browser)
       assert %Page{} = Channel.find(page.session, {:guid, page.guid})
 
       page |> Page.close()
@@ -376,6 +413,20 @@ defmodule Playwright.PageTest do
   describe "Page.evaluate/2" do
     test "execute JS", %{page: page} do
       assert Page.evaluate(page, "function () { return 7 * 3; }") == 21
+    end
+  end
+
+  describe "Page.eval_on_selector_all/4" do
+    test "evaluates on all matching elements", %{page: page} do
+      Page.set_content(page, "<div class='item'>A</div><div class='item'>B</div><div class='item'>C</div>")
+      result = Page.eval_on_selector_all(page, ".item", "elements => elements.map(e => e.textContent)")
+      assert result == ["A", "B", "C"]
+    end
+
+    test "returns empty array when no matches", %{page: page} do
+      Page.set_content(page, "<div>Hello</div>")
+      result = Page.eval_on_selector_all(page, ".nonexistent", "elements => elements.length")
+      assert result == 0
     end
   end
 
@@ -503,6 +554,164 @@ defmodule Playwright.PageTest do
 
       Page.wait_for_selector(page, "span.inner", %{state: "attached"})
       assert Page.text_content(page, "span.inner") == "target"
+    end
+  end
+
+  describe "Page.bring_to_front/1" do
+    test "brings the page to front", %{page: page} do
+      assert :ok = Page.bring_to_front(page)
+    end
+  end
+
+  describe "Page.set_default_timeout/2" do
+    test "sets the default timeout", %{page: page} do
+      assert :ok = Page.set_default_timeout(page, 30_000)
+    end
+  end
+
+  describe "Page.set_default_navigation_timeout/2" do
+    test "sets the default navigation timeout", %{page: page} do
+      assert :ok = Page.set_default_navigation_timeout(page, 60_000)
+    end
+  end
+
+  describe "Page.set_extra_http_headers/2" do
+    test "sets extra HTTP headers", %{page: page} do
+      assert :ok = Page.set_extra_http_headers(page, %{"X-Custom-Header" => "test-value"})
+    end
+
+    test "clears headers with empty map", %{page: page} do
+      Page.set_extra_http_headers(page, %{"X-Custom" => "value"})
+      assert :ok = Page.set_extra_http_headers(page, %{})
+    end
+  end
+
+  describe "Page.viewport_size/1" do
+    test "returns the current viewport size", %{page: page} do
+      Page.set_viewport_size(page, %{width: 800, height: 600})
+      viewport = Page.viewport_size(page)
+
+      assert viewport.width == 800
+      assert viewport.height == 600
+    end
+
+    test "returns updated size after set_viewport_size", %{page: page} do
+      Page.set_viewport_size(page, %{width: 1024, height: 768})
+      viewport = Page.viewport_size(page)
+
+      assert viewport.width == 1024
+      assert viewport.height == 768
+    end
+  end
+
+  describe "Page.emulate_media/2" do
+    test "emulates dark color scheme", %{page: page} do
+      Page.emulate_media(page, %{color_scheme: "dark"})
+      result = Page.evaluate(page, "window.matchMedia('(prefers-color-scheme: dark)').matches")
+      assert result == true
+    end
+
+    test "emulates light color scheme", %{page: page} do
+      Page.emulate_media(page, %{color_scheme: "light"})
+      result = Page.evaluate(page, "window.matchMedia('(prefers-color-scheme: light)').matches")
+      assert result == true
+    end
+
+    test "emulates print media type", %{page: page} do
+      Page.emulate_media(page, %{media: "print"})
+      result = Page.evaluate(page, "window.matchMedia('print').matches")
+      assert result == true
+    end
+
+    test "emulates reduced motion", %{page: page} do
+      Page.emulate_media(page, %{reduced_motion: "reduce"})
+      result = Page.evaluate(page, "window.matchMedia('(prefers-reduced-motion: reduce)').matches")
+      assert result == true
+    end
+
+    test "can set multiple options at once", %{page: page} do
+      Page.emulate_media(page, %{color_scheme: "dark", reduced_motion: "reduce"})
+      dark = Page.evaluate(page, "window.matchMedia('(prefers-color-scheme: dark)').matches")
+      reduced = Page.evaluate(page, "window.matchMedia('(prefers-reduced-motion: reduce)').matches")
+      assert dark == true
+      assert reduced == true
+    end
+
+    test "resets options with nil", %{page: page} do
+      Page.emulate_media(page, %{color_scheme: "dark"})
+      assert Page.evaluate(page, "window.matchMedia('(prefers-color-scheme: dark)').matches") == true
+
+      Page.emulate_media(page, %{color_scheme: nil})
+      # After reset, should return ok (we can't easily test the actual reset value)
+      assert :ok = Page.emulate_media(page, %{})
+    end
+  end
+
+  describe "Page.add_script_tag/2" do
+    test "adds a script tag with content", %{page: page} do
+      element = Page.add_script_tag(page, %{content: "window.testValue = 42"})
+      assert %ElementHandle{} = element
+      assert Page.evaluate(page, "window.testValue") == 42
+    end
+
+    test "adds a script tag with type module", %{page: page} do
+      element = Page.add_script_tag(page, %{content: "window.moduleTest = 'loaded'", type: "module"})
+      assert %ElementHandle{} = element
+    end
+  end
+
+  describe "Page.add_style_tag/2" do
+    test "adds a style tag with content", %{page: page} do
+      Page.set_content(page, ~s|<div id="target">Hello</div>|)
+      element = Page.add_style_tag(page, %{content: "#target { color: rgb(255, 0, 0); }"})
+      assert %ElementHandle{} = element
+
+      color = Page.eval_on_selector(page, "#target", "e => getComputedStyle(e).color")
+      assert color == "rgb(255, 0, 0)"
+    end
+
+    test "adds multiple style tags", %{page: page} do
+      Page.set_content(page, ~s|<div id="target">Hello</div>|)
+      Page.add_style_tag(page, %{content: "#target { color: rgb(0, 255, 0); }"})
+      Page.add_style_tag(page, %{content: "#target { background-color: rgb(0, 0, 255); }"})
+
+      color = Page.eval_on_selector(page, "#target", "e => getComputedStyle(e).color")
+      bg = Page.eval_on_selector(page, "#target", "e => getComputedStyle(e).backgroundColor")
+      assert color == "rgb(0, 255, 0)"
+      assert bg == "rgb(0, 0, 255)"
+    end
+  end
+
+  describe "Page.console_messages/1" do
+    test "returns collected console messages", %{page: page} do
+      Page.goto(page, "data:text/html,<script>console.log('test message');</script>")
+      messages = Page.console_messages(page)
+      assert is_list(messages)
+    end
+  end
+
+  describe "Page.page_errors/1" do
+    test "returns collected page errors", %{page: page} do
+      Page.goto(page, "data:text/html,<script>throw new Error('test error');</script>")
+      errors = Page.page_errors(page)
+      assert is_list(errors)
+    end
+  end
+
+  describe "Page.requests/1" do
+    test "returns recent network requests", %{page: page, assets: assets} do
+      Page.goto(page, assets.dom)
+      requests = Page.requests(page)
+      assert is_list(requests)
+      assert requests != []
+    end
+  end
+
+  describe "Page.aria_snapshot/2" do
+    test "returns aria snapshot of page", %{page: page, assets: assets} do
+      Page.goto(page, assets.dom)
+      snapshot = Page.aria_snapshot(page)
+      assert is_binary(snapshot)
     end
   end
 end

@@ -1,74 +1,69 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var socksInterceptor_exports = {};
+__export(socksInterceptor_exports, {
+  SocksInterceptor: () => SocksInterceptor
 });
-exports.SocksInterceptor = void 0;
-var socks = _interopRequireWildcard(require("../common/socksProxy"));
-var _events = _interopRequireDefault(require("events"));
-var _validator = require("../protocol/validator");
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-/**
- * Copyright (c) Microsoft Corporation.
- *
- * Licensed under the Apache License, Version 2.0 (the 'License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(socksInterceptor_exports);
+var import_events = __toESM(require("events"));
+var socks = __toESM(require("./utils/socksProxy"));
+var import_validator = require("../protocol/validator");
+var import_debug = require("./utils/debug");
 class SocksInterceptor {
   constructor(transport, pattern, redirectPortForTest) {
-    this._handler = void 0;
-    this._channel = void 0;
-    this._socksSupportObjectGuid = void 0;
-    this._ids = new Set();
+    this._ids = /* @__PURE__ */ new Set();
     this._handler = new socks.SocksProxyHandler(pattern, redirectPortForTest);
     let lastId = -1;
-    this._channel = new Proxy(new _events.default(), {
+    this._channel = new Proxy(new import_events.default(), {
       get: (obj, prop) => {
-        if (prop in obj || obj[prop] !== undefined || typeof prop !== 'string') return obj[prop];
-        return params => {
+        if (prop in obj || obj[prop] !== void 0 || typeof prop !== "string")
+          return obj[prop];
+        return (params) => {
           try {
             const id = --lastId;
             this._ids.add(id);
-            const validator = (0, _validator.findValidator)('SocksSupport', prop, 'Params');
-            params = validator(params, '', {
-              tChannelImpl: tChannelForSocks,
-              binary: 'toBase64'
-            });
-            transport.send({
-              id,
-              guid: this._socksSupportObjectGuid,
-              method: prop,
-              params,
-              metadata: {
-                stack: [],
-                apiName: '',
-                internal: true
-              }
-            });
-          } catch (e) {}
+            const validator = (0, import_validator.findValidator)("SocksSupport", prop, "Params");
+            params = validator(params, "", { tChannelImpl: tChannelForSocks, binary: "toBase64", isUnderTest: import_debug.isUnderTest });
+            transport.send({ id, guid: this._socksSupportObjectGuid, method: prop, params, metadata: { stack: [], apiName: "", internal: true } });
+          } catch (e) {
+          }
         };
       }
     });
-    this._handler.on(socks.SocksProxyHandler.Events.SocksConnected, payload => this._channel.socksConnected(payload));
-    this._handler.on(socks.SocksProxyHandler.Events.SocksData, payload => this._channel.socksData(payload));
-    this._handler.on(socks.SocksProxyHandler.Events.SocksError, payload => this._channel.socksError(payload));
-    this._handler.on(socks.SocksProxyHandler.Events.SocksFailed, payload => this._channel.socksFailed(payload));
-    this._handler.on(socks.SocksProxyHandler.Events.SocksEnd, payload => this._channel.socksEnd(payload));
-    this._channel.on('socksRequested', payload => this._handler.socketRequested(payload));
-    this._channel.on('socksClosed', payload => this._handler.socketClosed(payload));
-    this._channel.on('socksData', payload => this._handler.sendSocketData(payload));
+    this._handler.on(socks.SocksProxyHandler.Events.SocksConnected, (payload) => this._channel.socksConnected(payload));
+    this._handler.on(socks.SocksProxyHandler.Events.SocksData, (payload) => this._channel.socksData(payload));
+    this._handler.on(socks.SocksProxyHandler.Events.SocksError, (payload) => this._channel.socksError(payload));
+    this._handler.on(socks.SocksProxyHandler.Events.SocksFailed, (payload) => this._channel.socksFailed(payload));
+    this._handler.on(socks.SocksProxyHandler.Events.SocksEnd, (payload) => this._channel.socksEnd(payload));
+    this._channel.on("socksRequested", (payload) => this._handler.socketRequested(payload));
+    this._channel.on("socksClosed", (payload) => this._handler.socketClosed(payload));
+    this._channel.on("socksData", (payload) => this._handler.sendSocketData(payload));
   }
   cleanup() {
     this._handler.cleanup();
@@ -78,23 +73,23 @@ class SocksInterceptor {
       this._ids.delete(message.id);
       return true;
     }
-    if (message.method === '__create__' && message.params.type === 'SocksSupport') {
+    if (message.method === "__create__" && message.params.type === "SocksSupport") {
       this._socksSupportObjectGuid = message.params.guid;
       return false;
     }
     if (this._socksSupportObjectGuid && message.guid === this._socksSupportObjectGuid) {
-      const validator = (0, _validator.findValidator)('SocksSupport', message.method, 'Event');
-      const params = validator(message.params, '', {
-        tChannelImpl: tChannelForSocks,
-        binary: 'fromBase64'
-      });
+      const validator = (0, import_validator.findValidator)("SocksSupport", message.method, "Event");
+      const params = validator(message.params, "", { tChannelImpl: tChannelForSocks, binary: "fromBase64", isUnderTest: import_debug.isUnderTest });
       this._channel.emit(message.method, params);
       return true;
     }
     return false;
   }
 }
-exports.SocksInterceptor = SocksInterceptor;
 function tChannelForSocks(names, arg, path, context) {
-  throw new _validator.ValidationError(`${path}: channels are not expected in SocksSupport`);
+  throw new import_validator.ValidationError(`${path}: channels are not expected in SocksSupport`);
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  SocksInterceptor
+});

@@ -1,86 +1,90 @@
 "use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var backendAdb_exports = {};
+__export(backendAdb_exports, {
+  AdbBackend: () => AdbBackend
 });
-exports.AdbBackend = void 0;
-var _utilsBundle = require("../../utilsBundle");
-var net = _interopRequireWildcard(require("net"));
-var _events = require("events");
-var _utils = require("../../utils");
-function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
-function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
-/**
- * Copyright Microsoft Corporation. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
+module.exports = __toCommonJS(backendAdb_exports);
+var import_events = require("events");
+var import_net = __toESM(require("net"));
+var import_assert = require("../../utils/isomorphic/assert");
+var import_utilsBundle = require("../../utilsBundle");
 class AdbBackend {
   async devices(options = {}) {
-    const result = await runCommand('host:devices', options.host, options.port);
-    const lines = result.toString().trim().split('\n');
-    return lines.map(line => {
-      const [serial, status] = line.trim().split('\t');
+    const result = await runCommand("host:devices", options.host, options.port);
+    const lines = result.toString().trim().split("\n");
+    return lines.map((line) => {
+      const [serial, status] = line.trim().split("	");
       return new AdbDevice(serial, status, options.host, options.port);
     });
   }
 }
-exports.AdbBackend = AdbBackend;
 class AdbDevice {
   constructor(serial, status, host, port) {
-    this.serial = void 0;
-    this.status = void 0;
-    this.host = void 0;
-    this.port = void 0;
     this._closed = false;
     this.serial = serial;
     this.status = status;
     this.host = host;
     this.port = port;
   }
-  async init() {}
+  async init() {
+  }
   async close() {
     this._closed = true;
   }
   runCommand(command) {
-    if (this._closed) throw new Error('Device is closed');
+    if (this._closed)
+      throw new Error("Device is closed");
     return runCommand(command, this.host, this.port, this.serial);
   }
   async open(command) {
-    if (this._closed) throw new Error('Device is closed');
+    if (this._closed)
+      throw new Error("Device is closed");
     const result = await open(command, this.host, this.port, this.serial);
     result.becomeSocket();
     return result;
   }
 }
-async function runCommand(command, host = '127.0.0.1', port = 5037, serial) {
-  (0, _utilsBundle.debug)('pw:adb:runCommand')(command, serial);
-  const socket = new BufferedSocketWrapper(command, net.createConnection({
-    host,
-    port
-  }));
+async function runCommand(command, host = "127.0.0.1", port = 5037, serial) {
+  (0, import_utilsBundle.debug)("pw:adb:runCommand")(command, serial);
+  const socket = new BufferedSocketWrapper(command, import_net.default.createConnection({ host, port }));
   try {
     if (serial) {
       await socket.write(encodeMessage(`host:transport:${serial}`));
-      const status = await socket.read(4);
-      (0, _utils.assert)(status.toString() === 'OKAY', status.toString());
+      const status2 = await socket.read(4);
+      (0, import_assert.assert)(status2.toString() === "OKAY", status2.toString());
     }
     await socket.write(encodeMessage(command));
     const status = await socket.read(4);
-    (0, _utils.assert)(status.toString() === 'OKAY', status.toString());
+    (0, import_assert.assert)(status.toString() === "OKAY", status.toString());
     let commandOutput;
-    if (!command.startsWith('shell:')) {
+    if (!command.startsWith("shell:")) {
       const remainingLength = parseInt((await socket.read(4)).toString(), 16);
       commandOutput = await socket.read(remainingLength);
     } else {
@@ -91,82 +95,83 @@ async function runCommand(command, host = '127.0.0.1', port = 5037, serial) {
     socket.close();
   }
 }
-async function open(command, host = '127.0.0.1', port = 5037, serial) {
-  const socket = new BufferedSocketWrapper(command, net.createConnection({
-    host,
-    port
-  }));
+async function open(command, host = "127.0.0.1", port = 5037, serial) {
+  const socket = new BufferedSocketWrapper(command, import_net.default.createConnection({ host, port }));
   if (serial) {
     await socket.write(encodeMessage(`host:transport:${serial}`));
-    const status = await socket.read(4);
-    (0, _utils.assert)(status.toString() === 'OKAY', status.toString());
+    const status2 = await socket.read(4);
+    (0, import_assert.assert)(status2.toString() === "OKAY", status2.toString());
   }
   await socket.write(encodeMessage(command));
   const status = await socket.read(4);
-  (0, _utils.assert)(status.toString() === 'OKAY', status.toString());
+  (0, import_assert.assert)(status.toString() === "OKAY", status.toString());
   return socket;
 }
 function encodeMessage(message) {
   let lenHex = message.length.toString(16);
-  lenHex = '0'.repeat(4 - lenHex.length) + lenHex;
+  lenHex = "0".repeat(4 - lenHex.length) + lenHex;
   return Buffer.from(lenHex + message);
 }
-class BufferedSocketWrapper extends _events.EventEmitter {
+class BufferedSocketWrapper extends import_events.EventEmitter {
   constructor(command, socket) {
     super();
-    this.guid = (0, _utils.createGuid)();
-    this._socket = void 0;
     this._buffer = Buffer.from([]);
     this._isSocket = false;
-    this._notifyReader = void 0;
-    this._connectPromise = void 0;
     this._isClosed = false;
-    this._command = void 0;
     this._command = command;
     this._socket = socket;
-    this._connectPromise = new Promise(f => this._socket.on('connect', f));
-    this._socket.on('data', data => {
-      (0, _utilsBundle.debug)('pw:adb:data')(data.toString());
+    this._connectPromise = new Promise((f) => this._socket.on("connect", f));
+    this._socket.on("data", (data) => {
+      (0, import_utilsBundle.debug)("pw:adb:data")(data.toString());
       if (this._isSocket) {
-        this.emit('data', data);
+        this.emit("data", data);
         return;
       }
       this._buffer = Buffer.concat([this._buffer, data]);
-      if (this._notifyReader) this._notifyReader();
+      if (this._notifyReader)
+        this._notifyReader();
     });
-    this._socket.on('close', () => {
+    this._socket.on("close", () => {
       this._isClosed = true;
-      if (this._notifyReader) this._notifyReader();
+      if (this._notifyReader)
+        this._notifyReader();
       this.close();
-      this.emit('close');
+      this.emit("close");
     });
-    this._socket.on('error', error => this.emit('error', error));
+    this._socket.on("error", (error) => this.emit("error", error));
   }
   async write(data) {
-    (0, _utilsBundle.debug)('pw:adb:send')(data.toString().substring(0, 100) + '...');
+    (0, import_utilsBundle.debug)("pw:adb:send")(data.toString().substring(0, 100) + "...");
     await this._connectPromise;
-    await new Promise(f => this._socket.write(data, f));
+    await new Promise((f) => this._socket.write(data, f));
   }
   close() {
-    if (this._isClosed) return;
-    (0, _utilsBundle.debug)('pw:adb')('Close ' + this._command);
+    if (this._isClosed)
+      return;
+    (0, import_utilsBundle.debug)("pw:adb")("Close " + this._command);
     this._socket.destroy();
   }
   async read(length) {
     await this._connectPromise;
-    (0, _utils.assert)(!this._isSocket, 'Can not read by length in socket mode');
-    while (this._buffer.length < length) await new Promise(f => this._notifyReader = f);
+    (0, import_assert.assert)(!this._isSocket, "Can not read by length in socket mode");
+    while (this._buffer.length < length)
+      await new Promise((f) => this._notifyReader = f);
     const result = this._buffer.slice(0, length);
     this._buffer = this._buffer.slice(length);
-    (0, _utilsBundle.debug)('pw:adb:recv')(result.toString().substring(0, 100) + '...');
+    (0, import_utilsBundle.debug)("pw:adb:recv")(result.toString().substring(0, 100) + "...");
     return result;
   }
   async readAll() {
-    while (!this._isClosed) await new Promise(f => this._notifyReader = f);
+    while (!this._isClosed)
+      await new Promise((f) => this._notifyReader = f);
     return this._buffer;
   }
   becomeSocket() {
-    (0, _utils.assert)(!this._buffer.length);
+    (0, import_assert.assert)(!this._buffer.length);
     this._isSocket = true;
   }
 }
+// Annotate the CommonJS export names for ESM import in node:
+0 && (module.exports = {
+  AdbBackend
+});

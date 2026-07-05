@@ -16,8 +16,8 @@ defmodule Playwright.ElementHandle do
       :ok = ElementHandle.click(handle)
 
   `ElementHandle` prevents DOM elements from garbage collection unless the
-  handle is disposed with `Playwright.JSHandle.dispose/1`. `ElementHandles`
-  are auto-disposed when their origin frame is navigated.
+  handle is disposed. `ElementHandles` are auto-disposed when their origin
+  frame is navigated.
 
   An `ElementHandle` instance can be used as an argument in
   `Playwright.Page.eval_on_selector/5` and `Playwright.Page.evaluate/3`.
@@ -138,6 +138,10 @@ defmodule Playwright.ElementHandle do
   When all steps combined have not finished during the specified `:timeout`,
   this function raises a `TimeoutError`. Passing zero (`0`) for timeout
   disables this.
+
+  ## Options
+
+    - `:steps` - Number of intermediate mouse move events. `(default: 1)`
   """
   @spec click(t(), options()) :: :ok
   def click(%ElementHandle{session: session} = handle, options \\ %{}) do
@@ -306,9 +310,68 @@ defmodule Playwright.ElementHandle do
   # @spec set_checked(ElementHandle.t(), boolean(), options()) :: :ok
   # def set_checked(handle, checked, options \\ %{})
 
-  # ⚠️ DISCOURAGED
-  # @spec set_input_files(ElementHandle.t(), file_list(), options()) :: :ok
-  # def set_input_files(handle, files, options \\ %{})
+  @doc """
+  Sets the value of file input elements.
+
+  ## Arguments
+
+  - `files` - File path(s) or file payload(s)
+  - `options` - Optional settings
+
+  ## File payload format
+
+      %{name: "file.txt", mimeType: "text/plain", buffer: "base64content"}
+  """
+  @spec set_input_files(t(), binary() | [binary()] | map() | [map()], map()) :: :ok | {:error, term()}
+  def set_input_files(%ElementHandle{session: session} = handle, files, options \\ %{}) do
+    file_payloads = prepare_files(files)
+    timeout = Map.get(options, :timeout, 30_000)
+    params = %{payloads: file_payloads, timeout: timeout}
+
+    case Channel.post(session, {:guid, handle.guid}, :set_input_files, params) do
+      {:ok, _} -> :ok
+      :ok -> :ok
+      nil -> :ok
+      {:error, _} = error -> error
+    end
+  end
+
+  defp prepare_files(files) when is_binary(files), do: prepare_files([files])
+
+  defp prepare_files(files) when is_list(files) do
+    Enum.map(files, fn
+      %{name: _, buffer: _} = payload ->
+        payload
+
+      path when is_binary(path) ->
+        %{
+          name: Path.basename(path),
+          buffer: Base.encode64(File.read!(path)),
+          mimeType: mime_type(path)
+        }
+    end)
+  end
+
+  defp prepare_files(%{} = file), do: [file]
+
+  @mime_types %{
+    ".txt" => "text/plain",
+    ".html" => "text/html",
+    ".css" => "text/css",
+    ".js" => "application/javascript",
+    ".json" => "application/json",
+    ".png" => "image/png",
+    ".jpg" => "image/jpeg",
+    ".jpeg" => "image/jpeg",
+    ".gif" => "image/gif",
+    ".pdf" => "application/pdf",
+    ".xml" => "application/xml",
+    ".zip" => "application/zip"
+  }
+
+  defp mime_type(path) do
+    Map.get(@mime_types, Path.extname(path), "application/octet-stream")
+  end
 
   # ⚠️ DISCOURAGED
   # @spec tap(ElementHandle.t(), options()) :: :ok
